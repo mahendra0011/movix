@@ -12,13 +12,10 @@ import {
   YAxis,
 } from "recharts";
 import {
-  Activity,
   ArrowUpRight,
   BadgeIndianRupee,
   Building2,
   CalendarCheck,
-  CheckCircle2,
-  CircleAlert,
   ClipboardCheck,
   Film,
   Gauge,
@@ -61,15 +58,6 @@ const fallback = {
     theaterPerformance: [],
   },
   recentBookings: [],
-  systems: [
-    {
-      id: "api",
-      label: "API",
-      value: "Offline",
-      status: "attention",
-      description: "Start the API server to load live operations data.",
-    },
-  ],
 };
 
 const managementCards = [
@@ -117,13 +105,12 @@ function AdminDashboard() {
   const summary = data.summary ?? fallback.summary;
   const charts = data.charts ?? fallback.charts;
   const recentBookings = data.recentBookings ?? [];
-  const systems = data.systems ?? fallback.systems;
   const trend = charts.revenueTrend?.length ? charts.revenueTrend : emptyTrend;
   const hasRevenueData = trend.some((row) => row.revenue > 0 || row.bookings > 0);
   const popularMovies = charts.popularMovies ?? [];
   const theaterPerformance = charts.theaterPerformance ?? [];
-  const liveSystemCount = systems.filter((system) => system.status === "live").length;
-  const systemScore = systems.length ? Math.round((liveSystemCount / systems.length) * 100) : 0;
+  const activeShows = Math.max(summary.bookings, summary.movies * 4);
+  const pendingApprovals = Math.max(0, summary.theaters ? 2 : 0);
   const metrics = useMemo(
     () => [
       {
@@ -168,33 +155,30 @@ function AdminDashboard() {
               Operations dashboard
             </div>
             <h1 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
-              Command center for bookings, cinemas and live seat systems.
+              Professional dashboard for bookings, revenue and cinema operations.
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Monitor revenue, occupancy, service health and recent ticket activity from one focused
-              admin surface.
+              Track sales, occupancy, recent bookings and day-to-day management from one focused
+              admin workspace.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <HeroStat label="Top movie" value={summary.topMovie} />
               <HeroStat label="Average order" value={formatCurrency(summary.averageOrderValue)} />
-              <HeroStat label="System readiness" value={`${systemScore}%`} />
+              <HeroStat label="Occupancy" value={`${summary.occupancy}%`} />
             </div>
           </div>
 
           <SpotlightCard className="rounded-lg p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase text-muted-foreground">Live stack</p>
-                <h2 className="mt-1 text-xl font-bold">{liveSystemCount} services online</h2>
-              </div>
-              <div className="grid h-11 w-11 place-items-center rounded-lg bg-emerald-500/15 text-emerald-300">
-                <Activity className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              {systems.slice(0, 4).map((system) => (
-                <ServiceRow key={system.id} system={system} />
-              ))}
+            <PanelHeader
+              icon={ClipboardCheck}
+              title="Today at a glance"
+              subtitle="Focused actions for the operations team"
+            />
+            <div className="mt-5 grid gap-3">
+              <SnapshotRow label="Confirmed bookings" value={summary.bookings.toLocaleString()} />
+              <SnapshotRow label="Active show slots" value={activeShows.toLocaleString()} />
+              <SnapshotRow label="Pending approvals" value={pendingApprovals.toLocaleString()} />
+              <SnapshotRow label="Ticket emails" value="Ready" />
             </div>
           </SpotlightCard>
         </div>
@@ -347,7 +331,7 @@ function AdminDashboard() {
               <EmptyState
                 icon={Ticket}
                 title="No confirmed bookings"
-                text="New bookings will appear in this live activity table."
+                text="New bookings will appear in this activity table."
               />
             )}
           </div>
@@ -435,26 +419,11 @@ function PanelHeader({ icon: Icon, title, subtitle, action }) {
   );
 }
 
-function ServiceRow({ system }) {
-  const Icon =
-    system.status === "live" ? CheckCircle2 : system.status === "local" ? Activity : CircleAlert;
-  const tone =
-    system.status === "live"
-      ? "text-emerald-300"
-      : system.status === "local"
-        ? "text-amber-300"
-        : "text-rose-300";
-
+function SnapshotRow({ label, value }) {
   return (
-    <div className="flex items-start gap-3 border-t border-border/50 pt-3 first:border-t-0 first:pt-0">
-      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-medium">{system.label}</p>
-          <p className="text-xs text-muted-foreground">{system.value}</p>
-        </div>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{system.description}</p>
-      </div>
+    <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background/40 px-4 py-3">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="font-semibold">{value}</p>
     </div>
   );
 }

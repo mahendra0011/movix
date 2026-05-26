@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+import bcrypt from "bcryptjs";
 import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { Booking } from "../models/Booking.js";
@@ -7,7 +9,7 @@ import {
   getMemoryBookingByRef,
 } from "../services/bookingStore.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
-import { sendBookingEmail } from "../services/emailService.js";
+import { sendBookingEmail, sendOtpEmail } from "../services/emailService.js";
 import { generateQrDataUrl, generateQrPng, generateTicketPdf } from "../services/ticketService.js";
 import {
   getSeatState,
@@ -22,6 +24,41 @@ function createRef() {
     .toString(36)
     .slice(2, 6)
     .toUpperCase()}`;
+}
+
+const bookingOtps = new Map();
+const bookingEmailTokens = new Map();
+const BOOKING_OTP_TTL_MS = 10 * 60 * 1000;
+const BOOKING_EMAIL_TOKEN_TTL_MS = 15 * 60 * 1000;
+
+function normalizeEmail(email) {
+  return String(email ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function createOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function cleanExpiredBookingTokens() {
+  const now = Date.now();
+  for (const [email, entry] of bookingOtps.entries()) {
+    if (entry.expiresAt <= now) bookingOtps.delete(email);
+  }
+  for (const [token, entry] of bookingEmailTokens.entries()) {
+    if (entry.expiresAt <= now) bookingEmailTokens.delete(token);
+  }
+}
+
+function isVerifiedBookingEmail(email, token) {
+  cleanExpiredBookingTokens();
+  const entry = bookingEmailTokens.get(String(token ?? ""));
+  return Boolean(entry && entry.email === email && entry.expiresAt > Date.now());
 }
 
 function normalizeSeats(seats) {
@@ -101,6 +138,54 @@ function createBookingRoutes({ io }) {
     }),
   );
 
+  router.post(
+    "/ticket-otp",
+    asyncHandler(async (request, response) => {
+      const email = normalizeEmail(request.body.email);
+      if (!isValidEmail(email)) {
+        response.status(400).json({ error: "Enter a valid email to receive the ticket OTP." });
+        return;
+      }
+
+      const otp = createOtp();
+      bookingOtps.set(email, {
+        otpHash: await bcrypt.hash(otp, 10),
+        expiresAt: Date.now() + BOOKING_OTP_TTL_MS,
+      });
+      await sendOtpEmail(email, otp);
+      response.status(201).json({ ok: true, message: "Ticket OTP sent to your email." });
+    }),
+  );
+
+  router.post(
+    "/ticket-otp/verify",
+    asyncHandler(async (request, response) => {
+      cleanExpiredBookingTokens();
+      const email = normalizeEmail(request.body.email);
+      const otp = String(request.body.otp ?? "");
+      const entry = bookingOtps.get(email);
+
+      if (!entry || entry.expiresAt <= Date.now() || !(await bcrypt.compare(otp, entry.otpHash))) {
+        response.status(400).json({ error: "Ticket OTP is invalid or expired." });
+        return;
+      }
+
+      bookingOtps.delete(email);
+      const emailVerificationToken = crypto.randomUUID();
+      bookingEmailTokens.set(emailVerificationToken, {
+        email,
+        expiresAt: Date.now() + BOOKING_EMAIL_TOKEN_TTL_MS,
+      });
+
+      response.json({
+        ok: true,
+        email,
+        emailVerificationToken,
+        message: "Ticket email verified.",
+      });
+    }),
+  );
+
   const createBookingHandler = asyncHandler(async (request, response) => {
     const {
       showId,
@@ -114,15 +199,25 @@ function createBookingRoutes({ io }) {
       total,
       ownerId,
       email = "",
+      emailVerificationToken = "",
       paymentId = `local_${Date.now().toString(36)}`,
       paymentProvider = "local",
     } = request.body;
     const seatList = normalizeSeats(seats);
+    const normalizedEmail = normalizeEmail(email);
 
     if (!showId || !movieId || !movie || !theater || !time || seatList.length === 0) {
       response
         .status(400)
         .json({ error: "Booking requires a show, movie, theater, time, and seats." });
+      return;
+    }
+
+    if (
+      !isValidEmail(normalizedEmail) ||
+      !isVerifiedBookingEmail(normalizedEmail, emailVerificationToken)
+    ) {
+      response.status(400).json({ error: "Verify your ticket email with OTP before booking." });
       return;
     }
 
@@ -142,7 +237,7 @@ function createBookingRoutes({ io }) {
 
     const booking = {
       ref: createRef(),
-      email: String(email),
+      email: normalizedEmail,
       showId: String(showId),
       movieId: String(movieId),
       movie: String(movie),
@@ -163,6 +258,7 @@ function createBookingRoutes({ io }) {
       ? cleanDocument(await Booking.create(booking))
       : addMemoryBooking({ ...booking, createdAt: new Date().toISOString() });
 
+    bookingEmailTokens.delete(emailVerificationToken);
     if (ownerId) await releaseSeats({ showId, seats: seatList, ownerId });
     const state = await emitSeatState(showId);
     const qrDataUrl = await generateQrDataUrl(saved);

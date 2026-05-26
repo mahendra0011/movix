@@ -26,6 +26,20 @@ async function releaseSeats(input) {
   });
 }
 
+async function sendTicketOtp(email) {
+  return requestJson("/api/ticket-otp", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+async function verifyTicketOtp(input) {
+  return requestJson("/api/ticket-otp/verify", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
 async function createPaymentIntent(amount) {
   return requestJson("/api/payments/intent", {
     method: "POST",
@@ -44,7 +58,9 @@ export {
   confirmPayment,
   createBooking,
   createPaymentIntent,
+  sendTicketOtp,
   fetchSeatState,
   lockSeats,
   releaseSeats,
+  verifyTicketOtp,
 };

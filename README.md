@@ -1,6 +1,6 @@
 # BookMyScreen
 
-Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO, Redis-backed seat locking, Razorpay-ready payments, and Brevo email hooks.
+Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO, Redis-backed seat locking, Razorpay-ready payments, and Brevo HTTP API email hooks.
 
 This project is JavaScript-only. It does not use TypeScript or Bun.
 
@@ -61,5 +61,5 @@ The API can run in local mode without external credentials, then switches to Mon
 - Redis-backed locks when `REDIS_URL` is configured, local locks otherwise
 - Razorpay order creation and signature verification when payment keys are configured
 - QR code, PDF ticket, and invoice generation
-- Brevo email integration through `BREVO_API_KEY`
+- Brevo transactional email through the HTTP API using `BREVO_API_KEY`
 - Admin dashboard with revenue, occupancy, and live system status

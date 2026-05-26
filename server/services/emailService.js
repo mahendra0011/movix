@@ -7,7 +7,7 @@ async function sendEmail({ to, subject, html }) {
     return { sent: false, reason: "brevo-not-configured" };
   }
 
-  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+  const response = await fetch(env.brevoApiUrl, {
     method: "POST",
     headers: {
       "api-key": env.brevoApiKey,
@@ -24,10 +24,10 @@ async function sendEmail({ to, subject, html }) {
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Brevo email failed: ${response.status} ${body}`);
+    throw new Error(`Brevo API email failed: ${response.status} ${body}`);
   }
 
-  return { sent: true };
+  return { sent: true, provider: "brevo-api", response: await response.json() };
 }
 
 async function sendBookingEmail(booking) {

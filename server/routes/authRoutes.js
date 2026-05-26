@@ -9,6 +9,17 @@ import { sendOtpEmail } from "../services/emailService.js";
 
 const router = Router();
 const memoryUsers = new Map();
+const OTP_TTL_MS = 10 * 60 * 1000;
+
+function normalizeEmail(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function createOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 function publicUser(user) {
   return cleanDocument({
@@ -22,6 +33,59 @@ function publicUser(user) {
 
 function findMemoryUser(email) {
   return memoryUsers.get(String(email).toLowerCase());
+}
+
+async function findUserByEmail(email) {
+  return isMongoReady() ? User.findOne({ email }) : findMemoryUser(email);
+}
+
+async function ensureDefaultAdminUser() {
+  const existing = await findUserByEmail(env.adminEmail);
+  if (existing) return existing;
+
+  const passwordHash = await bcrypt.hash(env.adminPassword, 10);
+  if (isMongoReady()) {
+    return User.create({
+      name: "Mahendra Admin",
+      email: env.adminEmail,
+      passwordHash,
+      role: "admin",
+      verified: true,
+    });
+  }
+
+  const user = {
+    id: `admin_${Date.now().toString(36)}`,
+    name: "Mahendra Admin",
+    email: env.adminEmail,
+    passwordHash,
+    role: "admin",
+    verified: true,
+  };
+  memoryUsers.set(env.adminEmail, user);
+  return user;
+}
+
+async function issueOtp(user) {
+  const otp = createOtp();
+  const otpHash = await bcrypt.hash(otp, 10);
+  const otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
+
+  if (isMongoReady()) {
+    user.otpHash = otpHash;
+    user.otpExpiresAt = otpExpiresAt;
+    await user.save();
+  } else {
+    user.otpHash = otpHash;
+    user.otpExpiresAt = otpExpiresAt;
+  }
+
+  await sendOtpEmail(user.email, otp);
+  return {
+    requiresOtp: true,
+    email: user.email,
+    message: "OTP sent to your email.",
+  };
 }
 
 async function verifyGoogleCredential(credential) {
@@ -58,16 +122,19 @@ router.post(
   "/register",
   asyncHandler(async (request, response) => {
     const { name, email, password, role = "user" } = request.body;
-    const normalizedEmail = String(email ?? "")
-      .trim()
-      .toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
 
     if (!name || !normalizedEmail || !password) {
       response.status(400).json({ error: "Name, email, and password are required." });
       return;
     }
 
-    const safeRole = ["user", "theater-owner", "admin"].includes(role) ? role : "user";
+    if (normalizedEmail === env.adminEmail) {
+      response.status(409).json({ error: "This email is reserved for the admin account." });
+      return;
+    }
+
+    const safeRole = role === "theater-owner" ? "theater-owner" : "user";
     const passwordHash = await bcrypt.hash(String(password), 10);
     let user;
 
@@ -94,27 +161,27 @@ router.post(
       memoryUsers.set(normalizedEmail, user);
     }
 
-    const cleanUser = publicUser(user);
-    response.status(201).json({ user: cleanUser, token: signToken(cleanUser) });
+    response.status(201).json(await issueOtp(user));
   }),
 );
 
 router.post(
   "/login",
   asyncHandler(async (request, response) => {
-    const email = String(request.body.email ?? "")
-      .trim()
-      .toLowerCase();
+    const email = normalizeEmail(request.body.email);
     const password = String(request.body.password ?? "");
-    const user = isMongoReady() ? await User.findOne({ email }) : findMemoryUser(email);
+    let user = await findUserByEmail(email);
+
+    if (!user && email === env.adminEmail && password === env.adminPassword) {
+      user = await ensureDefaultAdminUser();
+    }
 
     if (!user || !(await bcrypt.compare(password, user.passwordHash ?? ""))) {
       response.status(401).json({ error: "Invalid email or password." });
       return;
     }
 
-    const cleanUser = publicUser(user);
-    response.json({ user: cleanUser, token: signToken(cleanUser) });
+    response.json(await issueOtp(user));
   }),
 );
 
@@ -156,22 +223,14 @@ router.post(
 router.post(
   "/forgot-password",
   asyncHandler(async (request, response) => {
-    const email = String(request.body.email ?? "")
-      .trim()
-      .toLowerCase();
-    const user = isMongoReady() ? await User.findOne({ email }) : findMemoryUser(email);
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpHash = await bcrypt.hash(otp, 10);
-    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const email = normalizeEmail(request.body.email);
+    let user = await findUserByEmail(email);
+    if (!user && email === env.adminEmail) {
+      user = await ensureDefaultAdminUser();
+    }
 
     if (user) {
-      if (isMongoReady()) {
-        await User.updateOne({ email }, { otpHash, otpExpiresAt });
-      } else {
-        user.otpHash = otpHash;
-        user.otpExpiresAt = otpExpiresAt;
-      }
-      await sendOtpEmail(email, otp);
+      await issueOtp(user);
     }
 
     response.json({ ok: true, message: "If the account exists, an OTP has been sent." });
@@ -181,11 +240,9 @@ router.post(
 router.post(
   "/verify-otp",
   asyncHandler(async (request, response) => {
-    const email = String(request.body.email ?? "")
-      .trim()
-      .toLowerCase();
+    const email = normalizeEmail(request.body.email);
     const otp = String(request.body.otp ?? "");
-    const user = isMongoReady() ? await User.findOne({ email }) : findMemoryUser(email);
+    const user = await findUserByEmail(email);
 
     if (!user || !user.otpHash || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
       response.status(400).json({ error: "OTP is invalid or expired." });
@@ -198,18 +255,13 @@ router.post(
       return;
     }
 
-    if (isMongoReady()) {
-      await User.updateOne(
-        { email },
-        { $set: { verified: true, otpHash: "" }, $unset: { otpExpiresAt: 1 } },
-      );
-    } else {
-      user.verified = true;
-      user.otpHash = "";
-      user.otpExpiresAt = undefined;
-    }
+    user.verified = true;
+    user.otpHash = "";
+    user.otpExpiresAt = undefined;
+    if (isMongoReady()) await user.save();
 
-    response.json({ ok: true });
+    const cleanUser = publicUser(user);
+    response.json({ ok: true, user: cleanUser, token: signToken(cleanUser) });
   }),
 );
 

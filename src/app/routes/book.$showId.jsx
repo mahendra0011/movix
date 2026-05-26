@@ -8,6 +8,8 @@ import {
   fetchSeatState,
   lockSeats,
   releaseSeats,
+  sendTicketOtp,
+  verifyTicketOtp,
 } from "@/features/booking/api/bookingsApi";
 import { buildSeatLayout, tierPrice } from "@/features/booking/data/seatLayout";
 import { createBookingSocket } from "@/shared/services/socketClient";
@@ -79,6 +81,10 @@ function BookingPage() {
   const [connection, setConnection] = useState("connecting");
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
+  const [ticketOtp, setTicketOtp] = useState("");
+  const [ticketOtpSent, setTicketOtpSent] = useState(false);
+  const [emailVerificationToken, setEmailVerificationToken] = useState("");
+  const [otpBusy, setOtpBusy] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [tick, setTick] = useState(0);
   const socketRef = useRef(null);
@@ -210,6 +216,41 @@ function BookingPage() {
     await lockSeat(id);
   };
 
+  const updateEmail = (event) => {
+    setEmail(event.target.value);
+    setTicketOtp("");
+    setTicketOtpSent(false);
+    setEmailVerificationToken("");
+  };
+
+  const requestTicketOtp = async () => {
+    setOtpBusy(true);
+    setMessage("");
+    try {
+      const result = await sendTicketOtp(email);
+      setTicketOtpSent(true);
+      setMessage(result.message ?? "Ticket OTP sent to your email.");
+    } catch (error) {
+      setMessage(error.response?.data?.error ?? "Unable to send ticket OTP.");
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  const confirmTicketOtp = async () => {
+    setOtpBusy(true);
+    setMessage("");
+    try {
+      const result = await verifyTicketOtp({ email, otp: ticketOtp });
+      setEmailVerificationToken(result.emailVerificationToken);
+      setMessage(result.message ?? "Ticket email verified.");
+    } catch (error) {
+      setMessage(error.response?.data?.error ?? "Ticket OTP verification failed.");
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
   const openRazorpayCheckout = async (payment) => {
     await loadCheckoutScript("https://checkout.razorpay.com/v1/checkout.js");
     if (!window.Razorpay) throw new Error("Razorpay checkout is unavailable.");
@@ -248,6 +289,10 @@ function BookingPage() {
 
   const handlePay = async () => {
     if (selectedSeats.length === 0) return;
+    if (!emailVerificationToken) {
+      setMessage("Verify your ticket email with OTP before payment.");
+      return;
+    }
     setIsPaying(true);
     setMessage("Opening secure checkout...");
 
@@ -271,6 +316,7 @@ function BookingPage() {
         seats: selectedSeats,
         total,
         email,
+        emailVerificationToken,
         paymentId: payment.payment.id,
         paymentProvider: payment.payment.provider,
       });
@@ -399,7 +445,7 @@ function BookingPage() {
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/95 backdrop-blur-xl">
-        <div className="mx-auto grid max-w-6xl gap-3 px-4 py-4 md:grid-cols-[1fr_280px_auto] md:items-center">
+        <div className="mx-auto grid max-w-6xl gap-3 px-4 py-4 md:grid-cols-[1fr_390px_auto] md:items-center">
           <div>
             <p className="text-xs text-muted-foreground">
               {selected.length} {selected.length === 1 ? "seat" : "seats"} selected
@@ -415,15 +461,45 @@ function BookingPage() {
             </p>
             {message && <p className="mt-1 text-xs text-amber-400">{message}</p>}
           </div>
-          <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="Email for ticket"
-              className="h-11 pl-9"
-            />
+          <div className="space-y-2">
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={updateEmail}
+                  placeholder="Email for ticket"
+                  className="h-11 pl-9"
+                />
+              </div>
+              <Button
+                type="button"
+                variant={emailVerificationToken ? "secondary" : "outline"}
+                disabled={otpBusy || !email || Boolean(emailVerificationToken)}
+                onClick={requestTicketOtp}
+              >
+                {emailVerificationToken ? "Verified" : ticketOtpSent ? "Resend OTP" : "Send OTP"}
+              </Button>
+            </div>
+            {ticketOtpSent && !emailVerificationToken && (
+              <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                <Input
+                  value={ticketOtp}
+                  onChange={(event) => setTicketOtp(event.target.value)}
+                  placeholder="Enter ticket OTP"
+                  className="h-10"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={otpBusy || ticketOtp.length < 4}
+                  onClick={confirmTicketOtp}
+                >
+                  Verify
+                </Button>
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" asChild>
@@ -431,7 +507,9 @@ function BookingPage() {
             </Button>
             <Button
               size="lg"
-              disabled={selected.length === 0 || isPaying || secondsLeft === 0}
+              disabled={
+                selected.length === 0 || !emailVerificationToken || isPaying || secondsLeft === 0
+              }
               onClick={handlePay}
               className="gap-2"
             >

@@ -157,51 +157,6 @@ router.get(
         theaterPerformance,
       },
       recentBookings,
-      systems: [
-        {
-          id: "database",
-          label: "MongoDB",
-          value: isMongoReady() ? "Connected" : "Local store",
-          status: isMongoReady() ? "live" : "local",
-          description: isMongoReady()
-            ? "Bookings and users are persisted in MongoDB."
-            : "Add MONGODB_URI to persist live data.",
-        },
-        {
-          id: "redis",
-          label: "Redis",
-          value: isRedisReady() ? "Connected" : "Local locks",
-          status: isRedisReady() ? "live" : "local",
-          description: isRedisReady()
-            ? "Seat locks are shared through Redis."
-            : "Add REDIS_URL for distributed seat locks.",
-        },
-        {
-          id: "socket",
-          label: "Socket.IO",
-          value: "Enabled",
-          status: "live",
-          description: "Seat state updates are pushed to all users in the show room.",
-        },
-        {
-          id: "payment",
-          label: "Payments",
-          value: paymentConnected ? "Razorpay" : "Test checkout",
-          status: paymentConnected ? "live" : "local",
-          description: paymentConnected
-            ? "Razorpay orders and signatures are verified."
-            : "Add Razorpay keys to switch from local checkout.",
-        },
-        {
-          id: "email",
-          label: "Brevo email",
-          value: env.brevoApiKey ? "Connected" : "Not configured",
-          status: env.brevoApiKey ? "live" : "attention",
-          description: env.brevoApiKey
-            ? "Ticket and OTP emails are sent through Brevo."
-            : "Add BREVO_API_KEY for live emails.",
-        },
-      ],
     });
   }),
 );
