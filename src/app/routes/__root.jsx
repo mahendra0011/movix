@@ -112,9 +112,9 @@ const footerColumns = [
     title: "Movies",
     links: [
       { label: "Now showing", to: "/" },
-      { label: "Coming soon", to: "/stream" },
-      { label: "Premieres", to: "/stream" },
-      { label: "Cinemas", to: "/events" },
+      { label: "Coming soon", to: "/" },
+      { label: "Cinemas", to: "/" },
+      { label: "Sports", to: "/sports" },
     ],
   },
   {
@@ -130,8 +130,8 @@ const footerColumns = [
     title: "Company",
     links: [
       { label: "About", to: "/" },
-      { label: "Careers", to: "/events" },
-      { label: "Press", to: "/stream" },
+      { label: "Careers", to: "/" },
+      { label: "Press", to: "/" },
       { label: "Partners", to: "/admin" },
     ],
   },
@@ -152,7 +152,7 @@ function RootComponent() {
                   book<span className="text-primary">my</span>screen
                 </h3>
                 <p className="mt-3 text-xs text-muted-foreground">
-                  The cinematic way to book movies, events, plays & sports - all in one place.
+                  The cinematic way to book movies and sports experiences with clean seat selection.
                 </p>
               </div>
               {footerColumns.map((col) => (

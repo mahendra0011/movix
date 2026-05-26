@@ -48,6 +48,8 @@ router.get(
       userCount = await User.countDocuments();
       movieCount = await Movie.countDocuments();
       theaterCount = Math.max(await Theater.countDocuments(), theaters.length);
+    } else {
+      userCount = new Set(bookings.map((booking) => booking.email).filter(Boolean)).size + 1;
     }
 
     const confirmedBookings = bookings.filter((booking) => booking.status !== "cancelled");

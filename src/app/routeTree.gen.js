@@ -7,10 +7,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root";
-import { Route as StreamRouteImport } from "./routes/stream";
 import { Route as SportsRouteImport } from "./routes/sports";
-import { Route as PlaysRouteImport } from "./routes/plays";
-import { Route as EventsRouteImport } from "./routes/events";
 import { Route as DashboardRouteImport } from "./routes/dashboard";
 import { Route as ConfirmationRouteImport } from "./routes/confirmation";
 import { Route as AuthRouteImport } from "./routes/auth";
@@ -19,24 +16,9 @@ import { Route as IndexRouteImport } from "./routes/index";
 import { Route as MoviesIdRouteImport } from "./routes/movies.$id";
 import { Route as BookShowIdRouteImport } from "./routes/book.$showId";
 
-const StreamRoute = StreamRouteImport.update({
-  id: "/stream",
-  path: "/stream",
-  getParentRoute: () => rootRouteImport,
-});
 const SportsRoute = SportsRouteImport.update({
   id: "/sports",
   path: "/sports",
-  getParentRoute: () => rootRouteImport,
-});
-const PlaysRoute = PlaysRouteImport.update({
-  id: "/plays",
-  path: "/plays",
-  getParentRoute: () => rootRouteImport,
-});
-const EventsRoute = EventsRouteImport.update({
-  id: "/events",
-  path: "/events",
   getParentRoute: () => rootRouteImport,
 });
 const DashboardRoute = DashboardRouteImport.update({
@@ -81,10 +63,7 @@ const rootRouteChildren = {
   AuthRoute: AuthRoute,
   ConfirmationRoute: ConfirmationRoute,
   DashboardRoute: DashboardRoute,
-  EventsRoute: EventsRoute,
-  PlaysRoute: PlaysRoute,
   SportsRoute: SportsRoute,
-  StreamRoute: StreamRoute,
   BookShowIdRoute: BookShowIdRoute,
   MoviesIdRoute: MoviesIdRoute,
 };

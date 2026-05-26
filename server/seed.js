@@ -194,15 +194,30 @@ export const movies = [
 ];
 
 export const theaters = [
-  { id: "pvr-orion", name: "PVR: Orion Mall", area: "Rajajinagar", distance: "3.2 km" },
-  { id: "inox-garuda", name: "INOX: Garuda Mall", area: "Magrath Road", distance: "5.6 km" },
+  {
+    id: "pvr-orion",
+    name: "PVR INOX: Orion Mall",
+    area: "Rajajinagar, Bengaluru",
+    distance: "3.2 km",
+  },
+  {
+    id: "inox-garuda",
+    name: "INOX: Garuda Mall",
+    area: "Magrath Road, Bengaluru",
+    distance: "5.6 km",
+  },
   {
     id: "cinepolis-forum",
-    name: "Cinepolis: Forum Mall",
-    area: "Koramangala",
+    name: "Cinepolis: Forum Shantiniketan",
+    area: "Whitefield, Bengaluru",
     distance: "7.1 km",
   },
-  { id: "pvr-vega", name: "PVR: Vega City", area: "Bannerghatta", distance: "9.4 km" },
+  {
+    id: "pvr-vega",
+    name: "PVR: Vega City",
+    area: "Bannerghatta Road, Bengaluru",
+    distance: "9.4 km",
+  },
 ];
 
 export const showTimes = ["10:30 AM", "01:45 PM", "04:30 PM", "07:15 PM", "10:30 PM"];

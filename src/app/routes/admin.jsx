@@ -34,9 +34,16 @@ import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 
-const emptyTrend = ["20 May", "21 May", "22 May", "23 May", "24 May", "25 May", "26 May"].map(
-  (day) => ({ day, revenue: 0, bookings: 0, seats: 0 }),
-);
+const emptyTrend = Array.from({ length: 7 }, (_, index) => {
+  const date = new Date();
+  date.setDate(date.getDate() - (6 - index));
+  return {
+    day: date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+    revenue: 0,
+    bookings: 0,
+    seats: 0,
+  };
+});
 
 const fallback = {
   summary: {

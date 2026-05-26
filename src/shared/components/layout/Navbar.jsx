@@ -8,9 +8,6 @@ import { Input } from "@/shared/components/ui/input";
 
 const navItems = [
   { label: "Movies", to: "/" },
-  { label: "Stream", to: "/stream" },
-  { label: "Events", to: "/events" },
-  { label: "Plays", to: "/plays" },
   { label: "Sports", to: "/sports" },
 ];
 
@@ -53,19 +50,16 @@ function Navbar() {
             <Input
               value={navSearch}
               onChange={(event) => setNavSearch(event.target.value)}
-              placeholder="Search for movies, events, theaters..."
+              placeholder="Search for movies, theaters..."
               className="h-10 border-border/60 bg-card/60 pl-9"
             />
           </form>
         </div>
 
-        <Link
-          to="/events"
-          className="hidden items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground md:flex"
-        >
+        <div className="hidden items-center gap-1.5 text-sm text-muted-foreground md:flex">
           <MapPin className="h-4 w-4" />
           Bengaluru
-        </Link>
+        </div>
 
         {isAdmin && (
           <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>

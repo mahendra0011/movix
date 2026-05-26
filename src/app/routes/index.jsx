@@ -15,10 +15,6 @@ import {
   Quote,
   Flame,
   Clapperboard,
-  Music2,
-  Mic2,
-  Trophy,
-  PartyPopper,
   Search,
   CheckCircle2,
 } from "lucide-react";
@@ -38,49 +34,16 @@ const Route = createFileRoute("/")({
   component: Home,
 });
 const genres = ["All", "Action", "Sci-Fi", "Drama", "Comedy", "Animation", "Thriller", "Crime"];
-const liveEvents = [
-  {
-    title: "Arijit Singh Live",
-    type: "Concert",
-    date: "Sat, 14 Jun",
-    city: "Bengaluru",
-    img: "concert1",
-    icon: Music2,
-    color: "from-fuchsia-500/30 to-purple-700/20",
-  },
-  {
-    title: "Stand-up Night",
-    type: "Comedy",
-    date: "Fri, 20 Jun",
-    city: "Mumbai",
-    img: "comedy1",
-    icon: Mic2,
-    color: "from-amber-500/30 to-orange-700/20",
-  },
-  {
-    title: "IPL Finals Screening",
-    type: "Sports",
-    date: "Sun, 22 Jun",
-    city: "Delhi",
-    img: "sport1",
-    icon: Trophy,
-    color: "from-emerald-500/30 to-teal-700/20",
-  },
-  {
-    title: "Sunburn Festival",
-    type: "Festival",
-    date: "Sat, 28 Jun",
-    city: "Goa",
-    img: "fest1",
-    icon: PartyPopper,
-    color: "from-pink-500/30 to-rose-700/20",
-  },
-];
 const cinemas = [
-  { name: "PVR ICON", area: "Phoenix Marketcity", screens: 9, rating: 4.7 },
-  { name: "INOX Premium", area: "Orion Mall", screens: 6, rating: 4.6 },
-  { name: "Cinepolis VIP", area: "ETA Mall", screens: 5, rating: 4.8 },
-  { name: "PVR Director's Cut", area: "Vasant Kunj", screens: 4, rating: 4.9 },
+  { name: "PVR INOX: Orion Mall", area: "Rajajinagar, Bengaluru", screens: 11, rating: 4.7 },
+  { name: "INOX: Garuda Mall", area: "Magrath Road, Bengaluru", screens: 5, rating: 4.5 },
+  {
+    name: "Cinepolis: Forum Shantiniketan",
+    area: "Whitefield, Bengaluru",
+    screens: 8,
+    rating: 4.6,
+  },
+  { name: "PVR: Vega City", area: "Bannerghatta Road, Bengaluru", screens: 9, rating: 4.6 },
 ];
 const testimonials = [
   {
@@ -100,10 +63,10 @@ const testimonials = [
   },
 ];
 const stats = [
-  { value: "8", label: "Movies live" },
-  { value: "4", label: "Partner cinemas" },
+  { value: `${fallbackMovies.length}`, label: "Movies live" },
+  { value: `${cinemas.length}`, label: "Partner cinemas" },
   { value: "5 min", label: "Seat lock window" },
-  { value: "Live", label: "Socket.IO sync" },
+  { value: "Live", label: "Seat sync" },
 ];
 const promotions = [
   {
@@ -125,7 +88,7 @@ const promotions = [
     desc: "Reviews, stories and release guides",
     c: "from-platinum/30 to-platinum/5",
     icon: Clapperboard,
-    to: "/stream",
+    to: "/",
   },
 ];
 
@@ -144,6 +107,7 @@ function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({});
   const filteredMovies = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return catalog.filter((movie) => {
@@ -159,9 +123,10 @@ function Home() {
     [catalog],
   );
   const shelfMovies = filteredMovies.length > 0 ? filteredMovies : catalog;
-  const trending = shelfMovies.slice(0, 6);
-  const recommended = shelfMovies.slice(2, 8);
-  const premieres = shelfMovies.slice(3, 7);
+  const rotateShelf = (offset) => [...shelfMovies.slice(offset), ...shelfMovies.slice(0, offset)];
+  const trending = expandedSections.recommended ? shelfMovies : shelfMovies.slice(0, 6);
+  const recommended = expandedSections.comingSoon ? rotateShelf(2) : shelfMovies.slice(2, 8);
+  const premieres = expandedSections.premieres ? rotateShelf(3) : shelfMovies.slice(3, 7);
 
   useEffect(() => {
     setQuery(q);
@@ -183,6 +148,13 @@ function Home() {
     } finally {
       setNewsletterBusy(false);
     }
+  };
+
+  const toggleSection = (section) => {
+    setExpandedSections((current) => ({
+      ...current,
+      [section]: !current[section],
+    }));
   };
 
   if (!featured) return null;
@@ -329,7 +301,8 @@ function Home() {
         title="Recommended movies"
         subtitle="Most booked this week"
         icon={<TrendingUp className="h-5 w-5 text-primary" />}
-        actionTo="/"
+        actionLabel={expandedSections.recommended ? "Show less" : "See all"}
+        onAction={() => toggleSection("recommended")}
       >
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {trending.map((m) => (
@@ -364,7 +337,8 @@ function Home() {
         title="Premieres of the week"
         subtitle="Brand new films, only in theatres"
         icon={<Flame className="h-5 w-5 text-primary" />}
-        actionTo="/stream"
+        actionLabel={expandedSections.premieres ? "Show less" : "See all"}
+        onAction={() => toggleSection("premieres")}
       >
         <div className="grid gap-4 md:grid-cols-2">
           {premieres.map((m) => (
@@ -403,48 +377,13 @@ function Home() {
         </div>
       </Section>
 
-      {/* Live events */}
-      <Section
-        title="Live events"
-        subtitle="Concerts, comedy & sports near you"
-        icon={<Mic2 className="h-5 w-5 text-primary" />}
-        actionTo="/events"
-      >
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {liveEvents.map((e) => (
-            <Link
-              key={e.title}
-              to={e.type === "Sports" ? "/sports" : "/events"}
-              className="group block"
-            >
-              <SpotlightCard
-                className={`rounded-lg bg-gradient-to-br ${e.color} p-5 transition-all hover:-translate-y-0.5`}
-              >
-                <e.icon className="h-7 w-7 text-foreground/90" />
-                <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  {e.type}
-                </p>
-                <h3 className="mt-1 text-sm font-semibold leading-tight">{e.title}</h3>
-                <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span className="inline-flex items-center gap-1">
-                    <Calendar className="h-3 w-3" /> {e.date}
-                  </span>
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> {e.city}
-                  </span>
-                </div>
-              </SpotlightCard>
-            </Link>
-          ))}
-        </div>
-      </Section>
-
       {/* Coming soon */}
       <Section
         title="Coming soon"
         subtitle="Premieres near you"
         icon={<Calendar className="h-5 w-5 text-primary" />}
-        actionTo="/stream"
+        actionLabel={expandedSections.comingSoon ? "Show less" : "See all"}
+        onAction={() => toggleSection("comingSoon")}
       >
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {recommended.map((m) => (
@@ -580,7 +519,16 @@ function Home() {
     </div>
   );
 }
-function Section({ title, subtitle, icon, children, actionTo, actionHref }) {
+function Section({
+  title,
+  subtitle,
+  icon,
+  children,
+  actionTo,
+  actionHref,
+  actionLabel = "See all",
+  onAction,
+}) {
   return (
     <section className="mx-auto mt-14 max-w-7xl px-4">
       <div className="mb-5 flex items-end justify-between">
@@ -593,20 +541,29 @@ function Section({ title, subtitle, icon, children, actionTo, actionHref }) {
             {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
-        {actionTo && (
+        {onAction && (
+          <button
+            type="button"
+            onClick={onAction}
+            className="inline-flex shrink-0 items-center gap-1 text-sm text-primary hover:underline"
+          >
+            {actionLabel} <ChevronRight className="h-4 w-4" />
+          </button>
+        )}
+        {!onAction && actionTo && (
           <Link
             to={actionTo}
-            className="hidden items-center gap-1 text-sm text-primary hover:underline md:flex"
+            className="inline-flex shrink-0 items-center gap-1 text-sm text-primary hover:underline"
           >
-            See all <ChevronRight className="h-4 w-4" />
+            {actionLabel} <ChevronRight className="h-4 w-4" />
           </Link>
         )}
-        {actionHref && (
+        {!onAction && actionHref && (
           <a
             href={actionHref}
-            className="hidden items-center gap-1 text-sm text-primary hover:underline md:flex"
+            className="inline-flex shrink-0 items-center gap-1 text-sm text-primary hover:underline"
           >
-            See all <ChevronRight className="h-4 w-4" />
+            {actionLabel} <ChevronRight className="h-4 w-4" />
           </a>
         )}
       </div>
