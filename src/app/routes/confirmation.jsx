@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
 import { CheckCircle2, Download, FileText, Ticket } from "lucide-react";
 import { apiUrl } from "@/shared/services/httpClient";
 import { Button } from "@/shared/components/ui/button";
@@ -18,11 +17,7 @@ const Route = createFileRoute("/confirmation")({
 });
 function Confirmation() {
   const { ref, seats, total, movie, theater, time, ticketUrl, invoiceUrl } = Route.useSearch();
-  const fallbackRef = useMemo(
-    () => "BMS" + Math.random().toString(36).slice(2, 10).toUpperCase(),
-    [],
-  );
-  const bookingRef = ref || fallbackRef;
+  const bookingRef = ref;
   const ticketHref = apiUrl(ticketUrl || `/api/bookings/${bookingRef}/ticket.pdf`);
   const invoiceHref = apiUrl(invoiceUrl || `/api/bookings/${bookingRef}/invoice.pdf`);
   return (
@@ -33,7 +28,7 @@ function Confirmation() {
         </div>
         <h1 className="mt-4 text-2xl font-bold">Booking confirmed!</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          We've emailed your e-ticket. Show the QR code at the cinema entrance.
+          Your e-ticket is ready. Show the QR code at the cinema entrance.
         </p>
       </div>
 

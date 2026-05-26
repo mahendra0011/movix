@@ -1,6 +1,6 @@
 # BookMyScreen
 
-Movie ticket booking demo built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO, Redis-ready seat locking, and Brevo email hooks.
+Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO, Redis-backed seat locking, Razorpay-ready payments, and Brevo email hooks.
 
 This project is JavaScript-only. It does not use TypeScript or Bun.
 
@@ -38,7 +38,7 @@ src/
    npm install
    ```
 
-2. Copy `.env.example` to `.env` and update `MONGODB_URI` if needed.
+2. Copy `.env.example` to `.env` and add your MongoDB, Redis, Razorpay, Google OAuth, and Brevo credentials.
 
 3. Start the API:
 
@@ -52,14 +52,14 @@ src/
    npm run dev
    ```
 
-The API falls back to in-memory demo data when MongoDB is not available, so the UI still runs while you set up the database.
+The API can run in local mode without external credentials, then switches to MongoDB, Redis, Razorpay, Google OAuth, and Brevo when those environment variables are configured.
 
 ## Full-stack features
 
-- JWT register/login, OTP verification, and Google OAuth demo endpoint
+- JWT register/login, OTP verification, and Google OAuth credential verification
 - Real-time seat locking with Socket.IO rooms
-- Redis-backed locks when `REDIS_URL` is configured, memory locks otherwise
-- Mock payment flow that confirms bookings without gateway keys
+- Redis-backed locks when `REDIS_URL` is configured, local locks otherwise
+- Razorpay order creation and signature verification when payment keys are configured
 - QR code, PDF ticket, and invoice generation
 - Brevo email integration through `BREVO_API_KEY`
 - Admin dashboard with revenue, occupancy, and live system status

@@ -1,22 +1,10 @@
 import { requestJson } from "@/shared/services/httpClient";
 
-function localBooking(input) {
-  return {
-    ...input,
-    ref: `BMS${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
-    status: "held",
-  };
-}
-
 async function createBooking(input) {
-  try {
-    return await requestJson("/api/bookings", {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
-  } catch {
-    return { booking: localBooking(input) };
-  }
+  return requestJson("/api/bookings", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }
 
 async function fetchSeatState(showId) {
@@ -39,16 +27,16 @@ async function releaseSeats(input) {
 }
 
 async function createPaymentIntent(amount) {
-  return requestJson("/api/payments/mock-intent", {
+  return requestJson("/api/payments/intent", {
     method: "POST",
     body: JSON.stringify({ amount }),
   });
 }
 
-async function confirmPayment(paymentId) {
-  return requestJson("/api/payments/mock-confirm", {
+async function confirmPayment(payment) {
+  return requestJson("/api/payments/confirm", {
     method: "POST",
-    body: JSON.stringify({ paymentId }),
+    body: JSON.stringify(payment),
   });
 }
 

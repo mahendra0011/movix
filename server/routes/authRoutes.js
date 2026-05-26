@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { Router } from "express";
+import { env } from "../config/env.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireAuth, signToken } from "../middleware/auth.js";
 import { User } from "../models/User.js";
@@ -21,6 +22,36 @@ function publicUser(user) {
 
 function findMemoryUser(email) {
   return memoryUsers.get(String(email).toLowerCase());
+}
+
+async function verifyGoogleCredential(credential) {
+  if (!env.googleClientId) {
+    const error = new Error("Google OAuth is not configured.");
+    error.status = 501;
+    throw error;
+  }
+
+  const response = await fetch(
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
+  );
+  if (!response.ok) {
+    const error = new Error("Google credential is invalid.");
+    error.status = 401;
+    throw error;
+  }
+
+  const profile = await response.json();
+  if (profile.aud !== env.googleClientId || profile.email_verified !== "true") {
+    const error = new Error("Google credential could not be verified.");
+    error.status = 401;
+    throw error;
+  }
+
+  return {
+    email: String(profile.email).toLowerCase(),
+    name: profile.name ?? profile.email.split("@")[0],
+    googleId: profile.sub,
+  };
 }
 
 router.post(
@@ -90,16 +121,20 @@ router.post(
 router.post(
   "/google",
   asyncHandler(async (request, response) => {
-    const email = String(request.body.email ?? "")
-      .trim()
-      .toLowerCase();
-    const name = String(request.body.name ?? email.split("@")[0] ?? "Google User");
-
-    if (!email) {
-      response.status(400).json({ error: "Google email is required for the demo OAuth flow." });
+    if (!request.body.credential) {
+      response.status(400).json({ error: "Google credential is required." });
       return;
     }
 
+    let profile;
+    try {
+      profile = await verifyGoogleCredential(request.body.credential);
+    } catch (error) {
+      response.status(error.status ?? 500).json({ error: error.message });
+      return;
+    }
+
+    const { email, name, googleId } = profile;
     let user = isMongoReady() ? await User.findOne({ email }) : findMemoryUser(email);
     if (!user) {
       user = isMongoReady()
@@ -107,7 +142,7 @@ router.post(
             name,
             email,
             role: "user",
-            googleId: request.body.googleId ?? "demo",
+            googleId,
           })
         : { id: `google_${Date.now().toString(36)}`, name, email, role: "user", verified: true };
       if (!isMongoReady()) memoryUsers.set(email, user);

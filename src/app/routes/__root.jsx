@@ -145,7 +145,7 @@ function RootComponent() {
               ))}
             </div>
             <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground">
-              (c) {/* @__PURE__ */ new Date().getFullYear()} BookMyScreen - Demo UI
+              (c) 2026 BookMyScreen. All rights reserved.
             </div>
           </footer>
         </div>

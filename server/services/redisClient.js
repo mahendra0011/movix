@@ -11,7 +11,13 @@ async function connectRedis() {
   }
 
   try {
-    redisClient = createClient({ url: env.redisUrl });
+    redisClient = createClient({
+      url: env.redisUrl,
+      socket: {
+        connectTimeout: 2500,
+        reconnectStrategy: false,
+      },
+    });
     redisClient.on("error", (error) => {
       redisReady = false;
       console.warn("Redis error:", error.message);

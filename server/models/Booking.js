@@ -18,8 +18,8 @@ const bookingSchema = new mongoose.Schema(
     paymentId: { type: String, default: "" },
     paymentProvider: {
       type: String,
-      enum: ["mock", "razorpay", "stripe", "paytm"],
-      default: "mock",
+      enum: ["local", "razorpay", "stripe", "paytm"],
+      default: "local",
     },
     paymentStatus: {
       type: String,

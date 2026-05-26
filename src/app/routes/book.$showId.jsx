@@ -53,6 +53,21 @@ function emitWithAck(socket, event, payload) {
   });
 }
 
+function loadCheckoutScript(src) {
+  if (typeof window === "undefined") return Promise.reject(new Error("Checkout is unavailable."));
+  const existing = document.querySelector(`script[src="${src}"]`);
+  if (existing) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Payment checkout failed to load."));
+    document.body.appendChild(script);
+  });
+}
+
 function BookingPage() {
   const search = Route.useSearch();
   const { showId } = Route.useParams();
@@ -195,14 +210,56 @@ function BookingPage() {
     await lockSeat(id);
   };
 
+  const openRazorpayCheckout = async (payment) => {
+    await loadCheckoutScript("https://checkout.razorpay.com/v1/checkout.js");
+    if (!window.Razorpay) throw new Error("Razorpay checkout is unavailable.");
+
+    return new Promise((resolve, reject) => {
+      const checkout = new window.Razorpay({
+        key: payment.keyId,
+        amount: payment.amountMinor,
+        currency: payment.currency,
+        name: "BookMyScreen",
+        description: `${search.movie || "Movie"} tickets`,
+        order_id: payment.orderId,
+        prefill: { email },
+        theme: { color: "#e4475b" },
+        handler: async (response) => {
+          try {
+            resolve(
+              await confirmPayment({
+                provider: "razorpay",
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+              }),
+            );
+          } catch (error) {
+            reject(error);
+          }
+        },
+        modal: {
+          ondismiss: () => reject(new Error("Payment was cancelled.")),
+        },
+      });
+      checkout.open();
+    });
+  };
+
   const handlePay = async () => {
     if (selectedSeats.length === 0) return;
     setIsPaying(true);
-    setMessage("");
+    setMessage("Opening secure checkout...");
 
     try {
       const intent = await createPaymentIntent(total);
-      const payment = await confirmPayment(intent.payment.id);
+      const payment =
+        intent.payment.provider === "razorpay"
+          ? await openRazorpayCheckout(intent.payment)
+          : await confirmPayment({
+              paymentId: intent.payment.id,
+              provider: intent.payment.provider,
+            });
       const result = await createBooking({
         showId,
         ownerId,
@@ -254,7 +311,7 @@ function BookingPage() {
             ) : (
               <WifiOff className="h-3.5 w-3.5 text-amber-400" />
             )}
-            {connection === "live" ? "Live seat sync" : "Offline fallback"}
+            {connection === "live" ? "Live seat sync" : "Reconnecting sync"}
           </div>
           {selected.length > 0 && (
             <div className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary">

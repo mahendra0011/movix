@@ -1,4 +1,23 @@
-const img = (seed, w = 600, h = 900) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
+const tmdb = (path, size = "w780") => `https://image.tmdb.org/t/p/${size}${path}`;
+const realImages = {
+  interstellar: tmdb("/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"),
+  "interstellar-bd": tmdb("/xJHokMbljvjADYdit5fK5VQsXEG.jpg", "w1280"),
+  dune2: tmdb("/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"),
+  "dune2-bd": tmdb("/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg", "w1280"),
+  oppen: tmdb("/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg"),
+  "oppen-bd": tmdb("/fm6KqXpk3M2HVveHwCrBSSBaO0V.jpg", "w1280"),
+  spider: tmdb("/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg"),
+  "spider-bd": tmdb("/4HodYYKEIsGOdinkGi2Ucz6X9i0.jpg", "w1280"),
+  inception: tmdb("/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg"),
+  "inception-bd": tmdb("/s3TBrRGB1iav7gFOCNx3H31MoES.jpg", "w1280"),
+  batman: tmdb("/74xTEgt7R36Fpooo50r9T25onhq.jpg"),
+  "batman-bd": tmdb("/b0PlSFdDwbyK0cf5RxwDpaOJQvQ.jpg", "w1280"),
+  barbie: tmdb("/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg"),
+  "barbie-bd": tmdb("/nHf61UzkfFno5X1ofIhugCPus2R.jpg", "w1280"),
+  joker: tmdb("/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg"),
+  "joker-bd": tmdb("/n6bUvigpRFqSwmPp1m2YADdbRBc.jpg", "w1280"),
+};
+const img = (seed) => realImages[seed] ?? "";
 const movies = [
   {
     id: "interstellar",

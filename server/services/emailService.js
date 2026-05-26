@@ -3,7 +3,7 @@ import { env } from "../config/env.js";
 async function sendEmail({ to, subject, html }) {
   if (!to) return { sent: false, reason: "missing-recipient" };
   if (!env.brevoApiKey || !env.brevoFromEmail) {
-    console.log(`[email:dry-run] ${subject} -> ${to}`);
+    console.log(`[email:provider-not-configured] ${subject} -> ${to}`);
     return { sent: false, reason: "brevo-not-configured" };
   }
 

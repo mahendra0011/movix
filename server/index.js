@@ -7,6 +7,7 @@ import { adminRoutes } from "./routes/adminRoutes.js";
 import { authRoutes } from "./routes/authRoutes.js";
 import { createBookingRoutes } from "./routes/bookingRoutes.js";
 import { movieRoutes } from "./routes/movieRoutes.js";
+import { notificationRoutes } from "./routes/notificationRoutes.js";
 import { paymentRoutes } from "./routes/paymentRoutes.js";
 import { showRoutes } from "./routes/showRoutes.js";
 import { theaterRoutes } from "./routes/theaterRoutes.js";
@@ -41,15 +42,20 @@ app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
     service: "BookMyScreen API",
-    database: isMongoReady() ? "mongodb" : "memory",
-    redis: isRedisReady() ? "connected" : "memory-locks",
+    database: isMongoReady() ? "MongoDB connected" : "Local memory store",
+    redis: isRedisReady() ? "Redis connected" : "Local seat locks",
     socket: "enabled",
-    email: env.brevoApiKey ? "brevo" : "dry-run",
+    email: env.brevoApiKey ? "Brevo connected" : "Email provider not configured",
+    payment:
+      env.paymentProvider === "razorpay" && env.razorpayKeyId && env.razorpayKeySecret
+        ? "Razorpay connected"
+        : "Local test checkout",
   });
 });
 
 app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/theaters", theaterRoutes);
 app.use("/api/shows", showRoutes);
 app.use("/api/payments", paymentRoutes);
@@ -58,7 +64,9 @@ app.use("/api", bookingRoutes);
 
 app.use((error, _request, response, _next) => {
   console.error(error);
-  response.status(500).json({ error: "Something went wrong in the API." });
+  response
+    .status(error.status ?? 500)
+    .json({ error: error.status ? error.message : "Something went wrong in the API." });
 });
 
 httpServer.listen(env.apiPort, () => {

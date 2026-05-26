@@ -4,12 +4,33 @@ import { Movie } from "../models/Movie.js";
 import { Theater } from "../models/Theater.js";
 import { User } from "../models/User.js";
 import { theaters } from "../seed.js";
+import { env } from "../config/env.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getMemoryBookings } from "../services/bookingStore.js";
 import { isMongoReady } from "../services/database.js";
 import { isRedisReady } from "../services/redisClient.js";
 
 const router = Router();
+const SCREEN_CAPACITY = 140;
+
+function bookingDate(booking) {
+  const value = booking.createdAt ?? booking.updatedAt ?? new Date();
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+function dayKey(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function recentDays(count) {
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - (count - 1 - index));
+    return date;
+  });
+}
 
 router.get(
   "/summary",
@@ -26,39 +47,161 @@ router.get(
       theaterCount = Math.max(await Theater.countDocuments(), theaters.length);
     }
 
-    const revenue = bookings.reduce(
+    const confirmedBookings = bookings.filter((booking) => booking.status !== "cancelled");
+    const revenue = confirmedBookings.reduce(
       (sum, booking) => sum + Number(booking.total || booking.totalAmount || 0),
       0,
     );
-    const seatsSold = bookings.reduce((sum, booking) => sum + booking.seats.length, 0);
-    const byMovie = bookings.reduce((acc, booking) => {
-      acc[booking.movie] = (acc[booking.movie] || 0) + Number(booking.total || 0);
+    const seatsSold = confirmedBookings.reduce((sum, booking) => sum + booking.seats.length, 0);
+    const byMovie = confirmedBookings.reduce((acc, booking) => {
+      const current = acc[booking.movie] ?? { movie: booking.movie, value: 0, bookings: 0 };
+      current.value += Number(booking.total || booking.totalAmount || 0);
+      current.bookings += 1;
+      acc[booking.movie] = current;
       return acc;
     }, {});
-    const revenueTrend = Array.from({ length: 7 }, (_, index) => ({
-      day: `D${index + 1}`,
-      revenue: Math.round((revenue / 7 || 1200) * (0.75 + index * 0.08)),
-    }));
+    const byTheater = confirmedBookings.reduce((acc, booking) => {
+      const current = acc[booking.theater] ?? {
+        theater: booking.theater,
+        revenue: 0,
+        bookings: 0,
+        seatsSold: 0,
+      };
+      current.revenue += Number(booking.total || booking.totalAmount || 0);
+      current.bookings += 1;
+      current.seatsSold += booking.seats.length;
+      acc[booking.theater] = current;
+      return acc;
+    }, {});
+    const bookingsByDay = confirmedBookings.reduce((acc, booking) => {
+      const key = dayKey(bookingDate(booking));
+      const current = acc[key] ?? { revenue: 0, bookings: 0, seats: 0 };
+      current.revenue += Number(booking.total || booking.totalAmount || 0);
+      current.bookings += 1;
+      current.seats += booking.seats.length;
+      acc[key] = current;
+      return acc;
+    }, {});
+    const revenueTrend = recentDays(7).map((date) => {
+      const key = dayKey(date);
+      const data = bookingsByDay[key] ?? { revenue: 0, bookings: 0, seats: 0 };
+      return {
+        day: date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+        revenue: data.revenue,
+        bookings: data.bookings,
+        seats: data.seats,
+      };
+    });
+    const popularMovies = Object.values(byMovie)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+    const theaterPerformance = theaters.map((theater) => {
+      const data = byTheater[theater.name] ?? {
+        theater: theater.name,
+        revenue: 0,
+        bookings: 0,
+        seatsSold: 0,
+      };
+      return {
+        ...data,
+        area: theater.area,
+        occupancy: data.seatsSold
+          ? Math.min(98, Math.round((data.seatsSold / SCREEN_CAPACITY) * 100))
+          : 0,
+      };
+    });
+    const recentBookings = [...confirmedBookings]
+      .sort((a, b) => bookingDate(b).getTime() - bookingDate(a).getTime())
+      .slice(0, 6)
+      .map((booking) => ({
+        ref: booking.ref,
+        movie: booking.movie,
+        theater: booking.theater,
+        seats: booking.seats,
+        total: Number(booking.total || booking.totalAmount || 0),
+        paymentProvider: booking.paymentProvider,
+        paymentStatus: booking.paymentStatus,
+        status: booking.status,
+        time: booking.time,
+        createdAt: bookingDate(booking).toISOString(),
+      }));
+    const paymentConnected =
+      env.paymentProvider === "razorpay" && env.razorpayKeyId && env.razorpayKeySecret;
 
     response.json({
       summary: {
         revenue,
-        bookings: bookings.length,
+        bookings: confirmedBookings.length,
         seatsSold,
         users: userCount,
         movies: movieCount,
         theaters: theaterCount,
         occupancy: seatsSold
-          ? Math.min(98, Math.round((seatsSold / (theaterCount * 140)) * 100))
-          : 64,
-        database: isMongoReady() ? "mongodb" : "memory",
-        redis: isRedisReady() ? "connected" : "memory-locks",
+          ? Math.min(98, Math.round((seatsSold / (theaterCount * SCREEN_CAPACITY)) * 100))
+          : 0,
+        averageOrderValue: confirmedBookings.length
+          ? Math.round(revenue / confirmedBookings.length)
+          : 0,
+        averageSeatsPerBooking: confirmedBookings.length
+          ? Number((seatsSold / confirmedBookings.length).toFixed(1))
+          : 0,
+        topMovie: popularMovies[0]?.movie ?? "No bookings yet",
+        database: isMongoReady() ? "MongoDB" : "Local store",
+        redis: isRedisReady() ? "Redis" : "Local locks",
         socket: "enabled",
+        payment: paymentConnected ? "Razorpay" : "Test checkout",
       },
       charts: {
         revenueTrend,
-        popularMovies: Object.entries(byMovie).map(([movie, value]) => ({ movie, value })),
+        popularMovies,
+        theaterPerformance,
       },
+      recentBookings,
+      systems: [
+        {
+          id: "database",
+          label: "MongoDB",
+          value: isMongoReady() ? "Connected" : "Local store",
+          status: isMongoReady() ? "live" : "local",
+          description: isMongoReady()
+            ? "Bookings and users are persisted in MongoDB."
+            : "Add MONGODB_URI to persist live data.",
+        },
+        {
+          id: "redis",
+          label: "Redis",
+          value: isRedisReady() ? "Connected" : "Local locks",
+          status: isRedisReady() ? "live" : "local",
+          description: isRedisReady()
+            ? "Seat locks are shared through Redis."
+            : "Add REDIS_URL for distributed seat locks.",
+        },
+        {
+          id: "socket",
+          label: "Socket.IO",
+          value: "Enabled",
+          status: "live",
+          description: "Seat state updates are pushed to all users in the show room.",
+        },
+        {
+          id: "payment",
+          label: "Payments",
+          value: paymentConnected ? "Razorpay" : "Test checkout",
+          status: paymentConnected ? "live" : "local",
+          description: paymentConnected
+            ? "Razorpay orders and signatures are verified."
+            : "Add Razorpay keys to switch from local checkout.",
+        },
+        {
+          id: "email",
+          label: "Brevo email",
+          value: env.brevoApiKey ? "Connected" : "Not configured",
+          status: env.brevoApiKey ? "live" : "attention",
+          description: env.brevoApiKey
+            ? "Ticket and OTP emails are sent through Brevo."
+            : "Add BREVO_API_KEY for live emails.",
+        },
+      ],
     });
   }),
 );

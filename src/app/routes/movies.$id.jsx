@@ -101,8 +101,12 @@ function MoviePage() {
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
           {movie.cast.map((c) => (
             <div key={c.name} className="text-center">
-              <div className="mx-auto h-20 w-20 overflow-hidden rounded-full ring-1 ring-border/60">
-                <img src={c.avatar} alt={c.name} className="h-full w-full object-cover" />
+              <div className="mx-auto grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-primary/25 to-accent/25 ring-1 ring-border/60">
+                {c.avatar ? (
+                  <img src={c.avatar} alt={c.name} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-sm font-bold text-foreground">{initials(c.name)}</span>
+                )}
               </div>
               <p className="mt-2 text-sm font-medium">{c.name}</p>
               <p className="text-xs text-muted-foreground">as {c.role}</p>
@@ -116,7 +120,7 @@ function MoviePage() {
         <div className="flex items-end justify-between">
           <h2 className="text-xl font-bold">Select a show</h2>
           <div className="hidden gap-2 md:flex">
-            {["Today", "Tomorrow", "Wed 28", "Thu 29"].map((d, i) => (
+            {["Today", "Tomorrow", "Thu 28", "Fri 29"].map((d, i) => (
               <button
                 key={d}
                 className={`rounded-lg border px-4 py-2 text-xs font-medium ${i === 0 ? "border-primary bg-primary text-primary-foreground" : "border-border/60"}`}
@@ -195,4 +199,15 @@ function MoviePage() {
     </div>
   );
 }
+
+function initials(name) {
+  return String(name)
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
 export { Route };

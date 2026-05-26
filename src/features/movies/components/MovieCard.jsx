@@ -3,7 +3,7 @@ import { Star } from "lucide-react";
 function MovieCard({ movie }) {
   return (
     <Link to="/movies/$id" params={{ id: movie.id }} className="group block w-full">
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-muted">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-muted shadow-xl shadow-black/20 ring-1 ring-border/50 transition-all duration-300 group-hover:-translate-y-1 group-hover:ring-primary/40">
         <img
           src={movie.poster}
           alt={movie.title}

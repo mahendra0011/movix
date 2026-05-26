@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import { Film, KeyRound, Mail, ShieldCheck, UserRound } from "lucide-react";
+import { Chrome, Film, KeyRound, Mail, ShieldCheck, UserRound } from "lucide-react";
 import {
   forgotPassword,
   googleLogin,
@@ -18,9 +18,27 @@ const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+function loadGoogleScript() {
+  if (typeof window === "undefined")
+    return Promise.reject(new Error("Google sign-in unavailable."));
+  const existing = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+  if (existing) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Google sign-in failed to load."));
+    document.body.appendChild(script);
+  });
+}
+
 function AuthPage() {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({
     name: "",
@@ -67,17 +85,31 @@ function AuthPage() {
     }
   };
 
-  const demoGoogle = async () => {
+  const continueWithGoogle = async () => {
+    if (!googleClientId) {
+      setMessage("Add VITE_GOOGLE_CLIENT_ID and GOOGLE_CLIENT_ID to enable real Google OAuth.");
+      return;
+    }
+
     setBusy(true);
     try {
-      const result = await googleLogin({
-        email: form.email || "demo.google@bookmyscreen.dev",
-        name: form.name || "Google Demo User",
+      await loadGoogleScript();
+      const credential = await new Promise((resolve, reject) => {
+        window.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: (response) => resolve(response.credential),
+        });
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            reject(new Error("Google sign-in was not completed."));
+          }
+        });
       });
+      const result = await googleLogin({ credential });
       dispatch(setCredentials(result));
-      setMessage("Google OAuth demo signed in.");
+      setMessage("Signed in with Google.");
     } catch (error) {
-      setMessage(error.response?.data?.error ?? "Google login failed.");
+      setMessage(error.response?.data?.error ?? error.message ?? "Google login failed.");
     } finally {
       setBusy(false);
     }
@@ -129,14 +161,14 @@ function AuthPage() {
           className="max-w-xl"
         >
           <div className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary">
-            <Film className="h-4 w-4" /> JWT, Google demo, OTP and role access
+            <Film className="h-4 w-4" /> JWT, OTP, roles and Google OAuth
           </div>
           <h1 className="mt-5 text-4xl font-bold tracking-tight md:text-5xl">
             One login for users, theater owners and admins.
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            This auth layer is wired to Express, JWT and MongoDB when available, with a memory
-            fallback for local demos.
+            This auth layer is wired to Express, JWT, MongoDB, Brevo OTP mail and provider-based
+            OAuth when credentials are configured.
           </p>
         </motion.div>
       </div>
@@ -213,11 +245,12 @@ function AuthPage() {
         <Button
           type="button"
           variant="secondary"
-          className="mt-3 w-full"
-          onClick={demoGoogle}
+          className="mt-3 w-full gap-2"
+          onClick={continueWithGoogle}
           disabled={busy}
         >
-          Continue with Google demo
+          <Chrome className="h-4 w-4" />
+          {googleClientId ? "Continue with Google" : "Set up Google OAuth"}
         </Button>
       </form>
     </div>

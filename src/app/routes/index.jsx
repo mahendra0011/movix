@@ -11,7 +11,7 @@ import {
   Calendar,
   Gift,
   Smartphone,
-  Apple,
+  BellRing,
   Quote,
   Flame,
   Clapperboard,
@@ -19,6 +19,8 @@ import {
   Mic2,
   Trophy,
   PartyPopper,
+  Search,
+  CheckCircle2,
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
 import { movies as fallbackMovies } from "@/features/movies/data/movieCatalog";
@@ -27,6 +29,7 @@ import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { StaggeredText } from "@/shared/components/reactbits/StaggeredText";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { requestJson } from "@/shared/services/httpClient";
 const Route = createFileRoute("/")({
   loader: () => fetchMovies(),
   component: Home,
@@ -94,26 +97,31 @@ const testimonials = [
   },
 ];
 const stats = [
-  { value: "12K+", label: "Movies streamed" },
-  { value: "3,400+", label: "Theatres" },
-  { value: "20M+", label: "Tickets booked" },
-  { value: "650+", label: "Cities" },
+  { value: "8", label: "Movies live" },
+  { value: "4", label: "Partner cinemas" },
+  { value: "5 min", label: "Seat lock window" },
+  { value: "Live", label: "Socket.IO sync" },
 ];
 function Home() {
   const loadedMovies = Route.useLoaderData();
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
   const featured = catalog[0] ?? fallbackMovies[0];
+  const [query, setQuery] = useState("");
   const [activeGenre, setActiveGenre] = useState("All");
   const [activeLanguage, setActiveLanguage] = useState("All");
-  const filteredMovies = useMemo(
-    () =>
-      catalog.filter((movie) => {
-        const genreMatch = activeGenre === "All" || movie.genres.includes(activeGenre);
-        const languageMatch = activeLanguage === "All" || movie.language === activeLanguage;
-        return genreMatch && languageMatch;
-      }),
-    [activeGenre, activeLanguage, catalog],
-  );
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterMessage, setNewsletterMessage] = useState("");
+  const [newsletterBusy, setNewsletterBusy] = useState(false);
+  const filteredMovies = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return catalog.filter((movie) => {
+      const searchable = [movie.title, movie.language, ...movie.genres].join(" ").toLowerCase();
+      const queryMatch = !needle || searchable.includes(needle);
+      const genreMatch = activeGenre === "All" || movie.genres.includes(activeGenre);
+      const languageMatch = activeLanguage === "All" || movie.language === activeLanguage;
+      return queryMatch && genreMatch && languageMatch;
+    });
+  }, [activeGenre, activeLanguage, catalog, query]);
   const availableLanguages = useMemo(
     () => ["All", ...Array.from(new Set(catalog.map((movie) => movie.language)))],
     [catalog],
@@ -122,6 +130,24 @@ function Home() {
   const trending = shelfMovies.slice(0, 6);
   const recommended = shelfMovies.slice(2, 8);
   const premieres = shelfMovies.slice(3, 7);
+  const subscribe = async (event) => {
+    event.preventDefault();
+    setNewsletterBusy(true);
+    setNewsletterMessage("");
+    try {
+      const result = await requestJson("/api/notifications/subscribe", {
+        method: "POST",
+        body: JSON.stringify({ email: newsletterEmail, source: "homepage" }),
+      });
+      setNewsletterMessage(result.message ?? "You are subscribed.");
+      setNewsletterEmail("");
+    } catch (error) {
+      setNewsletterMessage(error.response?.data?.error ?? "Subscription failed.");
+    } finally {
+      setNewsletterBusy(false);
+    }
+  };
+
   if (!featured) return null;
   return (
     <div className="pb-20">
@@ -157,6 +183,18 @@ function Home() {
               <p className="mt-4 text-sm text-muted-foreground md:text-base">
                 {featured.description}
               </p>
+              <form
+                onSubmit={(event) => event.preventDefault()}
+                className="mt-6 flex max-w-xl items-center gap-2 rounded-lg border border-border/70 bg-background/65 p-2 shadow-2xl shadow-black/20 backdrop-blur"
+              >
+                <Search className="ml-2 h-5 w-5 shrink-0 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search movies by title, genre or language"
+                  className="h-11 border-0 bg-transparent shadow-none focus-visible:ring-0"
+                />
+              </form>
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
                 {featured.genres.map((g) => (
                   <span
@@ -265,20 +303,20 @@ function Home() {
         <div className="grid gap-4 md:grid-cols-3">
           {[
             {
-              title: "BookASmile",
-              desc: "Donate the price of a ticket",
+              title: "ScreenCare",
+              desc: "Round up and support cinema workers",
               c: "from-primary/30 to-primary/5",
               icon: Gift,
             },
             {
-              title: "Gift Cards",
-              desc: "Send the joy of movies",
+              title: "Gift Passes",
+              desc: "Send cinema credits instantly",
               c: "from-vip/30 to-vip/5",
               icon: Ticket,
             },
             {
-              title: "Listicles",
-              desc: "Stories. Reviews. News.",
+              title: "Film Journal",
+              desc: "Reviews, stories and release guides",
               c: "from-platinum/30 to-platinum/5",
               icon: Clapperboard,
             },
@@ -449,23 +487,27 @@ function Home() {
           <div className="relative grid items-center gap-8 md:grid-cols-2">
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3 py-1 text-xs font-medium text-primary">
-                <Smartphone className="h-3 w-3" /> Mobile experience
+                <Smartphone className="h-3 w-3" /> Mobile alerts
               </span>
               <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                Book on the go.
+                Never miss a seat.
                 <br />
-                Download the app.
+                Get launch alerts.
               </h2>
               <p className="mt-3 max-w-md text-sm text-muted-foreground">
-                Get instant notifications on new releases, exclusive offers, and lightning-fast
-                checkout with stored payment methods.
+                Save your email once and receive new-release alerts, booking reminders and exclusive
+                early access updates from the notifications service.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button size="lg" className="gap-2">
-                  <Apple className="h-4 w-4" /> App Store
+                <Button size="lg" className="gap-2" asChild>
+                  <a href="#newsletter">
+                    <BellRing className="h-4 w-4" /> Notify me
+                  </a>
                 </Button>
-                <Button size="lg" variant="secondary" className="gap-2">
-                  <Smartphone className="h-4 w-4" /> Google Play
+                <Button size="lg" variant="secondary" className="gap-2" asChild>
+                  <Link to="/movies/$id" params={{ id: featured.id }}>
+                    <Ticket className="h-4 w-4" /> Book now
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -481,21 +523,29 @@ function Home() {
       </section>
 
       {/* Newsletter */}
-      <section className="mx-auto mt-12 max-w-3xl px-4 text-center">
+      <section id="newsletter" className="mx-auto mt-12 max-w-3xl px-4 text-center">
         <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Never miss a premiere</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Get weekly updates on new releases and exclusive member-only previews.
         </p>
-        <form onSubmit={(e) => e.preventDefault()} className="mx-auto mt-5 flex max-w-md gap-2">
+        <form onSubmit={subscribe} className="mx-auto mt-5 flex max-w-md gap-2">
           <Input
             type="email"
-            placeholder="your@email.com"
+            value={newsletterEmail}
+            onChange={(event) => setNewsletterEmail(event.target.value)}
+            placeholder="you@example.com"
             className="h-11 border-border/60 bg-card/60"
           />
-          <Button size="lg" className="shrink-0">
-            Subscribe
+          <Button size="lg" className="shrink-0 gap-2" disabled={newsletterBusy}>
+            {newsletterMessage ? (
+              <CheckCircle2 className="h-4 w-4" />
+            ) : (
+              <BellRing className="h-4 w-4" />
+            )}
+            {newsletterBusy ? "Saving..." : "Subscribe"}
           </Button>
         </form>
+        {newsletterMessage && <p className="mt-3 text-sm text-primary">{newsletterMessage}</p>}
       </section>
     </div>
   );

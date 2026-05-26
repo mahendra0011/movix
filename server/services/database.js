@@ -24,13 +24,14 @@ async function seedMovies() {
 
 async function connectDatabase() {
   if (!env.mongoUri) {
-    console.log("MONGODB_URI not set. API is running with in-memory demo data.");
+    console.log("MONGODB_URI not set. API is running with local in-memory data.");
     return false;
   }
 
   try {
     await mongoose.connect(env.mongoUri, {
       dbName: env.mongoDb || undefined,
+      serverSelectionTimeoutMS: 2500,
     });
     mongoReady = true;
     await seedMovies();
@@ -38,7 +39,7 @@ async function connectDatabase() {
     return true;
   } catch (error) {
     mongoReady = false;
-    console.warn("MongoDB connection failed. Falling back to in-memory demo data.");
+    console.warn("MongoDB connection failed. Falling back to local in-memory data.");
     console.warn(error);
     return false;
   }

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -11,40 +11,93 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Activity, BadgeIndianRupee, Database, Film, Radio, Ticket, Users } from "lucide-react";
+import {
+  Activity,
+  ArrowUpRight,
+  BadgeIndianRupee,
+  Building2,
+  CalendarCheck,
+  CheckCircle2,
+  CircleAlert,
+  ClipboardCheck,
+  Film,
+  Gauge,
+  MailCheck,
+  Plus,
+  Radio,
+  Settings2,
+  ShieldCheck,
+  Ticket,
+  Users,
+} from "lucide-react";
 import { fetchAdminSummary } from "@/features/admin/api/adminApi";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
+import { Button } from "@/shared/components/ui/button";
+
+const emptyTrend = ["20 May", "21 May", "22 May", "23 May", "24 May", "25 May", "26 May"].map(
+  (day) => ({ day, revenue: 0, bookings: 0, seats: 0 }),
+);
 
 const fallback = {
   summary: {
-    revenue: 248500,
-    bookings: 928,
-    seatsSold: 2240,
-    users: 1200,
-    movies: 8,
-    theaters: 4,
-    occupancy: 64,
-    database: "memory",
-    redis: "memory-locks",
-    socket: "enabled",
+    revenue: 0,
+    bookings: 0,
+    seatsSold: 0,
+    users: 0,
+    movies: 0,
+    theaters: 0,
+    occupancy: 0,
+    averageOrderValue: 0,
+    averageSeatsPerBooking: 0,
+    topMovie: "No bookings yet",
+    database: "API offline",
+    redis: "API offline",
+    socket: "offline",
+    payment: "API offline",
   },
   charts: {
-    revenueTrend: [
-      { day: "D1", revenue: 18000 },
-      { day: "D2", revenue: 26000 },
-      { day: "D3", revenue: 22000 },
-      { day: "D4", revenue: 41000 },
-      { day: "D5", revenue: 38000 },
-      { day: "D6", revenue: 52000 },
-      { day: "D7", revenue: 61000 },
-    ],
-    popularMovies: [
-      { movie: "Interstellar", value: 82000 },
-      { movie: "Dune", value: 64000 },
-      { movie: "Oppenheimer", value: 56000 },
-    ],
+    revenueTrend: emptyTrend,
+    popularMovies: [],
+    theaterPerformance: [],
   },
+  recentBookings: [],
+  systems: [
+    {
+      id: "api",
+      label: "API",
+      value: "Offline",
+      status: "attention",
+      description: "Start the API server to load live operations data.",
+    },
+  ],
 };
+
+const managementCards = [
+  {
+    title: "Movies",
+    value: "Catalog",
+    text: "Publish titles, trailers, posters and language formats.",
+    icon: Film,
+  },
+  {
+    title: "Theaters",
+    value: "Screens",
+    text: "Manage cinemas, screens, seat maps and owner approvals.",
+    icon: Building2,
+  },
+  {
+    title: "Shows",
+    value: "Schedule",
+    text: "Create showtimes, pricing tiers and availability windows.",
+    icon: CalendarCheck,
+  },
+  {
+    title: "Bookings",
+    value: "Support",
+    text: "Track tickets, invoices, payments and customer requests.",
+    icon: ClipboardCheck,
+  },
+];
 
 const Route = createFileRoute("/admin")({
   loader: () => fetchAdminSummary().catch(() => fallback),
@@ -61,133 +114,290 @@ function AdminDashboard() {
       .catch(() => setData(fallback));
   }, []);
 
-  const { summary, charts } = data;
+  const summary = data.summary ?? fallback.summary;
+  const charts = data.charts ?? fallback.charts;
+  const recentBookings = data.recentBookings ?? [];
+  const systems = data.systems ?? fallback.systems;
+  const trend = charts.revenueTrend?.length ? charts.revenueTrend : emptyTrend;
+  const hasRevenueData = trend.some((row) => row.revenue > 0 || row.bookings > 0);
+  const popularMovies = charts.popularMovies ?? [];
+  const theaterPerformance = charts.theaterPerformance ?? [];
+  const liveSystemCount = systems.filter((system) => system.status === "live").length;
+  const systemScore = systems.length ? Math.round((liveSystemCount / systems.length) * 100) : 0;
+  const metrics = useMemo(
+    () => [
+      {
+        label: "Revenue",
+        value: formatCurrency(summary.revenue),
+        sub: `${summary.bookings.toLocaleString()} paid bookings`,
+        icon: BadgeIndianRupee,
+        tone: "primary",
+      },
+      {
+        label: "Seats sold",
+        value: summary.seatsSold.toLocaleString(),
+        sub: `${summary.averageSeatsPerBooking} seats per booking`,
+        icon: Ticket,
+        tone: "emerald",
+      },
+      {
+        label: "Occupancy",
+        value: `${summary.occupancy}%`,
+        sub: `${summary.theaters.toLocaleString()} cinemas tracked`,
+        icon: Gauge,
+        tone: "amber",
+      },
+      {
+        label: "Users",
+        value: summary.users.toLocaleString(),
+        sub: `${summary.movies.toLocaleString()} active movies`,
+        icon: Users,
+        tone: "cyan",
+      },
+    ],
+    [summary],
+  );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-primary">Operations dashboard</p>
-          <h1 className="text-3xl font-bold tracking-tight">Bookings, revenue and live systems</h1>
-        </div>
-        <div className="grid grid-cols-3 gap-2 text-xs">
-          <Status label="MongoDB" value={summary.database} icon={Database} />
-          <Status label="Redis" value={summary.redis} icon={Activity} />
-          <Status label="Socket.IO" value={summary.socket} icon={Radio} />
-        </div>
-      </div>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metric
-          icon={BadgeIndianRupee}
-          label="Revenue"
-          value={`Rs ${summary.revenue.toLocaleString()}`}
-        />
-        <Metric icon={Ticket} label="Bookings" value={summary.bookings.toLocaleString()} />
-        <Metric icon={Users} label="Users" value={summary.users.toLocaleString()} />
-        <Metric
-          icon={Film}
-          label="Movies/Theaters"
-          value={`${summary.movies}/${summary.theaters}`}
-        />
-      </div>
-
-      <div className="mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <SpotlightCard className="rounded-lg p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold">Revenue trend</h2>
-              <p className="text-xs text-muted-foreground">
-                Mock gateway + confirmed booking totals
-              </p>
+    <div className="mx-auto max-w-7xl px-4 py-8 pb-20">
+      <section className="cinema-grid overflow-hidden rounded-lg border border-border/60 bg-card/75 shadow-2xl shadow-black/20">
+        <div className="grid gap-6 p-6 md:grid-cols-[1.25fr_0.75fr] md:p-8">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
+              <ShieldCheck className="h-4 w-4" />
+              Operations dashboard
             </div>
-            <span className="rounded-md bg-primary/15 px-2 py-1 text-xs text-primary">
-              {summary.occupancy}% occupancy
-            </span>
+            <h1 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
+              Command center for bookings, cinemas and live seat systems.
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Monitor revenue, occupancy, service health and recent ticket activity from one focused
+              admin surface.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <HeroStat label="Top movie" value={summary.topMovie} />
+              <HeroStat label="Average order" value={formatCurrency(summary.averageOrderValue)} />
+              <HeroStat label="System readiness" value={`${systemScore}%`} />
+            </div>
           </div>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={charts.revenueTrend}>
-                <defs>
-                  <linearGradient id="revenue" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                  }}
-                />
-                <Area
-                  dataKey="revenue"
-                  stroke="hsl(var(--primary))"
-                  fill="url(#revenue)"
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+
+          <SpotlightCard className="rounded-lg p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase text-muted-foreground">Live stack</p>
+                <h2 className="mt-1 text-xl font-bold">{liveSystemCount} services online</h2>
+              </div>
+              <div className="grid h-11 w-11 place-items-center rounded-lg bg-emerald-500/15 text-emerald-300">
+                <Activity className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-5 space-y-3">
+              {systems.slice(0, 4).map((system) => (
+                <ServiceRow key={system.id} system={system} />
+              ))}
+            </div>
+          </SpotlightCard>
+        </div>
+      </section>
+
+      <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {metrics.map((metric) => (
+          <Metric key={metric.label} {...metric} />
+        ))}
+      </section>
+
+      <section className="mt-6 grid gap-4 lg:grid-cols-[1.45fr_0.85fr]">
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader
+            icon={BadgeIndianRupee}
+            title="Revenue trend"
+            subtitle="Confirmed payments across the last 7 days"
+            action={`${summary.occupancy}% occupancy`}
+          />
+          <div className="mt-5 h-80">
+            {hasRevenueData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={trend}>
+                  <defs>
+                    <linearGradient id="dashboardRevenue" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Area
+                    dataKey="revenue"
+                    name="Revenue"
+                    stroke="hsl(var(--primary))"
+                    fill="url(#dashboardRevenue)"
+                    strokeWidth={3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyState
+                icon={BadgeIndianRupee}
+                title="No revenue yet"
+                text="Confirmed bookings will appear here as soon as tickets are sold."
+              />
+            )}
           </div>
         </SpotlightCard>
 
         <SpotlightCard className="rounded-lg p-5">
-          <h2 className="font-semibold">Popular movies</h2>
-          <p className="text-xs text-muted-foreground">Revenue by title</p>
-          <div className="mt-4 h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={
-                  charts.popularMovies.length ? charts.popularMovies : fallback.charts.popularMovies
-                }
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="movie" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                  }}
-                />
-                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <PanelHeader
+            icon={Film}
+            title="Movie revenue"
+            subtitle="Highest earning titles"
+            action={`${popularMovies.length} titles`}
+          />
+          <div className="mt-5 h-80">
+            {popularMovies.length ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={popularMovies} layout="vertical" margin={{ left: 12, right: 12 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis type="number" hide />
+                  <YAxis
+                    type="category"
+                    dataKey="movie"
+                    stroke="hsl(var(--muted-foreground))"
+                    width={92}
+                    fontSize={11}
+                  />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Bar
+                    dataKey="value"
+                    name="Revenue"
+                    fill="hsl(var(--primary))"
+                    radius={[0, 4, 4, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyState
+                icon={Film}
+                title="No movie revenue"
+                text="Movie performance will populate after the first confirmed booking."
+              />
+            )}
           </div>
         </SpotlightCard>
-      </div>
+      </section>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        {[
-          ["Admin", "Approve theaters, manage movies, view users and revenue analytics."],
-          ["Theater owner", "Add screens, publish shows, track bookings and earnings."],
-          [
-            "Scale layer",
-            "Redis locks, Socket.IO rooms, email queue hooks and cached movie lists.",
-          ],
-        ].map(([title, text]) => (
-          <SpotlightCard key={title} className="rounded-lg p-5">
-            <h3 className="font-semibold">{title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{text}</p>
-          </SpotlightCard>
+      <section className="mt-6 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader
+            icon={Building2}
+            title="Theater occupancy"
+            subtitle="Seats sold by cinema"
+            action={`${summary.theaters} cinemas`}
+          />
+          <div className="mt-5 space-y-4">
+            {theaterPerformance.length ? (
+              theaterPerformance.map((theater) => (
+                <TheaterRow key={theater.theater} theater={theater} />
+              ))
+            ) : (
+              <EmptyState
+                icon={Building2}
+                title="No theater activity"
+                text="Cinema occupancy updates as shows receive bookings."
+              />
+            )}
+          </div>
+        </SpotlightCard>
+
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader
+            icon={Ticket}
+            title="Recent bookings"
+            subtitle="Latest confirmed tickets"
+            action={`${recentBookings.length} visible`}
+          />
+          <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
+            {recentBookings.length ? (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[680px] text-left text-sm">
+                  <thead className="bg-muted/40 text-xs text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Reference</th>
+                      <th className="px-4 py-3 font-medium">Movie</th>
+                      <th className="px-4 py-3 font-medium">Theater</th>
+                      <th className="px-4 py-3 font-medium">Seats</th>
+                      <th className="px-4 py-3 font-medium">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {recentBookings.map((booking) => (
+                      <tr key={booking.ref} className="bg-card/20">
+                        <td className="px-4 py-3 font-mono text-xs text-primary">{booking.ref}</td>
+                        <td className="px-4 py-3 font-medium">{booking.movie}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{booking.theater}</td>
+                        <td className="px-4 py-3">{booking.seats.join(", ")}</td>
+                        <td className="px-4 py-3 font-semibold">{formatCurrency(booking.total)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <EmptyState
+                icon={Ticket}
+                title="No confirmed bookings"
+                text="New bookings will appear in this live activity table."
+              />
+            )}
+          </div>
+        </SpotlightCard>
+      </section>
+
+      <section className="mt-6 grid gap-4 lg:grid-cols-4">
+        {managementCards.map((item) => (
+          <ManagementCard key={item.title} item={item} />
         ))}
-      </div>
+      </section>
+
+      <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
+        <ActionPanel
+          icon={Plus}
+          title="Add a show"
+          text="Create a new showtime and assign pricing tiers."
+        />
+        <ActionPanel
+          icon={Settings2}
+          title="Review theaters"
+          text="Approve cinema partners and update screen layouts."
+        />
+        <ActionPanel
+          icon={MailCheck}
+          title="Notification queue"
+          text="Track OTP, ticket and reminder delivery status."
+        />
+      </section>
     </div>
   );
 }
 
-function Metric({ icon: Icon, label, value }) {
+function Metric({ icon: Icon, label, value, sub, tone }) {
+  const toneClass = {
+    primary: "bg-primary/15 text-primary",
+    emerald: "bg-emerald-500/15 text-emerald-300",
+    amber: "bg-amber-500/15 text-amber-300",
+    cyan: "bg-cyan-500/15 text-cyan-300",
+  }[tone];
+
   return (
-    <SpotlightCard className="rounded-lg p-5">
-      <div className="flex items-center justify-between">
+    <SpotlightCard className="rounded-lg p-5 transition-transform hover:-translate-y-0.5">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="mt-1 text-2xl font-bold">{value}</p>
+          <p className="text-xs uppercase text-muted-foreground">{label}</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
         </div>
-        <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15 text-primary">
+        <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-lg ${toneClass}`}>
           <Icon className="h-5 w-5" />
         </div>
       </div>
@@ -195,16 +405,154 @@ function Metric({ icon: Icon, label, value }) {
   );
 }
 
-function Status({ icon: Icon, label, value }) {
+function HeroStat({ label, value }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-card px-3 py-2">
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" />
-        {label}
-      </div>
-      <p className="mt-1 font-medium text-foreground">{value}</p>
+    <div className="rounded-lg border border-border/60 bg-background/45 px-4 py-3 backdrop-blur">
+      <p className="text-[11px] uppercase text-muted-foreground">{label}</p>
+      <p className="mt-1 max-w-[190px] truncate text-sm font-semibold">{value}</p>
     </div>
   );
+}
+
+function PanelHeader({ icon: Icon, title, subtitle, action }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="font-semibold">{title}</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
+        </div>
+      </div>
+      {action && (
+        <span className="shrink-0 rounded-md bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
+          {action}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function ServiceRow({ system }) {
+  const Icon =
+    system.status === "live" ? CheckCircle2 : system.status === "local" ? Activity : CircleAlert;
+  const tone =
+    system.status === "live"
+      ? "text-emerald-300"
+      : system.status === "local"
+        ? "text-amber-300"
+        : "text-rose-300";
+
+  return (
+    <div className="flex items-start gap-3 border-t border-border/50 pt-3 first:border-t-0 first:pt-0">
+      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-medium">{system.label}</p>
+          <p className="text-xs text-muted-foreground">{system.value}</p>
+        </div>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{system.description}</p>
+      </div>
+    </div>
+  );
+}
+
+function TheaterRow({ theater }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{theater.theater}</p>
+          <p className="text-xs text-muted-foreground">
+            {theater.area} - {theater.bookings} bookings - {formatCurrency(theater.revenue)}
+          </p>
+        </div>
+        <span className="text-sm font-semibold text-primary">{theater.occupancy}%</span>
+      </div>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-primary to-cyan-400"
+          style={{ width: `${Math.max(3, theater.occupancy)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ManagementCard({ item }) {
+  const Icon = item.icon;
+
+  return (
+    <SpotlightCard className="group rounded-lg p-5 transition-transform hover:-translate-y-0.5">
+      <div className="flex items-start justify-between">
+        <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15 text-primary">
+          <Icon className="h-5 w-5" />
+        </div>
+        <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+      </div>
+      <p className="mt-5 text-xs uppercase text-muted-foreground">{item.value}</p>
+      <h3 className="mt-1 font-semibold">{item.title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
+    </SpotlightCard>
+  );
+}
+
+function ActionPanel({ icon: Icon, title, text }) {
+  return (
+    <SpotlightCard className="rounded-lg p-5">
+      <div className="flex items-start gap-4">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-secondary text-secondary-foreground">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold">{title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{text}</p>
+          <Button size="sm" variant="secondary" className="mt-4">
+            Open
+          </Button>
+        </div>
+      </div>
+    </SpotlightCard>
+  );
+}
+
+function EmptyState({ icon: Icon, title, text }) {
+  return (
+    <div className="grid h-full min-h-48 place-items-center rounded-lg border border-dashed border-border/70 p-6 text-center">
+      <div>
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-muted text-muted-foreground">
+          <Icon className="h-6 w-6" />
+        </div>
+        <h3 className="mt-4 font-semibold">{title}</h3>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground">{text}</p>
+      </div>
+    </div>
+  );
+}
+
+function ChartTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-xl">
+      <p className="font-semibold">{label}</p>
+      {payload.map((item) => (
+        <p key={item.dataKey} className="mt-1 text-muted-foreground">
+          {item.name}:{" "}
+          <span className="font-medium text-foreground">
+            {item.dataKey === "revenue" || item.dataKey === "value"
+              ? formatCurrency(item.value)
+              : item.value}
+          </span>
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function formatCurrency(value) {
+  return `Rs ${Number(value || 0).toLocaleString("en-IN")}`;
 }
 
 export { Route };

@@ -114,8 +114,8 @@ function createBookingRoutes({ io }) {
       total,
       ownerId,
       email = "",
-      paymentId = `mock_${Date.now().toString(36)}`,
-      paymentProvider = "mock",
+      paymentId = `local_${Date.now().toString(36)}`,
+      paymentProvider = "local",
     } = request.body;
     const seatList = normalizeSeats(seats);
 
