@@ -42,12 +42,13 @@ function UserDashboard() {
   }, [auth.hydrated, dispatch]);
 
   useEffect(() => {
-    if (!auth.hydrated || accountRole !== "admin") return;
-    navigate({ to: "/admin", replace: true });
+    if (!auth.hydrated) return;
+    if (accountRole === "admin") navigate({ to: "/admin", replace: true });
+    if (accountRole === "theater-owner") navigate({ to: "/owner", replace: true });
   }, [accountRole, auth.hydrated, navigate]);
 
   useEffect(() => {
-    if (!auth.hydrated || !accountEmail || accountRole === "admin") return undefined;
+    if (!auth.hydrated || !accountEmail || accountRole !== "user") return undefined;
     let active = true;
     setLoadState("loading");
 
@@ -74,7 +75,7 @@ function UserDashboard() {
   }, [accountEmail, accountRole, auth.hydrated, dispatch]);
 
   useEffect(() => {
-    if (!auth.hydrated || !accountEmail || accountRole === "admin") return;
+    if (!auth.hydrated || !accountEmail || accountRole !== "user") return;
     setShortlist(readShortlist());
   }, [accountEmail, accountRole, auth.hydrated]);
 
@@ -142,6 +143,16 @@ function UserDashboard() {
         icon={ShieldCheck}
         title="Opening admin panel"
         text="Admin accounts use the operations dashboard."
+      />
+    );
+  }
+
+  if (auth.user.role === "theater-owner") {
+    return (
+      <DashboardAccessState
+        icon={ShieldCheck}
+        title="Opening owner panel"
+        text="Theater owner accounts use the cinema operations dashboard."
       />
     );
   }
@@ -296,7 +307,7 @@ function UserDashboard() {
           <PanelHeader
             icon={Heart}
             title="My shortlist"
-            subtitle="Movies, events, plays and sports saved from the frontend"
+            subtitle="Movies and sports saved from the frontend"
           />
           {shortlist.length ? (
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">

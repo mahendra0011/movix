@@ -1,11 +1,72 @@
 import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 import { Movie } from "../models/Movie.js";
 import { movies } from "../seed.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
 import { getRedisClient } from "../services/redisClient.js";
 
 const router = Router();
+
+function slugify(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function toList(value, fallback = []) {
+  const items = Array.isArray(value)
+    ? value.map((item) => String(item).trim()).filter(Boolean)
+    : String(value ?? "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+  return items.length ? items : fallback;
+}
+
+function normalizeMovie(input) {
+  const title = String(input.title ?? "").trim();
+  if (!title) {
+    const error = new Error("Movie title is required.");
+    error.status = 400;
+    throw error;
+  }
+
+  const baseMovie = movies[0];
+  const id = slugify(input.id || title);
+
+  return {
+    id,
+    title,
+    poster: input.poster || baseMovie.poster,
+    backdrop: input.backdrop || baseMovie.backdrop,
+    genres: toList(input.genres, ["Drama"]),
+    language: String(input.language ?? "English").trim() || "English",
+    duration: String(input.duration ?? "2h 10m").trim() || "2h 10m",
+    rating: Number(input.rating) || 8.1,
+    votes: String(input.votes ?? "New"),
+    releaseDate: String(input.releaseDate ?? "Coming soon"),
+    description:
+      String(input.description ?? "").trim() ||
+      `${title} is ready for publishing after poster, cast and show scheduling review.`,
+    cast: Array.isArray(input.cast) ? input.cast : [],
+    format: toList(input.format, ["2D"]),
+    certificate: String(input.certificate ?? "UA").trim() || "UA",
+    sortOrder: Number(input.sortOrder) || Date.now(),
+  };
+}
+
+async function clearMovieCache() {
+  const redis = getRedisClient();
+  if (!redis) return;
+
+  for await (const key of redis.scanIterator({ MATCH: "movies:*" })) {
+    await redis.del(key);
+  }
+}
 
 function getMemoryMovies(query = "") {
   const needle = query.trim().toLowerCase();
@@ -57,6 +118,37 @@ router.get(
   }),
 );
 
+router.post(
+  "/",
+  requireAuth,
+  requireRole("admin"),
+  asyncHandler(async (request, response) => {
+    const payload = normalizeMovie(request.body);
+
+    if (isMongoReady()) {
+      const exists = await Movie.findOne({ id: payload.id }).lean();
+      if (exists) {
+        response.status(409).json({ error: "Movie already exists." });
+        return;
+      }
+
+      const movie = await Movie.create(payload);
+      await clearMovieCache();
+      response.status(201).json({ movie: cleanDocument(movie) });
+      return;
+    }
+
+    if (movies.some((movie) => movie.id === payload.id)) {
+      response.status(409).json({ error: "Movie already exists." });
+      return;
+    }
+
+    movies.unshift(payload);
+    await clearMovieCache();
+    response.status(201).json({ movie: payload });
+  }),
+);
+
 router.get(
   "/:id",
   asyncHandler(async (request, response) => {
@@ -71,6 +163,37 @@ router.get(
     }
 
     response.json({ movie });
+  }),
+);
+
+router.delete(
+  "/:id",
+  requireAuth,
+  requireRole("admin"),
+  asyncHandler(async (request, response) => {
+    const { id } = request.params;
+
+    if (isMongoReady()) {
+      const movie = await Movie.findOneAndDelete({ id }).lean();
+      if (!movie) {
+        response.status(404).json({ error: "Movie not found" });
+        return;
+      }
+
+      await clearMovieCache();
+      response.json({ ok: true, movie: cleanDocument(movie) });
+      return;
+    }
+
+    const index = movies.findIndex((movie) => movie.id === id);
+    if (index === -1) {
+      response.status(404).json({ error: "Movie not found" });
+      return;
+    }
+
+    const [movie] = movies.splice(index, 1);
+    await clearMovieCache();
+    response.json({ ok: true, movie });
   }),
 );
 

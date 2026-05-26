@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, User, Film, LayoutDashboard, Moon, Sun } from "lucide-react";
+import { Search, User, Film, LayoutDashboard, Moon, Sun, Building2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hydrateAuth, readStoredAuth } from "@/features/auth/authSlice";
@@ -31,8 +31,9 @@ function Navbar() {
   const [navSearch, setNavSearch] = useState("");
   const [theme, setTheme] = useState("dark");
   const isAdmin = auth.user?.role === "admin";
-  const accountPath = !auth.user ? "/auth" : isAdmin ? "/admin" : "/dashboard";
-  const accountLabel = !auth.user ? "Sign in" : isAdmin ? "Admin" : "Dashboard";
+  const isOwner = auth.user?.role === "theater-owner";
+  const accountPath = !auth.user ? "/auth" : isAdmin ? "/admin" : isOwner ? "/owner" : "/dashboard";
+  const accountLabel = !auth.user ? "Sign in" : isAdmin ? "Admin" : isOwner ? "Owner" : "Dashboard";
 
   useEffect(() => {
     if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
@@ -87,6 +88,14 @@ function Navbar() {
           <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>
             <Link to="/admin">
               <LayoutDashboard className="h-4 w-4" /> Admin panel
+            </Link>
+          </Button>
+        )}
+
+        {isOwner && (
+          <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>
+            <Link to="/owner">
+              <Building2 className="h-4 w-4" /> Owner panel
             </Link>
           </Button>
         )}

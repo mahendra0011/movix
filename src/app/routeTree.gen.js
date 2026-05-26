@@ -8,6 +8,7 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as SportsRouteImport } from "./routes/sports";
+import { Route as OwnerRouteImport } from "./routes/owner";
 import { Route as DashboardRouteImport } from "./routes/dashboard";
 import { Route as ConfirmationRouteImport } from "./routes/confirmation";
 import { Route as AuthRouteImport } from "./routes/auth";
@@ -19,6 +20,11 @@ import { Route as BookShowIdRouteImport } from "./routes/book.$showId";
 const SportsRoute = SportsRouteImport.update({
   id: "/sports",
   path: "/sports",
+  getParentRoute: () => rootRouteImport,
+});
+const OwnerRoute = OwnerRouteImport.update({
+  id: "/owner",
+  path: "/owner",
   getParentRoute: () => rootRouteImport,
 });
 const DashboardRoute = DashboardRouteImport.update({
@@ -63,6 +69,7 @@ const rootRouteChildren = {
   AuthRoute: AuthRoute,
   ConfirmationRoute: ConfirmationRoute,
   DashboardRoute: DashboardRoute,
+  OwnerRoute: OwnerRoute,
   SportsRoute: SportsRoute,
   BookShowIdRoute: BookShowIdRoute,
   MoviesIdRoute: MoviesIdRoute,

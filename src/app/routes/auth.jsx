@@ -32,6 +32,10 @@ const accessCards = [
 ];
 
 const authMovie = movies.find((movie) => movie.id === "dune-part-two") ?? movies[0];
+const accountTypes = [
+  { id: "user", label: "Customer" },
+  { id: "theater-owner", label: "Theater owner" },
+];
 
 function AuthPage() {
   const dispatch = useDispatch();
@@ -45,6 +49,7 @@ function AuthPage() {
     name: "",
     email: "",
     password: "",
+    role: "user",
     otp: "",
   });
   const [notice, setNotice] = useState(null);
@@ -104,7 +109,7 @@ function AuthPage() {
           name: form.name,
           email: form.email,
           password: form.password,
-          role: "user",
+          role: form.role,
         });
         if (result.requiresOtp) startOtpStep(result, form.email);
         else await completeSignIn(result);
@@ -247,14 +252,38 @@ function AuthPage() {
 
           <form onSubmit={submit} className="mt-6 space-y-4">
             {!otpStep && mode === "register" && (
-              <Field label="Full name" icon={UserRound}>
-                <Input
-                  value={form.name}
-                  onChange={update("name")}
-                  placeholder="Mahendra Prajapati"
-                  autoComplete="name"
-                />
-              </Field>
+              <>
+                <Field label="Full name" icon={UserRound}>
+                  <Input
+                    value={form.name}
+                    onChange={update("name")}
+                    placeholder="Mahendra Prajapati"
+                    autoComplete="name"
+                  />
+                </Field>
+
+                <div>
+                  <span className="text-xs font-medium uppercase text-muted-foreground">
+                    Account type
+                  </span>
+                  <div className="mt-2 grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-background/50 p-1 text-sm">
+                    {accountTypes.map((type) => (
+                      <SegmentButton
+                        key={type.id}
+                        active={form.role === type.id}
+                        onClick={() =>
+                          setForm((current) => ({
+                            ...current,
+                            role: type.id,
+                          }))
+                        }
+                      >
+                        {type.label}
+                      </SegmentButton>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
 
             {!otpStep && (
@@ -437,7 +466,11 @@ function SignedInCard({ user, onLogout }) {
               </Button>
               <Button variant="secondary" asChild>
                 <Link to={routeForRole(user)}>
-                  {user.role === "admin" ? "Open admin panel" : "Open user dashboard"}
+                  {user.role === "admin"
+                    ? "Open admin panel"
+                    : user.role === "theater-owner"
+                      ? "Open owner dashboard"
+                      : "Open user dashboard"}
                 </Link>
               </Button>
               <Button variant="ghost" onClick={onLogout}>
@@ -483,7 +516,9 @@ function Field({ icon: Icon, label, children, action }) {
 }
 
 function routeForRole(user) {
-  return user?.role === "admin" ? "/admin" : "/dashboard";
+  if (user?.role === "admin") return "/admin";
+  if (user?.role === "theater-owner") return "/owner";
+  return "/dashboard";
 }
 
 export { Route };

@@ -22,4 +22,19 @@ async function fetchMovie(id) {
   }
 }
 
-export { fetchMovie, fetchMovies };
+async function createMovie(input) {
+  const data = await requestJson("/api/movies", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return data.movie;
+}
+
+async function deleteMovie(id) {
+  const data = await requestJson(`/api/movies/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  return data.movie;
+}
+
+export { createMovie, deleteMovie, fetchMovie, fetchMovies };
