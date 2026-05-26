@@ -20,6 +20,7 @@ const Route = createFileRoute("/book/$showId")({
   component: BookingPage,
   validateSearch: (s) => ({
     time: typeof s.time === "string" ? s.time : "",
+    date: typeof s.date === "string" ? s.date : "",
     theater: typeof s.theater === "string" ? s.theater : "",
     movie: typeof s.movie === "string" ? s.movie : "",
     movieId: typeof s.movieId === "string" ? s.movieId : "",
@@ -312,7 +313,7 @@ function BookingPage() {
         movie: search.movie || "Movie",
         theaterId: search.theaterId,
         theater: search.theater || "Theater",
-        time: search.time || "Showtime",
+        time: search.date ? `${search.date} ${search.time}` : search.time || "Showtime",
         seats: selectedSeats,
         total,
         email,
@@ -347,7 +348,8 @@ function BookingPage() {
         <div>
           <h1 className="text-xl font-bold">{search.movie || "Movie"}</h1>
           <p className="text-sm text-muted-foreground">
-            {search.theater} - {search.time} - Screen 3
+            {search.theater} - {search.date ? `${search.date} - ` : ""}
+            {search.time} - Screen 3
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

@@ -1,8 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import { Star, Clock, Calendar, Heart, Share2, Play } from "lucide-react";
 import { fetchMovie } from "@/features/movies/api/moviesApi";
 import { theaters, showTimes } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
+const dateOptions = ["Today", "Tomorrow", "Thu 28", "Fri 29"];
 const Route = createFileRoute("/movies/$id")({
   component: MoviePage,
   loader: async ({ params }) => {
@@ -13,6 +15,35 @@ const Route = createFileRoute("/movies/$id")({
 });
 function MoviePage() {
   const { movie } = Route.useLoaderData();
+  const [message, setMessage] = useState("");
+  const [activeDate, setActiveDate] = useState(dateOptions[0]);
+
+  const addToWatchlist = () => {
+    const item = {
+      id: movie.id,
+      title: movie.title,
+      category: "Movie",
+      image: movie.poster,
+      savedAt: new Date().toISOString(),
+    };
+    saveShortlistItem(item);
+    setMessage(`${movie.title} added to your dashboard watchlist.`);
+  };
+
+  const shareMovie = async () => {
+    const url = `${window.location.origin}/movies/${movie.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: movie.title, text: movie.description, url });
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+      }
+      setMessage("Movie link copied for sharing.");
+    } catch {
+      setMessage("Share cancelled.");
+    }
+  };
+
   return (
     <div className="pb-20">
       {/* Hero */}
@@ -72,16 +103,23 @@ function MoviePage() {
                 <Button asChild size="lg">
                   <a href="#showtimes">Book tickets</a>
                 </Button>
-                <Button size="lg" variant="secondary" className="gap-2">
-                  <Play className="h-4 w-4" /> Trailer
+                <Button size="lg" variant="secondary" className="gap-2" asChild>
+                  <a href={trailerSearchUrl(movie.title)} target="_blank" rel="noreferrer">
+                    <Play className="h-4 w-4" /> Trailer
+                  </a>
                 </Button>
-                <Button size="lg" variant="ghost" className="gap-2">
+                <Button size="lg" variant="ghost" className="gap-2" onClick={addToWatchlist}>
                   <Heart className="h-4 w-4" /> Watchlist
                 </Button>
-                <Button size="lg" variant="ghost" className="gap-2">
+                <Button size="lg" variant="ghost" className="gap-2" onClick={shareMovie}>
                   <Share2 className="h-4 w-4" /> Share
                 </Button>
               </div>
+              {message && (
+                <p className="mt-4 rounded-md bg-primary/10 px-3 py-2 text-sm text-primary">
+                  {message}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -120,12 +158,18 @@ function MoviePage() {
         <div className="flex items-end justify-between">
           <h2 className="text-xl font-bold">Select a show</h2>
           <div className="hidden gap-2 md:flex">
-            {["Today", "Tomorrow", "Thu 28", "Fri 29"].map((d, i) => (
+            {dateOptions.map((date) => (
               <button
-                key={d}
-                className={`rounded-lg border px-4 py-2 text-xs font-medium ${i === 0 ? "border-primary bg-primary text-primary-foreground" : "border-border/60"}`}
+                key={date}
+                type="button"
+                onClick={() => setActiveDate(date)}
+                className={`rounded-lg border px-4 py-2 text-xs font-medium ${
+                  activeDate === date
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border/60"
+                }`}
               >
-                {d}
+                {date}
               </button>
             ))}
           </div>
@@ -180,6 +224,7 @@ function MoviePage() {
                       params={{ showId: `${movie.id}-${t.id}-${i}` }}
                       search={{
                         time: s,
+                        date: activeDate,
                         theater: t.name,
                         movie: movie.title,
                         movieId: movie.id,
@@ -208,6 +253,23 @@ function initials(name) {
     .map((part) => part[0])
     .join("")
     .toUpperCase();
+}
+
+function trailerSearchUrl(title) {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} official trailer`)}`;
+}
+
+function saveShortlistItem(item) {
+  if (typeof window === "undefined") return;
+  const key = "bms-shortlist";
+  let existing = [];
+  try {
+    existing = JSON.parse(window.localStorage.getItem(key) || "[]");
+  } catch {
+    existing = [];
+  }
+  const next = [item, ...existing.filter((saved) => saved.id !== item.id)].slice(0, 12);
+  window.localStorage.setItem(key, JSON.stringify(next));
 }
 
 export { Route };

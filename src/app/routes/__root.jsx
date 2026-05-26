@@ -107,6 +107,36 @@ function RootShell({ children }) {
   );
 }
 import { Navbar } from "@/shared/components/layout/Navbar";
+const footerColumns = [
+  {
+    title: "Movies",
+    links: [
+      { label: "Now showing", to: "/" },
+      { label: "Coming soon", to: "/stream" },
+      { label: "Premieres", to: "/stream" },
+      { label: "Cinemas", to: "/events" },
+    ],
+  },
+  {
+    title: "Help",
+    links: [
+      { label: "Contact us", to: "/dashboard" },
+      { label: "FAQs", to: "/dashboard" },
+      { label: "Refunds", to: "/dashboard" },
+      { label: "Terms", to: "/auth" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About", to: "/" },
+      { label: "Careers", to: "/events" },
+      { label: "Press", to: "/stream" },
+      { label: "Partners", to: "/admin" },
+    ],
+  },
+];
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
@@ -125,19 +155,15 @@ function RootComponent() {
                   The cinematic way to book movies, events, plays & sports - all in one place.
                 </p>
               </div>
-              {[
-                { title: "Movies", links: ["Now showing", "Coming soon", "Premieres", "Cinemas"] },
-                { title: "Help", links: ["Contact us", "FAQs", "Refunds", "Terms"] },
-                { title: "Company", links: ["About", "Careers", "Press", "Partners"] },
-              ].map((col) => (
+              {footerColumns.map((col) => (
                 <div key={col.title}>
                   <h4 className="text-sm font-semibold">{col.title}</h4>
                   <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
-                    {col.links.map((l) => (
-                      <li key={l}>
-                        <a href="#" className="hover:text-foreground">
-                          {l}
-                        </a>
+                    {col.links.map((link) => (
+                      <li key={link.label}>
+                        <Link to={link.to} className="hover:text-foreground">
+                          {link.label}
+                        </Link>
                       </li>
                     ))}
                   </ul>

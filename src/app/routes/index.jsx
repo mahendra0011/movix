@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronRight,
   Play,
@@ -32,6 +32,9 @@ import { Input } from "@/shared/components/ui/input";
 import { requestJson } from "@/shared/services/httpClient";
 const Route = createFileRoute("/")({
   loader: () => fetchMovies(),
+  validateSearch: (search) => ({
+    q: typeof search.q === "string" ? search.q : "",
+  }),
   component: Home,
 });
 const genres = ["All", "Action", "Sci-Fi", "Drama", "Comedy", "Animation", "Thriller", "Crime"];
@@ -102,11 +105,40 @@ const stats = [
   { value: "5 min", label: "Seat lock window" },
   { value: "Live", label: "Socket.IO sync" },
 ];
+const promotions = [
+  {
+    title: "ScreenCare",
+    desc: "Round up and support cinema workers",
+    c: "from-primary/30 to-primary/5",
+    icon: Gift,
+    to: "/dashboard",
+  },
+  {
+    title: "Gift Passes",
+    desc: "Send cinema credits instantly",
+    c: "from-vip/30 to-vip/5",
+    icon: Ticket,
+    to: "/auth",
+  },
+  {
+    title: "Film Journal",
+    desc: "Reviews, stories and release guides",
+    c: "from-platinum/30 to-platinum/5",
+    icon: Clapperboard,
+    to: "/stream",
+  },
+];
+
+function trailerSearchUrl(title) {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} official trailer`)}`;
+}
+
 function Home() {
   const loadedMovies = Route.useLoaderData();
+  const { q } = Route.useSearch();
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
   const featured = catalog[0] ?? fallbackMovies[0];
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(q);
   const [activeGenre, setActiveGenre] = useState("All");
   const [activeLanguage, setActiveLanguage] = useState("All");
   const [newsletterEmail, setNewsletterEmail] = useState("");
@@ -130,6 +162,11 @@ function Home() {
   const trending = shelfMovies.slice(0, 6);
   const recommended = shelfMovies.slice(2, 8);
   const premieres = shelfMovies.slice(3, 7);
+
+  useEffect(() => {
+    setQuery(q);
+  }, [q]);
+
   const subscribe = async (event) => {
     event.preventDefault();
     setNewsletterBusy(true);
@@ -214,8 +251,10 @@ function Home() {
                     <Ticket className="h-4 w-4" /> Book tickets
                   </Link>
                 </Button>
-                <Button size="lg" variant="secondary" className="gap-2 backdrop-blur">
-                  <Play className="h-4 w-4" /> Watch trailer
+                <Button size="lg" variant="secondary" className="gap-2 backdrop-blur" asChild>
+                  <a href={trailerSearchUrl(featured.title)} target="_blank" rel="noreferrer">
+                    <Play className="h-4 w-4" /> Watch trailer
+                  </a>
                 </Button>
               </div>
             </div>
@@ -290,6 +329,7 @@ function Home() {
         title="Recommended movies"
         subtitle="Most booked this week"
         icon={<TrendingUp className="h-5 w-5 text-primary" />}
+        actionTo="/"
       >
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {trending.map((m) => (
@@ -301,38 +341,20 @@ function Home() {
       {/* Promotions */}
       <section className="mx-auto mt-12 max-w-7xl px-4">
         <div className="grid gap-4 md:grid-cols-3">
-          {[
-            {
-              title: "ScreenCare",
-              desc: "Round up and support cinema workers",
-              c: "from-primary/30 to-primary/5",
-              icon: Gift,
-            },
-            {
-              title: "Gift Passes",
-              desc: "Send cinema credits instantly",
-              c: "from-vip/30 to-vip/5",
-              icon: Ticket,
-            },
-            {
-              title: "Film Journal",
-              desc: "Reviews, stories and release guides",
-              c: "from-platinum/30 to-platinum/5",
-              icon: Clapperboard,
-            },
-          ].map((p) => (
-            <SpotlightCard
-              key={p.title}
-              className={`group cursor-pointer rounded-lg bg-gradient-to-br ${p.c} p-6 transition-all hover:-translate-y-0.5 hover:border-foreground/20`}
-            >
-              <p.icon className="h-8 w-8 text-foreground/90" />
-              <h3 className="mt-4 text-lg font-semibold">{p.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary">
-                Explore{" "}
-                <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-              </span>
-            </SpotlightCard>
+          {promotions.map((p) => (
+            <Link key={p.title} to={p.to} className="group block">
+              <SpotlightCard
+                className={`rounded-lg bg-gradient-to-br ${p.c} p-6 transition-all hover:-translate-y-0.5 hover:border-foreground/20`}
+              >
+                <p.icon className="h-8 w-8 text-foreground/90" />
+                <h3 className="mt-4 text-lg font-semibold">{p.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
+                <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary">
+                  Explore
+                  <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </SpotlightCard>
+            </Link>
           ))}
         </div>
       </section>
@@ -342,6 +364,7 @@ function Home() {
         title="Premieres of the week"
         subtitle="Brand new films, only in theatres"
         icon={<Flame className="h-5 w-5 text-primary" />}
+        actionTo="/stream"
       >
         <div className="grid gap-4 md:grid-cols-2">
           {premieres.map((m) => (
@@ -385,27 +408,33 @@ function Home() {
         title="Live events"
         subtitle="Concerts, comedy & sports near you"
         icon={<Mic2 className="h-5 w-5 text-primary" />}
+        actionTo="/events"
       >
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {liveEvents.map((e) => (
-            <SpotlightCard
+            <Link
               key={e.title}
-              className={`group cursor-pointer rounded-lg bg-gradient-to-br ${e.color} p-5 transition-all hover:-translate-y-0.5`}
+              to={e.type === "Sports" ? "/sports" : "/events"}
+              className="group block"
             >
-              <e.icon className="h-7 w-7 text-foreground/90" />
-              <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {e.type}
-              </p>
-              <h3 className="mt-1 text-sm font-semibold leading-tight">{e.title}</h3>
-              <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="h-3 w-3" /> {e.date}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="h-3 w-3" /> {e.city}
-                </span>
-              </div>
-            </SpotlightCard>
+              <SpotlightCard
+                className={`rounded-lg bg-gradient-to-br ${e.color} p-5 transition-all hover:-translate-y-0.5`}
+              >
+                <e.icon className="h-7 w-7 text-foreground/90" />
+                <p className="mt-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {e.type}
+                </p>
+                <h3 className="mt-1 text-sm font-semibold leading-tight">{e.title}</h3>
+                <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> {e.date}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> {e.city}
+                  </span>
+                </div>
+              </SpotlightCard>
+            </Link>
           ))}
         </div>
       </Section>
@@ -415,6 +444,7 @@ function Home() {
         title="Coming soon"
         subtitle="Premieres near you"
         icon={<Calendar className="h-5 w-5 text-primary" />}
+        actionTo="/stream"
       >
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {recommended.map((m) => (
@@ -428,30 +458,30 @@ function Home() {
         title="Top cinemas near you"
         subtitle="Premium screens, Dolby Atmos & recliners"
         icon={<MapPin className="h-5 w-5 text-primary" />}
+        actionHref={`/movies/${featured.id}#showtimes`}
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {cinemas.map((c) => (
-            <SpotlightCard
-              key={c.name}
-              className="group rounded-lg p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold">{c.name}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{c.area}</p>
+            <a key={c.name} href={`/movies/${featured.id}#showtimes`} className="group block">
+              <SpotlightCard className="rounded-lg p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold">{c.name}</h3>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{c.area}</p>
+                  </div>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
+                    <Star className="h-3 w-3 fill-primary text-primary" />
+                    {c.rating}
+                  </span>
                 </div>
-                <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
-                  <Star className="h-3 w-3 fill-primary text-primary" />
-                  {c.rating}
-                </span>
-              </div>
-              <div className="mt-5 flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">{c.screens} screens - Dolby</span>
-                <span className="inline-flex items-center gap-1 text-primary">
-                  Showtimes <ChevronRight className="h-3 w-3" />
-                </span>
-              </div>
-            </SpotlightCard>
+                <div className="mt-5 flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">{c.screens} screens - Dolby</span>
+                  <span className="inline-flex items-center gap-1 text-primary">
+                    Showtimes <ChevronRight className="h-3 w-3" />
+                  </span>
+                </div>
+              </SpotlightCard>
+            </a>
           ))}
         </div>
       </Section>
@@ -550,7 +580,7 @@ function Home() {
     </div>
   );
 }
-function Section({ title, subtitle, icon, children }) {
+function Section({ title, subtitle, icon, children, actionTo, actionHref }) {
   return (
     <section className="mx-auto mt-14 max-w-7xl px-4">
       <div className="mb-5 flex items-end justify-between">
@@ -563,9 +593,22 @@ function Section({ title, subtitle, icon, children }) {
             {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
-        <button className="hidden items-center gap-1 text-sm text-primary hover:underline md:flex">
-          See all <ChevronRight className="h-4 w-4" />
-        </button>
+        {actionTo && (
+          <Link
+            to={actionTo}
+            className="hidden items-center gap-1 text-sm text-primary hover:underline md:flex"
+          >
+            See all <ChevronRight className="h-4 w-4" />
+          </Link>
+        )}
+        {actionHref && (
+          <a
+            href={actionHref}
+            className="hidden items-center gap-1 text-sm text-primary hover:underline md:flex"
+          >
+            See all <ChevronRight className="h-4 w-4" />
+          </a>
+        )}
       </div>
       {children}
     </section>

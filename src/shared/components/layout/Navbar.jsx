@@ -1,13 +1,24 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Search, MapPin, User, Film, LayoutDashboard } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hydrateAuth, readStoredAuth } from "@/features/auth/authSlice";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+
+const navItems = [
+  { label: "Movies", to: "/" },
+  { label: "Stream", to: "/stream" },
+  { label: "Events", to: "/events" },
+  { label: "Plays", to: "/plays" },
+  { label: "Sports", to: "/sports" },
+];
+
 function Navbar() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
+  const [navSearch, setNavSearch] = useState("");
   const isAdmin = auth.user?.role === "admin";
   const accountPath = !auth.user ? "/auth" : isAdmin ? "/admin" : "/dashboard";
   const accountLabel = !auth.user ? "Sign in" : isAdmin ? "Admin" : "Dashboard";
@@ -15,6 +26,14 @@ function Navbar() {
   useEffect(() => {
     if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
   }, [auth.hydrated, dispatch]);
+
+  const submitSearch = async (event) => {
+    event.preventDefault();
+    await navigate({
+      to: "/",
+      search: navSearch.trim() ? { q: navSearch.trim() } : {},
+    });
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -29,19 +48,24 @@ function Navbar() {
         </Link>
 
         <div className="ml-4 hidden flex-1 md:block">
-          <div className="relative max-w-xl">
+          <form onSubmit={submitSearch} className="relative max-w-xl">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
+              value={navSearch}
+              onChange={(event) => setNavSearch(event.target.value)}
               placeholder="Search for movies, events, theaters..."
               className="h-10 border-border/60 bg-card/60 pl-9"
             />
-          </div>
+          </form>
         </div>
 
-        <button className="hidden items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground md:flex">
+        <Link
+          to="/events"
+          className="hidden items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground md:flex"
+        >
           <MapPin className="h-4 w-4" />
           Bengaluru
-        </button>
+        </Link>
 
         {isAdmin && (
           <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>
@@ -60,29 +84,14 @@ function Navbar() {
 
       <nav className="border-t border-border/60">
         <div className="mx-auto flex max-w-7xl gap-6 overflow-x-auto px-4 py-2 text-sm text-muted-foreground">
-          <Link to="/" className="whitespace-nowrap hover:text-foreground">
-            Movies
-          </Link>
-          <a className="whitespace-nowrap hover:text-foreground" href="#">
-            Stream
-          </a>
-          <a className="whitespace-nowrap hover:text-foreground" href="#">
-            Events
-          </a>
-          <a className="whitespace-nowrap hover:text-foreground" href="#">
-            Plays
-          </a>
-          <a className="whitespace-nowrap hover:text-foreground" href="#">
-            Sports
-          </a>
-          {auth.user && (
-            <Link
-              to={isAdmin ? "/admin" : "/dashboard"}
-              className="whitespace-nowrap hover:text-foreground"
-            >
-              {isAdmin ? "Admin panel" : "My dashboard"}
+          {navItems.map((item) => (
+            <Link key={item.to} to={item.to} className="whitespace-nowrap hover:text-foreground">
+              {item.label}
             </Link>
-          )}
+          ))}
+          <Link to={accountPath} className="whitespace-nowrap hover:text-foreground">
+            Dashboard
+          </Link>
         </div>
       </nav>
     </header>

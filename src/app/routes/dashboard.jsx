@@ -6,6 +6,7 @@ import {
   Clapperboard,
   Download,
   FileText,
+  Heart,
   LogIn,
   LogOut,
   MailCheck,
@@ -13,6 +14,7 @@ import {
   Sparkles,
   Ticket,
   WalletCards,
+  X,
 } from "lucide-react";
 import { fetchMyBookings } from "@/features/booking/api/bookingsApi";
 import { movies } from "@/features/movies/data/movieCatalog";
@@ -32,6 +34,7 @@ function UserDashboard() {
   const accountRole = auth.user?.role;
   const accountEmail = auth.user?.email;
   const [bookings, setBookings] = useState([]);
+  const [shortlist, setShortlist] = useState([]);
   const [loadState, setLoadState] = useState("idle");
 
   useEffect(() => {
@@ -69,6 +72,17 @@ function UserDashboard() {
       active = false;
     };
   }, [accountEmail, accountRole, auth.hydrated, dispatch]);
+
+  useEffect(() => {
+    if (!auth.hydrated || !accountEmail || accountRole === "admin") return;
+    setShortlist(readShortlist());
+  }, [accountEmail, accountRole, auth.hydrated]);
+
+  const removeShortlist = (id) => {
+    const next = shortlist.filter((item) => item.id !== id);
+    setShortlist(next);
+    writeShortlist(next);
+  };
 
   const stats = useMemo(() => {
     const totalSpent = bookings.reduce((sum, booking) => sum + Number(booking.total || 0), 0);
@@ -276,6 +290,55 @@ function UserDashboard() {
           </div>
         </SpotlightCard>
       </section>
+
+      <section className="mt-6">
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader
+            icon={Heart}
+            title="My shortlist"
+            subtitle="Movies, events, plays and sports saved from the frontend"
+          />
+          {shortlist.length ? (
+            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {shortlist.map((item) => (
+                <div
+                  key={item.id}
+                  className="group overflow-hidden rounded-lg border border-border/60 bg-background/35"
+                >
+                  <img src={item.image} alt={item.title} className="h-32 w-full object-cover" />
+                  <div className="p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[11px] uppercase text-primary">{item.category}</p>
+                        <h3 className="mt-1 truncate text-sm font-semibold">{item.title}</h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeShortlist(item.id)}
+                        aria-label={`Remove ${item.title}`}
+                        className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <p className="mt-2 truncate text-xs text-muted-foreground">
+                      {item.venue || "BookMyScreen"}
+                    </p>
+                    {item.date && <p className="mt-1 text-xs text-primary">{item.date}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-5 rounded-lg border border-dashed border-border/70 p-6 text-center">
+              <p className="text-sm font-semibold">No saved items yet</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Use Watchlist, Shortlist or Remind me anywhere in the app and it will appear here.
+              </p>
+            </div>
+          )}
+        </SpotlightCard>
+      </section>
     </div>
   );
 }
@@ -365,6 +428,20 @@ function IconLink({ href, label, children }) {
 
 function formatCurrency(value) {
   return `Rs ${Number(value || 0).toLocaleString("en-IN")}`;
+}
+
+function readShortlist() {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(window.localStorage.getItem("bms-shortlist") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function writeShortlist(items) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem("bms-shortlist", JSON.stringify(items));
 }
 
 export { Route };

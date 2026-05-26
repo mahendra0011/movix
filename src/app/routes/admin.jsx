@@ -100,6 +100,7 @@ function AdminDashboard() {
   const auth = useSelector((state) => state.auth);
   const [data, setData] = useState(fallback);
   const [loadState, setLoadState] = useState("idle");
+  const [adminNotice, setAdminNotice] = useState("");
 
   useEffect(() => {
     if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
@@ -428,18 +429,38 @@ function AdminDashboard() {
           icon={Plus}
           title="Add a show"
           text="Create a new showtime and assign pricing tiers."
+          onOpen={() =>
+            setAdminNotice(
+              "Show scheduler opened. Choose a movie, theater and time slot from the management cards above.",
+            )
+          }
         />
         <ActionPanel
           icon={Settings2}
           title="Review theaters"
           text="Approve cinema partners and update screen layouts."
+          onOpen={() =>
+            setAdminNotice(
+              "Theater review workspace opened. Pending approvals are tracked in Today at a glance.",
+            )
+          }
         />
         <ActionPanel
           icon={MailCheck}
           title="Notification queue"
           text="Track OTP, ticket and reminder delivery status."
+          onOpen={() =>
+            setAdminNotice(
+              "Notification queue opened. OTP and ticket delivery status is ready for monitoring.",
+            )
+          }
         />
       </section>
+      {adminNotice && (
+        <p className="mt-4 rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
+          {adminNotice}
+        </p>
+      )}
     </div>
   );
 }
@@ -562,7 +583,7 @@ function ManagementCard({ item }) {
   );
 }
 
-function ActionPanel({ icon: Icon, title, text }) {
+function ActionPanel({ icon: Icon, title, text, onOpen }) {
   return (
     <SpotlightCard className="rounded-lg p-5">
       <div className="flex items-start gap-4">
@@ -572,7 +593,7 @@ function ActionPanel({ icon: Icon, title, text }) {
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold">{title}</h3>
           <p className="mt-1 text-sm text-muted-foreground">{text}</p>
-          <Button size="sm" variant="secondary" className="mt-4">
+          <Button size="sm" variant="secondary" className="mt-4" onClick={onOpen}>
             Open
           </Button>
         </div>
