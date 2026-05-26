@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
@@ -22,6 +22,7 @@ const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const [mode, setMode] = useState("login");
   const [otpStep, setOtpStep] = useState(false);
@@ -39,6 +40,11 @@ function AuthPage() {
     dispatch(hydrateAuth(readStoredAuth()));
   }, [dispatch]);
 
+  useEffect(() => {
+    if (!auth.hydrated || !auth.user) return;
+    navigate({ to: routeForRole(auth.user), replace: true });
+  }, [auth.hydrated, auth.user, navigate]);
+
   const update = (field) => (event) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
   };
@@ -49,6 +55,11 @@ function AuthPage() {
     setMessage(result.message || "OTP sent to your email.");
   };
 
+  const completeSignIn = async (result) => {
+    dispatch(setCredentials(result));
+    await navigate({ to: routeForRole(result.user), replace: true });
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     setBusy(true);
@@ -56,7 +67,7 @@ function AuthPage() {
     try {
       if (otpStep) {
         const result = await verifyOtp({ email: pendingEmail || form.email, otp: form.otp });
-        dispatch(setCredentials(result));
+        await completeSignIn(result);
         setMessage("Signed in successfully.");
         return;
       }
@@ -64,7 +75,7 @@ function AuthPage() {
       if (mode === "login") {
         const result = await login({ email: form.email, password: form.password });
         if (result.requiresOtp) startOtpStep(result, form.email);
-        else dispatch(setCredentials(result));
+        else await completeSignIn(result);
       } else {
         const result = await register({
           name: form.name,
@@ -73,7 +84,7 @@ function AuthPage() {
           role: "user",
         });
         if (result.requiresOtp) startOtpStep(result, form.email);
-        else dispatch(setCredentials(result));
+        else await completeSignIn(result);
       }
     } catch (error) {
       setMessage(error.response?.data?.error ?? "Request failed.");
@@ -276,11 +287,11 @@ function SignedInCard({ user, onLogout }) {
               <Button asChild>
                 <Link to="/">Browse movies</Link>
               </Button>
-              {user.role === "admin" && (
-                <Button variant="secondary" asChild>
-                  <Link to="/admin">Open dashboard</Link>
-                </Button>
-              )}
+              <Button variant="secondary" asChild>
+                <Link to={routeForRole(user)}>
+                  {user.role === "admin" ? "Open admin panel" : "Open user dashboard"}
+                </Link>
+              </Button>
               <Button variant="ghost" onClick={onLogout}>
                 Sign out
               </Button>
@@ -331,6 +342,10 @@ function Field({ icon: Icon, children }) {
       <div className="[&_input]:h-11 [&_input]:pl-9">{children}</div>
     </div>
   );
+}
+
+function routeForRole(user) {
+  return user?.role === "admin" ? "/admin" : "/dashboard";
 }
 
 export { Route };

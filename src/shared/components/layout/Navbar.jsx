@@ -1,8 +1,21 @@
 import { Link } from "@tanstack/react-router";
 import { Search, MapPin, User, Film, LayoutDashboard } from "lucide-react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { hydrateAuth, readStoredAuth } from "@/features/auth/authSlice";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 function Navbar() {
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
+  const isAdmin = auth.user?.role === "admin";
+  const accountPath = !auth.user ? "/auth" : isAdmin ? "/admin" : "/dashboard";
+  const accountLabel = !auth.user ? "Sign in" : isAdmin ? "Admin" : "Dashboard";
+
+  useEffect(() => {
+    if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
+  }, [auth.hydrated, dispatch]);
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
@@ -30,15 +43,17 @@ function Navbar() {
           Bengaluru
         </button>
 
-        <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>
-          <Link to="/admin">
-            <LayoutDashboard className="h-4 w-4" /> Admin
-          </Link>
-        </Button>
+        {isAdmin && (
+          <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>
+            <Link to="/admin">
+              <LayoutDashboard className="h-4 w-4" /> Admin panel
+            </Link>
+          </Button>
+        )}
 
         <Button size="sm" className="gap-2" asChild>
-          <Link to="/auth">
-            <User className="h-4 w-4" /> Sign in
+          <Link to={accountPath}>
+            <User className="h-4 w-4" /> {accountLabel}
           </Link>
         </Button>
       </div>
@@ -60,9 +75,14 @@ function Navbar() {
           <a className="whitespace-nowrap hover:text-foreground" href="#">
             Sports
           </a>
-          <Link to="/admin" className="whitespace-nowrap hover:text-foreground">
-            Dashboard
-          </Link>
+          {auth.user && (
+            <Link
+              to={isAdmin ? "/admin" : "/dashboard"}
+              className="whitespace-nowrap hover:text-foreground"
+            >
+              {isAdmin ? "Admin panel" : "My dashboard"}
+            </Link>
+          )}
         </div>
       </nav>
     </header>

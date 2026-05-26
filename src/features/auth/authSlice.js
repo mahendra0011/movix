@@ -5,9 +5,15 @@ function readStoredAuth() {
   const token = window.localStorage.getItem("bms-auth-token");
   const user = window.localStorage.getItem("bms-auth-user");
   try {
+    if (!token || !user) {
+      window.localStorage.removeItem("bms-auth-token");
+      window.localStorage.removeItem("bms-auth-user");
+      return { user: null, token: null };
+    }
+
     return {
       token,
-      user: user ? JSON.parse(user) : null,
+      user: JSON.parse(user),
     };
   } catch {
     window.localStorage.removeItem("bms-auth-token");

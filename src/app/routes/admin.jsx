@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Area,
   AreaChart,
@@ -19,15 +20,17 @@ import {
   ClipboardCheck,
   Film,
   Gauge,
+  LockKeyhole,
+  LogIn,
   MailCheck,
   Plus,
-  Radio,
   Settings2,
   ShieldCheck,
   Ticket,
   Users,
 } from "lucide-react";
 import { fetchAdminSummary } from "@/features/admin/api/adminApi";
+import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 
@@ -88,19 +91,51 @@ const managementCards = [
 ];
 
 const Route = createFileRoute("/admin")({
-  loader: () => fetchAdminSummary().catch(() => fallback),
   component: AdminDashboard,
 });
 
 function AdminDashboard() {
-  const loaderData = Route.useLoaderData();
-  const [data, setData] = useState(loaderData ?? fallback);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth);
+  const [data, setData] = useState(fallback);
+  const [loadState, setLoadState] = useState("idle");
 
   useEffect(() => {
+    if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
+  }, [auth.hydrated, dispatch]);
+
+  useEffect(() => {
+    if (!auth.hydrated || !auth.user || auth.user.role === "admin") return;
+    navigate({ to: "/dashboard", replace: true });
+  }, [auth.hydrated, auth.user, navigate]);
+
+  useEffect(() => {
+    if (!auth.hydrated || auth.user?.role !== "admin") return undefined;
+    let active = true;
+    setLoadState("loading");
+
     fetchAdminSummary()
-      .then(setData)
-      .catch(() => setData(fallback));
-  }, []);
+      .then((nextData) => {
+        if (!active) return;
+        setData(nextData);
+        setLoadState("ready");
+      })
+      .catch((error) => {
+        if (!active) return;
+        if ([401, 403].includes(error.response?.status)) {
+          dispatch(logout());
+          return;
+        }
+
+        setData(fallback);
+        setLoadState("error");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [auth.hydrated, auth.user?.role, dispatch]);
 
   const summary = data.summary ?? fallback.summary;
   const charts = data.charts ?? fallback.charts;
@@ -145,6 +180,46 @@ function AdminDashboard() {
     [summary],
   );
 
+  if (!auth.hydrated) {
+    return (
+      <AdminAccessState
+        icon={ShieldCheck}
+        title="Checking admin access"
+        text="Your secure session is being verified."
+      />
+    );
+  }
+
+  if (!auth.user) {
+    return (
+      <AdminAccessState
+        icon={LogIn}
+        title="Admin sign in required"
+        text="Only the verified admin account can open this operations panel."
+        action={
+          <Button asChild>
+            <Link to="/auth">Sign in as admin</Link>
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (auth.user.role !== "admin") {
+    return (
+      <AdminAccessState
+        icon={LockKeyhole}
+        title="Admin panel is restricted"
+        text="Your account is a customer account, so the user dashboard is opening instead."
+        action={
+          <Button asChild>
+            <Link to="/dashboard">Go to user dashboard</Link>
+          </Button>
+        }
+      />
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 pb-20">
       <section className="cinema-grid overflow-hidden rounded-lg border border-border/60 bg-card/75 shadow-2xl shadow-black/20">
@@ -172,7 +247,11 @@ function AdminDashboard() {
             <PanelHeader
               icon={ClipboardCheck}
               title="Today at a glance"
-              subtitle="Focused actions for the operations team"
+              subtitle={
+                loadState === "loading"
+                  ? "Loading live operations data"
+                  : "Focused actions for the operations team"
+              }
             />
             <div className="mt-5 grid gap-3">
               <SnapshotRow label="Confirmed bookings" value={summary.bookings.toLocaleString()} />
@@ -361,6 +440,21 @@ function AdminDashboard() {
           text="Track OTP, ticket and reminder delivery status."
         />
       </section>
+    </div>
+  );
+}
+
+function AdminAccessState({ icon: Icon, title, text, action }) {
+  return (
+    <div className="mx-auto grid min-h-[calc(100vh-190px)] max-w-3xl place-items-center px-4 py-12">
+      <SpotlightCard className="w-full rounded-lg p-6 text-center shadow-2xl shadow-black/20">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-lg bg-primary/15 text-primary">
+          <Icon className="h-7 w-7" />
+        </div>
+        <h1 className="mt-5 text-2xl font-bold tracking-tight">{title}</h1>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">{text}</p>
+        {action && <div className="mt-6 flex justify-center">{action}</div>}
+      </SpotlightCard>
     </div>
   );
 }

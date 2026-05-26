@@ -12,6 +12,11 @@ async function fetchSeatState(showId) {
   return data.state;
 }
 
+async function fetchMyBookings() {
+  const data = await requestJson("/api/me/bookings");
+  return data.bookings ?? [];
+}
+
 async function lockSeats(input) {
   return requestJson("/api/lock-seats", {
     method: "POST",
@@ -59,6 +64,7 @@ export {
   createBooking,
   createPaymentIntent,
   sendTicketOtp,
+  fetchMyBookings,
   fetchSeatState,
   lockSeats,
   releaseSeats,

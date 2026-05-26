@@ -2,11 +2,13 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { requireAuth } from "../middleware/auth.js";
 import { Booking } from "../models/Booking.js";
 import {
   addMemoryBooking,
   getMemoryBookedSeats,
   getMemoryBookingByRef,
+  getMemoryBookings,
 } from "../services/bookingStore.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
 import { sendBookingEmail, sendOtpEmail } from "../services/emailService.js";
@@ -85,6 +87,23 @@ function createBookingRoutes({ io }) {
   async function findBooking(ref) {
     if (!isMongoReady()) return getMemoryBookingByRef(ref);
     return cleanDocument(await Booking.findOne({ ref }).lean());
+  }
+
+  function serializeBooking(booking) {
+    return {
+      ref: booking.ref,
+      movie: booking.movie,
+      theater: booking.theater,
+      screen: booking.screen,
+      time: booking.time,
+      seats: booking.seats ?? [],
+      total: Number(booking.total || booking.totalAmount || 0),
+      paymentStatus: booking.paymentStatus,
+      status: booking.status,
+      createdAt: booking.createdAt ?? booking.updatedAt ?? "",
+      ticketUrl: `/api/bookings/${booking.ref}/ticket.pdf`,
+      invoiceUrl: `/api/bookings/${booking.ref}/invoice.pdf`,
+    };
   }
 
   router.get(
@@ -276,6 +295,29 @@ function createBookingRoutes({ io }) {
 
   router.post("/book", createBookingHandler);
   router.post("/bookings", createBookingHandler);
+
+  router.get(
+    "/me/bookings",
+    requireAuth,
+    asyncHandler(async (request, response) => {
+      const email = normalizeEmail(request.user?.email ?? request.auth?.email);
+      if (!email) {
+        response.status(400).json({ error: "Account email is required." });
+        return;
+      }
+
+      const bookings = isMongoReady()
+        ? await Booking.find({ email }).sort({ createdAt: -1 }).limit(8).lean()
+        : getMemoryBookings()
+            .filter((booking) => normalizeEmail(booking.email) === email)
+            .sort(
+              (a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
+            )
+            .slice(0, 8);
+
+      response.json({ bookings: bookings.map(serializeBooking) });
+    }),
+  );
 
   router.get(
     "/bookings/:ref",

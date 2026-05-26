@@ -6,12 +6,15 @@ import { User } from "../models/User.js";
 import { theaters } from "../seed.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 import { getMemoryBookings } from "../services/bookingStore.js";
 import { isMongoReady } from "../services/database.js";
 import { isRedisReady } from "../services/redisClient.js";
 
 const router = Router();
 const SCREEN_CAPACITY = 140;
+
+router.use(requireAuth, requireRole("admin"));
 
 function bookingDate(booking) {
   const value = booking.createdAt ?? booking.updatedAt ?? new Date();
