@@ -1,6 +1,6 @@
 # BookMyScreen
 
-Movie ticket booking demo built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, and MongoDB.
+Movie ticket booking demo built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO, Redis-ready seat locking, and Brevo email hooks.
 
 This project is JavaScript-only. It does not use TypeScript or Bun.
 
@@ -8,6 +8,12 @@ This project is JavaScript-only. It does not use TypeScript or Bun.
 
 ```text
 server/                 Express and MongoDB API
+  config/               Environment config
+  middleware/           JWT auth and async helpers
+  models/               MongoDB/Mongoose models
+  routes/               Auth, movies, shows, bookings, payments, admin APIs
+  services/             Redis, email, ticket/QR/PDF, seat locks
+  sockets/              Socket.IO realtime seat locking
 src/
   app/                  TanStack Router app routes and generated route tree
   features/
@@ -47,3 +53,13 @@ src/
    ```
 
 The API falls back to in-memory demo data when MongoDB is not available, so the UI still runs while you set up the database.
+
+## Full-stack features
+
+- JWT register/login, OTP verification, and Google OAuth demo endpoint
+- Real-time seat locking with Socket.IO rooms
+- Redis-backed locks when `REDIS_URL` is configured, memory locks otherwise
+- Mock payment flow that confirms bookings without gateway keys
+- QR code, PDF ticket, and invoice generation
+- Brevo email integration through `BREVO_API_KEY`
+- Admin dashboard with revenue, occupancy, and live system status

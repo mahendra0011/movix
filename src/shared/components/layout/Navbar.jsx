@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Search, MapPin, User, Film } from "lucide-react";
+import { Search, MapPin, User, Film, LayoutDashboard } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 function Navbar() {
@@ -30,18 +30,39 @@ function Navbar() {
           Bengaluru
         </button>
 
-        <Button size="sm" className="gap-2">
-          <User className="h-4 w-4" /> Sign in
+        <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>
+          <Link to="/admin">
+            <LayoutDashboard className="h-4 w-4" /> Admin
+          </Link>
+        </Button>
+
+        <Button size="sm" className="gap-2" asChild>
+          <Link to="/auth">
+            <User className="h-4 w-4" /> Sign in
+          </Link>
         </Button>
       </div>
 
       <nav className="border-t border-border/60">
         <div className="mx-auto flex max-w-7xl gap-6 overflow-x-auto px-4 py-2 text-sm text-muted-foreground">
-          {["Movies", "Stream", "Events", "Plays", "Sports", "Activities"].map((x) => (
-            <a key={x} className="whitespace-nowrap hover:text-foreground" href="#">
-              {x}
-            </a>
-          ))}
+          <Link to="/" className="whitespace-nowrap hover:text-foreground">
+            Movies
+          </Link>
+          <a className="whitespace-nowrap hover:text-foreground" href="#">
+            Stream
+          </a>
+          <a className="whitespace-nowrap hover:text-foreground" href="#">
+            Events
+          </a>
+          <a className="whitespace-nowrap hover:text-foreground" href="#">
+            Plays
+          </a>
+          <a className="whitespace-nowrap hover:text-foreground" href="#">
+            Sports
+          </a>
+          <Link to="/admin" className="whitespace-nowrap hover:text-foreground">
+            Dashboard
+          </Link>
         </div>
       </nav>
     </header>

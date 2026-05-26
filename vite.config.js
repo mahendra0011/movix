@@ -1,6 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { tanstackRouterGenerator } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,7 +28,7 @@ export default defineConfig({
   },
   plugins: [
     tailwindcss(),
-    tanstackRouter({
+    tanstackRouterGenerator({
       routesDirectory: "./src/app/routes",
       generatedRouteTree: "./src/app/routeTree.gen.js",
       disableTypes: true,

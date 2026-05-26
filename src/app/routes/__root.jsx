@@ -1,4 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
+import { Provider } from "react-redux";
 import {
   Outlet,
   Link,
@@ -7,6 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { store } from "@/app/store";
 import appCss from "../../styles.css?url";
 function NotFoundComponent() {
   return (
@@ -108,45 +110,47 @@ import { Navbar } from "@/shared/components/layout/Navbar";
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
-        <Outlet />
-        <footer className="mt-20 border-t border-border/60 bg-card/30">
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-4">
-            <div>
-              <h3 className="text-lg font-bold tracking-tight">
-                book<span className="text-primary">my</span>screen
-              </h3>
-              <p className="mt-3 text-xs text-muted-foreground">
-                The cinematic way to book movies, events, plays & sports - all in one place.
-              </p>
-            </div>
-            {[
-              { title: "Movies", links: ["Now showing", "Coming soon", "Premieres", "Cinemas"] },
-              { title: "Help", links: ["Contact us", "FAQs", "Refunds", "Terms"] },
-              { title: "Company", links: ["About", "Careers", "Press", "Partners"] },
-            ].map((col) => (
-              <div key={col.title}>
-                <h4 className="text-sm font-semibold">{col.title}</h4>
-                <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
-                  {col.links.map((l) => (
-                    <li key={l}>
-                      <a href="#" className="hover:text-foreground">
-                        {l}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <div className="min-h-screen bg-background text-foreground">
+          <Navbar />
+          <Outlet />
+          <footer className="mt-20 border-t border-border/60 bg-card/30">
+            <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-4">
+              <div>
+                <h3 className="text-lg font-bold tracking-tight">
+                  book<span className="text-primary">my</span>screen
+                </h3>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  The cinematic way to book movies, events, plays & sports - all in one place.
+                </p>
               </div>
-            ))}
-          </div>
-          <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground">
-            (c) {/* @__PURE__ */ new Date().getFullYear()} BookMyScreen - Demo UI
-          </div>
-        </footer>
-      </div>
-    </QueryClientProvider>
+              {[
+                { title: "Movies", links: ["Now showing", "Coming soon", "Premieres", "Cinemas"] },
+                { title: "Help", links: ["Contact us", "FAQs", "Refunds", "Terms"] },
+                { title: "Company", links: ["About", "Careers", "Press", "Partners"] },
+              ].map((col) => (
+                <div key={col.title}>
+                  <h4 className="text-sm font-semibold">{col.title}</h4>
+                  <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
+                    {col.links.map((l) => (
+                      <li key={l}>
+                        <a href="#" className="hover:text-foreground">
+                          {l}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground">
+              (c) {/* @__PURE__ */ new Date().getFullYear()} BookMyScreen - Demo UI
+            </div>
+          </footer>
+        </div>
+      </QueryClientProvider>
+    </Provider>
   );
 }
 export { Route };

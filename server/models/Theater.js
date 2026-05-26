@@ -1,0 +1,30 @@
+import mongoose from "mongoose";
+
+const screenSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true },
+    name: { type: String, required: true },
+    totalSeats: { type: Number, required: true },
+    seatLayout: { type: Object, default: {} },
+  },
+  { _id: false },
+);
+
+const theaterSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    name: { type: String, required: true },
+    city: { type: String, required: true, index: true },
+    address: { type: String, required: true },
+    area: { type: String, default: "" },
+    distance: { type: String, default: "" },
+    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    approved: { type: Boolean, default: true },
+    screens: { type: [screenSchema], default: [] },
+  },
+  { timestamps: true },
+);
+
+const Theater = mongoose.models.Theater || mongoose.model("Theater", theaterSchema);
+
+export { Theater };

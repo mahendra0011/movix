@@ -10,14 +10,53 @@ function localBooking(input) {
 
 async function createBooking(input) {
   try {
-    const data = await requestJson("/api/bookings", {
+    return await requestJson("/api/bookings", {
       method: "POST",
       body: JSON.stringify(input),
     });
-    return data.booking;
   } catch {
-    return localBooking(input);
+    return { booking: localBooking(input) };
   }
 }
 
-export { createBooking };
+async function fetchSeatState(showId) {
+  const data = await requestJson(`/api/seat-state/${encodeURIComponent(showId)}`);
+  return data.state;
+}
+
+async function lockSeats(input) {
+  return requestJson("/api/lock-seats", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+async function releaseSeats(input) {
+  return requestJson("/api/release-seats", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+async function createPaymentIntent(amount) {
+  return requestJson("/api/payments/mock-intent", {
+    method: "POST",
+    body: JSON.stringify({ amount }),
+  });
+}
+
+async function confirmPayment(paymentId) {
+  return requestJson("/api/payments/mock-confirm", {
+    method: "POST",
+    body: JSON.stringify({ paymentId }),
+  });
+}
+
+export {
+  confirmPayment,
+  createBooking,
+  createPaymentIntent,
+  fetchSeatState,
+  lockSeats,
+  releaseSeats,
+};

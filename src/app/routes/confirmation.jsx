@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { CheckCircle2, Download, QrCode, Ticket } from "lucide-react";
+import { CheckCircle2, Download, FileText, Ticket } from "lucide-react";
+import { apiUrl } from "@/shared/services/httpClient";
 import { Button } from "@/shared/components/ui/button";
 const Route = createFileRoute("/confirmation")({
   component: Confirmation,
@@ -11,15 +12,19 @@ const Route = createFileRoute("/confirmation")({
     movie: typeof s.movie === "string" ? s.movie : "",
     theater: typeof s.theater === "string" ? s.theater : "",
     time: typeof s.time === "string" ? s.time : "",
+    ticketUrl: typeof s.ticketUrl === "string" ? s.ticketUrl : "",
+    invoiceUrl: typeof s.invoiceUrl === "string" ? s.invoiceUrl : "",
   }),
 });
 function Confirmation() {
-  const { ref, seats, total, movie, theater, time } = Route.useSearch();
+  const { ref, seats, total, movie, theater, time, ticketUrl, invoiceUrl } = Route.useSearch();
   const fallbackRef = useMemo(
     () => "BMS" + Math.random().toString(36).slice(2, 10).toUpperCase(),
     [],
   );
   const bookingRef = ref || fallbackRef;
+  const ticketHref = apiUrl(ticketUrl || `/api/bookings/${bookingRef}/ticket.pdf`);
+  const invoiceHref = apiUrl(invoiceUrl || `/api/bookings/${bookingRef}/invoice.pdf`);
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
       <div className="text-center">
@@ -56,7 +61,11 @@ function Confirmation() {
           </div>
           <div className="flex items-center justify-center">
             <div className="grid h-32 w-32 place-items-center rounded-lg border border-border bg-background">
-              <QrCode className="h-24 w-24" />
+              <img
+                src={apiUrl(`/api/bookings/${bookingRef}/qr.png`)}
+                alt={`QR code for ${bookingRef}`}
+                className="h-28 w-28 rounded"
+              />
             </div>
           </div>
         </div>
@@ -67,8 +76,15 @@ function Confirmation() {
       </div>
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <Button variant="secondary" className="gap-2">
-          <Download className="h-4 w-4" /> Download PDF
+        <Button variant="secondary" className="gap-2" asChild>
+          <a href={ticketHref} target="_blank" rel="noreferrer">
+            <Download className="h-4 w-4" /> Download PDF
+          </a>
+        </Button>
+        <Button variant="secondary" className="gap-2" asChild>
+          <a href={invoiceHref} target="_blank" rel="noreferrer">
+            <FileText className="h-4 w-4" /> Invoice
+          </a>
         </Button>
         <Button asChild>
           <Link to="/">Back to home</Link>

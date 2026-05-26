@@ -8,6 +8,8 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as ConfirmationRouteImport } from "./routes/confirmation";
+import { Route as AuthRouteImport } from "./routes/auth";
+import { Route as AdminRouteImport } from "./routes/admin";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as MoviesIdRouteImport } from "./routes/movies.$id";
 import { Route as BookShowIdRouteImport } from "./routes/book.$showId";
@@ -15,6 +17,16 @@ import { Route as BookShowIdRouteImport } from "./routes/book.$showId";
 const ConfirmationRoute = ConfirmationRouteImport.update({
   id: "/confirmation",
   path: "/confirmation",
+  getParentRoute: () => rootRouteImport,
+});
+const AuthRoute = AuthRouteImport.update({
+  id: "/auth",
+  path: "/auth",
+  getParentRoute: () => rootRouteImport,
+});
+const AdminRoute = AdminRouteImport.update({
+  id: "/admin",
+  path: "/admin",
   getParentRoute: () => rootRouteImport,
 });
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +47,8 @@ const BookShowIdRoute = BookShowIdRouteImport.update({
 
 const rootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
   ConfirmationRoute: ConfirmationRoute,
   BookShowIdRoute: BookShowIdRoute,
   MoviesIdRoute: MoviesIdRoute,
