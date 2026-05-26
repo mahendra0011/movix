@@ -1,22 +1,38 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-function loadInitialAuth() {
+function readStoredAuth() {
   if (typeof window === "undefined") return { user: null, token: null };
   const token = window.localStorage.getItem("bms-auth-token");
   const user = window.localStorage.getItem("bms-auth-user");
-  return {
-    token,
-    user: user ? JSON.parse(user) : null,
-  };
+  try {
+    return {
+      token,
+      user: user ? JSON.parse(user) : null,
+    };
+  } catch {
+    window.localStorage.removeItem("bms-auth-token");
+    window.localStorage.removeItem("bms-auth-user");
+    return { user: null, token: null };
+  }
 }
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: loadInitialAuth,
+  initialState: {
+    user: null,
+    token: null,
+    hydrated: false,
+  },
   reducers: {
+    hydrateAuth(state, action) {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.hydrated = true;
+    },
     setCredentials(state, action) {
       state.user = action.payload.user;
       state.token = action.payload.token;
+      state.hydrated = true;
       if (typeof window !== "undefined") {
         window.localStorage.setItem("bms-auth-token", action.payload.token);
         window.localStorage.setItem("bms-auth-user", JSON.stringify(action.payload.user));
@@ -25,6 +41,7 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null;
       state.token = null;
+      state.hydrated = true;
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("bms-auth-token");
         window.localStorage.removeItem("bms-auth-user");
@@ -33,5 +50,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setCredentials } = authSlice.actions;
+export { readStoredAuth };
+export const { hydrateAuth, logout, setCredentials } = authSlice.actions;
 export const authReducer = authSlice.reducer;

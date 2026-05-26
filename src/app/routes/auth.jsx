@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { Film, KeyRound, Mail, ShieldCheck, UserRound } from "lucide-react";
@@ -10,7 +10,7 @@ import {
   register,
   verifyOtp,
 } from "@/features/auth/api/authApi";
-import { logout, setCredentials } from "@/features/auth/authSlice";
+import { hydrateAuth, logout, readStoredAuth, setCredentials } from "@/features/auth/authSlice";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 
@@ -31,6 +31,10 @@ function AuthPage() {
   });
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    dispatch(hydrateAuth(readStoredAuth()));
+  }, [dispatch]);
 
   const update = (field) => (event) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
@@ -78,6 +82,10 @@ function AuthPage() {
       setBusy(false);
     }
   };
+
+  if (!auth.hydrated) {
+    return <AuthLoading />;
+  }
 
   if (auth.user) {
     return (
@@ -212,6 +220,24 @@ function AuthPage() {
           Continue with Google demo
         </Button>
       </form>
+    </div>
+  );
+}
+
+function AuthLoading() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-12">
+      <div className="rounded-lg border border-border/60 bg-card p-6">
+        <div className="flex items-center gap-4">
+          <div className="grid h-12 w-12 place-items-center rounded-lg bg-primary/15 text-primary">
+            <ShieldCheck className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Checking session</p>
+            <h1 className="text-2xl font-bold">BookMyScreen account</h1>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
