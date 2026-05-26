@@ -1,24 +1,37 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  BadgeCheck,
   Building2,
   CheckCircle2,
+  Eye,
+  EyeOff,
   KeyRound,
   Mail,
   ShieldCheck,
+  Ticket,
   UserRound,
 } from "lucide-react";
 import { forgotPassword, login, register, verifyOtp } from "@/features/auth/api/authApi";
 import { hydrateAuth, logout, readStoredAuth, setCredentials } from "@/features/auth/authSlice";
+import { movies } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 
 const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
+
+const accessCards = [
+  { label: "Customer", value: "Tickets", icon: Ticket },
+  { label: "Admin", value: "Panel", icon: ShieldCheck },
+  { label: "Owner", value: "Shows", icon: Building2 },
+];
+
+const authMovie = movies.find((movie) => movie.id === "dune-part-two") ?? movies[0];
 
 function AuthPage() {
   const dispatch = useDispatch();
@@ -27,13 +40,14 @@ function AuthPage() {
   const [mode, setMode] = useState("login");
   const [otpStep, setOtpStep] = useState(false);
   const [pendingEmail, setPendingEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     otp: "",
   });
-  const [message, setMessage] = useState("");
+  const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -45,14 +59,22 @@ function AuthPage() {
     navigate({ to: routeForRole(auth.user), replace: true });
   }, [auth.hydrated, auth.user, navigate]);
 
+  const isSubmitDisabled = useMemo(() => {
+    if (busy) return true;
+    if (otpStep) return form.otp.trim().length < 4;
+    if (!form.email.trim() || !form.password.trim()) return true;
+    return mode === "register" && !form.name.trim();
+  }, [busy, form.email, form.name, form.otp, form.password, mode, otpStep]);
+
   const update = (field) => (event) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
+    setNotice(null);
   };
 
   const startOtpStep = (result, email) => {
     setPendingEmail(result.email || email);
     setOtpStep(true);
-    setMessage(result.message || "OTP sent to your email.");
+    setNotice({ tone: "success", text: result.message || "OTP sent to your email." });
   };
 
   const completeSignIn = async (result) => {
@@ -62,13 +84,14 @@ function AuthPage() {
 
   const submit = async (event) => {
     event.preventDefault();
+    if (isSubmitDisabled) return;
+
     setBusy(true);
-    setMessage("");
+    setNotice(null);
     try {
       if (otpStep) {
         const result = await verifyOtp({ email: pendingEmail || form.email, otp: form.otp });
         await completeSignIn(result);
-        setMessage("Signed in successfully.");
         return;
       }
 
@@ -87,7 +110,7 @@ function AuthPage() {
         else await completeSignIn(result);
       }
     } catch (error) {
-      setMessage(error.response?.data?.error ?? "Request failed.");
+      setNotice({ tone: "error", text: error.response?.data?.error ?? "Request failed." });
     } finally {
       setBusy(false);
     }
@@ -95,14 +118,18 @@ function AuthPage() {
 
   const resendOtp = async () => {
     const email = pendingEmail || form.email;
-    if (!email) return;
+    if (!email) {
+      setNotice({ tone: "error", text: "Enter your email first." });
+      return;
+    }
+
     setBusy(true);
-    setMessage("");
+    setNotice(null);
     try {
       const result = await forgotPassword(email);
-      setMessage(result.message ?? "OTP sent to your email.");
+      setNotice({ tone: "success", text: result.message ?? "OTP sent to your email." });
     } catch (error) {
-      setMessage(error.response?.data?.error ?? "Could not send OTP.");
+      setNotice({ tone: "error", text: error.response?.data?.error ?? "Could not send OTP." });
     } finally {
       setBusy(false);
     }
@@ -112,7 +139,7 @@ function AuthPage() {
     setMode(nextMode);
     setOtpStep(false);
     setPendingEmail("");
-    setMessage("");
+    setNotice(null);
     setForm((current) => ({ ...current, otp: "" }));
   };
 
@@ -125,147 +152,268 @@ function AuthPage() {
   }
 
   return (
-    <div className="mx-auto grid min-h-[calc(100vh-190px)] max-w-6xl items-center gap-8 px-4 py-10 lg:grid-cols-[1fr_440px]">
-      <motion.section
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="hidden lg:block"
-      >
-        <div className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary">
-          <ShieldCheck className="h-4 w-4" />
-          Verified access
-        </div>
-        <h1 className="mt-6 max-w-2xl text-5xl font-bold tracking-tight">
-          Secure sign in for customers, operators and admins.
-        </h1>
-        <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          Every login and new account is confirmed with an email OTP before a session is created.
-        </p>
-        <div className="mt-8 grid max-w-xl gap-3">
-          <TrustItem
-            icon={Mail}
-            title="Email OTP"
-            text="One-time code verification before access."
-          />
-          <TrustItem
-            icon={Building2}
-            title="Admin ready"
-            text="Owner credentials open the admin console."
-          />
-          <TrustItem
-            icon={CheckCircle2}
-            title="Ticket safe"
-            text="Booking emails are verified before payment."
-          />
-        </div>
-      </motion.section>
+    <div className="relative min-h-[calc(100vh-190px)] overflow-hidden">
+      <img
+        src={authMovie.backdrop}
+        alt={authMovie.title}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/88 to-background/40" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-transparent" />
 
-      <section className="rounded-lg border border-border/60 bg-card/85 p-6 shadow-2xl shadow-black/20 backdrop-blur">
-        <div>
-          <p className="text-sm font-medium text-primary">BookMyScreen account</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight">
-            {otpStep ? "Verify your email" : mode === "login" ? "Welcome back" : "Create account"}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {otpStep
-              ? `Enter the OTP sent to ${pendingEmail || form.email}.`
-              : "Use your email and password to continue."}
+      <div className="relative mx-auto grid min-h-[calc(100vh-190px)] max-w-7xl items-center gap-8 px-4 py-10 lg:grid-cols-[1fr_460px]">
+        <motion.section
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="hidden lg:block"
+        >
+          <span className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-3 py-2 text-sm font-medium text-primary backdrop-blur">
+            <ShieldCheck className="h-4 w-4" />
+            Secure access
+          </span>
+          <h1 className="mt-6 max-w-3xl text-5xl font-bold tracking-tight">
+            One account for tickets, dashboards and cinema operations.
+          </h1>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            Sign in with email, confirm the OTP, and land on the right workspace automatically.
           </p>
-        </div>
 
-        {!otpStep && (
-          <div className="mt-6 grid grid-cols-2 gap-2 rounded-lg bg-muted/40 p-1 text-sm">
-            <button
-              type="button"
-              onClick={() => switchMode("login")}
-              className={`rounded-md px-3 py-2 transition-colors ${
-                mode === "login"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground"
-              }`}
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              onClick={() => switchMode("register")}
-              className={`rounded-md px-3 py-2 transition-colors ${
-                mode === "register"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground"
-              }`}
-            >
-              Create
-            </button>
+          <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
+            {accessCards.map((card) => (
+              <AccessCard key={card.label} {...card} />
+            ))}
           </div>
-        )}
 
-        <form onSubmit={submit} className="mt-6 space-y-4">
-          {!otpStep && mode === "register" && (
-            <Field icon={UserRound}>
-              <Input value={form.name} onChange={update("name")} placeholder="Full name" />
-            </Field>
-          )}
+          <div className="mt-8 max-w-xl rounded-lg border border-border/60 bg-background/50 p-4 backdrop-blur">
+            <div className="flex items-center gap-3">
+              <img
+                src={authMovie.poster}
+                alt={authMovie.title}
+                className="h-20 w-14 rounded-md object-cover"
+              />
+              <div>
+                <p className="text-xs uppercase text-muted-foreground">Now booking</p>
+                <h2 className="mt-1 font-semibold">{authMovie.title}</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {authMovie.language} - {authMovie.duration} - {authMovie.rating}/10
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.05 }}
+          className="rounded-lg border border-border/60 bg-card/90 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-6"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-primary">BookMyScreen account</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                {otpStep ? "Verify OTP" : mode === "login" ? "Welcome back" : "Create your account"}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {otpStep
+                  ? `Code sent to ${pendingEmail || form.email}.`
+                  : "Use your email and password to continue."}
+              </p>
+            </div>
+            <div className="grid h-12 w-12 place-items-center rounded-lg bg-primary/15 text-primary">
+              {otpStep ? <BadgeCheck className="h-6 w-6" /> : <UserRound className="h-6 w-6" />}
+            </div>
+          </div>
 
           {!otpStep && (
-            <>
-              <Field icon={Mail}>
-                <Input
-                  value={form.email}
-                  onChange={update("email")}
-                  placeholder="Email address"
-                  type="email"
-                />
-              </Field>
-              <Field icon={KeyRound}>
-                <Input
-                  value={form.password}
-                  onChange={update("password")}
-                  placeholder="Password"
-                  type="password"
-                />
-              </Field>
-            </>
+            <div className="mt-6 grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-background/50 p-1 text-sm">
+              <SegmentButton active={mode === "login"} onClick={() => switchMode("login")}>
+                Sign in
+              </SegmentButton>
+              <SegmentButton active={mode === "register"} onClick={() => switchMode("register")}>
+                Register
+              </SegmentButton>
+            </div>
           )}
 
-          {otpStep && (
-            <Field icon={ShieldCheck}>
-              <Input
-                value={form.otp}
-                onChange={update("otp")}
-                placeholder="6-digit OTP"
-                inputMode="numeric"
-              />
-            </Field>
-          )}
-
-          {message && (
-            <p className="rounded-md bg-primary/10 px-3 py-2 text-sm text-primary">{message}</p>
-          )}
-
-          <Button className="h-11 w-full gap-2" disabled={busy}>
-            {busy ? "Please wait..." : otpStep ? "Verify and continue" : "Continue"}
-            {!busy && <ArrowRight className="h-4 w-4" />}
-          </Button>
-        </form>
-
-        {otpStep && (
-          <div className="mt-4 flex items-center justify-between text-sm">
-            <button type="button" onClick={resendOtp} className="text-primary hover:underline">
-              Resend OTP
-            </button>
-            <button
-              type="button"
-              onClick={() => setOtpStep(false)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Change email
-            </button>
+          <div className="mt-5 grid grid-cols-3 gap-2 lg:hidden">
+            {accessCards.map((card) => (
+              <CompactAccessCard key={card.label} {...card} />
+            ))}
           </div>
-        )}
-      </section>
+
+          {otpStep && <OtpHeader email={pendingEmail || form.email} />}
+
+          <form onSubmit={submit} className="mt-6 space-y-4">
+            {!otpStep && mode === "register" && (
+              <Field label="Full name" icon={UserRound}>
+                <Input
+                  value={form.name}
+                  onChange={update("name")}
+                  placeholder="Mahendra Prajapati"
+                  autoComplete="name"
+                />
+              </Field>
+            )}
+
+            {!otpStep && (
+              <>
+                <Field label="Email address" icon={Mail}>
+                  <Input
+                    value={form.email}
+                    onChange={update("email")}
+                    placeholder="you@example.com"
+                    type="email"
+                    autoComplete="email"
+                  />
+                </Field>
+                <Field
+                  label="Password"
+                  icon={KeyRound}
+                  action={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      className="grid h-9 w-9 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  }
+                >
+                  <Input
+                    value={form.password}
+                    onChange={update("password")}
+                    placeholder="Enter password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    className="pr-12"
+                  />
+                </Field>
+              </>
+            )}
+
+            {otpStep && (
+              <Field label="Email OTP" icon={ShieldCheck}>
+                <Input
+                  value={form.otp}
+                  onChange={update("otp")}
+                  placeholder="6-digit code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                />
+              </Field>
+            )}
+
+            {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
+
+            <Button className="h-11 w-full gap-2" disabled={isSubmitDisabled}>
+              {busy ? "Please wait..." : otpStep ? "Verify and continue" : "Continue"}
+              {!busy && <ArrowRight className="h-4 w-4" />}
+            </Button>
+          </form>
+
+          {otpStep ? (
+            <div className="mt-4 flex items-center justify-between text-sm">
+              <button
+                type="button"
+                onClick={resendOtp}
+                disabled={busy}
+                className="text-primary hover:underline disabled:opacity-50"
+              >
+                Resend OTP
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOtpStep(false);
+                  setNotice(null);
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Change email
+              </button>
+            </div>
+          ) : (
+            <div className="mt-5 rounded-lg border border-border/60 bg-background/35 p-3 text-xs text-muted-foreground">
+              Admin, owner and customer accounts open from the same secure page.
+            </div>
+          )}
+        </motion.section>
+      </div>
     </div>
+  );
+}
+
+function SegmentButton({ active, children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-md px-3 py-2 font-medium transition-colors ${
+        active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function AccessCard({ icon: Icon, label, value }) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-background/45 p-4 backdrop-blur">
+      <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15 text-primary">
+        <Icon className="h-5 w-5" />
+      </div>
+      <p className="mt-4 text-xs uppercase text-muted-foreground">{label}</p>
+      <p className="mt-1 font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function CompactAccessCard({ icon: Icon, label }) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-background/45 p-3 text-center">
+      <Icon className="mx-auto h-4 w-4 text-primary" />
+      <p className="mt-2 text-[11px] font-medium text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function OtpHeader({ email }) {
+  return (
+    <div className="mt-6 rounded-lg border border-primary/30 bg-primary/10 p-4">
+      <div className="flex items-start gap-3">
+        <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15 text-primary">
+          <Mail className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">Check your inbox</p>
+          <p className="mt-1 truncate text-xs text-muted-foreground">{email}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Notice({ tone, children }) {
+  const toneClass =
+    tone === "error"
+      ? "border-destructive/30 bg-destructive/10 text-destructive"
+      : "border-primary/30 bg-primary/10 text-primary";
+
+  return (
+    <p className={`rounded-md border px-3 py-2 text-sm ${toneClass}`}>
+      <span className="inline-flex items-center gap-2">
+        {tone === "error" ? (
+          <ShieldCheck className="h-4 w-4" />
+        ) : (
+          <CheckCircle2 className="h-4 w-4" />
+        )}
+        {children}
+      </span>
+    </p>
   );
 }
 
@@ -321,26 +469,16 @@ function AuthLoading() {
   );
 }
 
-function TrustItem({ icon: Icon, title, text }) {
+function Field({ icon: Icon, label, children, action }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-card/60 p-4">
-      <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15 text-primary">
-        <Icon className="h-5 w-5" />
+    <label className="block">
+      <span className="text-xs font-medium uppercase text-muted-foreground">{label}</span>
+      <div className="relative mt-2">
+        <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="[&_input]:h-11 [&_input]:pl-9">{children}</div>
+        {action && <div className="absolute right-1 top-1/2 -translate-y-1/2">{action}</div>}
       </div>
-      <div>
-        <h3 className="font-semibold">{title}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{text}</p>
-      </div>
-    </div>
-  );
-}
-
-function Field({ icon: Icon, children }) {
-  return (
-    <div className="relative">
-      <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <div className="[&_input]:h-11 [&_input]:pl-9">{children}</div>
-    </div>
+    </label>
   );
 }
 
