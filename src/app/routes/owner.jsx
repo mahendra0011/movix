@@ -49,27 +49,88 @@ const screenSeeds = [
 const showSeeds = [
   {
     id: "show-interstellar-1030",
+    listingType: "live",
+    movieId: "interstellar",
     movie: "Interstellar",
+    poster: movies.find((movie) => movie.id === "interstellar")?.poster,
     screen: "IMAX 01",
-    time: "10:30 AM",
+    date: getDateInputValue(0),
+    time: "10:30 AM - 01:19 PM",
+    startTime: "10:30",
+    endTime: "13:19",
+    language: "English",
+    format: "IMAX",
+    certificate: "UA",
     price: 480,
+    priceLabel: "Rs 480 onwards",
+    pricing: { gold: 480, platinum: 620, vip: 760 },
+    seats: 148,
     status: "Open",
+    notes: "Morning IMAX show with reserved recliner rows.",
   },
   {
     id: "show-dune-1345",
+    listingType: "live",
+    movieId: "dune-part-two",
     movie: "Dune: Part Two",
+    poster: movies.find((movie) => movie.id === "dune-part-two")?.poster,
     screen: "Dolby 02",
-    time: "01:45 PM",
+    date: getDateInputValue(0),
+    time: "01:45 PM - 04:31 PM",
+    startTime: "13:45",
+    endTime: "16:31",
+    language: "English",
+    format: "Dolby Atmos",
+    certificate: "UA",
     price: 470,
+    priceLabel: "Rs 470 onwards",
+    pricing: { gold: 470, platinum: 590, vip: 720 },
+    seats: 126,
     status: "Open",
+    notes: "Dolby Atmos show with premium sound mix.",
   },
   {
     id: "show-oppenheimer-1930",
+    listingType: "live",
+    movieId: "oppenheimer",
     movie: "Oppenheimer",
+    poster: movies.find((movie) => movie.id === "oppenheimer")?.poster,
     screen: "Premiere 03",
-    time: "07:30 PM",
+    date: getDateInputValue(0),
+    time: "07:30 PM - 10:30 PM",
+    startTime: "19:30",
+    endTime: "22:30",
+    language: "English",
+    format: "2D",
+    certificate: "UA",
     price: 520,
+    priceLabel: "Rs 520 onwards",
+    pricing: { gold: 520, platinum: 680, vip: 820 },
+    seats: 96,
     status: "Selling fast",
+    notes: "Evening premium format with limited availability.",
+  },
+  {
+    id: "show-spider-verse-coming-soon",
+    listingType: "coming-soon",
+    movieId: "spider-verse",
+    movie: "Spider-Man: Across the Spider-Verse",
+    poster: movies.find((movie) => movie.id === "spider-verse")?.poster,
+    screen: "TBA",
+    date: getDateInputValue(18),
+    time: "Coming soon",
+    startTime: "",
+    endTime: "",
+    language: "English",
+    format: "3D",
+    certificate: "U",
+    price: 0,
+    priceLabel: "Notify me",
+    pricing: { gold: 0, platinum: 0, vip: 0 },
+    seats: 0,
+    status: "Coming soon",
+    bookingOpensAt: getDateInputValue(12),
+    notes: "Advance booking opens soon with fan-first premiere alerts.",
   },
 ];
 
@@ -128,12 +189,40 @@ const blankScreen = {
   seats: "100",
 };
 
-const blankShow = {
-  movieId: movies[0]?.id ?? "",
-  screen: screenSeeds[0].name,
-  time: "06:30 PM",
-  price: "350",
-};
+function createBlankShow(screens = screenSeeds) {
+  return {
+    listingType: "live",
+    movieId: movies[0]?.id ?? "",
+    customTitle: "",
+    screen: screens[0]?.name ?? "",
+    showDate: getDateInputValue(0),
+    startTime: "18:30",
+    endTime: "21:10",
+    comingSoonDate: getDateInputValue(21),
+    bookingOpensAt: getDateInputValue(14),
+    language: "English",
+    format: "2D",
+    certificate: "UA",
+    goldPrice: "350",
+    platinumPrice: "480",
+    vipPrice: "650",
+    totalSeats: "120",
+    status: "Open",
+    trailerUrl: "",
+    notes: "",
+  };
+}
+
+const listingTypes = [
+  { id: "live", label: "Now booking" },
+  { id: "coming-soon", label: "Coming soon" },
+];
+
+const languageOptions = ["English", "Hindi", "Tamil", "Telugu", "Kannada"];
+const formatOptions = ["2D", "3D", "IMAX", "4DX", "Dolby Atmos"];
+const certificateOptions = ["U", "UA", "A"];
+const showStatusOptions = ["Open", "Selling fast", "Sold out", "Draft"];
+const OWNER_WORKSPACE_VERSION = 1;
 
 const selectClass =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring";
@@ -142,12 +231,14 @@ function OwnerDashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
+  const ownerKey = useMemo(() => getOwnerKey(auth.user), [auth.user]);
   const [activeTab, setActiveTab] = useState("overview");
-  const [screens, setScreens] = useState(screenSeeds);
-  const [shows, setShows] = useState(showSeeds);
-  const [bookings] = useState(bookingSeeds);
+  const [screens, setScreens] = useState([]);
+  const [shows, setShows] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [screenForm, setScreenForm] = useState(blankScreen);
-  const [showForm, setShowForm] = useState(blankShow);
+  const [showForm, setShowForm] = useState(() => createBlankShow(screenSeeds));
+  const [workspaceReady, setWorkspaceReady] = useState(false);
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
@@ -160,13 +251,49 @@ function OwnerDashboard() {
     if (auth.user.role === "user") navigate({ to: "/dashboard", replace: true });
   }, [auth.hydrated, auth.user, navigate]);
 
+  useEffect(() => {
+    if (!auth.hydrated || auth.user?.role !== "theater-owner" || !ownerKey) return;
+    const workspace = readOwnerWorkspace(ownerKey);
+    setScreens(workspace.screens);
+    setShows(workspace.shows);
+    setBookings(workspace.bookings);
+    setShowForm((current) => ({
+      ...current,
+      screen: workspace.screens[0]?.name ?? "",
+    }));
+    setWorkspaceReady(true);
+  }, [auth.hydrated, auth.user?.role, ownerKey]);
+
+  useEffect(() => {
+    if (!workspaceReady || auth.user?.role !== "theater-owner" || !ownerKey) return;
+    writeOwnerWorkspace(ownerKey, { screens, shows, bookings });
+  }, [auth.user?.role, bookings, ownerKey, screens, shows, workspaceReady]);
+
+  const ownerScreens = useMemo(
+    () => screens.filter((screen) => !screen.ownerKey || screen.ownerKey === ownerKey),
+    [ownerKey, screens],
+  );
+  const ownerShows = useMemo(
+    () => shows.filter((show) => !show.ownerKey || show.ownerKey === ownerKey),
+    [ownerKey, shows],
+  );
+  const ownerBookings = useMemo(
+    () => bookings.filter((booking) => !booking.ownerKey || booking.ownerKey === ownerKey),
+    [bookings, ownerKey],
+  );
+  const listedMovies = useMemo(
+    () => buildListedMovies(ownerShows, ownerBookings),
+    [ownerBookings, ownerShows],
+  );
+
   const totals = useMemo(() => {
-    const earnings = bookings.reduce((sum, booking) => sum + Number(booking.total || 0), 0);
-    const seatsSold = bookings.reduce((sum, booking) => sum + booking.seats.length, 0);
-    const capacity = screens.reduce((sum, screen) => sum + Number(screen.seats || 0), 0);
-    const occupancy = screens.length
+    const earnings = ownerBookings.reduce((sum, booking) => sum + Number(booking.total || 0), 0);
+    const seatsSold = ownerBookings.reduce((sum, booking) => sum + booking.seats.length, 0);
+    const capacity = ownerScreens.reduce((sum, screen) => sum + Number(screen.seats || 0), 0);
+    const occupancy = ownerScreens.length
       ? Math.round(
-          screens.reduce((sum, screen) => sum + Number(screen.occupancy || 0), 0) / screens.length,
+          ownerScreens.reduce((sum, screen) => sum + Number(screen.occupancy || 0), 0) /
+            ownerScreens.length,
         )
       : 0;
 
@@ -175,19 +302,21 @@ function OwnerDashboard() {
       seatsSold,
       capacity,
       occupancy,
-      bookings: bookings.length,
-      shows: shows.length,
+      bookings: ownerBookings.length,
+      shows: ownerShows.length,
+      movies: listedMovies.length,
+      comingSoon: ownerShows.filter((show) => show.listingType === "coming-soon").length,
     };
-  }, [bookings, screens, shows.length]);
+  }, [listedMovies.length, ownerBookings, ownerScreens, ownerShows]);
 
   const popularMovies = useMemo(() => {
-    const map = bookings.reduce((acc, booking) => {
+    const map = ownerBookings.reduce((acc, booking) => {
       acc[booking.movie] = (acc[booking.movie] ?? 0) + Number(booking.total || 0);
       return acc;
     }, {});
 
     return Object.entries(map).map(([movie, value]) => ({ movie, value }));
-  }, [bookings]);
+  }, [ownerBookings]);
 
   const metrics = [
     {
@@ -198,9 +327,9 @@ function OwnerDashboard() {
       tone: "primary",
     },
     {
-      label: "Active shows",
-      value: totals.shows.toLocaleString(),
-      text: "Running across your screens",
+      label: "Listed movies",
+      value: totals.movies.toLocaleString(),
+      text: `${totals.shows} shows, ${totals.comingSoon} coming soon`,
       icon: CalendarClock,
       tone: "cyan",
     },
@@ -230,6 +359,7 @@ function OwnerDashboard() {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, ""),
+      ownerKey,
       name,
       type: screenForm.type,
       seats: Number(screenForm.seats) || 80,
@@ -245,26 +375,64 @@ function OwnerDashboard() {
   const removeScreen = (id) => {
     const screen = screens.find((item) => item.id === id);
     setScreens((current) => current.filter((item) => item.id !== id));
+    setShowForm((current) =>
+      current.screen === screen?.name
+        ? { ...current, screen: ownerScreens.find((item) => item.id !== id)?.name ?? "" }
+        : current,
+    );
     setNotice(`${screen?.name ?? "Screen"} removed from owner dashboard.`);
   };
 
   const addShow = (event) => {
     event.preventDefault();
     const movie = movies.find((item) => item.id === showForm.movieId) ?? movies[0];
-    if (!movie || !showForm.screen) return;
+    const isComingSoon = showForm.listingType === "coming-soon";
+    const title = showForm.customTitle.trim() || movie?.title;
+    if (!title || (!isComingSoon && !showForm.screen)) return;
+
+    const goldPrice = Number(showForm.goldPrice) || 300;
+    const platinumPrice = Number(showForm.platinumPrice) || goldPrice;
+    const vipPrice = Number(showForm.vipPrice) || platinumPrice;
+    const date = isComingSoon ? showForm.comingSoonDate : showForm.showDate;
 
     const nextShow = {
-      id: `${movie.id}-${Date.now()}`,
-      movie: movie.title,
-      screen: showForm.screen,
-      time: showForm.time.trim() || "06:30 PM",
-      price: Number(showForm.price) || 300,
-      status: "Open",
+      id: `${slugify(title)}-${Date.now()}`,
+      ownerKey,
+      listingType: showForm.listingType,
+      movieId: movie?.id ?? slugify(title),
+      movie: title,
+      poster: movie?.poster,
+      screen: isComingSoon ? showForm.screen || "TBA" : showForm.screen,
+      date,
+      time: isComingSoon ? "Coming soon" : formatShowTime(showForm.startTime, showForm.endTime),
+      startTime: isComingSoon ? "" : showForm.startTime,
+      endTime: isComingSoon ? "" : showForm.endTime,
+      language: showForm.language,
+      format: showForm.format,
+      certificate: showForm.certificate,
+      price: isComingSoon ? 0 : goldPrice,
+      priceLabel: isComingSoon ? "Notify me" : `${formatCurrency(goldPrice)} onwards`,
+      pricing: isComingSoon
+        ? { gold: 0, platinum: 0, vip: 0 }
+        : { gold: goldPrice, platinum: platinumPrice, vip: vipPrice },
+      seats: isComingSoon ? 0 : Number(showForm.totalSeats) || 80,
+      status: isComingSoon ? "Coming soon" : showForm.status,
+      bookingOpensAt: showForm.bookingOpensAt,
+      trailerUrl: showForm.trailerUrl.trim(),
+      notes: showForm.notes.trim(),
     };
 
     setShows((current) => [nextShow, ...current]);
-    setShowForm((current) => ({ ...current, time: "06:30 PM", price: "350" }));
-    setNotice(`${movie.title} show added for ${nextShow.time} on ${nextShow.screen}.`);
+    setShowForm((current) => ({
+      ...createBlankShow(ownerScreens),
+      listingType: current.listingType,
+      screen: current.screen,
+    }));
+    setNotice(
+      isComingSoon
+        ? `${title} listed as coming soon.`
+        : `${title} listed for ${nextShow.time} on ${nextShow.screen}.`,
+    );
   };
 
   const removeShow = (id) => {
@@ -345,8 +513,9 @@ function OwnerDashboard() {
             />
             <div className="mt-5 grid gap-3">
               <SnapshotRow label="Owner" value={auth.user.name || "Theater owner"} />
-              <SnapshotRow label="Screens" value={screens.length.toLocaleString()} />
-              <SnapshotRow label="Shows today" value={shows.length.toLocaleString()} />
+              <SnapshotRow label="Screens" value={ownerScreens.length.toLocaleString()} />
+              <SnapshotRow label="Listed movies" value={listedMovies.length.toLocaleString()} />
+              <SnapshotRow label="Shows today" value={ownerShows.length.toLocaleString()} />
               <SnapshotRow label="Seats available" value={totals.capacity.toLocaleString()} />
             </div>
           </SpotlightCard>
@@ -362,6 +531,7 @@ function OwnerDashboard() {
       <div className="mt-6 flex gap-2 overflow-x-auto rounded-lg border border-border/60 bg-card/50 p-1">
         {[
           ["overview", "Overview"],
+          ["movies", "My movies"],
           ["screens", "Screens"],
           ["shows", "Shows"],
           ["bookings", "Bookings"],
@@ -390,16 +560,25 @@ function OwnerDashboard() {
       {activeTab === "overview" && (
         <OverviewTab
           earningsTrend={earningsTrend}
-          screens={screens}
+          screens={ownerScreens}
           popularMovies={popularMovies}
+          listedMovies={listedMovies}
           totals={totals}
+        />
+      )}
+
+      {activeTab === "movies" && (
+        <OwnerMoviesTab
+          listedMovies={listedMovies}
+          onListShow={() => setActiveTab("shows")}
+          onRemoveShow={removeShow}
         />
       )}
 
       {activeTab === "screens" && (
         <ScreensTab
           screenForm={screenForm}
-          screens={screens}
+          screens={ownerScreens}
           onFormChange={setScreenForm}
           onAddScreen={addScreen}
           onRemoveScreen={removeScreen}
@@ -409,20 +588,20 @@ function OwnerDashboard() {
       {activeTab === "shows" && (
         <ShowsTab
           showForm={showForm}
-          shows={shows}
-          screens={screens}
+          shows={ownerShows}
+          screens={ownerScreens}
           onFormChange={setShowForm}
           onAddShow={addShow}
           onRemoveShow={removeShow}
         />
       )}
 
-      {activeTab === "bookings" && <BookingsTab bookings={bookings} totals={totals} />}
+      {activeTab === "bookings" && <BookingsTab bookings={ownerBookings} totals={totals} />}
     </div>
   );
 }
 
-function OverviewTab({ earningsTrend, screens, popularMovies, totals }) {
+function OverviewTab({ earningsTrend, screens, popularMovies, listedMovies, totals }) {
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
       <SpotlightCard className="rounded-lg p-5">
@@ -478,19 +657,111 @@ function OverviewTab({ earningsTrend, screens, popularMovies, totals }) {
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
-        <PanelHeader icon={Film} title="Popular movies" subtitle="Earnings by movie title" />
+        <PanelHeader
+          icon={Film}
+          title="My listed movies"
+          subtitle="Only movies listed by this theater owner"
+          action={`${listedMovies.length} movies`}
+        />
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {popularMovies.map((movie) => (
+          {(listedMovies.length ? listedMovies : popularMovies).map((movie) => (
             <div
-              key={movie.movie}
+              key={movie.movieId ?? movie.movie}
               className="rounded-lg border border-border/60 bg-background/35 p-4"
             >
-              <p className="text-sm font-semibold">{movie.movie}</p>
-              <p className="mt-2 text-2xl font-bold">{formatCurrency(movie.value)}</p>
-              <p className="mt-1 text-xs text-muted-foreground">Confirmed ticket revenue</p>
+              <p className="text-sm font-semibold">{movie.title ?? movie.movie}</p>
+              <p className="mt-2 text-2xl font-bold">
+                {movie.revenue !== undefined
+                  ? formatCurrency(movie.revenue)
+                  : formatCurrency(movie.value)}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {movie.showCount ? `${movie.showCount} owner listings` : "Confirmed ticket revenue"}
+              </p>
             </div>
           ))}
         </div>
+      </SpotlightCard>
+    </section>
+  );
+}
+
+function OwnerMoviesTab({ listedMovies, onListShow, onRemoveShow }) {
+  return (
+    <section className="mt-6">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={Film}
+          title="My listed movies"
+          subtitle="This owner can see only movies listed from this owner account"
+          action={`${listedMovies.length} movies`}
+        />
+
+        {listedMovies.length ? (
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {listedMovies.map((movie) => (
+              <div
+                key={movie.movieId}
+                className="overflow-hidden rounded-lg border border-border/60 bg-background/35"
+              >
+                <div className="relative h-56">
+                  <img
+                    src={movie.poster || movies[0].poster}
+                    alt={movie.title}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-xl font-bold">{movie.title}</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {movie.language} - {movie.format} - {movie.certificate}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 p-4">
+                  <SnapshotRow label="Listings" value={movie.showCount.toLocaleString()} />
+                  <SnapshotRow label="Live shows" value={movie.liveCount.toLocaleString()} />
+                  <SnapshotRow label="Coming soon" value={movie.comingSoonCount.toLocaleString()} />
+                  <SnapshotRow label="Revenue" value={formatCurrency(movie.revenue)} />
+                </div>
+
+                <div className="flex items-center gap-2 border-t border-border/60 p-4">
+                  <Button size="sm" onClick={onListShow} className="flex-1 gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add show
+                  </Button>
+                  {movie.latestShowId && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => onRemoveShow(movie.latestShowId)}
+                      className="gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Remove latest
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-lg border border-dashed border-border/70 p-8 text-center">
+            <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-primary/15 text-primary">
+              <Film className="h-6 w-6" />
+            </div>
+            <h3 className="mt-4 font-semibold">No movies listed by this owner yet</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              List a now-booking show or coming-soon movie first. It will appear here and only for
+              this theater-owner account.
+            </p>
+            <Button onClick={onListShow} className="mt-5 gap-2">
+              <Plus className="h-4 w-4" />
+              List first show
+            </Button>
+          </div>
+        )}
       </SpotlightCard>
     </section>
   );
@@ -572,52 +843,233 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
 function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveShow }) {
   const update = (field) => (event) =>
     onFormChange((current) => ({ ...current, [field]: event.target.value }));
+  const isComingSoon = showForm.listingType === "coming-soon";
+  const selectedMovie = movies.find((movie) => movie.id === showForm.movieId) ?? movies[0];
+  const previewShow = buildPreviewShow(showForm, selectedMovie);
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+    <section className="mt-6 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
       <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={Clapperboard} title="Add show" subtitle="Schedule movie timing" />
-        <form onSubmit={onAddShow} className="mt-5 grid gap-3">
-          <select value={showForm.movieId} onChange={update("movieId")} className={selectClass}>
-            {movies.map((movie) => (
-              <option key={movie.id} value={movie.id}>
-                {movie.title}
-              </option>
+        <PanelHeader
+          icon={Clapperboard}
+          title="List a show"
+          subtitle="Complete listing form for booking or coming soon"
+          action={isComingSoon ? "Coming soon" : "Now booking"}
+        />
+
+        <form onSubmit={onAddShow} className="mt-5 space-y-5">
+          <div className="grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-background/50 p-1 text-sm">
+            {listingTypes.map((type) => (
+              <button
+                key={type.id}
+                type="button"
+                onClick={() =>
+                  onFormChange((current) => ({
+                    ...current,
+                    listingType: type.id,
+                    status: type.id === "coming-soon" ? "Coming soon" : "Open",
+                  }))
+                }
+                className={`rounded-md px-3 py-2 font-medium transition-colors ${
+                  showForm.listingType === type.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {type.label}
+              </button>
             ))}
-          </select>
-          <select value={showForm.screen} onChange={update("screen")} className={selectClass}>
-            {screens.map((screen) => (
-              <option key={screen.id} value={screen.name}>
-                {screen.name}
-              </option>
-            ))}
-          </select>
-          <Input value={showForm.time} onChange={update("time")} placeholder="Show time" />
-          <Input
-            value={showForm.price}
-            onChange={update("price")}
-            placeholder="Ticket price"
-            type="number"
-            min="50"
-          />
-          <Button className="gap-2">
+          </div>
+
+          <FormSection title="Movie details">
+            <FormField label="Movie">
+              <select value={showForm.movieId} onChange={update("movieId")} className={selectClass}>
+                {movies.map((movie) => (
+                  <option key={movie.id} value={movie.id}>
+                    {movie.title}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="Custom listing title">
+              <Input
+                value={showForm.customTitle}
+                onChange={update("customTitle")}
+                placeholder={selectedMovie?.title ?? "Movie title"}
+              />
+            </FormField>
+            <FormField label="Language">
+              <select
+                value={showForm.language}
+                onChange={update("language")}
+                className={selectClass}
+              >
+                {languageOptions.map((language) => (
+                  <option key={language}>{language}</option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="Format">
+              <select value={showForm.format} onChange={update("format")} className={selectClass}>
+                {formatOptions.map((format) => (
+                  <option key={format}>{format}</option>
+                ))}
+              </select>
+            </FormField>
+          </FormSection>
+
+          <FormSection title={isComingSoon ? "Launch window" : "Show schedule"}>
+            <FormField label={isComingSoon ? "Expected release date" : "Show date"}>
+              <Input
+                value={isComingSoon ? showForm.comingSoonDate : showForm.showDate}
+                onChange={update(isComingSoon ? "comingSoonDate" : "showDate")}
+                type="date"
+              />
+            </FormField>
+            <FormField label={isComingSoon ? "Preferred screen" : "Screen"}>
+              <select value={showForm.screen} onChange={update("screen")} className={selectClass}>
+                {screens.length ? (
+                  screens.map((screen) => (
+                    <option key={screen.id} value={screen.name}>
+                      {screen.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value="">No screen added</option>
+                )}
+              </select>
+            </FormField>
+
+            {isComingSoon ? (
+              <FormField label="Booking opens">
+                <Input
+                  value={showForm.bookingOpensAt}
+                  onChange={update("bookingOpensAt")}
+                  type="date"
+                />
+              </FormField>
+            ) : (
+              <>
+                <FormField label="Start time">
+                  <Input value={showForm.startTime} onChange={update("startTime")} type="time" />
+                </FormField>
+                <FormField label="End time">
+                  <Input value={showForm.endTime} onChange={update("endTime")} type="time" />
+                </FormField>
+              </>
+            )}
+          </FormSection>
+
+          {!isComingSoon && (
+            <FormSection title="Pricing and seats">
+              <FormField label="Gold price">
+                <Input
+                  value={showForm.goldPrice}
+                  onChange={update("goldPrice")}
+                  type="number"
+                  min="50"
+                />
+              </FormField>
+              <FormField label="Platinum price">
+                <Input
+                  value={showForm.platinumPrice}
+                  onChange={update("platinumPrice")}
+                  type="number"
+                  min="50"
+                />
+              </FormField>
+              <FormField label="VIP price">
+                <Input
+                  value={showForm.vipPrice}
+                  onChange={update("vipPrice")}
+                  type="number"
+                  min="50"
+                />
+              </FormField>
+              <FormField label="Total seats">
+                <Input
+                  value={showForm.totalSeats}
+                  onChange={update("totalSeats")}
+                  type="number"
+                  min="20"
+                />
+              </FormField>
+            </FormSection>
+          )}
+
+          <FormSection title="Publishing">
+            <FormField label="Certificate">
+              <select
+                value={showForm.certificate}
+                onChange={update("certificate")}
+                className={selectClass}
+              >
+                {certificateOptions.map((certificate) => (
+                  <option key={certificate}>{certificate}</option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="Status">
+              <select
+                value={isComingSoon ? "Coming soon" : showForm.status}
+                onChange={update("status")}
+                className={selectClass}
+                disabled={isComingSoon}
+              >
+                {isComingSoon ? (
+                  <option>Coming soon</option>
+                ) : (
+                  showStatusOptions.map((status) => <option key={status}>{status}</option>)
+                )}
+              </select>
+            </FormField>
+            <FormField label="Trailer URL">
+              <Input
+                value={showForm.trailerUrl}
+                onChange={update("trailerUrl")}
+                placeholder="https://youtube.com/..."
+              />
+            </FormField>
+            <label className="md:col-span-2">
+              <span className="text-xs font-medium uppercase text-muted-foreground">
+                Listing note
+              </span>
+              <textarea
+                value={showForm.notes}
+                onChange={update("notes")}
+                placeholder={
+                  isComingSoon
+                    ? "Advance booking opens soon..."
+                    : "Premium format, special screening, offers..."
+                }
+                className="mt-2 min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </label>
+          </FormSection>
+
+          <Button className="h-11 w-full gap-2">
             <Plus className="h-4 w-4" />
-            Add show
+            {isComingSoon ? "List coming soon" : "List show"}
           </Button>
         </form>
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={CalendarClock} title="Shows" subtitle="Today's show schedule" />
+        <PanelHeader icon={Film} title="Listing preview" subtitle="User-facing show card" />
+        <ShowPreview show={previewShow} />
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
+        <PanelHeader icon={CalendarClock} title="Shows" subtitle="Listed show schedule" />
         <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
+            <table className="w-full min-w-[880px] text-left text-sm">
               <thead className="bg-muted/40 text-xs text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Movie</th>
+                  <th className="px-4 py-3 font-medium">Listing</th>
                   <th className="px-4 py-3 font-medium">Screen</th>
-                  <th className="px-4 py-3 font-medium">Time</th>
-                  <th className="px-4 py-3 font-medium">Price</th>
+                  <th className="px-4 py-3 font-medium">Schedule</th>
+                  <th className="px-4 py-3 font-medium">Pricing</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Action</th>
                 </tr>
@@ -625,10 +1077,38 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
               <tbody className="divide-y divide-border/60">
                 {shows.map((show) => (
                   <tr key={show.id} className="bg-card/20">
-                    <td className="px-4 py-3 font-medium">{show.movie}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={show.poster || movies[0].poster}
+                          alt={show.movie}
+                          className="h-14 w-10 rounded-md object-cover"
+                        />
+                        <div>
+                          <p className="font-medium">{show.movie}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {show.language} - {show.format} - {show.certificate}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{show.screen}</td>
-                    <td className="px-4 py-3">{show.time}</td>
-                    <td className="px-4 py-3">{formatCurrency(show.price)}</td>
+                    <td className="px-4 py-3">
+                      <p>{formatDateLabel(show.date)}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{show.time}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-semibold">
+                        {show.listingType === "coming-soon"
+                          ? "Notify me"
+                          : show.priceLabel || formatCurrency(show.price)}
+                      </p>
+                      {show.listingType !== "coming-soon" && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {show.seats} seats - VIP {formatCurrency(show.pricing?.vip)}
+                        </p>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <StatusPill status={show.status} />
                     </td>
@@ -652,6 +1132,91 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
       </SpotlightCard>
     </section>
   );
+}
+
+function FormSection({ title, children }) {
+  return (
+    <div>
+      <h3 className="text-xs font-semibold uppercase text-muted-foreground">{title}</h3>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">{children}</div>
+    </div>
+  );
+}
+
+function FormField({ label, children }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-medium uppercase text-muted-foreground">{label}</span>
+      <div className="mt-2">{children}</div>
+    </label>
+  );
+}
+
+function ShowPreview({ show }) {
+  const isComingSoon = show.listingType === "coming-soon";
+
+  return (
+    <div className="mt-5 overflow-hidden rounded-lg border border-border/60 bg-background/35">
+      <div className="relative h-64">
+        <img
+          src={show.poster || movies[0].poster}
+          alt={show.movie}
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="absolute left-4 top-4">
+          <StatusPill status={show.status} />
+        </div>
+        <div className="absolute bottom-4 left-4 right-4">
+          <h3 className="text-2xl font-bold tracking-tight">{show.movie}</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {show.language} - {show.format} - {show.certificate}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-3 p-4">
+        <SnapshotRow
+          label={isComingSoon ? "Expected date" : "Show date"}
+          value={formatDateLabel(show.date)}
+        />
+        <SnapshotRow label="Screen" value={show.screen || "TBA"} />
+        <SnapshotRow
+          label={isComingSoon ? "Booking opens" : "Time"}
+          value={isComingSoon ? formatDateLabel(show.bookingOpensAt) : show.time}
+        />
+        <SnapshotRow label="Price" value={isComingSoon ? "Notify me" : show.priceLabel} />
+      </div>
+
+      {show.notes && (
+        <p className="border-t border-border/60 px-4 py-3 text-sm text-muted-foreground">
+          {show.notes}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function buildPreviewShow(showForm, selectedMovie) {
+  const isComingSoon = showForm.listingType === "coming-soon";
+  const title = showForm.customTitle.trim() || selectedMovie?.title || "Untitled show";
+  const goldPrice = Number(showForm.goldPrice) || 300;
+
+  return {
+    listingType: showForm.listingType,
+    movie: title,
+    poster: selectedMovie?.poster,
+    screen: isComingSoon ? showForm.screen || "TBA" : showForm.screen,
+    date: isComingSoon ? showForm.comingSoonDate : showForm.showDate,
+    time: isComingSoon ? "Coming soon" : formatShowTime(showForm.startTime, showForm.endTime),
+    language: showForm.language,
+    format: showForm.format,
+    certificate: showForm.certificate,
+    priceLabel: isComingSoon ? "Notify me" : `${formatCurrency(goldPrice)} onwards`,
+    status: isComingSoon ? "Coming soon" : showForm.status,
+    bookingOpensAt: showForm.bookingOpensAt,
+    notes: showForm.notes.trim(),
+  };
 }
 
 function BookingsTab({ bookings, totals }) {
@@ -782,9 +1347,15 @@ function SnapshotRow({ label, value }) {
 
 function StatusPill({ status }) {
   const tone =
-    status === "Selling fast"
-      ? "border-amber-500/30 bg-amber-500/10 text-amber-500"
-      : "border-emerald-500/30 bg-emerald-500/10 text-emerald-500";
+    status === "Coming soon"
+      ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-500"
+      : status === "Selling fast"
+        ? "border-amber-500/30 bg-amber-500/10 text-amber-500"
+        : status === "Sold out"
+          ? "border-destructive/30 bg-destructive/10 text-destructive"
+          : status === "Draft"
+            ? "border-border bg-muted text-muted-foreground"
+            : "border-emerald-500/30 bg-emerald-500/10 text-emerald-500";
 
   return (
     <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${tone}`}>{status}</span>
@@ -810,8 +1381,144 @@ function ChartTooltip({ active, payload, label }) {
   );
 }
 
+function getOwnerKey(user) {
+  if (!user) return "";
+  return String(user.id || user.email || user.name || "owner")
+    .trim()
+    .toLowerCase();
+}
+
+function ownerStorageKey(ownerKey) {
+  return `bms-owner-workspace:${encodeURIComponent(ownerKey)}`;
+}
+
+function createOwnerWorkspace(ownerKey) {
+  return {
+    version: OWNER_WORKSPACE_VERSION,
+    screens: screenSeeds.map((screen) => ({ ...screen, ownerKey })),
+    shows: showSeeds.map((show) => ({ ...show, ownerKey })),
+    bookings: bookingSeeds.map((booking) => ({ ...booking, ownerKey })),
+  };
+}
+
+function readOwnerWorkspace(ownerKey) {
+  if (typeof window === "undefined" || !ownerKey) return createOwnerWorkspace(ownerKey);
+
+  try {
+    const raw = window.localStorage.getItem(ownerStorageKey(ownerKey));
+    if (!raw) return createOwnerWorkspace(ownerKey);
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || parsed.version !== OWNER_WORKSPACE_VERSION) {
+      return createOwnerWorkspace(ownerKey);
+    }
+
+    return {
+      version: OWNER_WORKSPACE_VERSION,
+      screens: normalizeOwnerItems(parsed.screens, ownerKey),
+      shows: normalizeOwnerItems(parsed.shows, ownerKey),
+      bookings: normalizeOwnerItems(parsed.bookings, ownerKey),
+    };
+  } catch {
+    return createOwnerWorkspace(ownerKey);
+  }
+}
+
+function writeOwnerWorkspace(ownerKey, workspace) {
+  if (typeof window === "undefined" || !ownerKey) return;
+  window.localStorage.setItem(
+    ownerStorageKey(ownerKey),
+    JSON.stringify({
+      version: OWNER_WORKSPACE_VERSION,
+      screens: normalizeOwnerItems(workspace.screens, ownerKey),
+      shows: normalizeOwnerItems(workspace.shows, ownerKey),
+      bookings: normalizeOwnerItems(workspace.bookings, ownerKey),
+    }),
+  );
+}
+
+function normalizeOwnerItems(items, ownerKey) {
+  return Array.isArray(items) ? items.map((item) => ({ ...item, ownerKey })) : [];
+}
+
+function buildListedMovies(shows, bookings) {
+  const revenueByMovie = bookings.reduce((acc, booking) => {
+    acc[booking.movie] = (acc[booking.movie] ?? 0) + Number(booking.total || 0);
+    return acc;
+  }, {});
+
+  const listings = shows.reduce((acc, show) => {
+    const movieId = show.movieId || slugify(show.movie);
+    if (!acc[movieId]) {
+      acc[movieId] = {
+        movieId,
+        title: show.movie,
+        poster: show.poster,
+        language: show.language,
+        format: show.format,
+        certificate: show.certificate,
+        showCount: 0,
+        liveCount: 0,
+        comingSoonCount: 0,
+        revenue: revenueByMovie[show.movie] ?? 0,
+        latestShowId: show.id,
+      };
+    }
+
+    acc[movieId].showCount += 1;
+    acc[movieId].latestShowId = show.id;
+    if (show.listingType === "coming-soon") acc[movieId].comingSoonCount += 1;
+    else acc[movieId].liveCount += 1;
+    acc[movieId].revenue = revenueByMovie[show.movie] ?? acc[movieId].revenue;
+    return acc;
+  }, {});
+
+  return Object.values(listings).sort((a, b) => b.showCount - a.showCount);
+}
+
 function formatCurrency(value) {
   return `Rs ${Number(value || 0).toLocaleString("en-IN")}`;
+}
+
+function getDateInputValue(offsetDays = 0) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  return date.toISOString().slice(0, 10);
+}
+
+function slugify(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function formatTimeLabel(value) {
+  if (!value) return "TBA";
+  const [hourText, minute = "00"] = value.split(":");
+  const hour = Number(hourText);
+  if (Number.isNaN(hour)) return value;
+
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12.toString().padStart(2, "0")}:${minute} ${suffix}`;
+}
+
+function formatShowTime(startTime, endTime) {
+  return `${formatTimeLabel(startTime)} - ${formatTimeLabel(endTime)}`;
+}
+
+function formatDateLabel(value) {
+  if (!value) return "TBA";
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+
+  return new Date(year, month - 1, day).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export { Route };
