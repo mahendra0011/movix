@@ -80,7 +80,7 @@ const managementCards = [
   {
     title: "Theaters",
     value: "Screens",
-    text: "Manage cinemas, screens, seat maps and owner approvals.",
+    text: "Manage cinemas, screens, seat layouts and owner approvals.",
     icon: Building2,
   },
   {

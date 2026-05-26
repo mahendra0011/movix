@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, MapPin, User, Film, LayoutDashboard } from "lucide-react";
+import { Search, User, Film, LayoutDashboard, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hydrateAuth, readStoredAuth } from "@/features/auth/authSlice";
@@ -10,12 +10,26 @@ const navItems = [
   { label: "Movies", to: "/" },
   { label: "Sports", to: "/sports" },
 ];
+const THEME_STORAGE_KEY = "bms-theme";
+
+function applyTheme(theme) {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle("light", theme === "light");
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  document.documentElement.style.colorScheme = theme;
+}
+
+function readTheme() {
+  if (typeof window === "undefined") return "dark";
+  return window.localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
+}
 
 function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const [navSearch, setNavSearch] = useState("");
+  const [theme, setTheme] = useState("dark");
   const isAdmin = auth.user?.role === "admin";
   const accountPath = !auth.user ? "/auth" : isAdmin ? "/admin" : "/dashboard";
   const accountLabel = !auth.user ? "Sign in" : isAdmin ? "Admin" : "Dashboard";
@@ -24,12 +38,25 @@ function Navbar() {
     if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
   }, [auth.hydrated, dispatch]);
 
+  useEffect(() => {
+    const storedTheme = readTheme();
+    setTheme(storedTheme);
+    applyTheme(storedTheme);
+  }, []);
+
   const submitSearch = async (event) => {
     event.preventDefault();
     await navigate({
       to: "/",
       search: navSearch.trim() ? { q: navSearch.trim() } : {},
     });
+  };
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+    applyTheme(nextTheme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
   };
 
   return (
@@ -56,11 +83,6 @@ function Navbar() {
           </form>
         </div>
 
-        <div className="hidden items-center gap-1.5 text-sm text-muted-foreground md:flex">
-          <MapPin className="h-4 w-4" />
-          Bengaluru
-        </div>
-
         {isAdmin && (
           <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>
             <Link to="/admin">
@@ -68,6 +90,18 @@ function Navbar() {
             </Link>
           </Button>
         )}
+
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={toggleTheme}
+          className="gap-2"
+          aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+        >
+          {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          <span className="hidden sm:inline">{theme === "light" ? "Dark" : "Light"}</span>
+        </Button>
 
         <Button size="sm" className="gap-2" asChild>
           <Link to={accountPath}>
@@ -83,9 +117,6 @@ function Navbar() {
               {item.label}
             </Link>
           ))}
-          <Link to={accountPath} className="whitespace-nowrap hover:text-foreground">
-            Dashboard
-          </Link>
         </div>
       </nav>
     </header>

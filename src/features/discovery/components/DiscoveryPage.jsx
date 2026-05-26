@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
-  MapPin,
   Play,
   Search,
   ShieldCheck,
@@ -27,14 +26,7 @@ function DiscoveryPage({ sectionKey }) {
   const filteredItems = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return section.items.filter((item) => {
-      const searchable = [
-        item.title,
-        item.category,
-        item.venue,
-        item.city,
-        item.date,
-        item.description,
-      ]
+      const searchable = [item.title, item.category, item.venue, item.date, item.description]
         .join(" ")
         .toLowerCase();
       const matchesQuery = !needle || searchable.includes(needle);
@@ -175,11 +167,7 @@ function DiscoveryPage({ sectionKey }) {
               {selected.description}
             </p>
             <div className="mt-5 grid gap-3 text-sm">
-              <DetailRow
-                icon={MapPin}
-                label="Venue"
-                value={`${selected.venue}, ${selected.city}`}
-              />
+              <DetailRow icon={Ticket} label="Experience" value={selected.venue} />
               <DetailRow
                 icon={CalendarDays}
                 label="When"
@@ -243,9 +231,7 @@ function DiscoveryCard({ item, selected, onSelect }) {
           <div className="min-w-0">
             <p className="text-xs uppercase text-muted-foreground">{item.category}</p>
             <h2 className="mt-1 truncate text-lg font-semibold">{item.title}</h2>
-            <p className="mt-1 truncate text-sm text-muted-foreground">
-              {item.venue} - {item.city}
-            </p>
+            <p className="mt-1 truncate text-sm text-muted-foreground">{item.venue}</p>
           </div>
           <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
         </div>

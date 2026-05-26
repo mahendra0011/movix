@@ -7,7 +7,6 @@ import {
   Star,
   TrendingUp,
   Ticket,
-  MapPin,
   Calendar,
   Gift,
   Smartphone,
@@ -17,6 +16,7 @@ import {
   Clapperboard,
   Search,
   CheckCircle2,
+  Building2,
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
 import { movies as fallbackMovies } from "@/features/movies/data/movieCatalog";
@@ -35,15 +35,15 @@ const Route = createFileRoute("/")({
 });
 const genres = ["All", "Action", "Sci-Fi", "Drama", "Comedy", "Animation", "Thriller", "Crime"];
 const cinemas = [
-  { name: "PVR INOX: Orion Mall", area: "Rajajinagar, Bengaluru", screens: 11, rating: 4.7 },
-  { name: "INOX: Garuda Mall", area: "Magrath Road, Bengaluru", screens: 5, rating: 4.5 },
+  { name: "PVR INOX: Orion Mall", features: "IMAX, Dolby Atmos", screens: 11, rating: 4.7 },
+  { name: "INOX: Garuda Mall", features: "Laser projection, recliners", screens: 5, rating: 4.5 },
   {
     name: "Cinepolis: Forum Shantiniketan",
-    area: "Whitefield, Bengaluru",
+    features: "VIP lounges, 4K projection",
     screens: 8,
     rating: 4.6,
   },
-  { name: "PVR: Vega City", area: "Bannerghatta Road, Bengaluru", screens: 9, rating: 4.6 },
+  { name: "PVR: Vega City", features: "Dolby Atmos, premium seats", screens: 9, rating: 4.6 },
 ];
 const testimonials = [
   {
@@ -166,12 +166,13 @@ function Home() {
           <img
             src={featured.backdrop}
             alt={featured.title}
-            className="absolute inset-0 h-full w-full object-cover scale-105"
+            className="hero-kenburns absolute inset-0 h-full w-full object-cover"
           />
+          <div className="hero-sweep absolute inset-0" />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
           <div className="relative mx-auto flex h-full max-w-7xl items-end gap-10 px-4 pb-12 md:items-center md:pb-0">
-            <div className="max-w-xl">
+            <div className="hero-content-enter max-w-xl">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-medium text-primary backdrop-blur">
                 <Sparkles className="h-3 w-3" /> Trending #1 this week
               </span>
@@ -232,11 +233,11 @@ function Home() {
             </div>
 
             {/* Floating poster */}
-            <div className="relative hidden md:block">
+            <div className="hero-poster-float relative hidden md:block">
               <img
                 src={featured.poster}
                 alt={featured.title}
-                className="relative aspect-[2/3] w-64 rounded-2xl object-cover shadow-2xl ring-1 ring-white/10"
+                className="relative aspect-[2/3] w-64 rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:rotate-1 hover:scale-[1.03]"
               />
             </div>
           </div>
@@ -245,7 +246,7 @@ function Home() {
 
       {/* Quick stats strip */}
       <section className="mx-auto mt-8 max-w-7xl px-4">
-        <SpotlightCard className="grid grid-cols-2 gap-3 rounded-lg p-5 backdrop-blur md:grid-cols-4">
+        <SpotlightCard className="surface-rise grid grid-cols-2 gap-3 rounded-lg p-5 backdrop-blur md:grid-cols-4">
           {stats.map((s) => (
             <div key={s.label} className="text-center">
               <p className="bg-gradient-to-r from-primary to-vip bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
@@ -265,7 +266,7 @@ function Home() {
           </h3>
           <div className="h-px flex-1 bg-border/60" />
         </div>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
+        <div className="stagger-row mt-3 flex gap-2 overflow-x-auto pb-2">
           {genres.map((g) => (
             <button
               key={g}
@@ -283,7 +284,7 @@ function Home() {
           </h3>
           <div className="h-px flex-1 bg-border/60" />
         </div>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
+        <div className="stagger-row mt-3 flex gap-2 overflow-x-auto pb-2">
           {availableLanguages.map((l) => (
             <button
               key={l}
@@ -304,7 +305,7 @@ function Home() {
         actionLabel={expandedSections.recommended ? "Show less" : "See all"}
         onAction={() => toggleSection("recommended")}
       >
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <div className="movie-grid-animate grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {trending.map((m) => (
             <MovieCard key={m.id} movie={m} />
           ))}
@@ -313,7 +314,7 @@ function Home() {
 
       {/* Promotions */}
       <section className="mx-auto mt-12 max-w-7xl px-4">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="stagger-grid grid gap-4 md:grid-cols-3">
           {promotions.map((p) => (
             <Link key={p.title} to={p.to} className="group block">
               <SpotlightCard
@@ -340,7 +341,7 @@ function Home() {
         actionLabel={expandedSections.premieres ? "Show less" : "See all"}
         onAction={() => toggleSection("premieres")}
       >
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="stagger-grid grid gap-4 md:grid-cols-2">
           {premieres.map((m) => (
             <Link
               key={m.id}
@@ -380,33 +381,33 @@ function Home() {
       {/* Coming soon */}
       <Section
         title="Coming soon"
-        subtitle="Premieres near you"
+        subtitle="Curated upcoming picks"
         icon={<Calendar className="h-5 w-5 text-primary" />}
         actionLabel={expandedSections.comingSoon ? "Show less" : "See all"}
         onAction={() => toggleSection("comingSoon")}
       >
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <div className="movie-grid-animate grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {recommended.map((m) => (
             <MovieCard key={m.id} movie={m} />
           ))}
         </div>
       </Section>
 
-      {/* Cinemas near you */}
+      {/* Cinema partners */}
       <Section
-        title="Top cinemas near you"
+        title="Cinema partners"
         subtitle="Premium screens, Dolby Atmos & recliners"
-        icon={<MapPin className="h-5 w-5 text-primary" />}
+        icon={<Building2 className="h-5 w-5 text-primary" />}
         actionHref={`/movies/${featured.id}#showtimes`}
       >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="stagger-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {cinemas.map((c) => (
             <a key={c.name} href={`/movies/${featured.id}#showtimes`} className="group block">
               <SpotlightCard className="rounded-lg p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold">{c.name}</h3>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{c.area}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{c.features}</p>
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
                     <Star className="h-3 w-3 fill-primary text-primary" />

@@ -13,7 +13,7 @@ const sectionCatalog = {
     title: "Sports tickets and live screenings",
     subtitle: "Football, cricket, tennis and kabaddi experiences with clear pricing.",
     heroImage: images.stadium,
-    searchPlaceholder: "Search teams, sport or city",
+    searchPlaceholder: "Search teams or sport",
     filters: ["All", "Cricket", "Football", "Kabaddi", "Tennis"],
     stats: [
       { value: "6", label: "Sports listings" },
@@ -116,7 +116,7 @@ function item(input) {
       .replace(/^-|-$/g, ""),
     description:
       input.description ??
-      `${input.title} at ${input.venue}, ${input.city}. Verified listing with digital entry support.`,
+      `${input.title} at ${input.venue}. Verified listing with digital entry support.`,
     ...input,
   };
 }
