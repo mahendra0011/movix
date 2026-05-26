@@ -46,143 +46,6 @@ const screenSeeds = [
   { id: "premiere-03", name: "Premiere 03", type: "Premium", seats: 96, occupancy: 68 },
 ];
 
-const showSeeds = [
-  {
-    id: "show-interstellar-1030",
-    listingType: "live",
-    movieId: "interstellar",
-    movie: "Interstellar",
-    poster: movies.find((movie) => movie.id === "interstellar")?.poster,
-    screen: "IMAX 01",
-    date: getDateInputValue(0),
-    time: "10:30 AM - 01:19 PM",
-    startTime: "10:30",
-    endTime: "13:19",
-    language: "English",
-    format: "IMAX",
-    certificate: "UA",
-    price: 480,
-    priceLabel: "Rs 480 onwards",
-    pricing: { gold: 480, platinum: 620, vip: 760 },
-    seats: 148,
-    status: "Open",
-    notes: "Morning IMAX show with reserved recliner rows.",
-  },
-  {
-    id: "show-dune-1345",
-    listingType: "live",
-    movieId: "dune-part-two",
-    movie: "Dune: Part Two",
-    poster: movies.find((movie) => movie.id === "dune-part-two")?.poster,
-    screen: "Dolby 02",
-    date: getDateInputValue(0),
-    time: "01:45 PM - 04:31 PM",
-    startTime: "13:45",
-    endTime: "16:31",
-    language: "English",
-    format: "Dolby Atmos",
-    certificate: "UA",
-    price: 470,
-    priceLabel: "Rs 470 onwards",
-    pricing: { gold: 470, platinum: 590, vip: 720 },
-    seats: 126,
-    status: "Open",
-    notes: "Dolby Atmos show with premium sound mix.",
-  },
-  {
-    id: "show-oppenheimer-1930",
-    listingType: "live",
-    movieId: "oppenheimer",
-    movie: "Oppenheimer",
-    poster: movies.find((movie) => movie.id === "oppenheimer")?.poster,
-    screen: "Premiere 03",
-    date: getDateInputValue(0),
-    time: "07:30 PM - 10:30 PM",
-    startTime: "19:30",
-    endTime: "22:30",
-    language: "English",
-    format: "2D",
-    certificate: "UA",
-    price: 520,
-    priceLabel: "Rs 520 onwards",
-    pricing: { gold: 520, platinum: 680, vip: 820 },
-    seats: 96,
-    status: "Selling fast",
-    notes: "Evening premium format with limited availability.",
-  },
-  {
-    id: "show-spider-verse-coming-soon",
-    listingType: "coming-soon",
-    movieId: "spider-verse",
-    movie: "Spider-Man: Across the Spider-Verse",
-    poster: movies.find((movie) => movie.id === "spider-verse")?.poster,
-    screen: "TBA",
-    date: getDateInputValue(18),
-    time: "Coming soon",
-    startTime: "",
-    endTime: "",
-    language: "English",
-    format: "3D",
-    certificate: "U",
-    price: 0,
-    priceLabel: "Notify me",
-    pricing: { gold: 0, platinum: 0, vip: 0 },
-    seats: 0,
-    status: "Coming soon",
-    bookingOpensAt: getDateInputValue(12),
-    notes: "Advance booking opens soon with fan-first premiere alerts.",
-  },
-];
-
-const bookingSeeds = [
-  {
-    ref: "BMS-OR-2041",
-    movie: "Interstellar",
-    screen: "IMAX 01",
-    time: "10:30 AM",
-    seats: ["A5", "A6"],
-    total: 960,
-    customer: "Priya Shah",
-  },
-  {
-    ref: "BMS-OR-2042",
-    movie: "Dune: Part Two",
-    screen: "Dolby 02",
-    time: "01:45 PM",
-    seats: ["C3", "C4", "C5"],
-    total: 1410,
-    customer: "Rahul Mehta",
-  },
-  {
-    ref: "BMS-OR-2043",
-    movie: "Oppenheimer",
-    screen: "Premiere 03",
-    time: "07:30 PM",
-    seats: ["F8", "F9"],
-    total: 1040,
-    customer: "Sneha Rao",
-  },
-  {
-    ref: "BMS-OR-2044",
-    movie: "Interstellar",
-    screen: "IMAX 01",
-    time: "10:30 AM",
-    seats: ["D1", "D2", "D3", "D4"],
-    total: 1920,
-    customer: "Aman Verma",
-  },
-];
-
-const earningsTrend = [
-  { day: "20 May", earnings: 2840, bookings: 5, occupancy: 58 },
-  { day: "21 May", earnings: 3560, bookings: 7, occupancy: 62 },
-  { day: "22 May", earnings: 4120, bookings: 8, occupancy: 66 },
-  { day: "23 May", earnings: 5380, bookings: 11, occupancy: 72 },
-  { day: "24 May", earnings: 6460, bookings: 13, occupancy: 78 },
-  { day: "25 May", earnings: 7140, bookings: 15, occupancy: 81 },
-  { day: "26 May", earnings: 5330, bookings: 10, occupancy: 76 },
-];
-
 const blankScreen = {
   name: "",
   type: "Premium",
@@ -222,7 +85,57 @@ const languageOptions = ["English", "Hindi", "Tamil", "Telugu", "Kannada"];
 const formatOptions = ["2D", "3D", "IMAX", "4DX", "Dolby Atmos"];
 const certificateOptions = ["U", "UA", "A"];
 const showStatusOptions = ["Open", "Selling fast", "Sold out", "Draft"];
-const OWNER_WORKSPACE_VERSION = 1;
+const OWNER_WORKSPACE_VERSION = 2;
+const ownerOperationModules = [
+  {
+    title: "Cinema setup",
+    value: "Onboarding",
+    text: "Cinema profile, address, amenities, screen count and approval status.",
+    icon: Building2,
+  },
+  {
+    title: "Screen management",
+    value: "Screens",
+    text: "Screen type, capacity, cleaning gap, maintenance windows and seat layout.",
+    icon: Monitor,
+  },
+  {
+    title: "Show scheduling",
+    value: "Shows",
+    text: "Movie, date, time, language, format, draft/live and coming soon listings.",
+    icon: Clapperboard,
+  },
+  {
+    title: "Pricing",
+    value: "Dynamic",
+    text: "Gold, Platinum, VIP, weekend, holiday, morning and occupancy pricing.",
+    icon: BadgeIndianRupee,
+  },
+  {
+    title: "F&B menu",
+    value: "Add-ons",
+    text: "Popcorn, beverages, combos, stock and pre-order availability.",
+    icon: Ticket,
+  },
+  {
+    title: "Reports",
+    value: "Analytics",
+    text: "Occupancy, peak hours, movie performance and downloadable settlements.",
+    icon: Gauge,
+  },
+  {
+    title: "Staff access",
+    value: "Roles",
+    text: "Counter staff, manager access, shifts and QR scanner permissions.",
+    icon: Users,
+  },
+  {
+    title: "Feedback",
+    value: "Reviews",
+    text: "Customer complaints, rating summary and support response workflow.",
+    icon: CheckCircle2,
+  },
+];
 
 const selectClass =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring";
@@ -285,6 +198,7 @@ function OwnerDashboard() {
     () => buildListedMovies(ownerShows, ownerBookings),
     [ownerBookings, ownerShows],
   );
+  const ownerEarningsTrend = useMemo(() => buildEarningsTrend(ownerBookings), [ownerBookings]);
 
   const totals = useMemo(() => {
     const earnings = ownerBookings.reduce((sum, booking) => sum + Number(booking.total || 0), 0);
@@ -343,7 +257,7 @@ function OwnerDashboard() {
     {
       label: "Screen capacity",
       value: totals.capacity.toLocaleString(),
-      text: `${screens.length} active screens`,
+      text: `${ownerScreens.length} active screens`,
       icon: Monitor,
       tone: "emerald",
     },
@@ -515,7 +429,7 @@ function OwnerDashboard() {
               <SnapshotRow label="Owner" value={auth.user.name || "Theater owner"} />
               <SnapshotRow label="Screens" value={ownerScreens.length.toLocaleString()} />
               <SnapshotRow label="Listed movies" value={listedMovies.length.toLocaleString()} />
-              <SnapshotRow label="Shows today" value={ownerShows.length.toLocaleString()} />
+              <SnapshotRow label="Listed shows" value={ownerShows.length.toLocaleString()} />
               <SnapshotRow label="Seats available" value={totals.capacity.toLocaleString()} />
             </div>
           </SpotlightCard>
@@ -532,6 +446,7 @@ function OwnerDashboard() {
         {[
           ["overview", "Overview"],
           ["movies", "My movies"],
+          ["operations", "Operations"],
           ["screens", "Screens"],
           ["shows", "Shows"],
           ["bookings", "Bookings"],
@@ -559,7 +474,7 @@ function OwnerDashboard() {
 
       {activeTab === "overview" && (
         <OverviewTab
-          earningsTrend={earningsTrend}
+          earningsTrend={ownerEarningsTrend}
           screens={ownerScreens}
           popularMovies={popularMovies}
           listedMovies={listedMovies}
@@ -572,6 +487,15 @@ function OwnerDashboard() {
           listedMovies={listedMovies}
           onListShow={() => setActiveTab("shows")}
           onRemoveShow={removeShow}
+        />
+      )}
+
+      {activeTab === "operations" && (
+        <OwnerOperationsTab
+          totals={totals}
+          listedMovies={listedMovies}
+          screens={ownerScreens}
+          onOpen={(title) => setNotice(`${title} workspace ready for ${auth.user.name}.`)}
         />
       )}
 
@@ -663,24 +587,36 @@ function OverviewTab({ earningsTrend, screens, popularMovies, listedMovies, tota
           subtitle="Only movies listed by this theater owner"
           action={`${listedMovies.length} movies`}
         />
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {(listedMovies.length ? listedMovies : popularMovies).map((movie) => (
-            <div
-              key={movie.movieId ?? movie.movie}
-              className="rounded-lg border border-border/60 bg-background/35 p-4"
-            >
-              <p className="text-sm font-semibold">{movie.title ?? movie.movie}</p>
-              <p className="mt-2 text-2xl font-bold">
-                {movie.revenue !== undefined
-                  ? formatCurrency(movie.revenue)
-                  : formatCurrency(movie.value)}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {movie.showCount ? `${movie.showCount} owner listings` : "Confirmed ticket revenue"}
-              </p>
-            </div>
-          ))}
-        </div>
+        {listedMovies.length || popularMovies.length ? (
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {(listedMovies.length ? listedMovies : popularMovies).map((movie) => (
+              <div
+                key={movie.movieId ?? movie.movie}
+                className="rounded-lg border border-border/60 bg-background/35 p-4"
+              >
+                <p className="text-sm font-semibold">{movie.title ?? movie.movie}</p>
+                <p className="mt-2 text-2xl font-bold">
+                  {movie.revenue !== undefined
+                    ? formatCurrency(movie.revenue)
+                    : formatCurrency(movie.value)}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {movie.showCount
+                    ? `${movie.showCount} owner listings`
+                    : "Confirmed ticket revenue"}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-lg border border-dashed border-border/70 p-6 text-center">
+            <p className="text-sm font-semibold">No owner-listed movies yet</p>
+            <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+              Movies will appear here only after this theater owner lists a live show or coming soon
+              release.
+            </p>
+          </div>
+        )}
       </SpotlightCard>
     </section>
   );
@@ -763,6 +699,75 @@ function OwnerMoviesTab({ listedMovies, onListShow, onRemoveShow }) {
           </div>
         )}
       </SpotlightCard>
+    </section>
+  );
+}
+
+function OwnerOperationsTab({ totals, listedMovies, screens, onOpen }) {
+  return (
+    <section className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={Building2}
+          title="Owner operations"
+          subtitle="Cinema owner control modules"
+          action={`${listedMovies.length} listed movies`}
+        />
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          {ownerOperationModules.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.title}
+                type="button"
+                onClick={() => onOpen(item.title)}
+                className="group rounded-lg border border-border/60 bg-background/35 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/50"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className="rounded-md bg-muted/60 px-2 py-1 text-[11px] font-medium text-muted-foreground">
+                    {item.value}
+                  </span>
+                </div>
+                <h3 className="mt-4 font-semibold">{item.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
+              </button>
+            );
+          })}
+        </div>
+      </SpotlightCard>
+
+      <div className="grid gap-4">
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader
+            icon={BadgeIndianRupee}
+            title="Settlement snapshot"
+            subtitle="Owner revenue"
+          />
+          <div className="mt-5 grid gap-3">
+            <SnapshotRow label="Gross revenue" value={formatCurrency(totals.earnings)} />
+            <SnapshotRow
+              label="Platform commission"
+              value={formatCurrency(totals.earnings * 0.1)}
+            />
+            <SnapshotRow
+              label="Estimated settlement"
+              value={formatCurrency(totals.earnings * 0.9)}
+            />
+          </div>
+        </SpotlightCard>
+
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader icon={Monitor} title="Cinema inventory" subtitle="Owner-owned capacity" />
+          <div className="mt-5 grid gap-3">
+            <SnapshotRow label="Screens" value={screens.length.toLocaleString()} />
+            <SnapshotRow label="Seats" value={totals.capacity.toLocaleString()} />
+            <SnapshotRow label="Occupancy" value={`${totals.occupancy}%`} />
+          </div>
+        </SpotlightCard>
+      </div>
     </section>
   );
 }
@@ -882,7 +887,7 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
           </div>
 
           <FormSection title="Movie details">
-            <FormField label="Movie">
+            <FormField label="Platform movie to list">
               <select value={showForm.movieId} onChange={update("movieId")} className={selectClass}>
                 {movies.map((movie) => (
                   <option key={movie.id} value={movie.id}>
@@ -1396,8 +1401,8 @@ function createOwnerWorkspace(ownerKey) {
   return {
     version: OWNER_WORKSPACE_VERSION,
     screens: screenSeeds.map((screen) => ({ ...screen, ownerKey })),
-    shows: showSeeds.map((show) => ({ ...show, ownerKey })),
-    bookings: bookingSeeds.map((booking) => ({ ...booking, ownerKey })),
+    shows: [],
+    bookings: [],
   };
 }
 
@@ -1474,6 +1479,41 @@ function buildListedMovies(shows, bookings) {
   }, {});
 
   return Object.values(listings).sort((a, b) => b.showCount - a.showCount);
+}
+
+function buildEarningsTrend(bookings) {
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - index));
+    const key = date.toISOString().slice(0, 10);
+    return {
+      key,
+      day: date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+      earnings: 0,
+      bookings: 0,
+      occupancy: 0,
+      seats: 0,
+    };
+  });
+
+  const byKey = new Map(days.map((day) => [day.key, day]));
+  bookings.forEach((booking) => {
+    const key = normalizeDateKey(booking.bookedAt || booking.createdAt || booking.date);
+    const row = byKey.get(key) ?? days[days.length - 1];
+    row.earnings += Number(booking.total || 0);
+    row.bookings += 1;
+    row.seats += booking.seats?.length ?? 0;
+    row.occupancy = Math.min(100, Math.round(row.seats * 8));
+  });
+
+  return days;
+}
+
+function normalizeDateKey(value) {
+  if (!value) return new Date().toISOString().slice(0, 10);
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
+  return date.toISOString().slice(0, 10);
 }
 
 function formatCurrency(value) {
