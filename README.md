@@ -38,7 +38,7 @@ src/
    npm install
    ```
 
-2. Copy `.env.example` to `.env` and add your MongoDB, Redis, Razorpay, and Brevo credentials.
+2. Copy `.env.example` to `.env` and add your MongoDB, Redis, Razorpay, and Brevo/Bravo API key credentials.
 
 3. Start the API:
 
@@ -77,9 +77,9 @@ This app uses TanStack Start SSR, so the frontend is not a Render Static Site. C
   - `PAYMENT_PROVIDER`: `razorpay`
   - `RAZORPAY_KEY_ID`
   - `RAZORPAY_KEY_SECRET`
-  - `BREVO_API_KEY`
-  - `BREVO_FROM_EMAIL`
-  - `BREVO_FROM_NAME`
+  - `BRAVO_API_KEY` or `BREVO_API_KEY`
+  - `BRAVO_FROM_EMAIL` or `BREVO_FROM_EMAIL`
+  - `BRAVO_FROM_NAME` or `BREVO_FROM_NAME`
 
 ### Frontend web service
 
@@ -105,5 +105,5 @@ Do not put `npm run preview -- --host 0.0.0.0` in Render's Publish Directory fie
 - Redis-backed locks when `REDIS_URL` is configured, local locks otherwise
 - Razorpay order creation and signature verification when payment keys are configured
 - QR code, PDF ticket, and invoice generation
-- Brevo transactional email through the HTTP API using `BREVO_API_KEY`
+- Brevo transactional email through the HTTP API using `BRAVO_API_KEY` or `BREVO_API_KEY`
 - Admin dashboard with revenue, occupancy, and live system status

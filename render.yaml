@@ -26,11 +26,11 @@ services:
         sync: false
       - key: RAZORPAY_KEY_SECRET
         sync: false
-      - key: BREVO_API_KEY
+      - key: BRAVO_API_KEY
         sync: false
-      - key: BREVO_FROM_EMAIL
+      - key: BRAVO_FROM_EMAIL
         sync: false
-      - key: BREVO_FROM_NAME
+      - key: BRAVO_FROM_NAME
         value: moviex
       - key: ADMIN_EMAIL
         sync: false
