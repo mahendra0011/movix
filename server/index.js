@@ -12,7 +12,6 @@ import { paymentRoutes } from "./routes/paymentRoutes.js";
 import { showRoutes } from "./routes/showRoutes.js";
 import { theaterRoutes } from "./routes/theaterRoutes.js";
 import { connectDatabase, isMongoReady } from "./services/database.js";
-import { connectRedis, isRedisReady } from "./services/redisClient.js";
 import { registerSeatSockets } from "./sockets/seatSocket.js";
 
 const app = express();
@@ -33,7 +32,6 @@ app.use(
 app.use(express.json({ limit: "1mb" }));
 
 await connectDatabase();
-await connectRedis();
 
 const { router: bookingRoutes, getBookedSeats } = createBookingRoutes({ io });
 registerSeatSockets(io, { getBookedSeats });
@@ -43,8 +41,8 @@ app.get("/api/health", (_request, response) => {
     ok: true,
     service: "moviex API",
     database: isMongoReady() ? "MongoDB connected" : "Local memory store",
-    redis: isRedisReady() ? "Redis connected" : "Local seat locks",
     socket: "enabled",
+    seats: "Booked-seat sync only",
     email: env.brevoApiKey ? "Brevo connected" : "Email provider not configured",
     payment:
       env.paymentProvider === "razorpay" && env.razorpayKeyId && env.razorpayKeySecret

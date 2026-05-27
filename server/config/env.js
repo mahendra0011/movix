@@ -23,9 +23,7 @@ const env = {
   clientOrigin: parseOrigins(process.env.CLIENT_ORIGIN ?? "*"),
   mongoUri: process.env.MONGODB_URI,
   mongoDb: process.env.MONGODB_DB ?? "moviex",
-  redisUrl: process.env.REDIS_URL,
   jwtSecret: process.env.JWT_SECRET ?? "moviex-dev-secret",
-  lockTtlMs: Number(process.env.SEAT_LOCK_TTL_MS ?? 5 * 60 * 1000),
   brevoApiKey: readEnv("BRAVO_API_KEY", "BREVO_API_KEY"),
   // Brevo names its HTTP transactional email route /smtp/email; this is not SMTP auth.
   brevoApiUrl: process.env.BREVO_API_URL ?? "https://api.brevo.com/v3/smtp/email",

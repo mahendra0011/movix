@@ -20,8 +20,8 @@ async function fetchAdminSummary() {
         averageSeatsPerBooking: 0,
         topMovie: "No bookings yet",
         database: "Static local",
-        redis: "Local locks",
         socket: "Static preview",
+        seats: "Booked-seat sync",
         payment: "Test checkout",
       },
       charts: {

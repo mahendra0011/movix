@@ -13,13 +13,7 @@ import {
 import { cleanDocument, isMongoReady } from "../services/database.js";
 import { sendBookingEmail, sendOtpEmail } from "../services/emailService.js";
 import { generateQrDataUrl, generateQrPng, generateTicketPdf } from "../services/ticketService.js";
-import {
-  getSeatState,
-  lockSeats,
-  releaseSeats,
-  roomName,
-  verifySeatLocks,
-} from "../services/seatService.js";
+import { getSeatState, roomName } from "../services/seatService.js";
 
 function createRef() {
   return `MX${Date.now().toString(36).toUpperCase()}${Math.random()
@@ -119,45 +113,6 @@ function createBookingRoutes({ io }) {
   );
 
   router.post(
-    "/lock-seats",
-    asyncHandler(async (request, response) => {
-      const { showId, seats, ownerId } = request.body;
-      const booked = new Set(await getBookedSeats(showId));
-      const seatList = normalizeSeats(seats);
-      const bookedConflicts = seatList.filter((seat) => booked.has(seat));
-
-      if (bookedConflicts.length > 0) {
-        response
-          .status(409)
-          .json({ error: "Some seats are already booked.", conflictSeats: bookedConflicts });
-        return;
-      }
-
-      const result = await lockSeats({ showId, seats: seatList, ownerId });
-      if (!result.ok) {
-        response.status(409).json({
-          error: result.message ?? "Some seats are locked.",
-          conflictSeats: result.conflictSeats,
-        });
-        return;
-      }
-
-      const state = await emitSeatState(showId);
-      response.json({ ok: true, state });
-    }),
-  );
-
-  router.post(
-    "/release-seats",
-    asyncHandler(async (request, response) => {
-      const { showId, seats, ownerId } = request.body;
-      await releaseSeats({ showId, seats, ownerId });
-      const state = await emitSeatState(showId);
-      response.json({ ok: true, state });
-    }),
-  );
-
-  router.post(
     "/ticket-otp",
     asyncHandler(async (request, response) => {
       const email = normalizeEmail(request.body.email);
@@ -216,7 +171,6 @@ function createBookingRoutes({ io }) {
       time,
       seats,
       total,
-      ownerId,
       email = "",
       emailVerificationToken = "",
       paymentId = `local_${Date.now().toString(36)}`,
@@ -249,11 +203,6 @@ function createBookingRoutes({ io }) {
       return;
     }
 
-    if (ownerId && !(await verifySeatLocks({ showId, seats: seatList, ownerId }))) {
-      response.status(409).json({ error: "Seats must be locked before payment." });
-      return;
-    }
-
     const booking = {
       ref: createRef(),
       email: normalizedEmail,
@@ -278,7 +227,6 @@ function createBookingRoutes({ io }) {
       : addMemoryBooking({ ...booking, createdAt: new Date().toISOString() });
 
     bookingEmailTokens.delete(emailVerificationToken);
-    if (ownerId) await releaseSeats({ showId, seats: seatList, ownerId });
     const state = await emitSeatState(showId);
     const qrDataUrl = await generateQrDataUrl(saved);
 

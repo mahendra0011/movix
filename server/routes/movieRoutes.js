@@ -4,7 +4,6 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { Movie } from "../models/Movie.js";
 import { movies } from "../seed.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
-import { getRedisClient } from "../services/redisClient.js";
 
 const router = Router();
 
@@ -59,15 +58,6 @@ function normalizeMovie(input) {
   };
 }
 
-async function clearMovieCache() {
-  const redis = getRedisClient();
-  if (!redis) return;
-
-  for await (const key of redis.scanIterator({ MATCH: "movies:*" })) {
-    await redis.del(key);
-  }
-}
-
 function getMemoryMovies(query = "") {
   const needle = query.trim().toLowerCase();
   if (!needle) return movies;
@@ -83,16 +73,6 @@ router.get(
     const query = String(request.query.q ?? "");
     const genre = String(request.query.genre ?? "");
     const language = String(request.query.language ?? "");
-    const cacheKey = `movies:${query}:${genre}:${language}`;
-    const redis = getRedisClient();
-
-    if (redis) {
-      const cached = await redis.get(cacheKey);
-      if (cached) {
-        response.json(JSON.parse(cached));
-        return;
-      }
-    }
 
     let list;
     if (!isMongoReady()) {
@@ -113,7 +93,6 @@ router.get(
     }
 
     const payload = { movies: list };
-    if (redis) await redis.setEx(cacheKey, 120, JSON.stringify(payload));
     response.json(payload);
   }),
 );
@@ -133,7 +112,6 @@ router.post(
       }
 
       const movie = await Movie.create(payload);
-      await clearMovieCache();
       response.status(201).json({ movie: cleanDocument(movie) });
       return;
     }
@@ -144,7 +122,6 @@ router.post(
     }
 
     movies.unshift(payload);
-    await clearMovieCache();
     response.status(201).json({ movie: payload });
   }),
 );
@@ -180,7 +157,6 @@ router.delete(
         return;
       }
 
-      await clearMovieCache();
       response.json({ ok: true, movie: cleanDocument(movie) });
       return;
     }
@@ -192,7 +168,6 @@ router.delete(
     }
 
     const [movie] = movies.splice(index, 1);
-    await clearMovieCache();
     response.json({ ok: true, movie });
   }),
 );

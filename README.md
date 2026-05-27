@@ -1,6 +1,6 @@
 # moviex
 
-Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO, Redis-backed seat locking, Razorpay-ready payments, and Brevo HTTP API email hooks.
+Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO booked-seat updates, Razorpay-ready payments, and Brevo HTTP API email hooks.
 
 This project is JavaScript-only. It does not use TypeScript or Bun.
 
@@ -12,8 +12,8 @@ server/                 Express and MongoDB API
   middleware/           JWT auth and async helpers
   models/               MongoDB/Mongoose models
   routes/               Auth, movies, shows, bookings, payments, admin APIs
-  services/             Redis, email, ticket/QR/PDF, seat locks
-  sockets/              Socket.IO realtime seat locking
+  services/             Email, ticket/QR/PDF, and booking helpers
+  sockets/              Socket.IO booked-seat updates
 src/
   app/                  TanStack Router app routes and generated route tree
   features/
@@ -38,7 +38,7 @@ src/
    npm install
    ```
 
-2. Copy `.env.example` to `.env` and add your MongoDB, Redis, Razorpay, and Brevo/Bravo API key credentials.
+2. Copy `.env.example` to `.env` and add your MongoDB, Razorpay, and Brevo/Bravo API key credentials.
 
 3. Start the API:
 
@@ -52,7 +52,7 @@ src/
    npm run dev
    ```
 
-The API can run in local mode without external credentials, then switches to MongoDB, Redis, Razorpay, and Brevo when those environment variables are configured.
+The API can run in local mode without external credentials, then switches to MongoDB, Razorpay, and Brevo when those environment variables are configured.
 
 ## Production deployment on Render
 
@@ -73,7 +73,6 @@ Create one Render Web Service for the API and one Render Static Site for the Rea
   - `ADMIN_EMAIL`: first admin email
   - `ADMIN_PASSWORD`: strong first admin password
 - Optional production integrations:
-  - `REDIS_URL`: Redis/Key Value URL for cross-instance seat locks
   - `PAYMENT_PROVIDER`: `razorpay`
   - `RAZORPAY_KEY_ID`
   - `RAZORPAY_KEY_SECRET`
@@ -100,8 +99,7 @@ Do not put `npm run web`, `npm run preview`, or any other command in Render's Pu
 ## Full-stack features
 
 - JWT register/login, email OTP verification, and forgot-password OTP reset
-- Real-time seat locking with Socket.IO rooms
-- Redis-backed locks when `REDIS_URL` is configured, local locks otherwise
+- Socket.IO booked-seat updates for active show pages
 - Razorpay order creation and signature verification when payment keys are configured
 - QR code, PDF ticket, and invoice generation
 - Brevo transactional email through the HTTP API using `BRAVO_API_KEY` or `BREVO_API_KEY`

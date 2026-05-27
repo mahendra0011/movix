@@ -1,13 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Clock3, Lock, Mail, Radio, Ticket, WifiOff } from "lucide-react";
+import { Clock3, Mail, Radio, Ticket, WifiOff } from "lucide-react";
 import {
   confirmPayment,
   createBooking,
   createPaymentIntent,
   fetchSeatState,
-  lockSeats,
-  releaseSeats,
   sendTicketOtp,
   verifyTicketOtp,
 } from "@/features/booking/api/bookingsApi";
@@ -48,34 +46,6 @@ function parseSearchInteger(value, fallback) {
   return Number.isFinite(amount) ? Math.round(amount) : fallback;
 }
 
-function getOwnerId() {
-  if (typeof window === "undefined") return "server-owner";
-  const existing = window.localStorage.getItem("bms-seat-owner-id");
-  if (existing) return existing;
-
-  const created =
-    typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `owner_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
-  window.localStorage.setItem("bms-seat-owner-id", created);
-  return created;
-}
-
-function emitWithAck(socket, event, payload) {
-  return new Promise((resolve) => {
-    let settled = false;
-    const timer = setTimeout(() => {
-      if (!settled) resolve({ ok: false });
-    }, 3500);
-
-    socket.emit(event, payload, (result) => {
-      settled = true;
-      clearTimeout(timer);
-      resolve(result ?? { ok: false });
-    });
-  });
-}
-
 function loadCheckoutScript(src) {
   if (typeof window === "undefined") return Promise.reject(new Error("Checkout is unavailable."));
   const existing = document.querySelector(`script[src="${src}"]`);
@@ -114,9 +84,8 @@ function BookingPage() {
       search.vipRows,
     ],
   );
-  const [ownerId] = useState(getOwnerId);
   const [selected, setSelected] = useState([]);
-  const [seatState, setSeatState] = useState({ booked: [], locks: [], lockTtlMs: 5 * 60 * 1000 });
+  const [seatState, setSeatState] = useState({ booked: [] });
   const [connection, setConnection] = useState("connecting");
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
@@ -125,19 +94,7 @@ function BookingPage() {
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
   const [otpBusy, setOtpBusy] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
-  const [tick, setTick] = useState(0);
   const socketRef = useRef(null);
-  const selectedRef = useRef(selected);
-
-  useEffect(() => {
-    selectedRef.current = selected;
-  }, [selected]);
-
-  useEffect(() => {
-    if (selected.length === 0) return undefined;
-    const timer = setInterval(() => setTick((value) => value + 1), 1000);
-    return () => clearInterval(timer);
-  }, [selected.length]);
 
   useEffect(() => {
     let active = true;
@@ -151,7 +108,7 @@ function BookingPage() {
       })
       .catch(() => active && setConnection("offline"));
 
-    createBookingSocket(ownerId)
+    createBookingSocket()
       .then((socket) => {
         if (!active) return;
         if (!socket) {
@@ -171,25 +128,13 @@ function BookingPage() {
 
     return () => {
       active = false;
-      const seats = selectedRef.current;
       const socket = socketRef.current;
-      if (seats.length > 0) {
-        if (socket?.connected) {
-          socket.emit("release-seats", { showId, seats });
-        } else {
-          releaseSeats({ showId, seats, ownerId }).catch(() => {});
-        }
-      }
       socket?.disconnect();
       socketRef.current = null;
     };
-  }, [ownerId, showId]);
+  }, [showId]);
 
-  const bookedSet = useMemo(() => new Set(seatState.booked), [seatState.booked]);
-  const lockMap = useMemo(
-    () => new Map(seatState.locks.map((lock) => [lock.seat, lock])),
-    [seatState.locks],
-  );
+  const bookedSet = useMemo(() => new Set(seatState.booked ?? []), [seatState.booked]);
 
   const selectedSeats = useMemo(() => [...selected].sort(), [selected]);
   const showTierPrice = useMemo(
@@ -204,72 +149,26 @@ function BookingPage() {
     const row = id.match(/^[A-Z]+/)?.[0] ?? "";
     return sum + showTierPrice[layout.tierFor(row)];
   }, 0);
-  const ownLocks = seatState.locks.filter(
-    (lock) => lock.ownerId === ownerId && selected.includes(lock.seat),
-  );
-  const nextExpiry = ownLocks.length ? Math.min(...ownLocks.map((lock) => lock.expiresAt)) : 0;
-  const secondsLeft = Math.max(0, Math.floor((nextExpiry - Date.now()) / 1000));
-  const mins = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
-  const secs = String(secondsLeft % 60).padStart(2, "0");
-  void tick;
 
-  const syncState = (result) => {
-    if (result?.state) setSeatState(result.state);
-  };
+  useEffect(() => {
+    setSelected((current) => {
+      const next = current.filter((seat) => !bookedSet.has(seat));
+      return next.length === current.length ? current : next;
+    });
+  }, [bookedSet]);
 
-  const lockSeat = async (id) => {
-    let result;
-    try {
-      const socket = socketRef.current;
-      result = socket?.connected
-        ? await emitWithAck(socket, "lock-seats", { showId, seats: [id] })
-        : await lockSeats({ showId, seats: [id], ownerId });
-    } catch (error) {
-      result = {
-        ok: false,
-        conflictSeats: error.response?.data?.conflictSeats ?? [],
-        state: error.response?.data?.state,
-      };
-    }
-
-    syncState(result);
-    if (!result.ok) {
-      setMessage(
-        result.conflictSeats?.length ? `${id} is no longer available.` : "Seat lock failed.",
-      );
-      return;
-    }
-
-    setSelected((cur) => (cur.includes(id) ? cur : [...cur, id]));
-    setMessage("");
-  };
-
-  const releaseSeat = async (id) => {
-    setSelected((cur) => cur.filter((seat) => seat !== id));
-    try {
-      const socket = socketRef.current;
-      const result = socket?.connected
-        ? await emitWithAck(socket, "release-seats", { showId, seats: [id] })
-        : await releaseSeats({ showId, seats: [id], ownerId });
-      syncState(result);
-    } catch {
-      setMessage("Seat release will sync shortly.");
-    }
-  };
-
-  const toggle = async (id) => {
-    const lock = lockMap.get(id);
-    const isLockedByOther = lock && lock.ownerId !== ownerId;
-    if (bookedSet.has(id) || isLockedByOther || isPaying) return;
+  const toggle = (id) => {
+    if (bookedSet.has(id) || isPaying) return;
     if (selected.includes(id)) {
-      await releaseSeat(id);
+      setSelected((current) => current.filter((seat) => seat !== id));
       return;
     }
     if (selected.length >= 10) {
       setMessage("You can select up to 10 seats in one booking.");
       return;
     }
-    await lockSeat(id);
+    setSelected((current) => [...current, id]);
+    setMessage("");
   };
 
   const updateEmail = (event) => {
@@ -363,7 +262,6 @@ function BookingPage() {
             });
       const result = await createBooking({
         showId,
-        ownerId,
         movieId: search.movieId || search.movie || "movie",
         movie: search.movie || "Movie",
         theaterId: search.theaterId,
@@ -418,24 +316,17 @@ function BookingPage() {
               <WifiOff className="h-3.5 w-3.5 text-amber-400" />
             )}
             {connection === "live"
-              ? "Live seat sync"
+              ? "Live seat updates"
               : connection === "local"
-                ? "Instant local sync"
-                : "Reconnecting sync"}
+                ? "Instant local updates"
+                : "Reconnecting updates"}
           </div>
-          {selected.length > 0 && (
-            <div className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary">
-              <Lock className="h-3.5 w-3.5" />
-              Locked - {mins}:{secs}
-            </div>
-          )}
         </div>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-5 text-xs text-muted-foreground">
         <Legend color="bg-card border border-border" label="Available" />
         <Legend color="bg-primary" label="Selected" />
-        <Legend color="bg-amber-400/70" label="Locked by another user" />
         <Legend color="bg-muted-foreground/40" label="Booked" />
         {layout.blockedSet.size > 0 && (
           <Legend color="bg-muted-foreground/20" label="Unavailable" />
@@ -472,26 +363,22 @@ function BookingPage() {
                       <div className="flex gap-1.5">
                         {Array.from({ length: layout.cols }, (_, i) => i + 1).map((c) => {
                           const id = `${row}${c}`;
-                          const lock = lockMap.get(id);
                           const isBooked = bookedSet.has(id);
                           const isBlocked = layout.blockedSet.has(id);
-                          const isLockedByOther = lock && lock.ownerId !== ownerId;
                           const isSel = selected.includes(id);
                           const isAisle = layout.aisleAfter > 0 && c === layout.aisleAfter;
                           const stateClass = isBlocked
                             ? "cursor-not-allowed border-transparent bg-muted-foreground/20 text-transparent"
                             : isBooked
                               ? "cursor-not-allowed border-transparent bg-muted-foreground/30 text-transparent"
-                              : isLockedByOther
-                                ? "cursor-not-allowed border-amber-400/50 bg-amber-400/30 text-transparent"
-                                : isSel
-                                  ? "scale-105 border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                                  : "border-border/60 bg-card text-muted-foreground hover:border-primary hover:text-foreground";
+                              : isSel
+                                ? "scale-105 border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                                : "border-border/60 bg-card text-muted-foreground hover:border-primary hover:text-foreground";
 
                           return (
                             <div key={id} className="flex items-center gap-1.5">
                               <button
-                                disabled={isBlocked || isBooked || isLockedByOther}
+                                disabled={isBlocked || isBooked}
                                 onClick={() => toggle(id)}
                                 className={`h-7 w-7 rounded-md border text-[10px] font-medium transition-all ${stateClass}`}
                               >
@@ -577,9 +464,7 @@ function BookingPage() {
             </Button>
             <Button
               size="lg"
-              disabled={
-                selected.length === 0 || !emailVerificationToken || isPaying || secondsLeft === 0
-              }
+              disabled={selected.length === 0 || !emailVerificationToken || isPaying}
               onClick={handlePay}
               className="gap-2"
             >

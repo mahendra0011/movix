@@ -10,7 +10,6 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { getMemoryUsers, updateMemoryUserOwnerStatus } from "./authRoutes.js";
 import { getMemoryBookings } from "../services/bookingStore.js";
 import { isMongoReady } from "../services/database.js";
-import { isRedisReady } from "../services/redisClient.js";
 
 const router = Router();
 const SCREEN_CAPACITY = 140;
@@ -154,8 +153,8 @@ router.get(
           : 0,
         topMovie: popularMovies[0]?.movie ?? "No bookings yet",
         database: isMongoReady() ? "MongoDB" : "Local store",
-        redis: isRedisReady() ? "Redis" : "Local locks",
         socket: "enabled",
+        seats: "Booked-seat sync",
         payment: paymentConnected ? "Razorpay" : "Test checkout",
       },
       charts: {

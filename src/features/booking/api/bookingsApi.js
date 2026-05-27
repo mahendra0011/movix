@@ -5,7 +5,6 @@ const LOCAL_SEAT_STATE_KEY = "bms-local-seat-state";
 const LOCAL_TICKET_OTPS_KEY = "bms-local-ticket-otps";
 const DEMO_TICKET_OTP = "123456";
 const ACTION_TIMEOUT_MS = 2500;
-const LOCK_TTL_MS = 5 * 60 * 1000;
 
 async function createBooking(input) {
   return withRemoteFallback(
@@ -39,30 +38,6 @@ async function fetchMyBookings() {
       return data.bookings ?? [];
     },
     () => readLocalBookings(),
-  );
-}
-
-async function lockSeats(input) {
-  return withRemoteFallback(
-    () =>
-      requestJson("/api/lock-seats", {
-        method: "POST",
-        timeoutMs: ACTION_TIMEOUT_MS,
-        body: JSON.stringify(input),
-      }),
-    () => localLockSeats(input),
-  );
-}
-
-async function releaseSeats(input) {
-  return withRemoteFallback(
-    () =>
-      requestJson("/api/release-seats", {
-        method: "POST",
-        timeoutMs: ACTION_TIMEOUT_MS,
-        body: JSON.stringify(input),
-      }),
-    () => localReleaseSeats(input),
   );
 }
 
@@ -130,7 +105,8 @@ async function withRemoteFallback(remoteRequest, localFallback) {
 
   try {
     return await remoteRequest();
-  } catch {
+  } catch (error) {
+    if (error.response) throw error;
     return localFallback();
   }
 }
@@ -141,59 +117,10 @@ function shouldUseRemoteBooking() {
 
 function localFetchSeatState(showId) {
   const states = readJson(LOCAL_SEAT_STATE_KEY, {});
-  const state = pruneExpiredLocks(states[showId]);
+  const state = normalizeSeatState(states[showId]);
   states[showId] = state;
   writeJson(LOCAL_SEAT_STATE_KEY, states);
   return { state };
-}
-
-function localLockSeats(input) {
-  const showId = normalizeShowId(input?.showId);
-  const ownerId = String(input?.ownerId || "local-owner");
-  const requestedSeats = normalizeSeats(input?.seats);
-  const states = readJson(LOCAL_SEAT_STATE_KEY, {});
-  const state = pruneExpiredLocks(states[showId]);
-  const booked = new Set(state.booked);
-  const activeLocks = state.locks.filter((lock) => lock.ownerId !== ownerId);
-  const conflictSeats = requestedSeats.filter(
-    (seat) => booked.has(seat) || activeLocks.some((lock) => lock.seat === seat),
-  );
-
-  if (conflictSeats.length > 0) {
-    states[showId] = { ...state, locks: activeLocks };
-    writeJson(LOCAL_SEAT_STATE_KEY, states);
-    return { ok: false, conflictSeats, state: states[showId] };
-  }
-
-  const expiresAt = Date.now() + LOCK_TTL_MS;
-  states[showId] = {
-    ...state,
-    locks: [
-      ...activeLocks,
-      ...requestedSeats.map((seat) => ({
-        seat,
-        ownerId,
-        expiresAt,
-      })),
-    ],
-  };
-  writeJson(LOCAL_SEAT_STATE_KEY, states);
-  return { ok: true, state: states[showId] };
-}
-
-function localReleaseSeats(input) {
-  const showId = normalizeShowId(input?.showId);
-  const ownerId = String(input?.ownerId || "local-owner");
-  const released = new Set(normalizeSeats(input?.seats));
-  const states = readJson(LOCAL_SEAT_STATE_KEY, {});
-  const state = pruneExpiredLocks(states[showId]);
-
-  states[showId] = {
-    ...state,
-    locks: state.locks.filter((lock) => lock.ownerId !== ownerId || !released.has(lock.seat)),
-  };
-  writeJson(LOCAL_SEAT_STATE_KEY, states);
-  return { ok: true, state: states[showId] };
 }
 
 function localSendTicketOtp(email) {
@@ -234,11 +161,15 @@ function localCreateBooking(input) {
   if (seats.length === 0) throwLocalError("Select at least one seat.");
 
   const states = readJson(LOCAL_SEAT_STATE_KEY, {});
-  const state = pruneExpiredLocks(states[showId]);
+  const state = normalizeSeatState(states[showId]);
+  const booked = new Set(state.booked);
+  const conflictSeats = seats.filter((seat) => booked.has(seat));
+  if (conflictSeats.length > 0) {
+    throwLocalError("Some seats are already booked.", 409, { conflictSeats });
+  }
+
   states[showId] = {
-    ...state,
     booked: [...new Set([...state.booked, ...seats])],
-    locks: state.locks.filter((lock) => !seats.includes(lock.seat)),
   };
   writeJson(LOCAL_SEAT_STATE_KEY, states);
 
@@ -246,7 +177,6 @@ function localCreateBooking(input) {
     id: `booking-${Date.now().toString(36)}`,
     ref: `BMS${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
     showId,
-    ownerId: input?.ownerId,
     movieId: input?.movieId,
     movie: input?.movie || "Movie",
     theaterId: input?.theaterId,
@@ -271,28 +201,9 @@ function localCreateBooking(input) {
   });
 }
 
-function pruneExpiredLocks(state) {
-  const normalized = normalizeSeatState(state);
-  const now = Date.now();
-  return {
-    ...normalized,
-    locks: normalized.locks.filter((lock) => Number(lock.expiresAt) > now),
-  };
-}
-
 function normalizeSeatState(state) {
   return {
     booked: Array.isArray(state?.booked) ? state.booked.map(String) : [],
-    locks: Array.isArray(state?.locks)
-      ? state.locks
-          .map((lock) => ({
-            seat: String(lock?.seat || ""),
-            ownerId: String(lock?.ownerId || ""),
-            expiresAt: Number(lock?.expiresAt || 0),
-          }))
-          .filter((lock) => lock.seat && lock.ownerId)
-      : [],
-    lockTtlMs: LOCK_TTL_MS,
   };
 }
 
@@ -331,9 +242,9 @@ function writeJson(key, value) {
   window.localStorage.setItem(key, JSON.stringify(value));
 }
 
-function throwLocalError(message, status = 400) {
+function throwLocalError(message, status = 400, data = {}) {
   const error = new Error(message);
-  error.response = { status, data: { error: message } };
+  error.response = { status, data: { error: message, ...data } };
   throw error;
 }
 
@@ -344,7 +255,5 @@ export {
   sendTicketOtp,
   fetchMyBookings,
   fetchSeatState,
-  lockSeats,
-  releaseSeats,
   verifyTicketOtp,
 };

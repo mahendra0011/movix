@@ -39,7 +39,7 @@ const Route = createFileRoute("/")({
 const testimonials = [
   {
     name: "Aarav S.",
-    text: "Booking was instant. The seat-locking countdown gave me the perfect nudge to commit.",
+    text: "Booking was instant. Seat selection was simple, clear and quick.",
     role: "Frequent moviegoer",
   },
   {
