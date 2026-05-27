@@ -56,7 +56,7 @@ The API can run in local mode without external credentials, then switches to Mon
 
 ## Production deployment on Render
 
-This app uses TanStack Start SSR, so the frontend is not a Render Static Site. Create two Render Web Services, or use the included `render.yaml` blueprint.
+Create one Render Web Service for the API and one Render Static Site for the React frontend, or use the included `render.yaml` blueprint.
 
 ### Backend API service
 
@@ -81,22 +81,21 @@ This app uses TanStack Start SSR, so the frontend is not a Render Static Site. C
   - `BRAVO_FROM_EMAIL` or `BREVO_FROM_EMAIL`
   - `BRAVO_FROM_NAME` or `BREVO_FROM_NAME`
 
-### Frontend web service
+### Frontend static site
 
-- Service type: Web Service
-- Runtime: Node
-- Build Command: `npm ci && npm run build`
-- Start Command: `HOST=0.0.0.0 npm run start:web`
-- Health Check Path: `/`
+- Service type: Static Site
+- Build Command: `npm ci --include=dev && npm run build`
+- Publish Directory: `dist`
+- Redirects/Rewrites rule: source `/*`, destination `/index.html`, action `Rewrite`
 - Required environment variables:
   - `VITE_API_URL`: deployed API URL, for example `https://moviex-api.onrender.com`
   - `VITE_SOCKET_URL`: same API URL for Socket.IO, for example `https://moviex-api.onrender.com`
 
-Render Web Services must bind to the port from `PORT`. The API reads `PORT` first, and the frontend Nitro server uses Render's `PORT` at runtime.
+Render Web Services must bind to the port from `PORT`. The API reads `PORT` first. The frontend is a static SPA, so it does not need a start command.
 
 ### Fix for "Publish directory does not exist"
 
-Do not put `npm run preview -- --host 0.0.0.0` in Render's Publish Directory field. That field is only for Static Sites. For this project, use the frontend Web Service commands above. If you intentionally convert the frontend to a static SPA later, the publish directory would be `dist/client`, but the current SSR build requires a Node service.
+Do not put `npm run web`, `npm run preview`, or any other command in Render's Publish Directory field. That field must be a folder path. For this project, use `dist`.
 
 ## Full-stack features
 

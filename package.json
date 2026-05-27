@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite dev",
     "dev:api": "node server/index.js",
-    "build": "vite build",
+    "build": "npm run build:static",
+    "build:ssr": "vite build",
+    "build:static": "vite build --config vite.static.config.js",
     "build:dev": "vite build --mode development",
     "renderbuild": "npm ci --include=dev && npm run build",
     "start": "node .output/server/index.mjs",
