@@ -66,7 +66,7 @@ async function ensureDefaultAdminUser() {
   return user;
 }
 
-async function issueOtp(user) {
+async function issueOtp(user, purpose = "login") {
   const otp = createOtp();
   const otpHash = await bcrypt.hash(otp, 10);
   const otpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
@@ -80,12 +80,26 @@ async function issueOtp(user) {
     user.otpExpiresAt = otpExpiresAt;
   }
 
-  await sendOtpEmail(user.email, otp);
+  await sendOtpEmail(user.email, otp, { purpose });
   return {
     requiresOtp: true,
     email: user.email,
     message: "OTP sent to your email.",
   };
+}
+
+async function verifyUserOtp(user, otp) {
+  if (!user || !user.otpHash || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+    return false;
+  }
+
+  return bcrypt.compare(String(otp ?? ""), user.otpHash);
+}
+
+async function clearOtp(user) {
+  user.otpHash = "";
+  user.otpExpiresAt = undefined;
+  if (isMongoReady()) await user.save();
 }
 
 async function verifyGoogleCredential(credential) {
@@ -161,7 +175,7 @@ router.post(
       memoryUsers.set(normalizedEmail, user);
     }
 
-    response.status(201).json(await issueOtp(user));
+    response.status(201).json(await issueOtp(user, "verify-account"));
   }),
 );
 
@@ -181,7 +195,7 @@ router.post(
       return;
     }
 
-    response.json(await issueOtp(user));
+    response.json(await issueOtp(user, "login"));
   }),
 );
 
@@ -230,7 +244,7 @@ router.post(
     }
 
     if (user) {
-      await issueOtp(user);
+      await issueOtp(user, "password-reset");
     }
 
     response.json({ ok: true, message: "If the account exists, an OTP has been sent." });
@@ -244,24 +258,51 @@ router.post(
     const otp = String(request.body.otp ?? "");
     const user = await findUserByEmail(email);
 
-    if (!user || !user.otpHash || !user.otpExpiresAt || user.otpExpiresAt < new Date()) {
-      response.status(400).json({ error: "OTP is invalid or expired." });
-      return;
-    }
-
-    const ok = await bcrypt.compare(otp, user.otpHash);
-    if (!ok) {
+    if (!(await verifyUserOtp(user, otp))) {
       response.status(400).json({ error: "OTP is invalid or expired." });
       return;
     }
 
     user.verified = true;
-    user.otpHash = "";
-    user.otpExpiresAt = undefined;
-    if (isMongoReady()) await user.save();
+    await clearOtp(user);
 
     const cleanUser = publicUser(user);
     response.json({ ok: true, user: cleanUser, token: signToken(cleanUser) });
+  }),
+);
+
+router.post(
+  "/reset-password",
+  asyncHandler(async (request, response) => {
+    const email = normalizeEmail(request.body.email);
+    const otp = String(request.body.otp ?? "");
+    const password = String(request.body.password ?? "");
+
+    if (!email || !otp || password.length < 8) {
+      response
+        .status(400)
+        .json({ error: "Email, OTP, and an 8+ character password are required." });
+      return;
+    }
+
+    let user = await findUserByEmail(email);
+    if (!user && email === env.adminEmail) {
+      user = await ensureDefaultAdminUser();
+    }
+
+    if (!(await verifyUserOtp(user, otp))) {
+      response.status(400).json({ error: "OTP is invalid or expired." });
+      return;
+    }
+
+    user.passwordHash = await bcrypt.hash(password, 10);
+    user.verified = true;
+    await clearOtp(user);
+
+    response.json({
+      ok: true,
+      message: "Password reset successful. Sign in with your new password.",
+    });
   }),
 );
 

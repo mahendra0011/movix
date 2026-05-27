@@ -15,7 +15,13 @@ import {
   Ticket,
   UserRound,
 } from "lucide-react";
-import { forgotPassword, login, register, verifyOtp } from "@/features/auth/api/authApi";
+import {
+  forgotPassword,
+  login,
+  register,
+  resetPassword,
+  verifyOtp,
+} from "@/features/auth/api/authApi";
 import { hydrateAuth, logout, readStoredAuth, setCredentials } from "@/features/auth/authSlice";
 import { movies } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
@@ -26,9 +32,9 @@ const Route = createFileRoute("/auth")({
 });
 
 const accessCards = [
-  { label: "Customer", value: "Tickets", icon: Ticket },
-  { label: "Admin", value: "Panel", icon: ShieldCheck },
-  { label: "Owner", value: "Shows", icon: Building2 },
+  { label: "Moviegoer", value: "Book seats", icon: Ticket },
+  { label: "Admin", value: "Approve & track", icon: ShieldCheck },
+  { label: "Owner", value: "List shows", icon: Building2 },
 ];
 
 const authMovie = movies.find((movie) => movie.id === "dune-part-two") ?? movies[0];
@@ -49,27 +55,38 @@ function AuthPage() {
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
     role: "user",
     otp: "",
   });
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
-    dispatch(hydrateAuth(readStoredAuth()));
-  }, [dispatch]);
+    if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
+    setAuthReady(true);
+  }, [auth.hydrated, dispatch]);
 
   useEffect(() => {
-    if (!auth.hydrated || !auth.user) return;
+    if (!authReady || !auth.hydrated || !auth.user) return;
     navigate({ to: routeForRole(auth.user), replace: true });
-  }, [auth.hydrated, auth.user, navigate]);
+  }, [auth.hydrated, auth.user, authReady, navigate]);
 
   const isSubmitDisabled = useMemo(() => {
     if (busy) return true;
+    if (mode === "forgot") {
+      if (!otpStep) return !form.email.trim();
+      return (
+        form.otp.trim().length < 4 ||
+        form.password.trim().length < 8 ||
+        form.password !== form.confirmPassword
+      );
+    }
     if (otpStep) return form.otp.trim().length < 4;
     if (!form.email.trim() || !form.password.trim()) return true;
     return mode === "register" && !form.name.trim();
-  }, [busy, form.email, form.name, form.otp, form.password, mode, otpStep]);
+  }, [busy, form.confirmPassword, form.email, form.name, form.otp, form.password, mode, otpStep]);
 
   const update = (field) => (event) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
@@ -94,6 +111,34 @@ function AuthPage() {
     setBusy(true);
     setNotice(null);
     try {
+      if (mode === "forgot") {
+        if (!otpStep) {
+          const result = await forgotPassword(form.email);
+          startOtpStep(result, form.email);
+          return;
+        }
+
+        const result = await resetPassword({
+          email: pendingEmail || form.email,
+          otp: form.otp,
+          password: form.password,
+        });
+        setMode("login");
+        setOtpStep(false);
+        setPendingEmail("");
+        setForm((current) => ({
+          ...current,
+          password: "",
+          confirmPassword: "",
+          otp: "",
+        }));
+        setNotice({
+          tone: "success",
+          text: result.message ?? "Password reset successful. Sign in with your new password.",
+        });
+        return;
+      }
+
       if (otpStep) {
         const result = await verifyOtp({ email: pendingEmail || form.email, otp: form.otp });
         await completeSignIn(result);
@@ -131,7 +176,10 @@ function AuthPage() {
     setBusy(true);
     setNotice(null);
     try {
-      const result = await forgotPassword(email);
+      const result =
+        mode === "forgot"
+          ? await forgotPassword(email)
+          : await login({ email, password: form.password });
       setNotice({ tone: "success", text: result.message ?? "OTP sent to your email." });
     } catch (error) {
       setNotice({ tone: "error", text: error.response?.data?.error ?? "Could not send OTP." });
@@ -145,10 +193,12 @@ function AuthPage() {
     setOtpStep(false);
     setPendingEmail("");
     setNotice(null);
-    setForm((current) => ({ ...current, otp: "" }));
+    setForm((current) => ({ ...current, password: "", confirmPassword: "", otp: "" }));
   };
 
-  if (!auth.hydrated) {
+  const copy = authCopy(mode, otpStep, pendingEmail || form.email);
+
+  if (!authReady) {
     return <AuthLoading />;
   }
 
@@ -175,13 +225,14 @@ function AuthPage() {
         >
           <span className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-3 py-2 text-sm font-medium text-primary backdrop-blur">
             <ShieldCheck className="h-4 w-4" />
-            Secure access
+            Movie booking access
           </span>
           <h1 className="mt-6 max-w-3xl text-5xl font-bold tracking-tight">
-            One account for tickets, dashboards and cinema operations.
+            Book seats, list shows and run cinema operations from one place.
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Sign in with email, confirm the OTP, and land on the right workspace automatically.
+            Customers get OTP-secured tickets, theater owners manage their own shows, and admins
+            control movies, approvals and revenue.
           </p>
 
           <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
@@ -217,21 +268,21 @@ function AuthPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-primary">BookMyScreen account</p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight">
-                {otpStep ? "Verify OTP" : mode === "login" ? "Welcome back" : "Create your account"}
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {otpStep
-                  ? `Code sent to ${pendingEmail || form.email}.`
-                  : "Use your email and password to continue."}
-              </p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">{copy.title}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{copy.text}</p>
             </div>
             <div className="grid h-12 w-12 place-items-center rounded-lg bg-primary/15 text-primary">
-              {otpStep ? <BadgeCheck className="h-6 w-6" /> : <UserRound className="h-6 w-6" />}
+              {otpStep ? (
+                <BadgeCheck className="h-6 w-6" />
+              ) : mode === "forgot" ? (
+                <KeyRound className="h-6 w-6" />
+              ) : (
+                <UserRound className="h-6 w-6" />
+              )}
             </div>
           </div>
 
-          {!otpStep && (
+          {!otpStep && mode !== "forgot" && (
             <div className="mt-6 grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-background/50 p-1 text-sm">
               <SegmentButton active={mode === "login"} onClick={() => switchMode("login")}>
                 Sign in
@@ -240,6 +291,16 @@ function AuthPage() {
                 Register
               </SegmentButton>
             </div>
+          )}
+
+          {!otpStep && mode === "forgot" && (
+            <button
+              type="button"
+              onClick={() => switchMode("login")}
+              className="mt-5 text-sm text-primary hover:underline"
+            >
+              Back to sign in
+            </button>
           )}
 
           <div className="mt-5 grid grid-cols-3 gap-2 lg:hidden">
@@ -287,18 +348,71 @@ function AuthPage() {
             )}
 
             {!otpStep && (
+              <Field label="Email address" icon={Mail}>
+                <Input
+                  value={form.email}
+                  onChange={update("email")}
+                  placeholder="you@example.com"
+                  type="email"
+                  autoComplete="email"
+                />
+              </Field>
+            )}
+
+            {!otpStep && mode !== "forgot" && (
+              <Field
+                label="Password"
+                icon={KeyRound}
+                action={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    className="grid h-9 w-9 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                }
+              >
+                <Input
+                  value={form.password}
+                  onChange={update("password")}
+                  placeholder="Enter password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  className="pr-12"
+                />
+              </Field>
+            )}
+
+            {!otpStep && mode === "login" && (
+              <div className="-mt-2 text-right">
+                <button
+                  type="button"
+                  onClick={() => switchMode("forgot")}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+
+            {otpStep && (
+              <Field label="Email OTP" icon={ShieldCheck}>
+                <Input
+                  value={form.otp}
+                  onChange={update("otp")}
+                  placeholder="6-digit code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                />
+              </Field>
+            )}
+
+            {otpStep && mode === "forgot" && (
               <>
-                <Field label="Email address" icon={Mail}>
-                  <Input
-                    value={form.email}
-                    onChange={update("email")}
-                    placeholder="you@example.com"
-                    type="email"
-                    autoComplete="email"
-                  />
-                </Field>
                 <Field
-                  label="Password"
+                  label="New password"
                   icon={KeyRound}
                   action={
                     <button
@@ -314,31 +428,28 @@ function AuthPage() {
                   <Input
                     value={form.password}
                     onChange={update("password")}
-                    placeholder="Enter password"
+                    placeholder="Minimum 8 characters"
                     type={showPassword ? "text" : "password"}
-                    autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    autoComplete="new-password"
                     className="pr-12"
+                  />
+                </Field>
+                <Field label="Confirm password" icon={KeyRound}>
+                  <Input
+                    value={form.confirmPassword}
+                    onChange={update("confirmPassword")}
+                    placeholder="Re-enter new password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
                   />
                 </Field>
               </>
             )}
 
-            {otpStep && (
-              <Field label="Email OTP" icon={ShieldCheck}>
-                <Input
-                  value={form.otp}
-                  onChange={update("otp")}
-                  placeholder="6-digit code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                />
-              </Field>
-            )}
-
             {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
 
             <Button className="h-11 w-full gap-2" disabled={isSubmitDisabled}>
-              {busy ? "Please wait..." : otpStep ? "Verify and continue" : "Continue"}
+              {submitLabel(mode, otpStep, busy)}
               {!busy && <ArrowRight className="h-4 w-4" />}
             </Button>
           </form>
@@ -358,11 +469,22 @@ function AuthPage() {
                 onClick={() => {
                   setOtpStep(false);
                   setNotice(null);
+                  setForm((current) => ({
+                    ...current,
+                    otp: "",
+                    password: "",
+                    confirmPassword: "",
+                  }));
                 }}
                 className="text-muted-foreground hover:text-foreground"
               >
                 Change email
               </button>
+            </div>
+          ) : mode === "forgot" ? (
+            <div className="mt-5 rounded-lg border border-border/60 bg-background/35 p-3 text-xs text-muted-foreground">
+              Password reset is protected with a one-time email code. The code expires in 10
+              minutes.
             </div>
           ) : (
             <div className="mt-5 rounded-lg border border-border/60 bg-background/35 p-3 text-xs text-muted-foreground">
@@ -373,6 +495,48 @@ function AuthPage() {
       </div>
     </div>
   );
+}
+
+function authCopy(mode, otpStep, email) {
+  if (mode === "forgot") {
+    if (otpStep) {
+      return {
+        title: "Create a new password",
+        text: `Enter the OTP sent to ${email || "your email"} and choose a stronger password.`,
+      };
+    }
+
+    return {
+      title: "Forgot password?",
+      text: "Enter your account email. We will send a secure OTP to reset your password.",
+    };
+  }
+
+  if (otpStep) {
+    return {
+      title: "Verify your email",
+      text: `Use the OTP sent to ${email || "your inbox"} to continue securely.`,
+    };
+  }
+
+  if (mode === "register") {
+    return {
+      title: "Create your account",
+      text: "Register as a customer or theater owner. Email OTP verification is required.",
+    };
+  }
+
+  return {
+    title: "Welcome back",
+    text: "Sign in with email and password, then confirm the OTP sent to your inbox.",
+  };
+}
+
+function submitLabel(mode, otpStep, busy) {
+  if (busy) return "Please wait";
+  if (mode === "forgot") return otpStep ? "Reset password" : "Send reset OTP";
+  if (otpStep) return "Verify OTP";
+  return mode === "register" ? "Create account" : "Sign in";
 }
 
 function SegmentButton({ active, children, onClick }) {

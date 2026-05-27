@@ -171,7 +171,7 @@ function createBookingRoutes({ io }) {
         otpHash: await bcrypt.hash(otp, 10),
         expiresAt: Date.now() + BOOKING_OTP_TTL_MS,
       });
-      await sendOtpEmail(email, otp);
+      await sendOtpEmail(email, otp, { purpose: "ticket" });
       response.status(201).json({ ok: true, message: "Ticket OTP sent to your email." });
     }),
   );

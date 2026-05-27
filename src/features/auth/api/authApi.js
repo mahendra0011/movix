@@ -35,4 +35,11 @@ function verifyOtp(input) {
   });
 }
 
-export { forgotPassword, googleLogin, login, register, verifyOtp };
+function resetPassword(input) {
+  return requestJson("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export { forgotPassword, googleLogin, login, register, resetPassword, verifyOtp };
