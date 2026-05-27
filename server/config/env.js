@@ -22,7 +22,6 @@ const env = {
   brevoApiUrl: process.env.BREVO_API_URL ?? "https://api.brevo.com/v3/smtp/email",
   brevoFromEmail: process.env.BREVO_FROM_EMAIL ?? process.env.BRAVO_FROM_EMAIL,
   brevoFromName: process.env.BREVO_FROM_NAME ?? "BookMyScreen",
-  googleClientId: process.env.GOOGLE_CLIENT_ID,
   paymentProvider: process.env.PAYMENT_PROVIDER ?? "local",
   razorpayKeyId: process.env.RAZORPAY_KEY_ID,
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET,

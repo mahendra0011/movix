@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema(
       default: "user",
       index: true,
     },
-    googleId: { type: String, default: "" },
     otpHash: { type: String, default: "" },
     otpExpiresAt: { type: Date },
     verified: { type: Boolean, default: false },

@@ -14,13 +14,6 @@ function login(input) {
   });
 }
 
-function googleLogin(input) {
-  return requestJson("/api/auth/google", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
 function forgotPassword(email) {
   return requestJson("/api/auth/forgot-password", {
     method: "POST",
@@ -42,4 +35,4 @@ function resetPassword(input) {
   });
 }
 
-export { forgotPassword, googleLogin, login, register, resetPassword, verifyOtp };
+export { forgotPassword, login, register, resetPassword, verifyOtp };

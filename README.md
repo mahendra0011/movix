@@ -38,7 +38,7 @@ src/
    npm install
    ```
 
-2. Copy `.env.example` to `.env` and add your MongoDB, Redis, Razorpay, Google OAuth, and Brevo credentials.
+2. Copy `.env.example` to `.env` and add your MongoDB, Redis, Razorpay, and Brevo credentials.
 
 3. Start the API:
 
@@ -52,11 +52,11 @@ src/
    npm run dev
    ```
 
-The API can run in local mode without external credentials, then switches to MongoDB, Redis, Razorpay, Google OAuth, and Brevo when those environment variables are configured.
+The API can run in local mode without external credentials, then switches to MongoDB, Redis, Razorpay, and Brevo when those environment variables are configured.
 
 ## Full-stack features
 
-- JWT register/login, OTP verification, and Google OAuth credential verification
+- JWT register/login, email OTP verification, and forgot-password OTP reset
 - Real-time seat locking with Socket.IO rooms
 - Redis-backed locks when `REDIS_URL` is configured, local locks otherwise
 - Razorpay order creation and signature verification when payment keys are configured

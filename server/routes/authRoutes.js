@@ -102,36 +102,6 @@ async function clearOtp(user) {
   if (isMongoReady()) await user.save();
 }
 
-async function verifyGoogleCredential(credential) {
-  if (!env.googleClientId) {
-    const error = new Error("Google OAuth is not configured.");
-    error.status = 501;
-    throw error;
-  }
-
-  const response = await fetch(
-    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
-  );
-  if (!response.ok) {
-    const error = new Error("Google credential is invalid.");
-    error.status = 401;
-    throw error;
-  }
-
-  const profile = await response.json();
-  if (profile.aud !== env.googleClientId || profile.email_verified !== "true") {
-    const error = new Error("Google credential could not be verified.");
-    error.status = 401;
-    throw error;
-  }
-
-  return {
-    email: String(profile.email).toLowerCase(),
-    name: profile.name ?? profile.email.split("@")[0],
-    googleId: profile.sub,
-  };
-}
-
 router.post(
   "/register",
   asyncHandler(async (request, response) => {
@@ -196,41 +166,6 @@ router.post(
     }
 
     response.json(await issueOtp(user, "login"));
-  }),
-);
-
-router.post(
-  "/google",
-  asyncHandler(async (request, response) => {
-    if (!request.body.credential) {
-      response.status(400).json({ error: "Google credential is required." });
-      return;
-    }
-
-    let profile;
-    try {
-      profile = await verifyGoogleCredential(request.body.credential);
-    } catch (error) {
-      response.status(error.status ?? 500).json({ error: error.message });
-      return;
-    }
-
-    const { email, name, googleId } = profile;
-    let user = isMongoReady() ? await User.findOne({ email }) : findMemoryUser(email);
-    if (!user) {
-      user = isMongoReady()
-        ? await User.create({
-            name,
-            email,
-            role: "user",
-            googleId,
-          })
-        : { id: `google_${Date.now().toString(36)}`, name, email, role: "user", verified: true };
-      if (!isMongoReady()) memoryUsers.set(email, user);
-    }
-
-    const cleanUser = publicUser(user);
-    response.json({ user: cleanUser, token: signToken(cleanUser) });
   }),
 );
 
