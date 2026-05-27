@@ -27,7 +27,11 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
-import { fetchAdminSummary } from "@/features/admin/api/adminApi";
+import {
+  fetchAdminSummary,
+  fetchTheaterApplications,
+  updateTheaterApplicationStatus,
+} from "@/features/admin/api/adminApi";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { createMovie, deleteMovie, fetchMovies } from "@/features/movies/api/moviesApi";
 import { movies as catalogMovies } from "@/features/movies/data/movieCatalog";
@@ -117,6 +121,7 @@ function AdminDashboard() {
   const [managedMovies, setManagedMovies] = useState(() => catalogMovies.slice(0, 8));
   const [movieBusy, setMovieBusy] = useState("");
   const [theaterApprovals, setTheaterApprovals] = useState(pendingTheatersSeed);
+  const [approvalBusy, setApprovalBusy] = useState("");
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
@@ -161,6 +166,25 @@ function AdminDashboard() {
     fetchMovies().then((moviesList) => {
       if (active) setManagedMovies(moviesList);
     });
+
+    return () => {
+      active = false;
+    };
+  }, [auth.hydrated, auth.user?.role]);
+
+  useEffect(() => {
+    if (!auth.hydrated || auth.user?.role !== "admin") return undefined;
+    let active = true;
+
+    fetchTheaterApplications()
+      .then((result) => {
+        if (!active) return;
+        const applications = result.theaters ?? [];
+        setTheaterApprovals(applications.length ? applications : pendingTheatersSeed);
+      })
+      .catch(() => {
+        if (active) setTheaterApprovals(pendingTheatersSeed);
+      });
 
     return () => {
       active = false;
@@ -264,12 +288,22 @@ function AdminDashboard() {
     }
   };
 
-  const updateApproval = (id, status) => {
+  const updateApproval = async (id, status) => {
     const theater = theaterApprovals.find((item) => item.id === id);
-    setTheaterApprovals((current) =>
-      current.map((item) => (item.id === id ? { ...item, status } : item)),
-    );
-    setNotice(`${theater?.name ?? "Theater"} marked as ${status.toLowerCase()}.`);
+    setApprovalBusy(id);
+    try {
+      const result = await updateTheaterApplicationStatus(id, status);
+      setTheaterApprovals((current) =>
+        current.map((item) =>
+          item.id === id ? { ...item, ...(result.theater ?? {}), status } : item,
+        ),
+      );
+      setNotice(`${theater?.name ?? "Theater"} marked as ${status.toLowerCase()}.`);
+    } catch (error) {
+      setNotice(error.response?.data?.error ?? `Could not update ${theater?.name ?? "theater"}.`);
+    } finally {
+      setApprovalBusy("");
+    }
   };
 
   if (!auth.hydrated) {
@@ -400,7 +434,11 @@ function AdminDashboard() {
       )}
 
       {activeTab === "theaters" && (
-        <TheaterApprovalsTab theaters={theaterApprovals} onUpdate={updateApproval} />
+        <TheaterApprovalsTab
+          theaters={theaterApprovals}
+          onUpdate={updateApproval}
+          approvalBusy={approvalBusy}
+        />
       )}
 
       {activeTab === "bookings" && (
@@ -582,7 +620,7 @@ function MoviesTab({
   );
 }
 
-function TheaterApprovalsTab({ theaters, onUpdate }) {
+function TheaterApprovalsTab({ theaters, onUpdate, approvalBusy }) {
   return (
     <section className="mt-6">
       <SpotlightCard className="rounded-lg p-5">
@@ -591,45 +629,62 @@ function TheaterApprovalsTab({ theaters, onUpdate }) {
           title="Theater approvals"
           subtitle="Review owner requests before cinemas go live"
         />
-        <div className="mt-5 grid gap-4 lg:grid-cols-3">
-          {theaters.map((theater) => (
-            <div
-              key={theater.id}
-              className="rounded-lg border border-border/60 bg-background/35 p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold">{theater.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{theater.owner}</p>
+        {theaters.length ? (
+          <div className="mt-5 grid gap-4 lg:grid-cols-3">
+            {theaters.map((theater) => (
+              <div
+                key={theater.id}
+                className="rounded-lg border border-border/60 bg-background/35 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold">{theater.name}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{theater.owner}</p>
+                  </div>
+                  <StatusPill status={theater.status} />
                 </div>
-                <StatusPill status={theater.status} />
+                <div className="mt-4 grid gap-2 text-sm">
+                  <SnapshotRow label="City" value={theater.city || "City not set"} />
+                  <SnapshotRow label="Area" value={theater.area || "Area not set"} />
+                  <SnapshotRow
+                    label="Screens"
+                    value={Number(theater.screens || 0).toLocaleString()}
+                  />
+                  <SnapshotRow label="Documents" value={theater.documents} />
+                  {theater.contact && <SnapshotRow label="Contact" value={theater.contact} />}
+                  {theater.ownerEmail && <SnapshotRow label="Email" value={theater.ownerEmail} />}
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => onUpdate(theater.id, "Approved")}
+                    disabled={approvalBusy === theater.id}
+                    className="gap-2"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    {approvalBusy === theater.id ? "Saving" : "Approve"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => onUpdate(theater.id, "Rejected")}
+                    disabled={approvalBusy === theater.id}
+                    className="gap-2"
+                  >
+                    <XCircle className="h-4 w-4" />
+                    Reject
+                  </Button>
+                </div>
               </div>
-              <div className="mt-4 grid gap-2 text-sm">
-                <SnapshotRow label="Screens" value={theater.screens.toLocaleString()} />
-                <SnapshotRow label="Documents" value={theater.documents} />
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => onUpdate(theater.id, "Approved")}
-                  className="gap-2"
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  Approve
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => onUpdate(theater.id, "Rejected")}
-                  className="gap-2"
-                >
-                  <XCircle className="h-4 w-4" />
-                  Reject
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Building2}
+            title="No owner applications"
+            text="New theater owner forms appear here for admin approval."
+          />
+        )}
       </SpotlightCard>
     </section>
   );

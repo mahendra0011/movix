@@ -9,8 +9,12 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  FileText,
+  Hash,
   KeyRound,
   Mail,
+  MapPin,
+  Phone,
   ShieldCheck,
   Ticket,
   UserRound,
@@ -58,6 +62,17 @@ function AuthPage() {
     confirmPassword: "",
     role: "user",
     otp: "",
+    ownerApplication: {
+      theaterName: "",
+      companyName: "",
+      city: "",
+      area: "",
+      address: "",
+      screens: "2",
+      contact: "",
+      gstNumber: "",
+      documents: "GST, Fire NOC",
+    },
   });
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -85,11 +100,42 @@ function AuthPage() {
     }
     if (otpStep) return form.otp.trim().length < 4;
     if (!form.email.trim() || !form.password.trim()) return true;
-    return mode === "register" && !form.name.trim();
-  }, [busy, form.confirmPassword, form.email, form.name, form.otp, form.password, mode, otpStep]);
+    if (mode !== "register") return false;
+    if (!form.name.trim()) return true;
+    if (form.role !== "theater-owner") return false;
+    return (
+      !form.ownerApplication.theaterName.trim() ||
+      !form.ownerApplication.city.trim() ||
+      !form.ownerApplication.address.trim() ||
+      !form.ownerApplication.contact.trim() ||
+      Number(form.ownerApplication.screens) < 1
+    );
+  }, [
+    busy,
+    form.confirmPassword,
+    form.email,
+    form.name,
+    form.otp,
+    form.ownerApplication,
+    form.password,
+    form.role,
+    mode,
+    otpStep,
+  ]);
 
   const update = (field) => (event) => {
     setForm((current) => ({ ...current, [field]: event.target.value }));
+    setNotice(null);
+  };
+
+  const updateOwnerApplication = (field) => (event) => {
+    setForm((current) => ({
+      ...current,
+      ownerApplication: {
+        ...current.ownerApplication,
+        [field]: event.target.value,
+      },
+    }));
     setNotice(null);
   };
 
@@ -155,6 +201,14 @@ function AuthPage() {
           email: form.email,
           password: form.password,
           role: form.role,
+          ownerApplication:
+            form.role === "theater-owner"
+              ? {
+                  ...form.ownerApplication,
+                  ownerName: form.name,
+                  ownerEmail: form.email,
+                }
+              : undefined,
         });
         if (result.requiresOtp) startOtpStep(result, form.email);
         else await completeSignIn(result);
@@ -344,6 +398,86 @@ function AuthPage() {
                     ))}
                   </div>
                 </div>
+
+                {form.role === "theater-owner" && (
+                  <div className="rounded-lg border border-border/60 bg-background/35 p-4">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-primary" />
+                      <span className="text-xs font-semibold uppercase text-muted-foreground">
+                        Theater owner application
+                      </span>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <Field label="Cinema name" icon={Building2}>
+                        <Input
+                          value={form.ownerApplication.theaterName}
+                          onChange={updateOwnerApplication("theaterName")}
+                          placeholder="Samdareeya Era Cinema"
+                        />
+                      </Field>
+                      <Field label="Company / owner" icon={UserRound}>
+                        <Input
+                          value={form.ownerApplication.companyName}
+                          onChange={updateOwnerApplication("companyName")}
+                          placeholder="Cinema company name"
+                        />
+                      </Field>
+                      <Field label="City" icon={MapPin}>
+                        <Input
+                          value={form.ownerApplication.city}
+                          onChange={updateOwnerApplication("city")}
+                          placeholder="Jabalpur"
+                        />
+                      </Field>
+                      <Field label="Area" icon={MapPin}>
+                        <Input
+                          value={form.ownerApplication.area}
+                          onChange={updateOwnerApplication("area")}
+                          placeholder="Napier Town"
+                        />
+                      </Field>
+                      <Field label="Screens" icon={Hash}>
+                        <Input
+                          value={form.ownerApplication.screens}
+                          onChange={updateOwnerApplication("screens")}
+                          type="number"
+                          min="1"
+                          placeholder="2"
+                        />
+                      </Field>
+                      <Field label="Contact" icon={Phone}>
+                        <Input
+                          value={form.ownerApplication.contact}
+                          onChange={updateOwnerApplication("contact")}
+                          placeholder="+91 98765 43210"
+                        />
+                      </Field>
+                      <div className="sm:col-span-2">
+                        <Field label="Full address" icon={MapPin}>
+                          <Input
+                            value={form.ownerApplication.address}
+                            onChange={updateOwnerApplication("address")}
+                            placeholder="Complete cinema address"
+                          />
+                        </Field>
+                      </div>
+                      <Field label="GST number" icon={FileText}>
+                        <Input
+                          value={form.ownerApplication.gstNumber}
+                          onChange={updateOwnerApplication("gstNumber")}
+                          placeholder="Optional"
+                        />
+                      </Field>
+                      <Field label="Documents" icon={FileText}>
+                        <Input
+                          value={form.ownerApplication.documents}
+                          onChange={updateOwnerApplication("documents")}
+                          placeholder="GST, Fire NOC, Lease"
+                        />
+                      </Field>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 
@@ -488,7 +622,7 @@ function AuthPage() {
             </div>
           ) : (
             <div className="mt-5 rounded-lg border border-border/60 bg-background/35 p-3 text-xs text-muted-foreground">
-              Admin, owner and customer accounts open from the same secure page.
+              Theater owner accounts can open the owner dashboard after admin approval.
             </div>
           )}
         </motion.section>
@@ -522,7 +656,7 @@ function authCopy(mode, otpStep, email) {
   if (mode === "register") {
     return {
       title: "Create your account",
-      text: "Register as a customer or theater owner. Email OTP verification is required.",
+      text: "Register as a customer or submit a theater owner application for admin approval.",
     };
   }
 

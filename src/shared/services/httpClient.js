@@ -1,6 +1,10 @@
 import axios from "axios";
 
-const configuredApiUrl = import.meta.env.VITE_API_URL?.trim() ?? "";
+const rawConfiguredApiUrl = import.meta.env.VITE_API_URL?.trim() ?? "";
+const isLocalhostApiUrl = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?/i.test(
+  rawConfiguredApiUrl,
+);
+const configuredApiUrl = !import.meta.env.DEV && isLocalhostApiUrl ? "" : rawConfiguredApiUrl;
 const HAS_CONFIGURED_API_URL = configuredApiUrl.length > 0;
 const API_BASE_URL = (
   configuredApiUrl || (import.meta.env.DEV ? "http://localhost:4000" : "")

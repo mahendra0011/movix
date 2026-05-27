@@ -17,17 +17,53 @@ function normalizeEmail(value) {
     .toLowerCase();
 }
 
+function cleanText(value) {
+  return String(value ?? "").trim();
+}
+
+function slugify(value) {
+  return String(value || "cinema")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function sanitizeOwnerApplication(input = {}, user = {}) {
+  const theaterName = cleanText(input.theaterName || input.name);
+  const city = cleanText(input.city);
+  return {
+    id:
+      cleanText(input.id) ||
+      `owner-app-${slugify(theaterName || user.name || "cinema")}-${Date.now().toString(36)}`,
+    theaterName,
+    companyName: cleanText(input.companyName || input.owner),
+    city,
+    area: cleanText(input.area),
+    address: cleanText(input.address),
+    contact: cleanText(input.contact),
+    screens: Math.max(1, Number(input.screens || 1)),
+    gstNumber: cleanText(input.gstNumber),
+    documents: cleanText(input.documents),
+    message: cleanText(input.message || input.notes),
+    submittedAt: input.submittedAt ? new Date(input.submittedAt) : new Date(),
+  };
+}
+
 function createOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 function publicUser(user) {
+  const ownerApplication = user.ownerApplication ? cleanDocument(user.ownerApplication) : undefined;
   return cleanDocument({
     id: user.id ?? user._id?.toString(),
     name: user.name,
     email: user.email,
     role: user.role,
     verified: Boolean(user.verified),
+    ownerStatus: user.ownerStatus || (user.role === "theater-owner" ? "Pending" : "Approved"),
+    ownerApplication,
+    ownerApplicationId: ownerApplication?.id,
   });
 }
 
@@ -105,7 +141,7 @@ async function clearOtp(user) {
 router.post(
   "/register",
   asyncHandler(async (request, response) => {
-    const { name, email, password, role = "user" } = request.body;
+    const { name, email, password, role = "user", ownerApplication } = request.body;
     const normalizedEmail = normalizeEmail(email);
 
     if (!name || !normalizedEmail || !password) {
@@ -119,7 +155,12 @@ router.post(
     }
 
     const safeRole = role === "theater-owner" ? "theater-owner" : "user";
+    const safeOwnerStatus = safeRole === "theater-owner" ? "Pending" : "Approved";
     const passwordHash = await bcrypt.hash(String(password), 10);
+    const application =
+      safeRole === "theater-owner"
+        ? sanitizeOwnerApplication(ownerApplication, { name, email: normalizedEmail })
+        : undefined;
     let user;
 
     if (isMongoReady()) {
@@ -128,7 +169,14 @@ router.post(
         response.status(409).json({ error: "Email is already registered." });
         return;
       }
-      user = await User.create({ name, email: normalizedEmail, passwordHash, role: safeRole });
+      user = await User.create({
+        name,
+        email: normalizedEmail,
+        passwordHash,
+        role: safeRole,
+        ownerStatus: safeOwnerStatus,
+        ownerApplication: application,
+      });
     } else {
       if (findMemoryUser(normalizedEmail)) {
         response.status(409).json({ error: "Email is already registered." });
@@ -140,6 +188,8 @@ router.post(
         email: normalizedEmail,
         passwordHash,
         role: safeRole,
+        ownerStatus: safeOwnerStatus,
+        ownerApplication: application,
         verified: false,
       };
       memoryUsers.set(normalizedEmail, user);
@@ -245,4 +295,22 @@ router.get("/me", requireAuth, (request, response) => {
   response.json({ user: request.user ?? request.auth });
 });
 
-export { router as authRoutes };
+function getMemoryUsers() {
+  return Array.from(memoryUsers.values());
+}
+
+function updateMemoryUserOwnerStatus(id, status, reviewer = "Admin") {
+  const targetId = String(id);
+  const user = getMemoryUsers().find((item) => String(item.id) === targetId);
+  if (!user) return null;
+  user.ownerStatus = status;
+  user.ownerApplication = {
+    ...(user.ownerApplication || {}),
+    reviewedAt: new Date(),
+    reviewedBy: reviewer,
+  };
+  memoryUsers.set(user.email, user);
+  return user;
+}
+
+export { getMemoryUsers, router as authRoutes, updateMemoryUserOwnerStatus };

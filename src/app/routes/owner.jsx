@@ -37,6 +37,7 @@ import { movies } from "@/features/movies/data/movieCatalog";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { getOwnerApprovalForUser } from "@/shared/services/ownerApplications";
 
 const Route = createFileRoute("/owner")({
   component: OwnerDashboard,
@@ -160,6 +161,7 @@ function OwnerDashboard() {
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const ownerKey = useMemo(() => getOwnerKey(auth.user), [auth.user]);
+  const ownerApproval = useMemo(() => getOwnerApprovalForUser(auth.user), [auth.user]);
   const [activeTab, setActiveTab] = useState("overview");
   const [screens, setScreens] = useState([]);
   const [shows, setShows] = useState([]);
@@ -182,7 +184,7 @@ function OwnerDashboard() {
 
   useEffect(() => {
     if (!auth.hydrated || auth.user?.role !== "theater-owner" || !ownerKey) return;
-    const workspace = readOwnerWorkspace(ownerKey);
+    const workspace = readOwnerWorkspace(ownerKey, ownerApproval.application);
     setCinemaProfile(workspace.cinemaProfile);
     setScreens(workspace.screens);
     setShows(workspace.shows);
@@ -192,7 +194,7 @@ function OwnerDashboard() {
       screen: workspace.screens[0]?.name ?? "",
     }));
     setWorkspaceReady(true);
-  }, [auth.hydrated, auth.user?.role, ownerKey]);
+  }, [auth.hydrated, auth.user?.role, ownerApproval.application, ownerKey]);
 
   useEffect(() => {
     if (!workspaceReady || auth.user?.role !== "theater-owner" || !ownerKey) return;
@@ -434,6 +436,17 @@ function OwnerDashboard() {
     );
   }
 
+  if (ownerApproval.status !== "Approved") {
+    return (
+      <OwnerApprovalState
+        application={ownerApproval.application}
+        status={ownerApproval.status}
+        user={auth.user}
+        onLogout={() => dispatch(logout())}
+      />
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 pb-20">
       <section className="cinema-grid overflow-hidden rounded-lg border border-border/60 bg-card/75 shadow-2xl shadow-black/20">
@@ -467,7 +480,7 @@ function OwnerDashboard() {
               icon={CheckCircle2}
               title="Cinema status"
               subtitle="Live owner operations"
-              action="Approved"
+              action={ownerApproval.status}
             />
             <div className="mt-5 grid gap-3">
               <SnapshotRow label="Owner" value={auth.user.name || "Theater owner"} />
@@ -1493,6 +1506,56 @@ function AccessState({ icon: Icon, title, text, action }) {
   );
 }
 
+function OwnerApprovalState({ application, status, user, onLogout }) {
+  const isRejected = status === "Rejected";
+  return (
+    <div className="mx-auto grid min-h-[calc(100vh-190px)] max-w-4xl place-items-center px-4 py-12">
+      <SpotlightCard className="w-full rounded-lg p-6 shadow-2xl shadow-black/20">
+        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
+              <ShieldCheck className="h-4 w-4" />
+              Owner approval
+            </div>
+            <h1 className="mt-5 text-2xl font-bold tracking-tight">
+              {isRejected ? "Application needs changes" : "Application submitted for review"}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              {isRejected
+                ? "Admin rejected this theater owner request. Update your cinema details and submit again."
+                : "Admin approval is required before this owner account can manage locations, movies, screens, show days, time slots and pricing."}
+            </p>
+          </div>
+          <StatusPill status={status} />
+        </div>
+
+        <div className="mt-6 grid gap-3 md:grid-cols-2">
+          <SnapshotRow label="Owner" value={user?.name || application?.ownerName || "Owner"} />
+          <SnapshotRow
+            label="Cinema"
+            value={application?.theaterName || "Application details pending"}
+          />
+          <SnapshotRow label="City" value={application?.city || "City not set"} />
+          <SnapshotRow label="Screens" value={(application?.screens || 1).toLocaleString()} />
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button variant="secondary" onClick={onLogout} className="gap-2">
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </Button>
+          <Button asChild className="gap-2">
+            <Link to="/">
+              <Ticket className="h-4 w-4" />
+              Browse movies
+            </Link>
+          </Button>
+        </div>
+      </SpotlightCard>
+    </div>
+  );
+}
+
 function Metric({ icon: Icon, label, value, text, tone }) {
   const toneClass = {
     primary: "bg-primary/15 text-primary",
@@ -1548,16 +1611,16 @@ function SnapshotRow({ label, value }) {
 }
 
 function StatusPill({ status }) {
-  const tone =
-    status === "Coming soon"
-      ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-500"
-      : status === "Selling fast"
-        ? "border-amber-500/30 bg-amber-500/10 text-amber-500"
-        : status === "Sold out"
-          ? "border-destructive/30 bg-destructive/10 text-destructive"
-          : status === "Draft"
-            ? "border-border bg-muted text-muted-foreground"
-            : "border-emerald-500/30 bg-emerald-500/10 text-emerald-500";
+  const tones = {
+    Approved: "border-emerald-500/30 bg-emerald-500/10 text-emerald-500",
+    Pending: "border-amber-500/30 bg-amber-500/10 text-amber-500",
+    Rejected: "border-destructive/30 bg-destructive/10 text-destructive",
+    "Coming soon": "border-cyan-500/30 bg-cyan-500/10 text-cyan-500",
+    "Selling fast": "border-amber-500/30 bg-amber-500/10 text-amber-500",
+    "Sold out": "border-destructive/30 bg-destructive/10 text-destructive",
+    Draft: "border-border bg-muted text-muted-foreground",
+  };
+  const tone = tones[status] ?? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500";
 
   return (
     <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${tone}`}>{status}</span>
@@ -1594,34 +1657,58 @@ function ownerStorageKey(ownerKey) {
   return `bms-owner-workspace:${encodeURIComponent(ownerKey)}`;
 }
 
-function createCinemaProfile(ownerKey) {
+function createCinemaProfile(ownerKey, application = null) {
+  const source = application && typeof application === "object" ? application : {};
+  const name = source.theaterName || defaultCinemaProfile.name;
+  const city = source.city || defaultCinemaProfile.city;
   return {
     ...defaultCinemaProfile,
+    name,
+    city,
+    area: source.area || defaultCinemaProfile.area,
+    address: source.address || defaultCinemaProfile.address,
+    contact: source.contact || defaultCinemaProfile.contact,
+    manager: source.ownerName || source.companyName || defaultCinemaProfile.manager,
+    amenities: source.documents || defaultCinemaProfile.amenities,
     ownerKey,
-    id: slugify(`${defaultCinemaProfile.name}-${defaultCinemaProfile.city}`),
+    id: slugify(`${name}-${city}`),
   };
 }
 
-function createOwnerWorkspace(ownerKey) {
+function createOwnerWorkspace(ownerKey, application = null) {
   return {
     version: OWNER_WORKSPACE_VERSION,
-    cinemaProfile: createCinemaProfile(ownerKey),
-    screens: screenSeeds.map((screen) => ({ ...screen, ownerKey })),
+    cinemaProfile: createCinemaProfile(ownerKey, application),
+    screens: createInitialScreens(ownerKey, application),
     shows: [],
     bookings: [],
   };
 }
 
-function readOwnerWorkspace(ownerKey) {
-  if (typeof window === "undefined" || !ownerKey) return createOwnerWorkspace(ownerKey);
+function createInitialScreens(ownerKey, application = null) {
+  const count = Math.min(12, Math.max(1, Number(application?.screens) || screenSeeds.length));
+  return Array.from({ length: count }, (_, index) => {
+    const seed = screenSeeds[index % screenSeeds.length];
+    return {
+      ...seed,
+      id: `${slugify(seed.name)}-${index + 1}`,
+      name: count === screenSeeds.length ? seed.name : `Screen ${index + 1}`,
+      ownerKey,
+    };
+  });
+}
+
+function readOwnerWorkspace(ownerKey, application = null) {
+  if (typeof window === "undefined" || !ownerKey)
+    return createOwnerWorkspace(ownerKey, application);
 
   try {
     const raw = window.localStorage.getItem(ownerStorageKey(ownerKey));
-    if (!raw) return createOwnerWorkspace(ownerKey);
+    if (!raw) return createOwnerWorkspace(ownerKey, application);
 
     const parsed = JSON.parse(raw);
     if (!parsed || parsed.version !== OWNER_WORKSPACE_VERSION) {
-      return createOwnerWorkspace(ownerKey);
+      return createOwnerWorkspace(ownerKey, application);
     }
 
     return {
@@ -1632,7 +1719,7 @@ function readOwnerWorkspace(ownerKey) {
       bookings: normalizeOwnerItems(parsed.bookings, ownerKey),
     };
   } catch {
-    return createOwnerWorkspace(ownerKey);
+    return createOwnerWorkspace(ownerKey, application);
   }
 }
 
