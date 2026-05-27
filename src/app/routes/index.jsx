@@ -97,6 +97,8 @@ function Home() {
   const featured = catalog[0] ?? fallbackMovies[0];
   const [query, setQuery] = useState(readHomeSearchQuery);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [activeLanguage, setActiveLanguage] = useState("All");
+  const [activeFormat, setActiveFormat] = useState("All");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
@@ -106,6 +108,9 @@ function Home() {
     return catalog.filter((movie) => {
       const categoryMatch =
         activeCategory === "All" || movie.genres.some((genre) => genre === activeCategory);
+      const languageMatch = activeLanguage === "All" || movie.language === activeLanguage;
+      const formatMatch =
+        activeFormat === "All" || (movie.format ?? []).some((format) => format === activeFormat);
       const searchable = [
         movie.title,
         movie.language,
@@ -113,24 +118,44 @@ function Home() {
         movie.certificate,
         movie.description,
         ...movie.genres,
+        ...(movie.format ?? []),
         ...(movie.cast ?? []).flatMap((member) => [member.name, member.role]),
       ]
         .join(" ")
         .toLowerCase();
-      return categoryMatch && (!needle || searchable.includes(needle));
+      return (
+        categoryMatch && languageMatch && formatMatch && (!needle || searchable.includes(needle))
+      );
     });
-  }, [activeCategory, catalog, query]);
+  }, [activeCategory, activeFormat, activeLanguage, catalog, query]);
   const availableCategories = useMemo(
     () => ["All", ...Array.from(new Set(catalog.flatMap((movie) => movie.genres)))],
     [catalog],
   );
-  const hasCategoryFilter = activeCategory !== "All";
-  const shelfMovies = hasCategoryFilter ? filteredMovies : catalog;
+  const availableLanguages = useMemo(
+    () => ["All", ...Array.from(new Set(catalog.map((movie) => movie.language).filter(Boolean)))],
+    [catalog],
+  );
+  const availableFormats = useMemo(
+    () => ["All", ...Array.from(new Set(catalog.flatMap((movie) => movie.format ?? [])))],
+    [catalog],
+  );
+  const hasActiveFilters =
+    activeCategory !== "All" || activeLanguage !== "All" || activeFormat !== "All";
+  const shelfMovies = hasActiveFilters ? filteredMovies : catalog;
   const activeSearchQuery = query.trim();
   const rotateShelf = (offset) => [...shelfMovies.slice(offset), ...shelfMovies.slice(0, offset)];
   const trending = expandedSections.recommended ? shelfMovies : shelfMovies.slice(0, 6);
-  const recommended = expandedSections.comingSoon ? rotateShelf(2) : shelfMovies.slice(2, 8);
-  const premieres = expandedSections.premieres ? rotateShelf(3) : shelfMovies.slice(3, 7);
+  const recommended = hasActiveFilters
+    ? shelfMovies
+    : expandedSections.comingSoon
+      ? rotateShelf(2)
+      : shelfMovies.slice(2, 8);
+  const premieres = hasActiveFilters
+    ? shelfMovies
+    : expandedSections.premieres
+      ? rotateShelf(3)
+      : shelfMovies.slice(3, 7);
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
 
@@ -159,6 +184,12 @@ function Home() {
     }));
   };
 
+  const clearFilters = () => {
+    setActiveCategory("All");
+    setActiveLanguage("All");
+    setActiveFormat("All");
+  };
+
   if (!featured) return null;
   if (activeSearchQuery) {
     return (
@@ -177,7 +208,7 @@ function Home() {
               variant="secondary"
               onClick={() => {
                 setQuery("");
-                setActiveCategory("All");
+                clearFilters();
                 writeHomeSearchQuery("");
               }}
             >
@@ -196,7 +227,7 @@ function Home() {
               <Search className="mx-auto h-8 w-8 text-primary" />
               <h2 className="mt-4 text-xl font-bold">No movies found</h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                Try another movie title, genre, language, cinema, or city.
+                Try another movie title, category, language, format, cinema, or city.
               </p>
             </div>
           )}
@@ -279,31 +310,61 @@ function Home() {
         </div>
       </section>
 
-      {/* Category filters */}
+      {/* Movie filters */}
       <section className="mx-auto mt-10 max-w-7xl px-4">
-        <div className="flex items-center gap-3">
-          <Clapperboard className="h-4 w-4 text-primary" />
-          <h3 className="text-xs font-semibold uppercase text-muted-foreground">Category</h3>
-          <div className="h-px flex-1 bg-border/60" />
-        </div>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
-          {availableCategories.map((category) => (
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <Clapperboard className="h-4 w-4 shrink-0 text-primary" />
+            <h3 className="text-xs font-semibold uppercase text-muted-foreground">Movie filters</h3>
+            <div className="h-px flex-1 bg-border/60" />
+          </div>
+          {hasActiveFilters && (
             <button
-              key={category}
               type="button"
-              aria-pressed={activeCategory === category}
-              onClick={() => setActiveCategory(category)}
-              className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
-                activeCategory === category
-                  ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/30"
-                  : "border-border/60 text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-              }`}
+              onClick={clearFilters}
+              className="shrink-0 text-xs font-medium text-primary hover:underline"
             >
-              {category}
+              Clear filters
             </button>
-          ))}
+          )}
+        </div>
+
+        <div className="mt-4 grid gap-4">
+          <FilterChipRow
+            label="Category"
+            options={availableCategories}
+            activeValue={activeCategory}
+            onChange={setActiveCategory}
+          />
+          <FilterChipRow
+            label="Language"
+            options={availableLanguages}
+            activeValue={activeLanguage}
+            onChange={setActiveLanguage}
+          />
+          <FilterChipRow
+            label="Format"
+            options={availableFormats}
+            activeValue={activeFormat}
+            onChange={setActiveFormat}
+          />
         </div>
       </section>
+
+      {hasActiveFilters && filteredMovies.length === 0 && (
+        <section className="mx-auto mt-8 max-w-7xl px-4">
+          <div className="rounded-lg border border-border/60 bg-card/40 p-8 text-center">
+            <Search className="mx-auto h-8 w-8 text-primary" />
+            <h2 className="mt-4 text-xl font-bold">No movies match these filters</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Try a different category, language, or format combination.
+            </p>
+            <Button type="button" variant="secondary" className="mt-5" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* Trending */}
       <Section
@@ -528,6 +589,37 @@ function Home() {
     </div>
   );
 }
+
+function FilterChipRow({ label, options, activeValue, onChange }) {
+  return (
+    <div>
+      <div className="flex items-center gap-3">
+        <p className="w-20 shrink-0 text-xs font-semibold uppercase text-muted-foreground">
+          {label}
+        </p>
+        <div className="h-px flex-1 bg-border/50" />
+      </div>
+      <div className="mt-2 flex gap-2 overflow-x-auto pb-2">
+        {options.map((option) => (
+          <button
+            key={`${label}-${option}`}
+            type="button"
+            aria-pressed={activeValue === option}
+            onClick={() => onChange(option)}
+            className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
+              activeValue === option
+                ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/30"
+                : "border-border/60 text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+            }`}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Section({
   title,
   subtitle,
