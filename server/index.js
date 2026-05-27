@@ -46,7 +46,8 @@ app.get("/api/health", (_request, response) => {
     socket: "enabled",
     seats: "Booked-seat sync",
     notifications: "Socket.IO live notifications",
-    email: env.brevoApiKey ? "Brevo connected" : "Email provider not configured",
+    email:
+      env.brevoApiKey && env.brevoFromEmail ? "Brevo configured" : "Email provider not configured",
     payment:
       env.paymentProvider === "razorpay" && env.razorpayKeyId && env.razorpayKeySecret
         ? "Razorpay connected"

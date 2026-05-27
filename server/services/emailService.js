@@ -95,7 +95,10 @@ async function sendEmail({ to, subject, html }) {
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Brevo API email failed: ${response.status} ${body}`);
+    const error = new Error("Email service failed. Check Brevo API key and sender email.");
+    error.status = 502;
+    error.cause = new Error(`Brevo API email failed: ${response.status} ${body}`);
+    throw error;
   }
 
   return { sent: true, provider: "brevo-api", response: await response.json() };
