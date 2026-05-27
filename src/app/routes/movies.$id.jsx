@@ -6,7 +6,6 @@ import {
   Clock,
   Heart,
   Info,
-  MapPin,
   Moon,
   Play,
   Search,
@@ -17,10 +16,10 @@ import {
 } from "lucide-react";
 import { fetchMovie } from "@/features/movies/api/moviesApi";
 import { theaters, showTimes } from "@/features/movies/data/movieCatalog";
+import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
 import {
   readPreferredCity,
-  sortCities,
   subscribePreferredCity,
   writePreferredCity,
 } from "@/shared/services/cityPreference";
@@ -52,13 +51,10 @@ function MoviePage() {
     setOwnerWorkspaces(readOwnerWorkspaces());
   }, []);
 
-  const cityOptions = useMemo(() => buildCityOptions(ownerWorkspaces), [ownerWorkspaces]);
-
-  useEffect(() => {
-    if (cityOptions.length > 0 && !cityOptions.includes(selectedCity)) {
-      setSelectedCity(cityOptions[0]);
-    }
-  }, [cityOptions, selectedCity]);
+  const citySuggestions = useMemo(
+    () => buildMovieCitySuggestions(ownerWorkspaces),
+    [ownerWorkspaces],
+  );
 
   useEffect(() => {
     writePreferredCity(selectedCity);
@@ -243,21 +239,13 @@ function MoviePage() {
               </div>
             </div>
 
-            <label className="flex w-full items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-sm lg:w-auto">
-              <MapPin className="h-4 w-4 text-primary" />
-              <select
-                value={selectedCity}
-                onChange={(event) => writePreferredCity(event.target.value)}
-                className="min-w-40 flex-1 bg-transparent font-medium outline-none"
-              >
-                {cityOptions.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </label>
+            <CitySelect
+              value={selectedCity}
+              options={citySuggestions}
+              onChange={setSelectedCity}
+              className="w-full gap-2 rounded-lg bg-card px-3 py-2 lg:w-auto"
+              selectClassName="min-w-40 flex-1"
+            />
           </div>
         </div>
 
@@ -657,13 +645,13 @@ function showTimeClass(status) {
   return "border-emerald-500/70 bg-background text-foreground hover:bg-emerald-500/10";
 }
 
-function buildCityOptions(ownerWorkspaces) {
+function buildMovieCitySuggestions(ownerWorkspaces) {
   const cities = theaters.map((theater) => theater.city).filter(Boolean);
   ownerWorkspaces.forEach((workspace) => {
     if (workspace.cinemaProfile?.city) cities.push(workspace.cinemaProfile.city);
   });
 
-  return sortCities(cities);
+  return cities;
 }
 
 function readOwnerWorkspaces() {
