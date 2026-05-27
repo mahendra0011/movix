@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ChevronRight,
@@ -19,7 +19,7 @@ import {
   Building2,
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
-import { movies as fallbackMovies } from "@/features/movies/data/movieCatalog";
+import { movies as fallbackMovies, theaters } from "@/features/movies/data/movieCatalog";
 import { MovieCard } from "@/features/movies/components/MovieCard";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { StaggeredText } from "@/shared/components/reactbits/StaggeredText";
@@ -99,6 +99,7 @@ function trailerSearchUrl(title) {
 function Home() {
   const loadedMovies = Route.useLoaderData();
   const { q } = Route.useSearch();
+  const navigate = useNavigate();
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
   const featured = catalog[0] ?? fallbackMovies[0];
   const [query, setQuery] = useState(q);
@@ -108,21 +109,48 @@ function Home() {
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
+  const theaterSearchText = useMemo(
+    () =>
+      theaters
+        .flatMap((theater) => [
+          theater.name,
+          theater.city,
+          theater.area,
+          theater.address,
+          ...(theater.amenities ?? []),
+        ])
+        .join(" ")
+        .toLowerCase(),
+    [],
+  );
   const filteredMovies = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return catalog.filter((movie) => {
-      const searchable = [movie.title, movie.language, ...movie.genres].join(" ").toLowerCase();
-      const queryMatch = !needle || searchable.includes(needle);
+      const searchable = [
+        movie.title,
+        movie.language,
+        movie.duration,
+        movie.certificate,
+        movie.description,
+        ...movie.genres,
+        ...(movie.cast ?? []).flatMap((member) => [member.name, member.role]),
+      ]
+        .join(" ")
+        .toLowerCase();
+      const queryMatch =
+        !needle || searchable.includes(needle) || theaterSearchText.includes(needle);
       const genreMatch = activeGenre === "All" || movie.genres.includes(activeGenre);
       const languageMatch = activeLanguage === "All" || movie.language === activeLanguage;
       return queryMatch && genreMatch && languageMatch;
     });
-  }, [activeGenre, activeLanguage, catalog, query]);
+  }, [activeGenre, activeLanguage, catalog, query, theaterSearchText]);
   const availableLanguages = useMemo(
     () => ["All", ...Array.from(new Set(catalog.map((movie) => movie.language)))],
     [catalog],
   );
-  const shelfMovies = filteredMovies.length > 0 ? filteredMovies : catalog;
+  const hasActiveFilters = query.trim() !== "" || activeGenre !== "All" || activeLanguage !== "All";
+  const hasNoResults = hasActiveFilters && filteredMovies.length === 0;
+  const shelfMovies = hasActiveFilters ? filteredMovies : catalog;
   const rotateShelf = (offset) => [...shelfMovies.slice(offset), ...shelfMovies.slice(0, offset)];
   const trending = expandedSections.recommended ? shelfMovies : shelfMovies.slice(0, 6);
   const recommended = expandedSections.comingSoon ? rotateShelf(2) : shelfMovies.slice(2, 8);
@@ -297,200 +325,227 @@ function Home() {
         </div>
       </section>
 
-      {/* Trending */}
-      <Section
-        title="Recommended movies"
-        subtitle="Most booked this week"
-        icon={<TrendingUp className="h-5 w-5 text-primary" />}
-        actionLabel={expandedSections.recommended ? "Show less" : "See all"}
-        onAction={() => toggleSection("recommended")}
-      >
-        <div className="movie-grid-animate grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {trending.map((m) => (
-            <MovieCard key={m.id} movie={m} />
-          ))}
-        </div>
-      </Section>
-
-      {/* Promotions */}
-      <section className="mx-auto mt-12 max-w-7xl px-4">
-        <div className="stagger-grid grid gap-4 md:grid-cols-3">
-          {promotions.map((p) => (
-            <Link key={p.title} to={p.to} className="group block">
-              <SpotlightCard
-                className={`rounded-lg bg-gradient-to-br ${p.c} p-6 transition-all hover:-translate-y-0.5 hover:border-foreground/20`}
-              >
-                <p.icon className="h-8 w-8 text-foreground/90" />
-                <h3 className="mt-4 text-lg font-semibold">{p.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary">
-                  Explore
-                  <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </SpotlightCard>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Premiere of the week - wide cards */}
-      <Section
-        title="Premieres of the week"
-        subtitle="Brand new films, only in theatres"
-        icon={<Flame className="h-5 w-5 text-primary" />}
-        actionLabel={expandedSections.premieres ? "Show less" : "See all"}
-        onAction={() => toggleSection("premieres")}
-      >
-        <div className="stagger-grid grid gap-4 md:grid-cols-2">
-          {premieres.map((m) => (
-            <Link
-              key={m.id}
-              to="/movies/$id"
-              params={{ id: m.id }}
-              className="group relative h-44 overflow-hidden rounded-2xl border border-border/60"
+      {hasNoResults ? (
+        <section className="mx-auto mt-12 max-w-7xl px-4">
+          <SpotlightCard className="rounded-lg p-8 text-center">
+            <Search className="mx-auto h-8 w-8 text-primary" />
+            <h2 className="mt-4 text-xl font-bold">No movies found</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Try another movie title, genre, language, cinema, or city.
+            </p>
+            <Button
+              type="button"
+              variant="secondary"
+              className="mt-5"
+              onClick={() => {
+                setQuery("");
+                setActiveGenre("All");
+                setActiveLanguage("All");
+                void navigate({ to: "/", search: {} });
+              }}
             >
-              <img
-                src={m.backdrop}
-                alt={m.title}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-              <div className="relative flex h-full items-center gap-4 p-5">
-                <img
-                  src={m.poster}
-                  alt={m.title}
-                  className="h-32 w-22 rounded-lg object-cover shadow-xl"
-                />
-                <div className="min-w-0">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                    <Flame className="h-3 w-3" /> Premiere
-                  </span>
-                  <h3 className="mt-2 truncate text-lg font-bold">{m.title}</h3>
-                  <p className="line-clamp-2 text-xs text-muted-foreground">{m.description}</p>
-                  <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <Star className="h-3 w-3 fill-primary text-primary" /> {m.rating} - {m.duration}{" "}
-                    - {m.certificate}
+              Clear search
+            </Button>
+          </SpotlightCard>
+        </section>
+      ) : (
+        <>
+          {/* Trending */}
+          <Section
+            title="Recommended movies"
+            subtitle="Most booked this week"
+            icon={<TrendingUp className="h-5 w-5 text-primary" />}
+            actionLabel={expandedSections.recommended ? "Show less" : "See all"}
+            onAction={() => toggleSection("recommended")}
+          >
+            <div className="movie-grid-animate grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {trending.map((m) => (
+                <MovieCard key={m.id} movie={m} />
+              ))}
+            </div>
+          </Section>
+
+          {/* Promotions */}
+          <section className="mx-auto mt-12 max-w-7xl px-4">
+            <div className="stagger-grid grid gap-4 md:grid-cols-3">
+              {promotions.map((p) => (
+                <Link key={p.title} to={p.to} className="group block">
+                  <SpotlightCard
+                    className={`rounded-lg bg-gradient-to-br ${p.c} p-6 transition-all hover:-translate-y-0.5 hover:border-foreground/20`}
+                  >
+                    <p.icon className="h-8 w-8 text-foreground/90" />
+                    <h3 className="mt-4 text-lg font-semibold">{p.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
+                    <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary">
+                      Explore
+                      <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </SpotlightCard>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Premiere of the week - wide cards */}
+          <Section
+            title="Premieres of the week"
+            subtitle="Brand new films, only in theatres"
+            icon={<Flame className="h-5 w-5 text-primary" />}
+            actionLabel={expandedSections.premieres ? "Show less" : "See all"}
+            onAction={() => toggleSection("premieres")}
+          >
+            <div className="stagger-grid grid gap-4 md:grid-cols-2">
+              {premieres.map((m) => (
+                <Link
+                  key={m.id}
+                  to="/movies/$id"
+                  params={{ id: m.id }}
+                  className="group relative h-44 overflow-hidden rounded-2xl border border-border/60"
+                >
+                  <img
+                    src={m.backdrop}
+                    alt={m.title}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
+                  <div className="relative flex h-full items-center gap-4 p-5">
+                    <img
+                      src={m.poster}
+                      alt={m.title}
+                      className="h-32 w-22 rounded-lg object-cover shadow-xl"
+                    />
+                    <div className="min-w-0">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                        <Flame className="h-3 w-3" /> Premiere
+                      </span>
+                      <h3 className="mt-2 truncate text-lg font-bold">{m.title}</h3>
+                      <p className="line-clamp-2 text-xs text-muted-foreground">{m.description}</p>
+                      <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <Star className="h-3 w-3 fill-primary text-primary" /> {m.rating} -{" "}
+                        {m.duration} - {m.certificate}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </Section>
+                </Link>
+              ))}
+            </div>
+          </Section>
 
-      {/* Coming soon */}
-      <Section
-        title="Coming soon"
-        subtitle="Curated upcoming picks"
-        icon={<Calendar className="h-5 w-5 text-primary" />}
-        actionLabel={expandedSections.comingSoon ? "Show less" : "See all"}
-        onAction={() => toggleSection("comingSoon")}
-      >
-        <div className="movie-grid-animate grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {recommended.map((m) => (
-            <MovieCard key={m.id} movie={m} />
-          ))}
-        </div>
-      </Section>
+          {/* Coming soon */}
+          <Section
+            title="Coming soon"
+            subtitle="Curated upcoming picks"
+            icon={<Calendar className="h-5 w-5 text-primary" />}
+            actionLabel={expandedSections.comingSoon ? "Show less" : "See all"}
+            onAction={() => toggleSection("comingSoon")}
+          >
+            <div className="movie-grid-animate grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {recommended.map((m) => (
+                <MovieCard key={m.id} movie={m} />
+              ))}
+            </div>
+          </Section>
 
-      {/* Cinema partners */}
-      <Section
-        title="Cinema partners"
-        subtitle="Premium screens, Dolby Atmos & recliners"
-        icon={<Building2 className="h-5 w-5 text-primary" />}
-        actionHref={`/movies/${featured.id}#showtimes`}
-      >
-        <div className="stagger-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {cinemas.map((c) => (
-            <a key={c.name} href={`/movies/${featured.id}#showtimes`} className="group block">
-              <SpotlightCard className="rounded-lg p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold">{c.name}</h3>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{c.features}</p>
+          {/* Cinema partners */}
+          <Section
+            title="Cinema partners"
+            subtitle="Premium screens, Dolby Atmos & recliners"
+            icon={<Building2 className="h-5 w-5 text-primary" />}
+            actionHref={`/movies/${featured.id}#showtimes`}
+          >
+            <div className="stagger-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {cinemas.map((c) => (
+                <a key={c.name} href={`/movies/${featured.id}#showtimes`} className="group block">
+                  <SpotlightCard className="rounded-lg p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold">{c.name}</h3>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{c.features}</p>
+                      </div>
+                      <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
+                        <Star className="h-3 w-3 fill-primary text-primary" />
+                        {c.rating}
+                      </span>
+                    </div>
+                    <div className="mt-5 flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">{c.screens} screens - Dolby</span>
+                      <span className="inline-flex items-center gap-1 text-primary">
+                        Showtimes <ChevronRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </SpotlightCard>
+                </a>
+              ))}
+            </div>
+          </Section>
+
+          {/* Testimonials */}
+          <Section
+            title="Loved by movie lovers"
+            subtitle="What our users say"
+            icon={<Quote className="h-5 w-5 text-primary" />}
+          >
+            <div className="grid gap-4 md:grid-cols-3">
+              {testimonials.map((t) => (
+                <SpotlightCard key={t.name} className="rounded-lg p-6">
+                  <Quote className="h-6 w-6 text-primary/60" />
+                  <p className="mt-3 text-sm leading-relaxed text-foreground/90">"{t.text}"</p>
+                  <div className="mt-5 flex items-center gap-3 border-t border-border/60 pt-4">
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-primary to-vip text-sm font-bold text-primary-foreground">
+                      {t.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">{t.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{t.role}</p>
+                    </div>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
-                    <Star className="h-3 w-3 fill-primary text-primary" />
-                    {c.rating}
-                  </span>
-                </div>
-                <div className="mt-5 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{c.screens} screens - Dolby</span>
-                  <span className="inline-flex items-center gap-1 text-primary">
-                    Showtimes <ChevronRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </SpotlightCard>
-            </a>
-          ))}
-        </div>
-      </Section>
+                </SpotlightCard>
+              ))}
+            </div>
+          </Section>
 
-      {/* Testimonials */}
-      <Section
-        title="Loved by movie lovers"
-        subtitle="What our users say"
-        icon={<Quote className="h-5 w-5 text-primary" />}
-      >
-        <div className="grid gap-4 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <SpotlightCard key={t.name} className="rounded-lg p-6">
-              <Quote className="h-6 w-6 text-primary/60" />
-              <p className="mt-3 text-sm leading-relaxed text-foreground/90">"{t.text}"</p>
-              <div className="mt-5 flex items-center gap-3 border-t border-border/60 pt-4">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-primary to-vip text-sm font-bold text-primary-foreground">
-                  {t.name.charAt(0)}
-                </div>
+          {/* App download CTA */}
+          <section className="mx-auto mt-16 max-w-7xl px-4">
+            <SpotlightCard className="rounded-lg bg-gradient-to-br from-primary/20 via-card to-accent/20 p-8 md:p-12">
+              <div className="relative grid items-center gap-8 md:grid-cols-2">
                 <div>
-                  <p className="text-sm font-semibold">{t.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{t.role}</p>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3 py-1 text-xs font-medium text-primary">
+                    <Smartphone className="h-3 w-3" /> Mobile alerts
+                  </span>
+                  <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+                    Never miss a seat.
+                    <br />
+                    Get launch alerts.
+                  </h2>
+                  <p className="mt-3 max-w-md text-sm text-muted-foreground">
+                    Save your email once and receive new-release alerts, booking reminders and
+                    exclusive early access updates from the notifications service.
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Button size="lg" className="gap-2" asChild>
+                      <a href="#newsletter">
+                        <BellRing className="h-4 w-4" /> Notify me
+                      </a>
+                    </Button>
+                    <Button size="lg" variant="secondary" className="gap-2" asChild>
+                      <Link to="/movies/$id" params={{ id: featured.id }}>
+                        <Ticket className="h-4 w-4" /> Book now
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+                <div className="hidden justify-end md:flex">
+                  <div className="relative">
+                    <div className="relative grid h-56 w-32 place-items-center rounded-[2rem] border-4 border-foreground/10 bg-background shadow-2xl">
+                      <Ticket className="h-12 w-12 text-primary" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </SpotlightCard>
-          ))}
-        </div>
-      </Section>
-
-      {/* App download CTA */}
-      <section className="mx-auto mt-16 max-w-7xl px-4">
-        <SpotlightCard className="rounded-lg bg-gradient-to-br from-primary/20 via-card to-accent/20 p-8 md:p-12">
-          <div className="relative grid items-center gap-8 md:grid-cols-2">
-            <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3 py-1 text-xs font-medium text-primary">
-                <Smartphone className="h-3 w-3" /> Mobile alerts
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                Never miss a seat.
-                <br />
-                Get launch alerts.
-              </h2>
-              <p className="mt-3 max-w-md text-sm text-muted-foreground">
-                Save your email once and receive new-release alerts, booking reminders and exclusive
-                early access updates from the notifications service.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button size="lg" className="gap-2" asChild>
-                  <a href="#newsletter">
-                    <BellRing className="h-4 w-4" /> Notify me
-                  </a>
-                </Button>
-                <Button size="lg" variant="secondary" className="gap-2" asChild>
-                  <Link to="/movies/$id" params={{ id: featured.id }}>
-                    <Ticket className="h-4 w-4" /> Book now
-                  </Link>
-                </Button>
-              </div>
-            </div>
-            <div className="hidden justify-end md:flex">
-              <div className="relative">
-                <div className="relative grid h-56 w-32 place-items-center rounded-[2rem] border-4 border-foreground/10 bg-background shadow-2xl">
-                  <Ticket className="h-12 w-12 text-primary" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </SpotlightCard>
-      </section>
+          </section>
+        </>
+      )}
 
       {/* Newsletter */}
       <section id="newsletter" className="mx-auto mt-12 max-w-3xl px-4 text-center">

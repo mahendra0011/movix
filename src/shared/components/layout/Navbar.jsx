@@ -158,6 +158,18 @@ function Navbar() {
         </Button>
       </div>
 
+      <div className="border-t border-border/60 px-4 py-2 md:hidden">
+        <form onSubmit={submitSearch} className="relative mx-auto max-w-7xl">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={navSearch}
+            onChange={(event) => setNavSearch(event.target.value)}
+            placeholder="Search movies, theaters..."
+            className="h-10 border-border/60 bg-card/60 pl-9"
+          />
+        </form>
+      </div>
+
       <nav className="border-t border-border/60">
         <div className="mx-auto flex max-w-7xl gap-6 overflow-x-auto px-4 py-2 text-sm text-muted-foreground">
           {navItems.map((item) => (

@@ -4,6 +4,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:4000").r
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 10000,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
@@ -23,6 +24,7 @@ async function requestJson(path, init) {
     url: path,
     method: init?.method ?? "GET",
     headers: init?.headers,
+    timeout: init?.timeoutMs,
     data: init?.body ? JSON.parse(init.body) : undefined,
   });
 
