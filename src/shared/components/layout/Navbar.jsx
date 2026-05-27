@@ -1,10 +1,17 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, User, Film, LayoutDashboard, Moon, Sun, Building2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Search, User, Film, LayoutDashboard, Moon, Sun, Building2, MapPin } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hydrateAuth, readStoredAuth } from "@/features/auth/authSlice";
+import { theaters } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import {
+  readPreferredCity,
+  sortCities,
+  subscribePreferredCity,
+  writePreferredCity,
+} from "@/shared/services/cityPreference";
 
 const navItems = [
   { label: "Movies", to: "/" },
@@ -30,6 +37,8 @@ function Navbar() {
   const auth = useSelector((state) => state.auth);
   const [navSearch, setNavSearch] = useState("");
   const [theme, setTheme] = useState("dark");
+  const [selectedCity, setSelectedCity] = useState(readPreferredCity);
+  const cityOptions = useMemo(() => sortCities(theaters.map((theater) => theater.city)), []);
   const isAdmin = auth.user?.role === "admin";
   const isOwner = auth.user?.role === "theater-owner";
   const accountPath = !auth.user ? "/auth" : isAdmin ? "/admin" : isOwner ? "/owner" : "/dashboard";
@@ -44,6 +53,14 @@ function Navbar() {
     setTheme(storedTheme);
     applyTheme(storedTheme);
   }, []);
+
+  useEffect(() => subscribePreferredCity(setSelectedCity), []);
+
+  useEffect(() => {
+    if (cityOptions.length > 0 && !cityOptions.includes(selectedCity)) {
+      writePreferredCity(cityOptions[0]);
+    }
+  }, [cityOptions, selectedCity]);
 
   const submitSearch = async (event) => {
     event.preventDefault();
@@ -60,9 +77,15 @@ function Navbar() {
     window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
   };
 
+  const changeCity = (event) => {
+    const nextCity = event.target.value;
+    setSelectedCity(nextCity);
+    writePreferredCity(nextCity);
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-4">
         <Link to="/" className="flex items-center gap-2">
           <div className="grid h-8 w-8 place-items-center rounded-md bg-primary">
             <Film className="h-4 w-4 text-primary-foreground" />
@@ -71,6 +94,22 @@ function Navbar() {
             movie<span className="text-primary">x</span>
           </span>
         </Link>
+
+        <label className="flex min-w-0 items-center gap-1.5 rounded-md border border-border/60 bg-card/60 px-2.5 py-2 text-sm">
+          <MapPin className="h-4 w-4 shrink-0 text-primary" />
+          <select
+            value={selectedCity}
+            onChange={changeCity}
+            className="w-[92px] bg-transparent text-xs font-medium outline-none sm:w-32 sm:text-sm"
+            aria-label="Select city"
+          >
+            {cityOptions.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <div className="ml-4 hidden flex-1 md:block">
           <form onSubmit={submitSearch} className="relative max-w-xl">
@@ -114,7 +153,7 @@ function Navbar() {
 
         <Button size="sm" className="gap-2" asChild>
           <Link to={accountPath}>
-            <User className="h-4 w-4" /> {accountLabel}
+            <User className="h-4 w-4" /> <span className="hidden sm:inline">{accountLabel}</span>
           </Link>
         </Button>
       </div>

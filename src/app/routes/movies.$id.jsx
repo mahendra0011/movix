@@ -4,6 +4,12 @@ import { Calendar, Clock, Heart, MapPin, Play, Share2, Star } from "lucide-react
 import { fetchMovie } from "@/features/movies/api/moviesApi";
 import { theaters, showTimes } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
+import {
+  readPreferredCity,
+  sortCities,
+  subscribePreferredCity,
+  writePreferredCity,
+} from "@/shared/services/cityPreference";
 
 const dateOptions = buildDateOptions();
 const ownerWorkspacePrefix = "bms-owner-workspace:";
@@ -39,6 +45,8 @@ function MoviePage() {
   useEffect(() => {
     writePreferredCity(selectedCity);
   }, [selectedCity]);
+
+  useEffect(() => subscribePreferredCity(setSelectedCity), []);
 
   const selectedDateLabel = useMemo(() => getDateLabel(activeDate), [activeDate]);
   const cinemaListings = useMemo(
@@ -192,7 +200,7 @@ function MoviePage() {
               <MapPin className="h-4 w-4 text-primary" />
               <select
                 value={selectedCity}
-                onChange={(event) => setSelectedCity(event.target.value)}
+                onChange={(event) => writePreferredCity(event.target.value)}
                 className="min-w-36 bg-transparent text-sm font-medium outline-none"
               >
                 {cityOptions.map((city) => (
@@ -440,16 +448,12 @@ function showTimeClass(status) {
 }
 
 function buildCityOptions(ownerWorkspaces) {
-  const cities = new Set(theaters.map((theater) => theater.city).filter(Boolean));
+  const cities = theaters.map((theater) => theater.city).filter(Boolean);
   ownerWorkspaces.forEach((workspace) => {
-    if (workspace.cinemaProfile?.city) cities.add(workspace.cinemaProfile.city);
+    if (workspace.cinemaProfile?.city) cities.push(workspace.cinemaProfile.city);
   });
 
-  return Array.from(cities).sort((a, b) => {
-    if (a === "Bengaluru") return -1;
-    if (b === "Bengaluru") return 1;
-    return a.localeCompare(b);
-  });
+  return sortCities(cities);
 }
 
 function readOwnerWorkspaces() {
@@ -561,16 +565,6 @@ function slugify(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-}
-
-function readPreferredCity() {
-  if (typeof window === "undefined") return "Bengaluru";
-  return window.localStorage.getItem("bms-selected-city") || "Bengaluru";
-}
-
-function writePreferredCity(city) {
-  if (typeof window === "undefined" || !city) return;
-  window.localStorage.setItem("bms-selected-city", city);
 }
 
 function initials(name) {
