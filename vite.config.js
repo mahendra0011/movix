@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { tanstackRouterGenerator } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
@@ -51,6 +52,7 @@ export default defineConfig({
       },
       server: { entry: "server" },
     }),
+    nitro(),
     react(),
   ],
 });

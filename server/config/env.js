@@ -11,7 +11,7 @@ function parseOrigins(value) {
 }
 
 const env = {
-  apiPort: Number(process.env.API_PORT ?? process.env.PORT ?? 4000),
+  apiPort: Number(process.env.PORT ?? process.env.API_PORT ?? 4000),
   clientOrigin: parseOrigins(process.env.CLIENT_ORIGIN ?? "*"),
   mongoUri: process.env.MONGODB_URI,
   mongoDb: process.env.MONGODB_DB ?? "bookmyscreeen",

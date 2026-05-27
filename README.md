@@ -54,6 +54,50 @@ src/
 
 The API can run in local mode without external credentials, then switches to MongoDB, Redis, Razorpay, and Brevo when those environment variables are configured.
 
+## Production deployment on Render
+
+This app uses TanStack Start SSR, so the frontend is not a Render Static Site. Create two Render Web Services, or use the included `render.yaml` blueprint.
+
+### Backend API service
+
+- Service type: Web Service
+- Runtime: Node
+- Build Command: `npm ci`
+- Start Command: `npm run start:api`
+- Health Check Path: `/api/health`
+- Required environment variables:
+  - `MONGODB_URI`: MongoDB Atlas connection string
+  - `MONGODB_DB`: `bookmyscreen`
+  - `JWT_SECRET`: strong generated secret
+  - `CLIENT_ORIGIN`: deployed frontend URL, for example `https://bookmyscreen-web.onrender.com`
+  - `ADMIN_EMAIL`: first admin email
+  - `ADMIN_PASSWORD`: strong first admin password
+- Optional production integrations:
+  - `REDIS_URL`: Redis/Key Value URL for cross-instance seat locks
+  - `PAYMENT_PROVIDER`: `razorpay`
+  - `RAZORPAY_KEY_ID`
+  - `RAZORPAY_KEY_SECRET`
+  - `BREVO_API_KEY`
+  - `BREVO_FROM_EMAIL`
+  - `BREVO_FROM_NAME`
+
+### Frontend web service
+
+- Service type: Web Service
+- Runtime: Node
+- Build Command: `npm ci && npm run build`
+- Start Command: `HOST=0.0.0.0 npm run start:web`
+- Health Check Path: `/`
+- Required environment variables:
+  - `VITE_API_URL`: deployed API URL, for example `https://bookmyscreen-api.onrender.com`
+  - `VITE_SOCKET_URL`: same API URL for Socket.IO, for example `https://bookmyscreen-api.onrender.com`
+
+Render Web Services must bind to the port from `PORT`. The API reads `PORT` first, and the frontend Nitro server uses Render's `PORT` at runtime.
+
+### Fix for "Publish directory does not exist"
+
+Do not put `npm run preview -- --host 0.0.0.0` in Render's Publish Directory field. That field is only for Static Sites. For this project, use the frontend Web Service commands above. If you intentionally convert the frontend to a static SPA later, the publish directory would be `dist/client`, but the current SSR build requires a Node service.
+
 ## Full-stack features
 
 - JWT register/login, email OTP verification, and forgot-password OTP reset
