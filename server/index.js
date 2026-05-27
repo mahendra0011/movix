@@ -41,7 +41,7 @@ registerSeatSockets(io, { getBookedSeats });
 app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
-    service: "BookMyScreen API",
+    service: "moviex API",
     database: isMongoReady() ? "MongoDB connected" : "Local memory store",
     redis: isRedisReady() ? "Redis connected" : "Local seat locks",
     socket: "enabled",
@@ -70,5 +70,5 @@ app.use((error, _request, response, _next) => {
 });
 
 httpServer.listen(env.apiPort, () => {
-  console.log(`BookMyScreen API + Socket.IO running on http://localhost:${env.apiPort}`);
+  console.log(`moviex API + Socket.IO running on http://localhost:${env.apiPort}`);
 });

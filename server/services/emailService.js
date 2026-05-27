@@ -1,7 +1,7 @@
 import { env } from "../config/env.js";
 
 const brand = {
-  name: "BookMyScreen",
+  name: "moviex",
   primary: "#e11d48",
   background: "#09090b",
   card: "#111827",
@@ -40,7 +40,7 @@ function emailLayout({ eyebrow, title, preview, body, footer = "" }) {
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td>
-                          <div style="display:inline-block;width:34px;height:34px;line-height:34px;border-radius:10px;background:${brand.primary};color:white;text-align:center;font-weight:800;">B</div>
+                          <div style="display:inline-block;width:34px;height:34px;line-height:34px;border-radius:10px;background:${brand.primary};color:white;text-align:center;font-weight:800;">X</div>
                           <span style="margin-left:10px;color:${brand.text};font-size:18px;font-weight:800;vertical-align:middle;">${brand.name}</span>
                         </td>
                         <td align="right" style="color:${brand.muted};font-size:12px;">Secure email</td>
@@ -59,7 +59,7 @@ function emailLayout({ eyebrow, title, preview, body, footer = "" }) {
                 </tr>
                 <tr>
                   <td style="padding:22px 30px;background:${brand.card};color:${brand.muted};font-size:12px;line-height:1.6;">
-                    ${footer || "This email was sent by BookMyScreen. If you did not request it, you can safely ignore it."}
+                    ${footer || "This email was sent by moviex. If you did not request it, you can safely ignore it."}
                   </td>
                 </tr>
               </table>
@@ -107,7 +107,7 @@ async function sendBookingEmail(booking) {
   const seats = (booking.seats ?? []).map(escapeHtml).join(", ");
   return sendEmail({
     to: booking.email,
-    subject: `Your BookMyScreen ticket ${booking.ref}`,
+    subject: `Your moviex ticket ${booking.ref}`,
     html: emailLayout({
       eyebrow: "Booking confirmed",
       title: `${booking.movie} tickets are ready`,
@@ -124,7 +124,7 @@ async function sendBookingEmail(booking) {
         <p style="margin:18px 0 0;color:${brand.muted};">Reference: <strong style="color:${brand.text};">${escapeHtml(booking.ref)}</strong></p>
       `,
       footer:
-        "Carry a valid ID if the cinema asks for verification. Ticket, invoice and QR are available inside your BookMyScreen dashboard.",
+        "Carry a valid ID if the cinema asks for verification. Ticket, invoice and QR are available inside your moviex dashboard.",
     }),
   });
 }
@@ -133,24 +133,24 @@ async function sendOtpEmail(email, otp, options = {}) {
   const purpose = options.purpose ?? "login";
   const templates = {
     login: {
-      subject: "Your BookMyScreen sign-in OTP",
+      subject: "Your moviex sign-in OTP",
       eyebrow: "Secure sign in",
       title: "Confirm your login",
-      preview: "Use this OTP to sign in to BookMyScreen.",
+      preview: "Use this OTP to sign in to moviex.",
       text: "Use this one-time password to finish signing in. It expires in 10 minutes.",
     },
     "verify-account": {
-      subject: "Verify your BookMyScreen account",
+      subject: "Verify your moviex account",
       eyebrow: "Account verification",
       title: "Verify your email",
-      preview: "Use this OTP to verify your BookMyScreen account.",
+      preview: "Use this OTP to verify your moviex account.",
       text: "Use this one-time password to verify your new account. It expires in 10 minutes.",
     },
     "password-reset": {
-      subject: "Reset your BookMyScreen password",
+      subject: "Reset your moviex password",
       eyebrow: "Password reset",
       title: "Reset your password",
-      preview: "Use this OTP to reset your BookMyScreen password.",
+      preview: "Use this OTP to reset your moviex password.",
       text: "Use this one-time password on the reset screen and choose a new password. It expires in 10 minutes.",
     },
     ticket: {
@@ -175,7 +175,7 @@ async function sendOtpEmail(email, otp, options = {}) {
         <div style="margin:24px 0;text-align:center;">
           <div style="display:inline-block;letter-spacing:0.42em;background:white;color:#111827;border-radius:16px;padding:18px 22px;font-size:30px;font-weight:900;">${escapeHtml(otp)}</div>
         </div>
-        <p style="margin:0;color:${brand.muted};">Never share this code with anyone. BookMyScreen will never ask for your password or OTP on a phone call.</p>
+        <p style="margin:0;color:${brand.muted};">Never share this code with anyone. moviex will never ask for your password or OTP on a phone call.</p>
       `,
       footer: "This OTP expires in 10 minutes. If you did not request it, no action is needed.",
     }),

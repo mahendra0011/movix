@@ -68,7 +68,7 @@ function Navbar() {
             <Film className="h-4 w-4 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold tracking-tight">
-            book<span className="text-primary">my</span>screen
+            movie<span className="text-primary">x</span>
           </span>
         </Link>
 

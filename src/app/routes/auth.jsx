@@ -267,7 +267,7 @@ function AuthPage() {
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-primary">BookMyScreen account</p>
+              <p className="text-sm font-medium text-primary">moviex account</p>
               <h2 className="mt-2 text-2xl font-bold tracking-tight">{copy.title}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{copy.text}</p>
             </div>
@@ -658,7 +658,7 @@ function AuthLoading() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Checking session</p>
-            <h1 className="text-2xl font-bold">BookMyScreen account</h1>
+            <h1 className="text-2xl font-bold">moviex account</h1>
           </div>
         </div>
       </div>

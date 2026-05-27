@@ -21,16 +21,22 @@ const screens = [
 function enrichTheater(theater, index = 0) {
   return {
     ...theater,
-    city: "Bengaluru",
-    address: `${theater.area}, Bengaluru`,
+    city: theater.city || "Bengaluru",
+    address: theater.address || `${theater.area}, ${theater.city || "Bengaluru"}`,
     approved: true,
     screens: screens.map((screen) => ({ ...screen, id: `${theater.id}-${screen.id}` })),
     rating: 4.5 + (index % 4) / 10,
   };
 }
 
-router.get("/", (_request, response) => {
-  response.json({ theaters: theaters.map(enrichTheater), showTimes });
+router.get("/", (request, response) => {
+  const city = String(request.query.city ?? "")
+    .trim()
+    .toLowerCase();
+  const list = theaters
+    .map(enrichTheater)
+    .filter((theater) => !city || theater.city.toLowerCase() === city);
+  response.json({ theaters: list, showTimes });
 });
 
 export { enrichTheater, router as theaterRoutes };

@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: bookmyscreen-api
+    name: moviex-api
     runtime: node
     buildCommand: npm ci
-    startCommand: npm run start:api
+    startCommand: npm run api
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
@@ -15,7 +15,7 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: MONGODB_DB
-        value: bookmyscreen
+        value: moviex
       - key: REDIS_URL
         sync: false
       - key: JWT_SECRET
@@ -31,23 +31,25 @@ services:
       - key: BREVO_FROM_EMAIL
         sync: false
       - key: BREVO_FROM_NAME
-        value: BookMyScreen
+        value: moviex
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
 
   - type: web
-    name: bookmyscreen-web
+    name: moviex-web
     runtime: node
-    buildCommand: npm ci && npm run build
-    startCommand: HOST=0.0.0.0 npm run start:web
+    buildCommand: npm run renderbuild
+    startCommand: npm run web
     healthCheckPath: /
     envVars:
       - key: NODE_VERSION
         value: 22.12.0
       - key: NODE_ENV
         value: production
+      - key: HOST
+        value: 0.0.0.0
       - key: VITE_API_URL
         sync: false
       - key: VITE_SOCKET_URL

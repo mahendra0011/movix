@@ -53,7 +53,7 @@ function seedBooking({
 
 const seedBookings = [
   seedBooking({
-    ref: "BMS-SEED-2401",
+    ref: "MX-SEED-2401",
     email: "aarav.sharma@example.com",
     showId: "interstellar-pvr-orion-0",
     movieId: "interstellar",
@@ -66,7 +66,7 @@ const seedBookings = [
     createdAt: timestamp(0, 10, 20),
   }),
   seedBooking({
-    ref: "BMS-SEED-2402",
+    ref: "MX-SEED-2402",
     email: "priya.menon@example.com",
     showId: "dune-part-two-inox-garuda-1",
     movieId: "dune-part-two",
@@ -79,7 +79,7 @@ const seedBookings = [
     createdAt: timestamp(0, 13, 5),
   }),
   seedBooking({
-    ref: "BMS-SEED-2403",
+    ref: "MX-SEED-2403",
     email: "rahul.nair@example.com",
     showId: "oppenheimer-pvr-vega-2",
     movieId: "oppenheimer",
@@ -92,7 +92,7 @@ const seedBookings = [
     createdAt: timestamp(1, 18, 40),
   }),
   seedBooking({
-    ref: "BMS-SEED-2404",
+    ref: "MX-SEED-2404",
     email: "nisha.rao@example.com",
     showId: "spider-verse-cinepolis-forum-3",
     movieId: "spider-verse",
@@ -105,7 +105,7 @@ const seedBookings = [
     createdAt: timestamp(1, 15, 15),
   }),
   seedBooking({
-    ref: "BMS-SEED-2405",
+    ref: "MX-SEED-2405",
     email: "karthik.iyer@example.com",
     showId: "inception-pvr-orion-0",
     movieId: "inception",
@@ -118,7 +118,7 @@ const seedBookings = [
     createdAt: timestamp(2, 19, 25),
   }),
   seedBooking({
-    ref: "BMS-SEED-2406",
+    ref: "MX-SEED-2406",
     email: "meera.singh@example.com",
     showId: "barbie-inox-garuda-3",
     movieId: "barbie",
@@ -131,7 +131,7 @@ const seedBookings = [
     createdAt: timestamp(2, 11, 50),
   }),
   seedBooking({
-    ref: "BMS-SEED-2407",
+    ref: "MX-SEED-2407",
     email: "dev.patel@example.com",
     showId: "the-batman-pvr-vega-4",
     movieId: "the-batman",
@@ -144,7 +144,7 @@ const seedBookings = [
     createdAt: timestamp(3, 20, 10),
   }),
   seedBooking({
-    ref: "BMS-SEED-2408",
+    ref: "MX-SEED-2408",
     email: "sana.khan@example.com",
     showId: "joker-cinepolis-forum-4",
     movieId: "joker",
@@ -157,7 +157,7 @@ const seedBookings = [
     createdAt: timestamp(3, 14, 35),
   }),
   seedBooking({
-    ref: "BMS-SEED-2409",
+    ref: "MX-SEED-2409",
     email: "ananya.das@example.com",
     showId: "interstellar-inox-garuda-2",
     movieId: "interstellar",
@@ -170,7 +170,7 @@ const seedBookings = [
     createdAt: timestamp(4, 17, 45),
   }),
   seedBooking({
-    ref: "BMS-SEED-2410",
+    ref: "MX-SEED-2410",
     email: "vikram.bose@example.com",
     showId: "dune-part-two-pvr-orion-4",
     movieId: "dune-part-two",
@@ -183,7 +183,7 @@ const seedBookings = [
     createdAt: timestamp(4, 12, 10),
   }),
   seedBooking({
-    ref: "BMS-SEED-2411",
+    ref: "MX-SEED-2411",
     email: "isha.verma@example.com",
     showId: "oppenheimer-cinepolis-forum-1",
     movieId: "oppenheimer",
@@ -196,7 +196,7 @@ const seedBookings = [
     createdAt: timestamp(5, 16, 5),
   }),
   seedBooking({
-    ref: "BMS-SEED-2412",
+    ref: "MX-SEED-2412",
     email: "mahendra.customer@example.com",
     showId: "spider-verse-pvr-vega-0",
     movieId: "spider-verse",

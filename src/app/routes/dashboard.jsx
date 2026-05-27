@@ -333,7 +333,7 @@ function UserDashboard() {
                       </button>
                     </div>
                     <p className="mt-2 truncate text-xs text-muted-foreground">
-                      {item.venue || "BookMyScreen"}
+                      {item.venue || "moviex"}
                     </p>
                     {item.date && <p className="mt-1 text-xs text-primary">{item.date}</p>}
                   </div>

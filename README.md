@@ -1,4 +1,4 @@
-# BookMyScreen
+# moviex
 
 Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO, Redis-backed seat locking, Razorpay-ready payments, and Brevo HTTP API email hooks.
 
@@ -67,9 +67,9 @@ This app uses TanStack Start SSR, so the frontend is not a Render Static Site. C
 - Health Check Path: `/api/health`
 - Required environment variables:
   - `MONGODB_URI`: MongoDB Atlas connection string
-  - `MONGODB_DB`: `bookmyscreen`
+  - `MONGODB_DB`: `moviex`
   - `JWT_SECRET`: strong generated secret
-  - `CLIENT_ORIGIN`: deployed frontend URL, for example `https://bookmyscreen-web.onrender.com`
+  - `CLIENT_ORIGIN`: deployed frontend URL, for example `https://moviex-web.onrender.com`
   - `ADMIN_EMAIL`: first admin email
   - `ADMIN_PASSWORD`: strong first admin password
 - Optional production integrations:
@@ -89,8 +89,8 @@ This app uses TanStack Start SSR, so the frontend is not a Render Static Site. C
 - Start Command: `HOST=0.0.0.0 npm run start:web`
 - Health Check Path: `/`
 - Required environment variables:
-  - `VITE_API_URL`: deployed API URL, for example `https://bookmyscreen-api.onrender.com`
-  - `VITE_SOCKET_URL`: same API URL for Socket.IO, for example `https://bookmyscreen-api.onrender.com`
+  - `VITE_API_URL`: deployed API URL, for example `https://moviex-api.onrender.com`
+  - `VITE_SOCKET_URL`: same API URL for Socket.IO, for example `https://moviex-api.onrender.com`
 
 Render Web Services must bind to the port from `PORT`. The API reads `PORT` first, and the frontend Nitro server uses Render's `PORT` at runtime.
 

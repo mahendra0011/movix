@@ -1,5 +1,5 @@
 {
-  "name": "book-my-screen",
+  "name": "moviex",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -8,8 +8,11 @@
     "dev:api": "node server/index.js",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "renderbuild": "npm ci && npm run build",
     "start": "node .output/server/index.mjs",
+    "web": "node .output/server/index.mjs",
     "start:web": "node .output/server/index.mjs",
+    "api": "node server/index.js",
     "start:api": "node server/index.js",
     "preview": "vite preview",
     "lint": "eslint .",

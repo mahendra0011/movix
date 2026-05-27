@@ -23,8 +23,10 @@ import {
   LockKeyhole,
   LogIn,
   LogOut,
+  MapPin,
   Monitor,
   Plus,
+  Save,
   ShieldCheck,
   Ticket,
   Trash2,
@@ -50,6 +52,19 @@ const blankScreen = {
   name: "",
   type: "Premium",
   seats: "100",
+};
+
+const defaultCinemaProfile = {
+  id: "pvr-inox-orion-mall-bengaluru",
+  name: "PVR INOX: Orion Mall",
+  city: "Bengaluru",
+  area: "Rajajinagar",
+  address: "Orion Mall, Dr Rajkumar Road, Rajajinagar",
+  distance: "3.2 km",
+  contact: "+91 98765 43210",
+  manager: "Operations desk",
+  amenities: "IMAX Laser, Dolby Atmos, Recliners, Parking, F&B",
+  cancellationPolicy: "Cancellation available up to 2 hours before showtime.",
 };
 
 function createBlankShow(screens = screenSeeds) {
@@ -149,6 +164,7 @@ function OwnerDashboard() {
   const [screens, setScreens] = useState([]);
   const [shows, setShows] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [cinemaProfile, setCinemaProfile] = useState(defaultCinemaProfile);
   const [screenForm, setScreenForm] = useState(blankScreen);
   const [showForm, setShowForm] = useState(() => createBlankShow(screenSeeds));
   const [workspaceReady, setWorkspaceReady] = useState(false);
@@ -167,6 +183,7 @@ function OwnerDashboard() {
   useEffect(() => {
     if (!auth.hydrated || auth.user?.role !== "theater-owner" || !ownerKey) return;
     const workspace = readOwnerWorkspace(ownerKey);
+    setCinemaProfile(workspace.cinemaProfile);
     setScreens(workspace.screens);
     setShows(workspace.shows);
     setBookings(workspace.bookings);
@@ -179,8 +196,8 @@ function OwnerDashboard() {
 
   useEffect(() => {
     if (!workspaceReady || auth.user?.role !== "theater-owner" || !ownerKey) return;
-    writeOwnerWorkspace(ownerKey, { screens, shows, bookings });
-  }, [auth.user?.role, bookings, ownerKey, screens, shows, workspaceReady]);
+    writeOwnerWorkspace(ownerKey, { cinemaProfile, screens, shows, bookings });
+  }, [auth.user?.role, bookings, cinemaProfile, ownerKey, screens, shows, workspaceReady]);
 
   const ownerScreens = useMemo(
     () => screens.filter((screen) => !screen.ownerKey || screen.ownerKey === ownerKey),
@@ -263,6 +280,26 @@ function OwnerDashboard() {
     },
   ];
 
+  const saveCinemaProfile = (event) => {
+    event.preventDefault();
+    const name = cinemaProfile.name.trim() || defaultCinemaProfile.name;
+    const city = cinemaProfile.city.trim() || defaultCinemaProfile.city;
+    setCinemaProfile((current) => ({
+      ...current,
+      id: slugify(`${name}-${city}`),
+      name,
+      city,
+      area: String(current.area ?? "").trim(),
+      address: String(current.address ?? "").trim(),
+      distance: String(current.distance ?? "").trim(),
+      contact: String(current.contact ?? "").trim(),
+      manager: String(current.manager ?? "").trim(),
+      amenities: String(current.amenities ?? "").trim(),
+      cancellationPolicy: String(current.cancellationPolicy ?? "").trim(),
+    }));
+    setNotice(`${name} location saved for ${city}. Users can find your shows in this city.`);
+  };
+
   const addScreen = (event) => {
     event.preventDefault();
     const name = screenForm.name.trim();
@@ -312,6 +349,13 @@ function OwnerDashboard() {
     const nextShow = {
       id: `${slugify(title)}-${Date.now()}`,
       ownerKey,
+      theaterId: cinemaProfile.id || slugify(`${cinemaProfile.name}-${cinemaProfile.city}`),
+      theater: cinemaProfile.name,
+      city: cinemaProfile.city,
+      area: cinemaProfile.area,
+      address: cinemaProfile.address,
+      distance: cinemaProfile.distance,
+      amenities: cinemaProfile.amenities,
       listingType: showForm.listingType,
       movieId: movie?.id ?? slugify(title),
       movie: title,
@@ -400,11 +444,11 @@ function OwnerDashboard() {
               Theater owner dashboard
             </div>
             <h1 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
-              Manage screens, shows, bookings and earnings for PVR INOX: Orion Mall.
+              Manage screens, shows, bookings and earnings for {cinemaProfile.name}.
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Add screens, schedule shows, view booking activity and track cinema revenue from one
-              focused workspace.
+              Add your cinema location, schedule shows, view booking activity and track cinema
+              revenue from one focused workspace.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button onClick={() => setActiveTab("shows")} className="gap-2">
@@ -427,6 +471,8 @@ function OwnerDashboard() {
             />
             <div className="mt-5 grid gap-3">
               <SnapshotRow label="Owner" value={auth.user.name || "Theater owner"} />
+              <SnapshotRow label="City" value={cinemaProfile.city || "City not set"} />
+              <SnapshotRow label="Location" value={cinemaProfile.area || "Area not set"} />
               <SnapshotRow label="Screens" value={ownerScreens.length.toLocaleString()} />
               <SnapshotRow label="Listed movies" value={listedMovies.length.toLocaleString()} />
               <SnapshotRow label="Listed shows" value={ownerShows.length.toLocaleString()} />
@@ -445,6 +491,7 @@ function OwnerDashboard() {
       <div className="mt-6 flex gap-2 overflow-x-auto rounded-lg border border-border/60 bg-card/50 p-1">
         {[
           ["overview", "Overview"],
+          ["cinema", "Cinema"],
           ["movies", "My movies"],
           ["operations", "Operations"],
           ["screens", "Screens"],
@@ -479,6 +526,14 @@ function OwnerDashboard() {
           popularMovies={popularMovies}
           listedMovies={listedMovies}
           totals={totals}
+        />
+      )}
+
+      {activeTab === "cinema" && (
+        <CinemaSetupTab
+          cinemaProfile={cinemaProfile}
+          onProfileChange={setCinemaProfile}
+          onSave={saveCinemaProfile}
         />
       )}
 
@@ -768,6 +823,148 @@ function OwnerOperationsTab({ totals, listedMovies, screens, onOpen }) {
           </div>
         </SpotlightCard>
       </div>
+    </section>
+  );
+}
+
+function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
+  const update = (field) => (event) =>
+    onProfileChange((current) => ({ ...current, [field]: event.target.value }));
+  const amenities = splitAmenities(cinemaProfile.amenities);
+
+  return (
+    <section className="mt-6 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={MapPin}
+          title="Cinema location"
+          subtitle="City, address and public cinema profile"
+          action={cinemaProfile.city || "City"}
+        />
+
+        <form onSubmit={onSave} className="mt-5 space-y-5">
+          <FormSection title="Cinema details">
+            <FormField label="Cinema name">
+              <Input
+                value={cinemaProfile.name}
+                onChange={update("name")}
+                placeholder="Cinema name"
+              />
+            </FormField>
+            <FormField label="City">
+              <Input value={cinemaProfile.city} onChange={update("city")} placeholder="City" />
+            </FormField>
+            <FormField label="Area">
+              <Input
+                value={cinemaProfile.area}
+                onChange={update("area")}
+                placeholder="Area or locality"
+              />
+            </FormField>
+            <FormField label="Distance label">
+              <Input
+                value={cinemaProfile.distance}
+                onChange={update("distance")}
+                placeholder="3.2 km"
+              />
+            </FormField>
+            <label className="md:col-span-2">
+              <span className="text-xs font-medium uppercase text-muted-foreground">Address</span>
+              <textarea
+                value={cinemaProfile.address}
+                onChange={update("address")}
+                placeholder="Full cinema address"
+                className="mt-2 min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </label>
+          </FormSection>
+
+          <FormSection title="Operations">
+            <FormField label="Contact number">
+              <Input
+                value={cinemaProfile.contact}
+                onChange={update("contact")}
+                placeholder="+91 98765 43210"
+              />
+            </FormField>
+            <FormField label="Manager">
+              <Input
+                value={cinemaProfile.manager}
+                onChange={update("manager")}
+                placeholder="Manager or operations desk"
+              />
+            </FormField>
+            <label className="md:col-span-2">
+              <span className="text-xs font-medium uppercase text-muted-foreground">Amenities</span>
+              <textarea
+                value={cinemaProfile.amenities}
+                onChange={update("amenities")}
+                placeholder="IMAX, Dolby Atmos, Parking, F&B"
+                className="mt-2 min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </label>
+            <label className="md:col-span-2">
+              <span className="text-xs font-medium uppercase text-muted-foreground">
+                Cancellation policy
+              </span>
+              <textarea
+                value={cinemaProfile.cancellationPolicy}
+                onChange={update("cancellationPolicy")}
+                placeholder="Cancellation and entry rules"
+                className="mt-2 min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </label>
+          </FormSection>
+
+          <Button className="h-11 w-full gap-2">
+            <Save className="h-4 w-4" />
+            Save cinema location
+          </Button>
+        </form>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader icon={Building2} title="Public preview" subtitle="Cinema card for users" />
+        <div className="mt-5 rounded-lg border border-border/60 bg-background/35 p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-bold tracking-tight">{cinemaProfile.name}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {cinemaProfile.area}, {cinemaProfile.city}
+              </p>
+            </div>
+            <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+              Approved
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-3">
+            <SnapshotRow label="Address" value={cinemaProfile.address || "Address not set"} />
+            <SnapshotRow label="Distance" value={cinemaProfile.distance || "Distance not set"} />
+            <SnapshotRow label="Contact" value={cinemaProfile.contact || "Contact not set"} />
+            <SnapshotRow label="Manager" value={cinemaProfile.manager || "Manager not set"} />
+          </div>
+
+          {amenities.length > 0 && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {amenities.map((amenity) => (
+                <span
+                  key={amenity}
+                  className="rounded-md border border-border/60 px-2 py-1 text-xs text-muted-foreground"
+                >
+                  {amenity}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {cinemaProfile.cancellationPolicy && (
+            <p className="mt-5 rounded-lg border border-border/60 bg-card/40 p-3 text-sm text-muted-foreground">
+              {cinemaProfile.cancellationPolicy}
+            </p>
+          )}
+        </div>
+      </SpotlightCard>
     </section>
   );
 }
@@ -1397,9 +1594,18 @@ function ownerStorageKey(ownerKey) {
   return `bms-owner-workspace:${encodeURIComponent(ownerKey)}`;
 }
 
+function createCinemaProfile(ownerKey) {
+  return {
+    ...defaultCinemaProfile,
+    ownerKey,
+    id: slugify(`${defaultCinemaProfile.name}-${defaultCinemaProfile.city}`),
+  };
+}
+
 function createOwnerWorkspace(ownerKey) {
   return {
     version: OWNER_WORKSPACE_VERSION,
+    cinemaProfile: createCinemaProfile(ownerKey),
     screens: screenSeeds.map((screen) => ({ ...screen, ownerKey })),
     shows: [],
     bookings: [],
@@ -1420,6 +1626,7 @@ function readOwnerWorkspace(ownerKey) {
 
     return {
       version: OWNER_WORKSPACE_VERSION,
+      cinemaProfile: normalizeCinemaProfile(parsed.cinemaProfile, ownerKey),
       screens: normalizeOwnerItems(parsed.screens, ownerKey),
       shows: normalizeOwnerItems(parsed.shows, ownerKey),
       bookings: normalizeOwnerItems(parsed.bookings, ownerKey),
@@ -1435,6 +1642,7 @@ function writeOwnerWorkspace(ownerKey, workspace) {
     ownerStorageKey(ownerKey),
     JSON.stringify({
       version: OWNER_WORKSPACE_VERSION,
+      cinemaProfile: normalizeCinemaProfile(workspace.cinemaProfile, ownerKey),
       screens: normalizeOwnerItems(workspace.screens, ownerKey),
       shows: normalizeOwnerItems(workspace.shows, ownerKey),
       bookings: normalizeOwnerItems(workspace.bookings, ownerKey),
@@ -1444,6 +1652,29 @@ function writeOwnerWorkspace(ownerKey, workspace) {
 
 function normalizeOwnerItems(items, ownerKey) {
   return Array.isArray(items) ? items.map((item) => ({ ...item, ownerKey })) : [];
+}
+
+function normalizeCinemaProfile(profile, ownerKey) {
+  const normalized = {
+    ...createCinemaProfile(ownerKey),
+    ...(profile && typeof profile === "object" ? profile : {}),
+    ownerKey,
+  };
+  const idSource = `${normalized.name || defaultCinemaProfile.name}-${
+    normalized.city || defaultCinemaProfile.city
+  }`;
+  return {
+    ...normalized,
+    id: normalized.id || slugify(idSource),
+  };
+}
+
+function splitAmenities(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function buildListedMovies(shows, bookings) {

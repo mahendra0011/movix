@@ -25,8 +25,17 @@ const Route = createFileRoute("/book/$showId")({
     movie: typeof s.movie === "string" ? s.movie : "",
     movieId: typeof s.movieId === "string" ? s.movieId : "",
     theaterId: typeof s.theaterId === "string" ? s.theaterId : "",
+    screen: typeof s.screen === "string" ? s.screen : "Screen 3",
+    platinumPrice: parseSearchPrice(s.platinumPrice, tierPrice.platinum),
+    goldPrice: parseSearchPrice(s.goldPrice, tierPrice.gold),
+    vipPrice: parseSearchPrice(s.vipPrice, tierPrice.vip),
   }),
 });
+
+function parseSearchPrice(value, fallback) {
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount > 0 ? amount : fallback;
+}
 
 function getOwnerId() {
   if (typeof window === "undefined") return "server-owner";
@@ -145,9 +154,17 @@ function BookingPage() {
   );
 
   const selectedSeats = useMemo(() => [...selected].sort(), [selected]);
+  const showTierPrice = useMemo(
+    () => ({
+      platinum: search.platinumPrice,
+      gold: search.goldPrice,
+      vip: search.vipPrice,
+    }),
+    [search.goldPrice, search.platinumPrice, search.vipPrice],
+  );
   const total = selected.reduce((sum, id) => {
     const row = id.charAt(0);
-    return sum + tierPrice[layout.tierFor(row)];
+    return sum + showTierPrice[layout.tierFor(row)];
   }, 0);
   const ownLocks = seatState.locks.filter(
     (lock) => lock.ownerId === ownerId && selected.includes(lock.seat),
@@ -261,7 +278,7 @@ function BookingPage() {
         key: payment.keyId,
         amount: payment.amountMinor,
         currency: payment.currency,
-        name: "BookMyScreen",
+        name: "moviex",
         description: `${search.movie || "Movie"} tickets`,
         order_id: payment.orderId,
         prefill: { email },
@@ -313,6 +330,7 @@ function BookingPage() {
         movie: search.movie || "Movie",
         theaterId: search.theaterId,
         theater: search.theater || "Theater",
+        screen: search.screen || "Screen 3",
         time: search.date ? `${search.date} ${search.time}` : search.time || "Showtime",
         seats: selectedSeats,
         total,
@@ -349,7 +367,7 @@ function BookingPage() {
           <h1 className="text-xl font-bold">{search.movie || "Movie"}</h1>
           <p className="text-sm text-muted-foreground">
             {search.theater} - {search.date ? `${search.date} - ` : ""}
-            {search.time} - Screen 3
+            {search.time} - {search.screen || "Screen 3"}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -376,9 +394,9 @@ function BookingPage() {
         <Legend color="bg-amber-400/70" label="Locked by another user" />
         <Legend color="bg-muted-foreground/40" label="Booked" />
         <div className="ml-auto flex gap-4">
-          <Legend color="bg-[var(--platinum)]" label="Platinum Rs 180" />
-          <Legend color="bg-[var(--gold)]" label="Gold Rs 250" />
-          <Legend color="bg-[var(--vip)]" label="VIP Rs 400" />
+          <Legend color="bg-[var(--platinum)]" label={`Platinum Rs ${showTierPrice.platinum}`} />
+          <Legend color="bg-[var(--gold)]" label={`Gold Rs ${showTierPrice.gold}`} />
+          <Legend color="bg-[var(--vip)]" label={`VIP Rs ${showTierPrice.vip}`} />
         </div>
       </div>
 
