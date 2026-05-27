@@ -19,7 +19,7 @@ import {
   Building2,
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
-import { movies as fallbackMovies } from "@/features/movies/data/movieCatalog";
+import { movies as fallbackMovies, theaters } from "@/features/movies/data/movieCatalog";
 import { MovieCard } from "@/features/movies/components/MovieCard";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { StaggeredText } from "@/shared/components/reactbits/StaggeredText";
@@ -31,21 +31,11 @@ import {
   subscribeHomeSearchQuery,
   writeHomeSearchQuery,
 } from "@/shared/services/homeSearch";
+import { readPreferredCity, subscribePreferredCity } from "@/shared/services/cityPreference";
 const Route = createFileRoute("/")({
   loader: () => fetchMovies(),
   component: Home,
 });
-const cinemas = [
-  { name: "PVR INOX: Orion Mall", features: "IMAX, Dolby Atmos", screens: 11, rating: 4.7 },
-  { name: "INOX: Garuda Mall", features: "Laser projection, recliners", screens: 5, rating: 4.5 },
-  {
-    name: "Cinepolis: Forum Shantiniketan",
-    features: "VIP lounges, 4K projection",
-    screens: 8,
-    rating: 4.6,
-  },
-  { name: "PVR: Vega City", features: "Dolby Atmos, premium seats", screens: 9, rating: 4.6 },
-];
 const testimonials = [
   {
     name: "Aarav S.",
@@ -99,6 +89,7 @@ function Home() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeLanguage, setActiveLanguage] = useState("All");
   const [activeFormat, setActiveFormat] = useState("All");
+  const [selectedCity, setSelectedCity] = useState(readPreferredCity);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
@@ -156,8 +147,10 @@ function Home() {
     : expandedSections.premieres
       ? rotateShelf(3)
       : shelfMovies.slice(3, 7);
+  const cityCinemas = useMemo(() => buildHomeCinemas(selectedCity), [selectedCity]);
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
+  useEffect(() => subscribePreferredCity(setSelectedCity), []);
 
   const subscribe = async (event) => {
     event.preventDefault();
@@ -465,18 +458,20 @@ function Home() {
       {/* Cinema partners */}
       <Section
         title="Cinema partners"
-        subtitle="Premium screens, Dolby Atmos & recliners"
+        subtitle={`Premium screens in ${selectedCity}`}
         icon={<Building2 className="h-5 w-5 text-primary" />}
         actionHref={`/movies/${featured.id}#showtimes`}
       >
         <div className="stagger-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {cinemas.map((c) => (
+          {cityCinemas.map((c) => (
             <a key={c.name} href={`/movies/${featured.id}#showtimes`} className="group block">
               <SpotlightCard className="rounded-lg p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold">{c.name}</h3>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{c.features}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {c.area}, {c.city}
+                    </p>
                   </div>
                   <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
                     <Star className="h-3 w-3 fill-primary text-primary" />
@@ -484,7 +479,7 @@ function Home() {
                   </span>
                 </div>
                 <div className="mt-5 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{c.screens} screens - Dolby</span>
+                  <span className="text-muted-foreground">{c.features}</span>
                   <span className="inline-flex items-center gap-1 text-primary">
                     Showtimes <ChevronRight className="h-3 w-3" />
                   </span>
@@ -618,6 +613,36 @@ function FilterChipRow({ label, options, activeValue, onChange }) {
       </div>
     </div>
   );
+}
+
+function buildHomeCinemas(selectedCity) {
+  const cityKey = normalizeHomeText(selectedCity);
+  const localCinemas = theaters
+    .filter((theater) => normalizeHomeText(theater.city) === cityKey)
+    .slice(0, 4);
+  const source = localCinemas.length > 0 ? localCinemas : theaters.slice(0, 4);
+
+  return source.map((theater, index) => ({
+    name: theater.name,
+    city: theater.city,
+    area: theater.area,
+    features: splitFeatureList(theater.amenities).slice(0, 2).join(", ") || "Digital projection",
+    rating: (4.5 + (index % 3) * 0.1).toFixed(1),
+  }));
+}
+
+function splitFeatureList(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function normalizeHomeText(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
 }
 
 function Section({

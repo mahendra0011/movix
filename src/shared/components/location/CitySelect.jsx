@@ -33,7 +33,6 @@ function CitySelect({ value, options = [], onChange, className, selectClassName 
   const openPicker = () => {
     setIsOpen((current) => !current);
     setQuery("");
-    if (searchRef.current) searchRef.current.textContent = "";
   };
 
   const selectCity = (city) => {
@@ -60,15 +59,13 @@ function CitySelect({ value, options = [], onChange, className, selectClassName 
         <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-border/70 bg-popover shadow-2xl">
           <div className="flex items-center gap-2 border-b border-border/60 px-3 py-2">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <div
+            <input
+              type="search"
               ref={searchRef}
-              role="textbox"
-              tabIndex={0}
-              contentEditable
-              suppressContentEditableWarning
-              data-placeholder="Search city or state"
+              value={query}
+              placeholder="Search city or state"
               className="search-textbox min-h-9 flex-1 rounded-md px-1 py-2 text-sm outline-none"
-              onInput={(event) => setQuery(event.currentTarget.textContent ?? "")}
+              onChange={(event) => setQuery(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Escape") setIsOpen(false);
                 if (event.key !== "Enter") return;

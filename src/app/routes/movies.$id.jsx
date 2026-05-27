@@ -466,7 +466,7 @@ function FilterSelect({ value, onChange, options, label }) {
 function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces }) {
   const city = selectedCity || "Bengaluru";
   const staticListings = theaters
-    .filter((theater) => sameCity(theater.city, city))
+    .filter((theater) => sameCity(theater.city, city) && theaterHasMovie(theater, movie.id))
     .map((theater) => {
       const plans =
         theater.showPlan ??
@@ -652,6 +652,10 @@ function buildMovieCitySuggestions(ownerWorkspaces) {
   });
 
   return cities;
+}
+
+function theaterHasMovie(theater, movieId) {
+  return !Array.isArray(theater.movieIds) || theater.movieIds.includes(movieId);
 }
 
 function readOwnerWorkspaces() {

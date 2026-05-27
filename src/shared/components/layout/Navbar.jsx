@@ -29,15 +29,15 @@ function applyTheme(theme) {
 }
 
 function readTheme() {
-  if (typeof window === "undefined") return "dark";
-  return window.localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
+  if (typeof window === "undefined") return "light";
+  return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
 }
 
 function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState("light");
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
   const citySuggestions = useMemo(() => theaters.map((theater) => theater.city), []);
   const isAdmin = auth.user?.role === "admin";

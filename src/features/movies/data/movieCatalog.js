@@ -1,3 +1,5 @@
+import { SEARCHABLE_CITY_OPTIONS } from "@/shared/services/cityPreference";
+
 const tmdb = (path, size = "w780") => `https://image.tmdb.org/t/p/${size}${path}`;
 const realImages = {
   interstellar: tmdb("/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"),
@@ -183,7 +185,7 @@ const movies = [
     certificate: "A",
   },
 ];
-const theaters = [
+const curatedTheaters = [
   {
     id: "pvr-orion",
     name: "PVR INOX: Orion Mall",
@@ -303,7 +305,110 @@ const theaters = [
     showPlan: [{ time: "09:15 PM", format: "2D", status: "ok", cancellable: true }],
   },
 ];
+const cinemaBrandTemplates = [
+  {
+    name: "PVR INOX",
+    amenities: ["Laser projection", "Dolby 7.1", "M-Ticket", "F&B"],
+    logoText: "PVR",
+  },
+  {
+    name: "MovieMax",
+    amenities: ["Recliners", "Dolby Atmos", "Parking", "Food court"],
+    logoText: "MX",
+  },
+  {
+    name: "Cinepolis",
+    amenities: ["4K projection", "Cafe", "M-Ticket", "Family seats"],
+    logoText: "CP",
+  },
+  {
+    name: "Miraj Cinemas",
+    amenities: ["Dolby 7.1", "Snacks", "Parking", "Wheelchair access"],
+    logoText: "MJ",
+  },
+  {
+    name: "Carnival Cinemas",
+    amenities: ["Digital projection", "F&B", "M-Ticket", "Parking"],
+    logoText: "CC",
+  },
+];
+const cityShowPlanTemplates = [
+  [
+    { time: "10:30 AM", format: "2D", status: "ok", cancellable: true, screen: "Screen 1" },
+    { time: "01:45 PM", format: "2D", status: "ok", cancellable: true, screen: "Screen 2" },
+    { time: "07:15 PM", format: "Dolby 7.1", status: "fast", cancellable: false, screen: "Audi 1" },
+    { time: "10:30 PM", format: "2D", status: "ok", cancellable: false, screen: "Screen 3" },
+  ],
+  [
+    { time: "09:45 AM", format: "2D", status: "ok", cancellable: true, screen: "Screen 1" },
+    { time: "12:55 PM", format: "3D", status: "ok", cancellable: true, screen: "Screen 2" },
+    { time: "04:20 PM", format: "2D", status: "ok", cancellable: true, screen: "Screen 3" },
+    { time: "08:40 PM", format: "Laser", status: "fast", cancellable: false, screen: "Audi 2" },
+  ],
+  [
+    { time: "11:10 AM", format: "2D", status: "ok", cancellable: true, screen: "Screen 1" },
+    { time: "02:30 PM", format: "IMAX", status: "fast", cancellable: false, screen: "IMAX" },
+    { time: "06:05 PM", format: "2D", status: "ok", cancellable: true, screen: "Screen 4" },
+    { time: "09:50 PM", format: "4DX", status: "ok", cancellable: false, screen: "4DX" },
+  ],
+];
+const theaters = buildNationalTheaterCatalog(curatedTheaters);
 const showTimes = ["10:30 AM", "01:45 PM", "04:30 PM", "07:15 PM", "10:30 PM"];
+
+function buildNationalTheaterCatalog(curated) {
+  const curatedCityKeys = new Set(curated.map((theater) => normalizeCatalogKey(theater.city)));
+  const generated = SEARCHABLE_CITY_OPTIONS.filter(
+    (option) => !curatedCityKeys.has(normalizeCatalogKey(option.city)),
+  ).map(makeCityTheater);
+
+  return [...curated, ...generated];
+}
+
+function makeCityTheater(option, index) {
+  const brand = cinemaBrandTemplates[index % cinemaBrandTemplates.length];
+  const city = option.city;
+  const state = stripTerritorySuffix(option.state);
+  const area = getGeneratedArea(city, state);
+
+  return {
+    id: `${slugify(brand.name)}-${slugify(city)}`,
+    name: `${brand.name}: ${city}`,
+    city,
+    area,
+    address: `${area}, ${city}${state ? `, ${state}` : ""}`,
+    distance: `${(2.2 + (index % 9) * 0.6).toFixed(1)} km`,
+    amenities: brand.amenities,
+    logoText: brand.logoText,
+    movieIds: movies.map((movie) => movie.id),
+    showPlan: cityShowPlanTemplates[index % cityShowPlanTemplates.length],
+  };
+}
+
+function getGeneratedArea(city, state) {
+  const cleanedState = stripTerritorySuffix(state);
+  if (!cleanedState) return `${city} Central`;
+  return `${cleanedState.split(" ")[0]} Mall Road`;
+}
+
+function stripTerritorySuffix(value) {
+  return String(value ?? "")
+    .replace(/\s*\([^)]*\)/g, "")
+    .trim();
+}
+
+function normalizeCatalogKey(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function slugify(value) {
+  return normalizeCatalogKey(value)
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function getMovie(id) {
   return movies.find((m) => m.id === id);
 }
