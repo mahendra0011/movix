@@ -19,7 +19,7 @@ import {
   Building2,
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
-import { movies as fallbackMovies, theaters } from "@/features/movies/data/movieCatalog";
+import { movies as fallbackMovies, showTimes, theaters } from "@/features/movies/data/movieCatalog";
 import { MovieCard } from "@/features/movies/components/MovieCard";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { StaggeredText } from "@/shared/components/reactbits/StaggeredText";
@@ -148,6 +148,15 @@ function Home() {
       ? rotateShelf(3)
       : shelfMovies.slice(3, 7);
   const cityCinemas = useMemo(() => buildHomeCinemas(selectedCity), [selectedCity]);
+  const searchShowtimeResults = useMemo(
+    () =>
+      buildSearchShowtimeResults({
+        catalog,
+        query: activeSearchQuery,
+        selectedCity,
+      }),
+    [activeSearchQuery, catalog, selectedCity],
+  );
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
@@ -185,6 +194,8 @@ function Home() {
 
   if (!featured) return null;
   if (activeSearchQuery) {
+    const totalSearchResults = filteredMovies.length + searchShowtimeResults.length;
+
     return (
       <div className="mx-auto max-w-7xl px-4 py-10">
         <section className="rounded-lg border border-border/60 bg-card/40 p-5">
@@ -192,7 +203,7 @@ function Home() {
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Search results</h1>
               <p className="text-sm text-muted-foreground">
-                {filteredMovies.length} result{filteredMovies.length === 1 ? "" : "s"} for "
+                {totalSearchResults} result{totalSearchResults === 1 ? "" : "s"} for "
                 {activeSearchQuery}"
               </p>
             </div>
@@ -210,17 +221,76 @@ function Home() {
           </div>
 
           {filteredMovies.length > 0 ? (
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {filteredMovies.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} />
-              ))}
+            <div className="mt-6">
+              <div className="mb-3 flex items-center gap-2">
+                <Clapperboard className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold uppercase text-muted-foreground">Movies</h2>
+              </div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                {filteredMovies.map((movie) => (
+                  <MovieCard key={movie.id} movie={movie} />
+                ))}
+              </div>
             </div>
-          ) : (
+          ) : null}
+
+          {searchShowtimeResults.length > 0 ? (
+            <div className="mt-8">
+              <div className="mb-3 flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold uppercase text-muted-foreground">
+                  Cinemas and showtimes
+                </h2>
+              </div>
+              <div className="overflow-hidden rounded-lg border border-border/60 bg-background">
+                {searchShowtimeResults.map((item) => (
+                  <a
+                    key={item.id}
+                    href={`/movies/${item.movie.id}#showtimes`}
+                    className="grid gap-4 border-b border-border/60 p-4 transition-colors last:border-b-0 hover:bg-muted/50 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(260px,auto)] md:items-center"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-primary/15 text-xs font-bold text-primary">
+                          {item.logoText}
+                        </span>
+                        <div className="min-w-0">
+                          <h3 className="truncate font-semibold">{item.theater.name}</h3>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {item.theater.area}, {item.theater.city}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{item.movie.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {item.movie.language} - {item.movie.duration} -{" "}
+                        {(item.movie.format ?? []).join(", ")}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 md:justify-end">
+                      {item.times.map((time) => (
+                        <span
+                          key={`${item.id}-${time}`}
+                          className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary"
+                        >
+                          {time}
+                        </span>
+                      ))}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {totalSearchResults === 0 && (
             <div className="mt-8 rounded-lg border border-border/60 bg-background/60 p-8 text-center">
               <Search className="mx-auto h-8 w-8 text-primary" />
-              <h2 className="mt-4 text-xl font-bold">No movies found</h2>
+              <h2 className="mt-4 text-xl font-bold">No results found</h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                Try another movie title, category, language, format, cinema, or city.
+                Try another movie title, cinema name, theater area, language, format, or city.
               </p>
             </div>
           )}
@@ -615,6 +685,80 @@ function FilterChipRow({ label, options, activeValue, onChange }) {
   );
 }
 
+function buildSearchShowtimeResults({ catalog, query, selectedCity }) {
+  const needle = normalizeHomeText(query);
+  if (!needle) return [];
+
+  const selectedCityKey = normalizeHomeText(selectedCity);
+  const rows = [];
+
+  theaters.forEach((theater) => {
+    const theaterText = [
+      theater.name,
+      theater.city,
+      theater.area,
+      theater.address,
+      ...splitFeatureList(theater.amenities),
+    ].join(" ");
+    const theaterMatch = normalizeHomeText(theaterText).includes(needle);
+    const theaterCityKey = normalizeHomeText(theater.city);
+    const theaterMovieIds = Array.isArray(theater.movieIds) ? theater.movieIds : null;
+
+    catalog.forEach((movie) => {
+      if (theaterMovieIds && !theaterMovieIds.includes(movie.id)) return;
+
+      const movieMatch = movieMatchesSearch(movie, needle);
+      if (!theaterMatch && !movieMatch) return;
+      if (movieMatch && !theaterMatch && selectedCityKey && theaterCityKey !== selectedCityKey) {
+        return;
+      }
+
+      rows.push({
+        id: `${theater.id}-${movie.id}`,
+        cityPriority: theaterCityKey === selectedCityKey ? 0 : 1,
+        matchPriority: theaterMatch ? 0 : 1,
+        logoText: theater.logoText || initials(theater.name),
+        movie,
+        theater,
+        times: getTheaterTimes(theater),
+      });
+    });
+  });
+
+  return rows
+    .sort((left, right) => {
+      if (left.cityPriority !== right.cityPriority) return left.cityPriority - right.cityPriority;
+      if (left.matchPriority !== right.matchPriority) {
+        return left.matchPriority - right.matchPriority;
+      }
+      return left.theater.name.localeCompare(right.theater.name);
+    })
+    .slice(0, 12);
+}
+
+function movieMatchesSearch(movie, needle) {
+  return normalizeHomeText(
+    [
+      movie.title,
+      movie.language,
+      movie.duration,
+      movie.certificate,
+      movie.description,
+      ...movie.genres,
+      ...(movie.format ?? []),
+      ...(movie.cast ?? []).flatMap((member) => [member.name, member.role]),
+    ].join(" "),
+  ).includes(needle);
+}
+
+function getTheaterTimes(theater) {
+  const plans = theater.showPlan ?? showTimes.map((time) => ({ time }));
+  return plans
+    .map((plan) => (typeof plan === "string" ? plan : plan.time))
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
 function buildHomeCinemas(selectedCity) {
   const cityKey = normalizeHomeText(selectedCity);
   const localCinemas = theaters
@@ -643,6 +787,15 @@ function normalizeHomeText(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase();
+}
+
+function initials(value) {
+  return String(value ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
 }
 
 function Section({

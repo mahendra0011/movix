@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { motion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
@@ -271,12 +270,7 @@ function AuthPage() {
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-transparent" />
 
       <div className="relative mx-auto grid min-h-[calc(100vh-190px)] max-w-7xl items-center gap-8 px-4 py-10 lg:grid-cols-[1fr_460px]">
-        <motion.section
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="hidden lg:block"
-        >
+        <section className="hidden lg:block">
           <span className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-3 py-2 text-sm font-medium text-primary backdrop-blur">
             <ShieldCheck className="h-4 w-4" />
             Movie booking access
@@ -311,14 +305,9 @@ function AuthPage() {
               </div>
             </div>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.05 }}
-          className="rounded-lg border border-border/60 bg-card/90 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-6"
-        >
+        <section className="rounded-lg border border-border/60 bg-card/90 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-primary">moviex account</p>
@@ -625,7 +614,7 @@ function AuthPage() {
               Theater owner accounts can open the owner dashboard after admin approval.
             </div>
           )}
-        </motion.section>
+        </section>
       </div>
     </div>
   );
