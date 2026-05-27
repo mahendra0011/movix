@@ -256,6 +256,52 @@ const theaters = [
     distance: "6.6 km",
     amenities: ["Dolby 7.1", "Parking", "Cafe"],
   },
+  {
+    id: "samdareeya-era-jabalpur",
+    name: "Samdareeya Era Cinema",
+    city: "Jabalpur",
+    area: "Napier Town",
+    address: "Samdareeya Mall, Civic Centre, Jabalpur",
+    distance: "2.4 km",
+    amenities: ["Dolby 7.1", "M-Ticket", "Food & Beverage"],
+    showPlan: [
+      { time: "08:30 PM", format: "Dolby 7.1", status: "ok", cancellable: false },
+      { time: "10:55 PM", format: "Dolby 7.1", status: "ok", cancellable: false },
+    ],
+  },
+  {
+    id: "pvr-ka-mall-jabalpur",
+    name: "PVR: KA Mall",
+    city: "Jabalpur",
+    area: "Vijay Nagar",
+    address: "KA Mall, Vijay Nagar, Jabalpur",
+    distance: "5.8 km",
+    amenities: ["Recliners", "Parking", "M-Ticket"],
+    showPlan: [{ time: "11:25 PM", format: "2D", status: "ok", cancellable: true }],
+  },
+  {
+    id: "movie-magic-sam-jabalpur",
+    name: "Movie Magic (SAM)",
+    city: "Jabalpur",
+    area: "Russel Chowk",
+    address: "SAM Complex, Russel Chowk, Jabalpur",
+    distance: "3.1 km",
+    amenities: ["Laser", "F&B", "Parking"],
+    showPlan: [
+      { time: "09:21 PM", format: "2D", status: "fast", cancellable: false },
+      { time: "09:30 PM", format: "Laser", status: "ok", cancellable: false },
+    ],
+  },
+  {
+    id: "sr-cinema-jabalpur",
+    name: "SR Cinema",
+    city: "Jabalpur",
+    area: "Madan Mahal",
+    address: "Madan Mahal Road, Jabalpur",
+    distance: "4.5 km",
+    amenities: ["M-Ticket", "Snacks", "Parking"],
+    showPlan: [{ time: "09:15 PM", format: "2D", status: "ok", cancellable: true }],
+  },
 ];
 const showTimes = ["10:30 AM", "01:45 PM", "04:30 PM", "07:15 PM", "10:30 PM"];
 function getMovie(id) {

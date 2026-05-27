@@ -1,6 +1,6 @@
 const CITY_STORAGE_KEY = "bms-selected-city";
 const CITY_CHANGE_EVENT = "bms-city-change";
-const DEFAULT_CITY = "Bengaluru";
+const DEFAULT_CITY = "Jabalpur";
 
 function readPreferredCity() {
   if (typeof window === "undefined") return DEFAULT_CITY;

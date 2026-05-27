@@ -1,6 +1,20 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Calendar, Clock, Heart, MapPin, Play, Share2, Star } from "lucide-react";
+import {
+  Calendar,
+  ChevronDown,
+  Clock,
+  Heart,
+  Info,
+  MapPin,
+  Moon,
+  Play,
+  Search,
+  Share2,
+  SlidersHorizontal,
+  Star,
+  Sunrise,
+} from "lucide-react";
 import { fetchMovie } from "@/features/movies/api/moviesApi";
 import { theaters, showTimes } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
@@ -28,6 +42,10 @@ function MoviePage() {
   const [message, setMessage] = useState("");
   const [activeDate, setActiveDate] = useState(dateOptions[0]?.key ?? "");
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
+  const [theaterSearch, setTheaterSearch] = useState("");
+  const [activeFormat, setActiveFormat] = useState("All");
+  const [preferredTime, setPreferredTime] = useState("Any time");
+  const [sortBy, setSortBy] = useState("Recommended");
   const [ownerWorkspaces, setOwnerWorkspaces] = useState([]);
 
   useEffect(() => {
@@ -52,6 +70,25 @@ function MoviePage() {
   const cinemaListings = useMemo(
     () => buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces }),
     [activeDate, movie, ownerWorkspaces, selectedCity],
+  );
+  const formatOptions = useMemo(
+    () =>
+      sortFormatOptions([
+        ...movie.format,
+        ...cinemaListings.flatMap((cinema) => cinema.shows.map((show) => show.format)),
+      ]),
+    [cinemaListings, movie.format],
+  );
+  const visibleCinemaListings = useMemo(
+    () =>
+      filterCinemaListings({
+        listings: cinemaListings,
+        query: theaterSearch,
+        activeFormat,
+        preferredTime,
+        sortBy,
+      }),
+    [activeFormat, cinemaListings, preferredTime, sortBy, theaterSearch],
   );
 
   const addToWatchlist = () => {
@@ -186,22 +223,32 @@ function MoviePage() {
         </div>
       </section>
 
-      <section id="showtimes" className="mx-auto mt-12 max-w-7xl px-4">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h2 className="text-xl font-bold">Select a show</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {cinemaListings.length} cinemas in {selectedCity} for {selectedDateLabel}
-            </p>
-          </div>
+      <section id="showtimes" className="mt-12 border-y border-border/60 bg-muted/30">
+        <div className="bg-background">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">{movie.title}</h2>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                <span className="rounded-full border border-border/70 px-2.5 py-1">
+                  Movie runtime: {movie.duration}
+                </span>
+                <span className="rounded-full border border-border/70 px-2.5 py-1">
+                  {movie.certificate}
+                </span>
+                {movie.genres.slice(0, 3).map((genre) => (
+                  <span key={genre} className="rounded-full border border-border/70 px-2.5 py-1">
+                    {genre}
+                  </span>
+                ))}
+              </div>
+            </div>
 
-          <div className="flex flex-col gap-3 md:items-end">
-            <label className="flex items-center gap-2 rounded-lg border border-border/60 bg-card/60 px-3 py-2 text-sm">
+            <label className="flex w-full items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-sm lg:w-auto">
               <MapPin className="h-4 w-4 text-primary" />
               <select
                 value={selectedCity}
                 onChange={(event) => writePreferredCity(event.target.value)}
-                className="min-w-36 bg-transparent text-sm font-medium outline-none"
+                className="min-w-40 flex-1 bg-transparent font-medium outline-none"
               >
                 {cityOptions.map((city) => (
                   <option key={city} value={city}>
@@ -209,45 +256,100 @@ function MoviePage() {
                   </option>
                 ))}
               </select>
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </label>
+          </div>
+        </div>
 
-            <div className="flex flex-wrap gap-2">
+        <div className="border-y border-border/60 bg-background/95 backdrop-blur">
+          <div className="mx-auto grid max-w-7xl gap-4 px-4 md:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="flex gap-2 overflow-x-auto py-3">
               {dateOptions.map((date) => (
                 <button
                   key={date.key}
                   type="button"
                   onClick={() => setActiveDate(date.key)}
-                  className={`rounded-lg border px-4 py-2 text-xs font-medium ${
+                  className={`grid min-w-16 place-items-center rounded-lg border px-4 py-2 text-center transition-colors ${
                     activeDate === date.key
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border/60"
+                      ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                      : "border-transparent hover:border-border/70 hover:bg-card"
                   }`}
                 >
-                  {date.label}
+                  <span className="text-[11px] font-semibold uppercase">{date.weekday}</span>
+                  <span className="text-xl font-bold leading-none">{date.day}</span>
+                  <span className="text-[11px] uppercase opacity-80">{date.month}</span>
                 </button>
               ))}
+            </div>
+
+            <div className="grid gap-2 border-t border-border/60 py-3 md:flex md:border-l md:border-t-0 md:pl-4">
+              <FilterSelect
+                value={activeFormat}
+                onChange={setActiveFormat}
+                options={formatOptions}
+                label={`${movie.language} - ${activeFormat === "All" ? "All formats" : activeFormat}`}
+              />
+              <FilterSelect
+                value={preferredTime}
+                onChange={setPreferredTime}
+                options={["Any time", "Morning", "Afternoon", "Evening", "Night"]}
+                label={preferredTime}
+              />
+              <FilterSelect
+                value={sortBy}
+                onChange={setSortBy}
+                options={["Recommended", "Cinema A-Z", "Distance"]}
+                label={`Sort by ${sortBy}`}
+              />
+              <label className="flex h-11 min-w-48 items-center gap-2 rounded-md border border-border/60 bg-card px-3 text-sm">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <input
+                  value={theaterSearch}
+                  onChange={(event) => setTheaterSearch(event.target.value)}
+                  placeholder="Search cinema"
+                  className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                />
+              </label>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 space-y-3">
-          {cinemaListings.length > 0 ? (
-            cinemaListings.map((cinema) => (
-              <CinemaShowCard
-                key={cinema.id}
-                cinema={cinema}
-                movie={movie}
-                activeDateLabel={selectedDateLabel}
-              />
-            ))
-          ) : (
-            <div className="rounded-xl border border-border/60 bg-card/60 p-6 text-center">
-              <h3 className="font-semibold">No cinema found in {selectedCity}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Try another city or ask a cinema owner to list shows for this movie.
-              </p>
-            </div>
-          )}
+        <div className="mx-auto max-w-7xl px-4 py-4">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <Moon className="h-4 w-4" /> Late night shows
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Sunrise className="h-4 w-4" /> Early morning shows
+            </span>
+            <span className="ml-auto inline-flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Available
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Fast filling
+            </span>
+          </div>
+
+          <div className="mt-4 overflow-hidden rounded-lg border border-border/60 bg-background shadow-sm">
+            {visibleCinemaListings.length > 0 ? (
+              visibleCinemaListings.map((cinema) => (
+                <CinemaShowCard
+                  key={cinema.id}
+                  cinema={cinema}
+                  movie={movie}
+                  activeDateLabel={selectedDateLabel}
+                />
+              ))
+            ) : (
+              <div className="p-8 text-center">
+                <SlidersHorizontal className="mx-auto h-8 w-8 text-primary" />
+                <h3 className="mt-3 font-semibold">No matching shows in {selectedCity}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Try another date, format, time, or cinema search.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </div>
@@ -256,11 +358,16 @@ function MoviePage() {
 
 function CinemaShowCard({ cinema, movie, activeDateLabel }) {
   return (
-    <div className="rounded-xl border border-border/60 bg-card/60 p-5 backdrop-blur transition-colors hover:border-border">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+    <div className="grid gap-5 border-b border-border/60 p-5 last:border-b-0 md:grid-cols-[390px_1fr]">
+      <div className="grid grid-cols-[44px_1fr_auto] gap-3">
+        <div className="grid h-11 w-11 place-items-center rounded-md border border-border/60 bg-card text-xs font-bold text-primary">
+          {cinema.logoText || initials(cinema.name)}
+        </div>
+
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-semibold">{cinema.name}</h3>
+            <h3 className="font-semibold leading-snug">{cinema.name}</h3>
+            <Info className="h-4 w-4 text-muted-foreground" />
             {cinema.isOwner && (
               <span className="rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">
                 Owner listed
@@ -287,63 +394,84 @@ function CinemaShowCard({ cinema, movie, activeDateLabel }) {
           )}
         </div>
 
-        <div className="flex gap-3 text-[11px] text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" /> Available
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-amber-500" /> Filling fast
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-rose-500" /> Sold out
-          </span>
-        </div>
+        <button
+          type="button"
+          className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-card hover:text-primary"
+          aria-label={`Save ${cinema.name}`}
+        >
+          <Heart className="h-5 w-5" />
+        </button>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {cinema.shows.map((show) => {
-          const cls = showTimeClass(show.status);
-          const content = (
-            <>
-              <span>{show.label}</span>
-              <span className="text-[10px] opacity-70">
-                {show.format} - {formatCurrency(show.price.gold)}
-              </span>
-            </>
-          );
+      <div>
+        <div className="flex flex-wrap gap-3">
+          {cinema.shows.map((show) => {
+            const cls = showTimeClass(show.status);
+            const content = (
+              <>
+                <span className="text-sm font-semibold">{show.label}</span>
+                <span className="text-[10px] uppercase opacity-70">{show.format}</span>
+              </>
+            );
 
-          return show.status === "sold" ? (
-            <span
-              key={show.id}
-              className={`inline-flex flex-col rounded-md border px-3 py-1.5 text-xs font-medium ${cls}`}
-            >
-              {content}
-            </span>
-          ) : (
-            <Link
-              key={show.id}
-              to="/book/$showId"
-              params={{ showId: show.id }}
-              search={{
-                time: show.label,
-                date: activeDateLabel,
-                theater: cinema.name,
-                movie: movie.title,
-                movieId: movie.id,
-                theaterId: cinema.id,
-                screen: show.screen,
-                platinumPrice: show.price.platinum,
-                goldPrice: show.price.gold,
-                vipPrice: show.price.vip,
-              }}
-              className={`inline-flex flex-col rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${cls}`}
-            >
-              {content}
-            </Link>
-          );
-        })}
+            return show.status === "sold" ? (
+              <span
+                key={show.id}
+                className={`inline-flex flex-col rounded-md border px-3 py-1.5 text-xs font-medium ${cls}`}
+              >
+                {content}
+              </span>
+            ) : (
+              <Link
+                key={show.id}
+                to="/book/$showId"
+                params={{ showId: show.id }}
+                search={{
+                  time: show.label,
+                  date: activeDateLabel,
+                  theater: cinema.name,
+                  movie: movie.title,
+                  movieId: movie.id,
+                  theaterId: cinema.id,
+                  screen: show.screen,
+                  platinumPrice: show.price.platinum,
+                  goldPrice: show.price.gold,
+                  vipPrice: show.price.vip,
+                }}
+                className={`inline-flex flex-col rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${cls}`}
+              >
+                {content}
+              </Link>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          {cinema.shows.some((show) => show.cancellable)
+            ? "Cancellation available"
+            : "Non-cancellable"}
+        </p>
       </div>
     </div>
+  );
+}
+
+function FilterSelect({ value, onChange, options, label }) {
+  return (
+    <label className="relative">
+      <select
+        aria-label={label}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-11 w-full appearance-none rounded-md border border-border/60 bg-card py-2 pl-3 pr-9 text-sm outline-none transition-colors hover:border-primary/50 md:w-auto"
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    </label>
   );
 }
 
@@ -351,17 +479,23 @@ function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces 
   const city = selectedCity || "Bengaluru";
   const staticListings = theaters
     .filter((theater) => sameCity(theater.city, city))
-    .map((theater) => ({
-      id: theater.id,
-      name: theater.name,
-      city: theater.city,
-      area: theater.area,
-      address: theater.address,
-      distance: theater.distance,
-      amenities: splitAmenities(theater.amenities),
-      isOwner: false,
-      shows: showTimes.map((time, index) => buildStaticShow(movie, theater, time, index)),
-    }));
+    .map((theater) => {
+      const plans =
+        theater.showPlan ??
+        showTimes.map((time, index) => ({ time, status: inferShowStatus(index) }));
+      return {
+        id: theater.id,
+        name: theater.name,
+        city: theater.city,
+        area: theater.area,
+        address: theater.address,
+        distance: theater.distance,
+        amenities: splitAmenities(theater.amenities),
+        logoText: theater.logoText,
+        isOwner: false,
+        shows: plans.map((plan, index) => buildStaticShow(movie, theater, plan, index)),
+      };
+    });
 
   const ownerListings = ownerWorkspaces
     .map((workspace) => {
@@ -389,6 +523,7 @@ function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces 
         address: profile.address,
         distance: profile.distance,
         amenities: splitAmenities(profile.amenities),
+        logoText: initials(profile.name),
         isOwner: true,
         shows,
       };
@@ -398,14 +533,64 @@ function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces 
   return [...ownerListings, ...staticListings].filter((cinema) => cinema.shows.length > 0);
 }
 
-function buildStaticShow(movie, theater, time, index) {
+function filterCinemaListings({ listings, query, activeFormat, preferredTime, sortBy }) {
+  const needle = normalizeText(query);
+  const filtered = listings
+    .map((cinema) => {
+      const shows = cinema.shows.filter((show) => {
+        const formatMatch = activeFormat === "All" || sameCity(show.format, activeFormat);
+        const timeMatch =
+          preferredTime === "Any time" || timeBucket(show.label) === preferredTime.toLowerCase();
+        return formatMatch && timeMatch;
+      });
+      return { ...cinema, shows };
+    })
+    .filter((cinema) => {
+      if (cinema.shows.length === 0) return false;
+      if (!needle) return true;
+      const searchable = [
+        cinema.name,
+        cinema.city,
+        cinema.area,
+        cinema.address,
+        ...cinema.amenities,
+        ...cinema.shows.flatMap((show) => [show.label, show.format]),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return searchable.includes(needle);
+    });
+
+  return filtered.sort((left, right) => {
+    if (sortBy === "Cinema A-Z") return left.name.localeCompare(right.name);
+    if (sortBy === "Distance") return parseDistance(left.distance) - parseDistance(right.distance);
+    return 0;
+  });
+}
+
+function sortFormatOptions(formats) {
+  const values = [...new Set(formats.filter(Boolean))];
+  values.sort((left, right) => {
+    if (left === "2D") return -1;
+    if (right === "2D") return 1;
+    return left.localeCompare(right);
+  });
+  return ["All", ...values];
+}
+
+function buildStaticShow(movie, theater, plan, index) {
+  const time = typeof plan === "string" ? plan : plan.time;
+  const format = typeof plan === "string" ? undefined : plan.format;
+  const status =
+    typeof plan === "string" ? inferShowStatus(index) : plan.status || inferShowStatus(index);
   return {
     id: `${movie.id}-${theater.id}-${index}`,
     label: time,
-    screen: "Screen 3",
-    status: index === 4 ? "sold" : index === 3 ? "fast" : "ok",
-    format: index % 2 === 0 ? "IMAX" : "2D",
+    screen: typeof plan === "string" ? "Screen 3" : plan.screen || "Screen 3",
+    status,
+    format: format || (index % 2 === 0 ? movie.format[0] || "2D" : "2D"),
     language: movie.language,
+    cancellable: typeof plan === "string" ? index % 2 === 1 : Boolean(plan.cancellable),
     price: {
       platinum: 180 + index * 10,
       gold: 250 + index * 15,
@@ -426,8 +611,33 @@ function formatOwnerShow(show) {
     status: normalizeShowStatus(show.status),
     format: show.format || "2D",
     language: show.language || "English",
+    cancellable: show.cancellable !== false,
     price: { platinum, gold, vip },
   };
+}
+
+function inferShowStatus(index) {
+  if (index === 4) return "sold";
+  if (index === 3) return "fast";
+  return "ok";
+}
+
+function timeBucket(label) {
+  const hour = parseShowHour(label);
+  if (hour < 12) return "morning";
+  if (hour < 16) return "afternoon";
+  if (hour < 20) return "evening";
+  return "night";
+}
+
+function parseShowHour(label) {
+  const match = String(label).match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
+  if (!match) return 20;
+  let hour = Number(match[1]);
+  const suffix = match[3].toUpperCase();
+  if (suffix === "PM" && hour !== 12) hour += 12;
+  if (suffix === "AM" && hour === 12) hour = 0;
+  return hour;
 }
 
 function normalizeShowStatus(status) {
@@ -439,12 +649,12 @@ function normalizeShowStatus(status) {
 
 function showTimeClass(status) {
   if (status === "sold") {
-    return "cursor-not-allowed border-border/60 text-muted-foreground line-through";
+    return "cursor-not-allowed border-border/60 bg-muted/30 text-muted-foreground line-through";
   }
   if (status === "fast") {
-    return "border-amber-500/60 text-amber-400 hover:bg-amber-500/10";
+    return "border-amber-500/70 bg-amber-500/5 text-foreground hover:bg-amber-500/10";
   }
-  return "border-emerald-500/60 text-emerald-400 hover:bg-emerald-500/10";
+  return "border-emerald-500/70 bg-background text-foreground hover:bg-emerald-500/10";
 }
 
 function buildCityOptions(ownerWorkspaces) {
@@ -498,19 +708,20 @@ function normalizeCinemaProfile(profile, ownerKey) {
 }
 
 function buildDateOptions() {
-  return Array.from({ length: 4 }, (_, index) => {
+  return Array.from({ length: 7 }, (_, index) => {
     const date = new Date();
     date.setHours(12, 0, 0, 0);
     date.setDate(date.getDate() + index);
+    const weekday = date.toLocaleDateString("en-IN", { weekday: "short" }).toUpperCase();
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = date.toLocaleDateString("en-IN", { month: "short" }).toUpperCase();
 
     return {
       key: toDateInputValue(date),
-      label:
-        index === 0
-          ? "Today"
-          : index === 1
-            ? "Tomorrow"
-            : date.toLocaleDateString("en-IN", { weekday: "short", day: "2-digit" }),
+      weekday,
+      day,
+      month,
+      label: index === 0 ? "Today" : index === 1 ? "Tomorrow" : `${weekday} ${day} ${month}`,
     };
   });
 }
@@ -546,6 +757,11 @@ function splitAmenities(value) {
 
 function formatCurrency(value) {
   return `Rs ${Number(value || 0).toLocaleString("en-IN")}`;
+}
+
+function parseDistance(distance) {
+  const value = Number.parseFloat(String(distance ?? ""));
+  return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
 }
 
 function formatTimeLabel(value) {
