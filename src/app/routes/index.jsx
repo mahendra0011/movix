@@ -25,19 +25,16 @@ import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { StaggeredText } from "@/shared/components/reactbits/StaggeredText";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { SearchBox } from "@/shared/components/ui/search-box";
 import { requestJson } from "@/shared/services/httpClient";
 import {
   readHomeSearchQuery,
   subscribeHomeSearchQuery,
   writeHomeSearchQuery,
 } from "@/shared/services/homeSearch";
-import { readSearchBoxValue } from "@/shared/services/searchBox";
 const Route = createFileRoute("/")({
   loader: () => fetchMovies(),
   component: Home,
 });
-const genres = ["All", "Action", "Sci-Fi", "Drama", "Comedy", "Animation", "Thriller", "Crime"];
 const cinemas = [
   { name: "PVR INOX: Orion Mall", features: "IMAX, Dolby Atmos", screens: 11, rating: 4.7 },
   { name: "INOX: Garuda Mall", features: "Laser projection, recliners", screens: 5, rating: 4.5 },
@@ -65,12 +62,6 @@ const testimonials = [
     text: "Loved the QR ticket. Walked in, scanned, popcorn. Done.",
     role: "Casual viewer",
   },
-];
-const stats = [
-  { value: `${fallbackMovies.length}`, label: "Movies live" },
-  { value: `${cinemas.length}`, label: "Partner cinemas" },
-  { value: "5 min", label: "Seat lock window" },
-  { value: "Live", label: "Seat sync" },
 ];
 const promotions = [
   {
@@ -106,7 +97,6 @@ function Home() {
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
   const featured = catalog[0] ?? fallbackMovies[0];
   const [query, setQuery] = useState(readHomeSearchQuery);
-  const [activeGenre, setActiveGenre] = useState("All");
   const [activeLanguage, setActiveLanguage] = useState("All");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
@@ -127,16 +117,15 @@ function Home() {
         .join(" ")
         .toLowerCase();
       const queryMatch = !needle || searchable.includes(needle);
-      const genreMatch = activeGenre === "All" || movie.genres.includes(activeGenre);
       const languageMatch = activeLanguage === "All" || movie.language === activeLanguage;
-      return queryMatch && genreMatch && languageMatch;
+      return queryMatch && languageMatch;
     });
-  }, [activeGenre, activeLanguage, catalog, query]);
+  }, [activeLanguage, catalog, query]);
   const availableLanguages = useMemo(
     () => ["All", ...Array.from(new Set(catalog.map((movie) => movie.language)))],
     [catalog],
   );
-  const hasActiveFilters = query.trim() !== "" || activeGenre !== "All" || activeLanguage !== "All";
+  const hasActiveFilters = query.trim() !== "" || activeLanguage !== "All";
   const hasNoResults = hasActiveFilters && filteredMovies.length === 0;
   const shelfMovies = hasActiveFilters ? filteredMovies : catalog;
   const activeSearchQuery = query.trim();
@@ -146,13 +135,6 @@ function Home() {
   const premieres = expandedSections.premieres ? rotateShelf(3) : shelfMovies.slice(3, 7);
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
-
-  const submitHeroSearch = (event) => {
-    event.preventDefault();
-    const nextQuery = readSearchBoxValue(event.currentTarget);
-    setQuery(nextQuery);
-    writeHomeSearchQuery(nextQuery);
-  };
 
   const subscribe = async (event) => {
     event.preventDefault();
@@ -197,7 +179,6 @@ function Home() {
               variant="secondary"
               onClick={() => {
                 setQuery("");
-                setActiveGenre("All");
                 setActiveLanguage("All");
                 writeHomeSearchQuery("");
               }}
@@ -261,22 +242,6 @@ function Home() {
               <p className="mt-4 text-sm text-muted-foreground md:text-base">
                 {featured.description}
               </p>
-              <form
-                onSubmit={submitHeroSearch}
-                className="mt-6 flex max-w-xl items-center gap-2 rounded-lg border border-border/70 bg-background/65 p-2 shadow-2xl shadow-black/20 backdrop-blur"
-              >
-                <button
-                  type="submit"
-                  className="ml-1 grid h-9 w-9 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-primary"
-                  aria-label="Search"
-                >
-                  <Search className="h-5 w-5" />
-                </button>
-                <SearchBox
-                  placeholder="Search movies by title, genre or language"
-                  className="h-11 bg-transparent"
-                />
-              </form>
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
                 {featured.genres.map((g) => (
                   <span
@@ -316,41 +281,9 @@ function Home() {
         </div>
       </section>
 
-      {/* Quick stats strip */}
-      <section className="mx-auto mt-8 max-w-7xl px-4">
-        <SpotlightCard className="surface-rise grid grid-cols-2 gap-3 rounded-lg p-5 backdrop-blur md:grid-cols-4">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <p className="bg-gradient-to-r from-primary to-vip bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
-                {s.value}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
-            </div>
-          ))}
-        </SpotlightCard>
-      </section>
-
       {/* Filters */}
       <section className="mx-auto mt-10 max-w-7xl px-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Genre
-          </h3>
-          <div className="h-px flex-1 bg-border/60" />
-        </div>
-        <div className="stagger-row mt-3 flex gap-2 overflow-x-auto pb-2">
-          {genres.map((g) => (
-            <button
-              key={g}
-              onClick={() => setActiveGenre(g)}
-              className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-all ${activeGenre === g ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/30" : "border-border/60 text-muted-foreground hover:border-foreground/30 hover:text-foreground"}`}
-            >
-              {g}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-4 flex items-center gap-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Language
           </h3>
@@ -383,7 +316,6 @@ function Home() {
               className="mt-5"
               onClick={() => {
                 setQuery("");
-                setActiveGenre("All");
                 setActiveLanguage("All");
                 writeHomeSearchQuery("");
                 void navigate({ to: "/" });
