@@ -14,7 +14,7 @@ const env = {
   apiPort: Number(process.env.API_PORT ?? process.env.PORT ?? 4000),
   clientOrigin: parseOrigins(process.env.CLIENT_ORIGIN ?? "*"),
   mongoUri: process.env.MONGODB_URI,
-  mongoDb: process.env.MONGODB_DB,
+  mongoDb: process.env.MONGODB_DB ?? "bookmyscreeen",
   redisUrl: process.env.REDIS_URL,
   jwtSecret: process.env.JWT_SECRET ?? "bookmyscreen-dev-secret",
   lockTtlMs: Number(process.env.SEAT_LOCK_TTL_MS ?? 5 * 60 * 1000),
