@@ -1,14 +1,29 @@
-import { API_BASE_URL, HAS_CONFIGURED_API_URL } from "@/shared/services/httpClient";
+import { API_BASE_URL } from "@/shared/services/httpClient";
 
-async function createBookingSocket() {
+function readAuthToken() {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem("bms-auth-token") || "";
+}
+
+async function createAppSocket() {
   if (typeof window === "undefined") return null;
-  const socketUrl = (import.meta.env.VITE_SOCKET_URL ?? "").trim();
-  if (!socketUrl && !HAS_CONFIGURED_API_URL) return null;
 
   const { io } = await import("socket.io-client");
-  return io((socketUrl || API_BASE_URL).replace(/\/$/, ""), {
+  const baseUrl = API_BASE_URL ? API_BASE_URL.replace(/\/$/, "") : undefined;
+  return io(baseUrl, {
+    auth: {
+      token: readAuthToken(),
+    },
     transports: ["websocket", "polling"],
   });
 }
 
-export { createBookingSocket };
+async function createBookingSocket() {
+  return createAppSocket();
+}
+
+async function createNotificationSocket() {
+  return createAppSocket();
+}
+
+export { createAppSocket, createBookingSocket, createNotificationSocket };

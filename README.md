@@ -1,6 +1,6 @@
 # moviex
 
-Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO booked-seat updates, Razorpay-ready payments, and Brevo HTTP API email hooks.
+Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO booked-seat and notification updates, Razorpay-ready payments, and Brevo HTTP API email hooks.
 
 This project is JavaScript-only. It does not use TypeScript or Bun.
 
@@ -13,7 +13,7 @@ server/                 Express and MongoDB API
   models/               MongoDB/Mongoose models
   routes/               Auth, movies, shows, bookings, payments, admin APIs
   services/             Email, ticket/QR/PDF, and booking helpers
-  sockets/              Socket.IO booked-seat updates
+  sockets/              Socket.IO booked-seat and notification updates
 src/
   app/                  TanStack Router app routes and generated route tree
   features/
@@ -88,7 +88,8 @@ Create one Render Web Service for the API and one Render Static Site for the Rea
 - Redirects/Rewrites rule: source `/*`, destination `/index.html`, action `Rewrite`
 - Required environment variables:
   - `VITE_API_URL`: deployed API URL, for example `https://moviex-api.onrender.com`
-  - `VITE_SOCKET_URL`: same API URL for Socket.IO, for example `https://moviex-api.onrender.com`
+
+Socket.IO uses `VITE_API_URL`, so no separate frontend socket URL is required.
 
 Render Web Services must bind to the port from `PORT`. The API reads `PORT` first. The frontend is a static SPA, so it does not need a start command.
 
@@ -99,7 +100,7 @@ Do not put `npm run web`, `npm run preview`, or any other command in Render's Pu
 ## Full-stack features
 
 - JWT register/login, email OTP verification, and forgot-password OTP reset
-- Socket.IO booked-seat updates for active show pages
+- Socket.IO booked-seat updates for active show pages and navbar notifications
 - Razorpay order creation and signature verification when payment keys are configured
 - QR code, PDF ticket, and invoice generation
 - Brevo transactional email through the HTTP API using `BRAVO_API_KEY` or `BREVO_API_KEY`

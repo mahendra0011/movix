@@ -14,6 +14,7 @@ import { cleanDocument, isMongoReady } from "../services/database.js";
 import { sendBookingEmail, sendOtpEmail } from "../services/emailService.js";
 import { generateQrDataUrl, generateQrPng, generateTicketPdf } from "../services/ticketService.js";
 import { getSeatState, roomName } from "../services/seatService.js";
+import { publishNotification } from "../services/notificationHub.js";
 
 function createRef() {
   return `MX${Date.now().toString(36).toUpperCase()}${Math.random()
@@ -229,8 +230,25 @@ function createBookingRoutes({ io }) {
     bookingEmailTokens.delete(emailVerificationToken);
     const state = await emitSeatState(showId);
     const qrDataUrl = await generateQrDataUrl(saved);
+    const seatText = saved.seats?.join(", ") || "selected seats";
 
     sendBookingEmail(saved).catch((error) => console.warn("Booking email failed:", error.message));
+    publishNotification({
+      audience: "user",
+      email: saved.email,
+      type: "booking",
+      title: "Ticket confirmed",
+      message: `${saved.movie} at ${saved.theater} - ${seatText}`,
+      href: `/confirmation?ref=${encodeURIComponent(saved.ref)}`,
+    });
+    publishNotification({
+      audience: "role",
+      role: "admin",
+      type: "booking",
+      title: "New booking received",
+      message: `${saved.movie} - ${seatText} - Rs ${saved.total}`,
+      href: "/admin",
+    });
 
     response.status(201).json({
       booking: saved,

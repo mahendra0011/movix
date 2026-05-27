@@ -10,6 +10,7 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { getMemoryUsers, updateMemoryUserOwnerStatus } from "./authRoutes.js";
 import { getMemoryBookings } from "../services/bookingStore.js";
 import { isMongoReady } from "../services/database.js";
+import { publishNotification } from "../services/notificationHub.js";
 
 const router = Router();
 const SCREEN_CAPACITY = 140;
@@ -203,6 +204,7 @@ router.patch(
       };
       await user.save();
       await syncApprovedTheater(user, status);
+      publishOwnerStatusNotification(user, status);
       response.json({ theater: mapOwnerApplication(user) });
       return;
     }
@@ -217,9 +219,22 @@ router.patch(
       return;
     }
 
+    publishOwnerStatusNotification(user, status);
     response.json({ theater: mapOwnerApplication(user) });
   }),
 );
+
+function publishOwnerStatusNotification(user, status) {
+  const application = user.ownerApplication ?? {};
+  publishNotification({
+    audience: "user",
+    email: user.email,
+    type: "owner-approval",
+    title: `Theater application ${status.toLowerCase()}`,
+    message: `${application.theaterName || "Your cinema"} is now ${status}.`,
+    href: "/owner",
+  });
+}
 
 function mapOwnerApplication(user) {
   const application = user.ownerApplication ?? {};

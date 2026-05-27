@@ -6,6 +6,7 @@ import { requireAuth, signToken } from "../middleware/auth.js";
 import { User } from "../models/User.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
 import { sendOtpEmail } from "../services/emailService.js";
+import { publishNotification } from "../services/notificationHub.js";
 
 const router = Router();
 const memoryUsers = new Map();
@@ -193,6 +194,17 @@ router.post(
         verified: false,
       };
       memoryUsers.set(normalizedEmail, user);
+    }
+
+    if (safeRole === "theater-owner") {
+      publishNotification({
+        audience: "role",
+        role: "admin",
+        type: "owner-application",
+        title: "New theater owner application",
+        message: `${application.theaterName || name} from ${application.city || "a new city"} needs review.`,
+        href: "/admin",
+      });
     }
 
     response.status(201).json(await issueOtp(user, "verify-account"));

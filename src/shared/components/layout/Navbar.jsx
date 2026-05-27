@@ -1,12 +1,13 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, User, Film, LayoutDashboard, Moon, Sun, Building2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Bell, Building2, Film, LayoutDashboard, Moon, Search, Sun, User } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hydrateAuth, readStoredAuth } from "@/features/auth/authSlice";
 import { theaters } from "@/features/movies/data/movieCatalog";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
 import { SearchBox } from "@/shared/components/ui/search-box";
+import { createNotificationSocket } from "@/shared/services/socketClient";
 import {
   readPreferredCity,
   subscribePreferredCity,
@@ -20,6 +21,7 @@ const navItems = [
   { label: "Sports", to: "/sports" },
 ];
 const THEME_STORAGE_KEY = "bms-theme";
+const MAX_NAV_NOTIFICATIONS = 8;
 
 function applyTheme(theme) {
   if (typeof document === "undefined") return;
@@ -39,6 +41,12 @@ function Navbar() {
   const auth = useSelector((state) => state.auth);
   const [theme, setTheme] = useState("light");
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState("connecting");
+  const [unreadCount, setUnreadCount] = useState(0);
+  const notificationRef = useRef(null);
+  const notificationOpenRef = useRef(false);
   const citySuggestions = useMemo(() => theaters.map((theater) => theater.city), []);
   const isAdmin = auth.user?.role === "admin";
   const isOwner = auth.user?.role === "theater-owner";
@@ -56,6 +64,59 @@ function Navbar() {
   }, []);
 
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
+
+  useEffect(() => {
+    notificationOpenRef.current = notificationOpen;
+    if (notificationOpen) setUnreadCount(0);
+  }, [notificationOpen]);
+
+  useEffect(() => {
+    if (!notificationOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (!notificationRef.current?.contains(event.target)) setNotificationOpen(false);
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => window.removeEventListener("pointerdown", handlePointerDown);
+  }, [notificationOpen]);
+
+  useEffect(() => {
+    if (!auth.hydrated) return undefined;
+    let active = true;
+    let notificationSocket;
+    setNotificationStatus("connecting");
+
+    createNotificationSocket()
+      .then((socket) => {
+        if (!active) {
+          socket?.disconnect();
+          return;
+        }
+        if (!socket) {
+          setNotificationStatus("offline");
+          return;
+        }
+
+        notificationSocket = socket;
+        socket.on("connect", () => setNotificationStatus("live"));
+        socket.on("disconnect", () => setNotificationStatus("offline"));
+        socket.on("connect_error", () => setNotificationStatus("offline"));
+        socket.on("notifications:sync", (items = []) => {
+          setNotifications(normalizeNotifications(items));
+        });
+        socket.on("notification", (notification) => {
+          setNotifications((current) => normalizeNotifications([notification, ...current]));
+          if (!notificationOpenRef.current) setUnreadCount((current) => current + 1);
+        });
+      })
+      .catch(() => active && setNotificationStatus("offline"));
+
+    return () => {
+      active = false;
+      notificationSocket?.disconnect();
+    };
+  }, [auth.hydrated, auth.token]);
 
   const submitSearch = (event) => {
     event.preventDefault();
@@ -131,6 +192,73 @@ function Navbar() {
           </Button>
         )}
 
+        <div ref={notificationRef} className="relative">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() => setNotificationOpen((current) => !current)}
+            className="relative gap-2"
+            aria-label="Notifications"
+            aria-expanded={notificationOpen}
+          >
+            <Bell className="h-4 w-4" />
+            <span className="hidden lg:inline">Alerts</span>
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </Button>
+
+          {notificationOpen && (
+            <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-border/70 bg-popover shadow-2xl">
+              <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
+                <div>
+                  <p className="text-sm font-semibold">Notifications</p>
+                  <p className="text-xs text-muted-foreground">
+                    {notificationStatus === "live"
+                      ? "Socket.IO live"
+                      : notificationStatus === "connecting"
+                        ? "Connecting..."
+                        : "Socket.IO offline"}
+                  </p>
+                </div>
+                <span
+                  className={`h-2.5 w-2.5 rounded-full ${
+                    notificationStatus === "live" ? "bg-emerald-400" : "bg-amber-400"
+                  }`}
+                />
+              </div>
+
+              <div className="max-h-80 overflow-y-auto py-1">
+                {notifications.length ? (
+                  notifications.map((notification) => (
+                    <a
+                      key={notification.id}
+                      href={notification.href || "#"}
+                      onClick={() => setNotificationOpen(false)}
+                      className="block border-b border-border/40 px-3 py-2.5 last:border-b-0 hover:bg-accent"
+                    >
+                      <span className="block text-sm font-medium">{notification.title}</span>
+                      <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
+                        {notification.message}
+                      </span>
+                      <span className="mt-1 block text-[11px] text-muted-foreground">
+                        {formatNotificationTime(notification.createdAt)}
+                      </span>
+                    </a>
+                  ))
+                ) : (
+                  <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                    No live notifications yet
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         <Button
           type="button"
           size="sm"
@@ -178,4 +306,29 @@ function Navbar() {
     </header>
   );
 }
+
+function normalizeNotifications(items) {
+  const seen = new Set();
+  return items
+    .filter(Boolean)
+    .filter((notification) => {
+      const key = notification.id || `${notification.title}-${notification.createdAt}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, MAX_NAV_NOTIFICATIONS);
+}
+
+function formatNotificationTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Just now";
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export { Navbar };

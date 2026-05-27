@@ -12,6 +12,7 @@ import { paymentRoutes } from "./routes/paymentRoutes.js";
 import { showRoutes } from "./routes/showRoutes.js";
 import { theaterRoutes } from "./routes/theaterRoutes.js";
 import { connectDatabase, isMongoReady } from "./services/database.js";
+import { registerNotificationSockets } from "./sockets/notificationSocket.js";
 import { registerSeatSockets } from "./sockets/seatSocket.js";
 
 const app = express();
@@ -35,6 +36,7 @@ await connectDatabase();
 
 const { router: bookingRoutes, getBookedSeats } = createBookingRoutes({ io });
 registerSeatSockets(io, { getBookedSeats });
+registerNotificationSockets(io);
 
 app.get("/api/health", (_request, response) => {
   response.json({
@@ -42,7 +44,8 @@ app.get("/api/health", (_request, response) => {
     service: "moviex API",
     database: isMongoReady() ? "MongoDB connected" : "Local memory store",
     socket: "enabled",
-    seats: "Booked-seat sync only",
+    seats: "Booked-seat sync",
+    notifications: "Socket.IO live notifications",
     email: env.brevoApiKey ? "Brevo connected" : "Email provider not configured",
     payment:
       env.paymentProvider === "razorpay" && env.razorpayKeyId && env.razorpayKeySecret
