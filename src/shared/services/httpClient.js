@@ -1,6 +1,10 @@
 import axios from "axios";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:4000").replace(/\/$/, "");
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim() ?? "";
+const HAS_CONFIGURED_API_URL = configuredApiUrl.length > 0;
+const API_BASE_URL = (
+  configuredApiUrl || (import.meta.env.DEV ? "http://localhost:4000" : "")
+).replace(/\/$/, "");
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -36,4 +40,4 @@ function apiUrl(path) {
   return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-export { API_BASE_URL, apiClient, apiUrl, requestJson };
+export { API_BASE_URL, HAS_CONFIGURED_API_URL, apiClient, apiUrl, requestJson };

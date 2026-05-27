@@ -5,13 +5,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { hydrateAuth, readStoredAuth } from "@/features/auth/authSlice";
 import { theaters } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
+import { SearchBox } from "@/shared/components/ui/search-box";
 import {
   readPreferredCity,
   sortCities,
   subscribePreferredCity,
   writePreferredCity,
 } from "@/shared/services/cityPreference";
+import { writeHomeSearchQuery } from "@/shared/services/homeSearch";
+import { clearSearchBox, readSearchBoxValue } from "@/shared/services/searchBox";
 
 const navItems = [
   { label: "Movies", to: "/" },
@@ -35,7 +37,6 @@ function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
-  const [navSearch, setNavSearch] = useState("");
   const [theme, setTheme] = useState("dark");
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
   const cityOptions = useMemo(() => sortCities(theaters.map((theater) => theater.city)), []);
@@ -62,11 +63,14 @@ function Navbar() {
     }
   }, [cityOptions, selectedCity]);
 
-  const submitSearch = async (event) => {
+  const submitSearch = (event) => {
     event.preventDefault();
-    await navigate({
+    const nextSearch = readSearchBoxValue(event.currentTarget);
+    writeHomeSearchQuery(nextSearch);
+    clearSearchBox(event.currentTarget);
+    if (window.location.pathname === "/") return;
+    void navigate({
       to: "/",
-      search: navSearch.trim() ? { q: navSearch.trim() } : {},
     });
   };
 
@@ -113,12 +117,16 @@ function Navbar() {
 
         <div className="ml-4 hidden flex-1 md:block">
           <form onSubmit={submitSearch} className="relative max-w-xl">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={navSearch}
-              onChange={(event) => setNavSearch(event.target.value)}
-              placeholder="Search for movies, theaters..."
-              className="h-10 border-border/60 bg-card/60 pl-9"
+            <button
+              type="submit"
+              className="absolute left-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-primary"
+              aria-label="Search"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+            <SearchBox
+              placeholder="Search for movies..."
+              className="h-10 border border-border/60 bg-card/60 pl-9"
             />
           </form>
         </div>
@@ -160,12 +168,16 @@ function Navbar() {
 
       <div className="border-t border-border/60 px-4 py-2 md:hidden">
         <form onSubmit={submitSearch} className="relative mx-auto max-w-7xl">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={navSearch}
-            onChange={(event) => setNavSearch(event.target.value)}
-            placeholder="Search movies, theaters..."
-            className="h-10 border-border/60 bg-card/60 pl-9"
+          <button
+            type="submit"
+            className="absolute left-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-primary"
+            aria-label="Search"
+          >
+            <Search className="h-4 w-4" />
+          </button>
+          <SearchBox
+            placeholder="Search movies..."
+            className="h-10 border border-border/60 bg-card/60 pl-9"
           />
         </form>
       </div>

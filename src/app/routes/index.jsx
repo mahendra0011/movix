@@ -19,18 +19,22 @@ import {
   Building2,
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
-import { movies as fallbackMovies, theaters } from "@/features/movies/data/movieCatalog";
+import { movies as fallbackMovies } from "@/features/movies/data/movieCatalog";
 import { MovieCard } from "@/features/movies/components/MovieCard";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { StaggeredText } from "@/shared/components/reactbits/StaggeredText";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { SearchBox } from "@/shared/components/ui/search-box";
 import { requestJson } from "@/shared/services/httpClient";
+import {
+  readHomeSearchQuery,
+  subscribeHomeSearchQuery,
+  writeHomeSearchQuery,
+} from "@/shared/services/homeSearch";
+import { readSearchBoxValue } from "@/shared/services/searchBox";
 const Route = createFileRoute("/")({
   loader: () => fetchMovies(),
-  validateSearch: (search) => ({
-    q: typeof search.q === "string" ? search.q : "",
-  }),
   component: Home,
 });
 const genres = ["All", "Action", "Sci-Fi", "Drama", "Comedy", "Animation", "Thriller", "Crime"];
@@ -98,31 +102,16 @@ function trailerSearchUrl(title) {
 
 function Home() {
   const loadedMovies = Route.useLoaderData();
-  const { q } = Route.useSearch();
   const navigate = useNavigate();
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
   const featured = catalog[0] ?? fallbackMovies[0];
-  const [query, setQuery] = useState(q);
+  const [query, setQuery] = useState(readHomeSearchQuery);
   const [activeGenre, setActiveGenre] = useState("All");
   const [activeLanguage, setActiveLanguage] = useState("All");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
-  const theaterSearchText = useMemo(
-    () =>
-      theaters
-        .flatMap((theater) => [
-          theater.name,
-          theater.city,
-          theater.area,
-          theater.address,
-          ...(theater.amenities ?? []),
-        ])
-        .join(" ")
-        .toLowerCase(),
-    [],
-  );
   const filteredMovies = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return catalog.filter((movie) => {
@@ -137,13 +126,12 @@ function Home() {
       ]
         .join(" ")
         .toLowerCase();
-      const queryMatch =
-        !needle || searchable.includes(needle) || theaterSearchText.includes(needle);
+      const queryMatch = !needle || searchable.includes(needle);
       const genreMatch = activeGenre === "All" || movie.genres.includes(activeGenre);
       const languageMatch = activeLanguage === "All" || movie.language === activeLanguage;
       return queryMatch && genreMatch && languageMatch;
     });
-  }, [activeGenre, activeLanguage, catalog, query, theaterSearchText]);
+  }, [activeGenre, activeLanguage, catalog, query]);
   const availableLanguages = useMemo(
     () => ["All", ...Array.from(new Set(catalog.map((movie) => movie.language)))],
     [catalog],
@@ -151,14 +139,20 @@ function Home() {
   const hasActiveFilters = query.trim() !== "" || activeGenre !== "All" || activeLanguage !== "All";
   const hasNoResults = hasActiveFilters && filteredMovies.length === 0;
   const shelfMovies = hasActiveFilters ? filteredMovies : catalog;
+  const activeSearchQuery = query.trim();
   const rotateShelf = (offset) => [...shelfMovies.slice(offset), ...shelfMovies.slice(0, offset)];
   const trending = expandedSections.recommended ? shelfMovies : shelfMovies.slice(0, 6);
   const recommended = expandedSections.comingSoon ? rotateShelf(2) : shelfMovies.slice(2, 8);
   const premieres = expandedSections.premieres ? rotateShelf(3) : shelfMovies.slice(3, 7);
 
-  useEffect(() => {
-    setQuery(q);
-  }, [q]);
+  useEffect(() => subscribeHomeSearchQuery(setQuery), []);
+
+  const submitHeroSearch = (event) => {
+    event.preventDefault();
+    const nextQuery = readSearchBoxValue(event.currentTarget);
+    setQuery(nextQuery);
+    writeHomeSearchQuery(nextQuery);
+  };
 
   const subscribe = async (event) => {
     event.preventDefault();
@@ -186,6 +180,52 @@ function Home() {
   };
 
   if (!featured) return null;
+  if (activeSearchQuery) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-10">
+        <section className="rounded-lg border border-border/60 bg-card/40 p-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Search results</h1>
+              <p className="text-sm text-muted-foreground">
+                {filteredMovies.length} result{filteredMovies.length === 1 ? "" : "s"} for "
+                {activeSearchQuery}"
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setQuery("");
+                setActiveGenre("All");
+                setActiveLanguage("All");
+                writeHomeSearchQuery("");
+              }}
+            >
+              Clear
+            </Button>
+          </div>
+
+          {filteredMovies.length > 0 ? (
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {filteredMovies.map((movie) => (
+                <MovieCard key={movie.id} movie={movie} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8 rounded-lg border border-border/60 bg-background/60 p-8 text-center">
+              <Search className="mx-auto h-8 w-8 text-primary" />
+              <h2 className="mt-4 text-xl font-bold">No movies found</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                Try another movie title, genre, language, cinema, or city.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="pb-20">
       {/* Hero */}
@@ -222,15 +262,19 @@ function Home() {
                 {featured.description}
               </p>
               <form
-                onSubmit={(event) => event.preventDefault()}
+                onSubmit={submitHeroSearch}
                 className="mt-6 flex max-w-xl items-center gap-2 rounded-lg border border-border/70 bg-background/65 p-2 shadow-2xl shadow-black/20 backdrop-blur"
               >
-                <Search className="ml-2 h-5 w-5 shrink-0 text-muted-foreground" />
-                <Input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
+                <button
+                  type="submit"
+                  className="ml-1 grid h-9 w-9 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-primary"
+                  aria-label="Search"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
+                <SearchBox
                   placeholder="Search movies by title, genre or language"
-                  className="h-11 border-0 bg-transparent shadow-none focus-visible:ring-0"
+                  className="h-11 bg-transparent"
                 />
               </form>
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
@@ -341,7 +385,8 @@ function Home() {
                 setQuery("");
                 setActiveGenre("All");
                 setActiveLanguage("All");
-                void navigate({ to: "/", search: {} });
+                writeHomeSearchQuery("");
+                void navigate({ to: "/" });
               }}
             >
               Clear search

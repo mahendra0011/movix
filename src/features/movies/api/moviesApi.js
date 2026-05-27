@@ -1,24 +1,32 @@
-import { requestJson } from "@/shared/services/httpClient";
+import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
 import {
   getMovie as getFallbackMovie,
   movies as fallbackMovies,
 } from "@/features/movies/data/movieCatalog";
 
 const PUBLIC_MOVIE_TIMEOUT_MS = 1800;
+const SHOULD_FETCH_PUBLIC_MOVIES = HAS_CONFIGURED_API_URL || import.meta.env.DEV;
 let moviesCache = null;
 let moviesRequest = null;
 
 async function fetchMovies(options = {}) {
   if (moviesCache) return moviesCache;
   if (moviesRequest) return moviesRequest;
+  if (!SHOULD_FETCH_PUBLIC_MOVIES && !options.force) {
+    moviesCache = fallbackMovies;
+    return moviesCache;
+  }
 
   const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
   moviesRequest = requestJson("/api/movies", { timeoutMs })
     .then((data) => {
-      moviesCache = data.movies.length > 0 ? data.movies : fallbackMovies;
+      moviesCache = data.movies?.length > 0 ? data.movies : fallbackMovies;
       return moviesCache;
     })
-    .catch(() => fallbackMovies)
+    .catch(() => {
+      moviesCache = fallbackMovies;
+      return moviesCache;
+    })
     .finally(() => {
       moviesRequest = null;
     });
@@ -29,6 +37,7 @@ async function fetchMovies(options = {}) {
 async function fetchMovie(id, options = {}) {
   const cachedMovie = moviesCache?.find((movie) => movie.id === id);
   if (cachedMovie) return cachedMovie;
+  if (!SHOULD_FETCH_PUBLIC_MOVIES && !options.force) return getFallbackMovie(id);
 
   const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
   try {

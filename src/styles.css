@@ -162,6 +162,12 @@
     z-index: 1;
   }
 
+  .search-textbox:empty::before {
+    content: attr(data-placeholder);
+    color: var(--color-muted-foreground);
+    pointer-events: none;
+  }
+
   .staggered-text {
     display: inline-flex;
     flex-wrap: wrap;
