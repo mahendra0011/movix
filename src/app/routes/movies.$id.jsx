@@ -243,7 +243,7 @@ function MoviePage() {
               value={selectedCity}
               options={citySuggestions}
               onChange={setSelectedCity}
-              className="w-full gap-2 rounded-lg bg-card px-3 py-2 lg:w-auto"
+              className="w-full lg:w-auto"
               selectClassName="min-w-40 flex-1"
             />
           </div>
