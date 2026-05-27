@@ -78,20 +78,28 @@ async function sendEmail({ to, subject, html }) {
     return { sent: false, reason: "brevo-not-configured" };
   }
 
-  const response = await fetch(env.brevoApiUrl, {
-    method: "POST",
-    headers: {
-      "api-key": env.brevoApiKey,
-      "content-type": "application/json",
-      accept: "application/json",
-    },
-    body: JSON.stringify({
-      sender: { email: env.brevoFromEmail, name: env.brevoFromName },
-      to: [{ email: to }],
-      subject,
-      htmlContent: html,
-    }),
-  });
+  let response;
+  try {
+    response = await fetch(env.brevoApiUrl, {
+      method: "POST",
+      headers: {
+        "api-key": env.brevoApiKey,
+        "content-type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        sender: { email: env.brevoFromEmail, name: env.brevoFromName },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      }),
+    });
+  } catch (cause) {
+    const error = new Error("Email service failed. Check Brevo API key and sender email.");
+    error.status = 502;
+    error.cause = cause;
+    throw error;
+  }
 
   if (!response.ok) {
     const body = await response.text();
