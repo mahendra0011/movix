@@ -425,6 +425,12 @@ function CinemaShowCard({ cinema, movie, activeDateLabel }) {
                   platinumPrice: show.price.platinum,
                   goldPrice: show.price.gold,
                   vipPrice: show.price.vip,
+                  seatRows: show.seatLayout?.rowCount,
+                  seatCols: show.seatLayout?.seatsPerRow,
+                  platinumRows: show.seatLayout?.platinumRows,
+                  vipRows: show.seatLayout?.vipRows,
+                  aisleAfter: show.seatLayout?.aisleAfter,
+                  blockedSeats: show.seatLayout?.blockedSeats?.join(","),
                 }}
                 className={`inline-flex flex-col rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${cls}`}
               >
@@ -601,6 +607,7 @@ function formatOwnerShow(show) {
     language: show.language || "English",
     cancellable: show.cancellable !== false,
     price: { platinum, gold, vip },
+    seatLayout: show.seatLayout,
   };
 }
 

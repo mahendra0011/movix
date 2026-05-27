@@ -33,6 +33,7 @@ import {
   Users,
 } from "lucide-react";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
+import { buildSeatLayout, normalizeSeatLayoutConfig } from "@/features/booking/data/seatLayout";
 import { movies } from "@/features/movies/data/movieCatalog";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
@@ -44,15 +45,41 @@ const Route = createFileRoute("/owner")({
 });
 
 const screenSeeds = [
-  { id: "imax-01", name: "IMAX 01", type: "IMAX Laser", seats: 148, occupancy: 82 },
-  { id: "dolby-02", name: "Dolby 02", type: "Dolby Atmos", seats: 126, occupancy: 76 },
-  { id: "premiere-03", name: "Premiere 03", type: "Premium", seats: 96, occupancy: 68 },
+  {
+    id: "imax-01",
+    name: "IMAX 01",
+    type: "IMAX Laser",
+    seats: 148,
+    occupancy: 82,
+    seatLayout: { rowCount: 11, seatsPerRow: 14, platinumRows: 2, vipRows: 2, aisleAfter: 7 },
+  },
+  {
+    id: "dolby-02",
+    name: "Dolby 02",
+    type: "Dolby Atmos",
+    seats: 126,
+    occupancy: 76,
+    seatLayout: { rowCount: 9, seatsPerRow: 14, platinumRows: 2, vipRows: 2, aisleAfter: 7 },
+  },
+  {
+    id: "premiere-03",
+    name: "Premiere 03",
+    type: "Premium",
+    seats: 96,
+    occupancy: 68,
+    seatLayout: { rowCount: 8, seatsPerRow: 12, platinumRows: 1, vipRows: 2, aisleAfter: 6 },
+  },
 ];
 
 const blankScreen = {
   name: "",
   type: "Premium",
-  seats: "100",
+  rowCount: "10",
+  seatsPerRow: "14",
+  platinumRows: "2",
+  vipRows: "2",
+  aisleAfter: "7",
+  blockedSeats: "",
 };
 
 const defaultCinemaProfile = {
@@ -192,6 +219,9 @@ function OwnerDashboard() {
     setShowForm((current) => ({
       ...current,
       screen: workspace.screens[0]?.name ?? "",
+      totalSeats: workspace.screens[0]?.seats
+        ? String(workspace.screens[0].seats)
+        : current.totalSeats,
     }));
     setWorkspaceReady(true);
   }, [auth.hydrated, auth.user?.role, ownerApproval.application, ownerKey]);
@@ -306,6 +336,8 @@ function OwnerDashboard() {
     event.preventDefault();
     const name = screenForm.name.trim();
     if (!name) return;
+    const seatLayout = normalizeSeatLayoutConfig(screenForm);
+    const layout = buildSeatLayout(seatLayout);
 
     const nextScreen = {
       id: name
@@ -315,12 +347,17 @@ function OwnerDashboard() {
       ownerKey,
       name,
       type: screenForm.type,
-      seats: Number(screenForm.seats) || 80,
+      seats: layout.totalSeats,
+      seatLayout,
       occupancy: 0,
     };
 
     setScreens((current) => [nextScreen, ...current]);
-    setShowForm((current) => ({ ...current, screen: nextScreen.name }));
+    setShowForm((current) => ({
+      ...current,
+      screen: nextScreen.name,
+      totalSeats: String(nextScreen.seats),
+    }));
     setScreenForm(blankScreen);
     setNotice(`${name} added. You can schedule shows on this screen now.`);
   };
@@ -347,6 +384,9 @@ function OwnerDashboard() {
     const platinumPrice = Number(showForm.platinumPrice) || goldPrice;
     const vipPrice = Number(showForm.vipPrice) || platinumPrice;
     const date = isComingSoon ? showForm.comingSoonDate : showForm.showDate;
+    const selectedScreen = ownerScreens.find((screen) => screen.name === showForm.screen);
+    const seatLayout = normalizeSeatLayoutConfig(selectedScreen?.seatLayout);
+    const seatCount = selectedScreen?.seats ?? buildSeatLayout(seatLayout).totalSeats;
 
     const nextShow = {
       id: `${slugify(title)}-${Date.now()}`,
@@ -375,7 +415,8 @@ function OwnerDashboard() {
       pricing: isComingSoon
         ? { gold: 0, platinum: 0, vip: 0 }
         : { gold: goldPrice, platinum: platinumPrice, vip: vipPrice },
-      seats: isComingSoon ? 0 : Number(showForm.totalSeats) || 80,
+      seats: isComingSoon ? 0 : seatCount,
+      seatLayout: isComingSoon ? null : seatLayout,
       status: isComingSoon ? "Coming soon" : showForm.status,
       bookingOpensAt: showForm.bookingOpensAt,
       trailerUrl: showForm.trailerUrl.trim(),
@@ -387,6 +428,7 @@ function OwnerDashboard() {
       ...createBlankShow(ownerScreens),
       listingType: current.listingType,
       screen: current.screen,
+      totalSeats: current.totalSeats,
     }));
     setNotice(
       isComingSoon
@@ -985,6 +1027,7 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
 function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveScreen }) {
   const update = (field) => (event) =>
     onFormChange((current) => ({ ...current, [field]: event.target.value }));
+  const previewLayout = buildSeatLayout(normalizeSeatLayoutConfig(screenForm));
 
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
@@ -999,12 +1042,65 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
             <option>Regular</option>
           </select>
           <Input
-            value={screenForm.seats}
-            onChange={update("seats")}
-            placeholder="Total seats"
+            value={screenForm.rowCount}
+            onChange={update("rowCount")}
+            placeholder="Rows"
             type="number"
-            min="20"
+            min="4"
+            max="26"
           />
+          <Input
+            value={screenForm.seatsPerRow}
+            onChange={update("seatsPerRow")}
+            placeholder="Seats per row"
+            type="number"
+            min="6"
+            max="30"
+          />
+          <Input
+            value={screenForm.platinumRows}
+            onChange={update("platinumRows")}
+            placeholder="Platinum rows from front"
+            type="number"
+            min="0"
+          />
+          <Input
+            value={screenForm.vipRows}
+            onChange={update("vipRows")}
+            placeholder="VIP rows from back"
+            type="number"
+            min="0"
+          />
+          <Input
+            value={screenForm.aisleAfter}
+            onChange={update("aisleAfter")}
+            placeholder="Aisle after seat no."
+            type="number"
+            min="0"
+          />
+          <Input
+            value={screenForm.blockedSeats}
+            onChange={update("blockedSeats")}
+            placeholder="Blocked seats e.g. A1,A2"
+          />
+          <div className="rounded-lg border border-border/60 bg-background/40 p-3 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">Seat panel preview</p>
+            <p className="mt-1">
+              {previewLayout.rowCount} rows x {previewLayout.seatsPerRow} seats,{" "}
+              {previewLayout.totalSeats} bookable seats
+            </p>
+            <p className="mt-1">
+              Platinum {previewLayout.platinumRows} rows, Gold{" "}
+              {Math.max(
+                0,
+                previewLayout.rowCount - previewLayout.platinumRows - previewLayout.vipRows,
+              )}{" "}
+              rows, VIP {previewLayout.vipRows} rows
+            </p>
+          </div>
+          <div className="overflow-x-auto rounded-lg border border-border/60 bg-background/30 p-3">
+            <SeatMiniMap layout={previewLayout} />
+          </div>
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
             Add screen
@@ -1016,12 +1112,13 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
         <PanelHeader icon={Building2} title="Screens" subtitle="Active cinema screens" />
         <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[620px] text-left text-sm">
+            <table className="w-full min-w-[760px] text-left text-sm">
               <thead className="bg-muted/40 text-xs text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Screen</th>
                   <th className="px-4 py-3 font-medium">Type</th>
                   <th className="px-4 py-3 font-medium">Seats</th>
+                  <th className="px-4 py-3 font-medium">Layout</th>
                   <th className="px-4 py-3 font-medium">Occupancy</th>
                   <th className="px-4 py-3 font-medium">Action</th>
                 </tr>
@@ -1032,6 +1129,9 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
                     <td className="px-4 py-3 font-medium">{screen.name}</td>
                     <td className="px-4 py-3 text-muted-foreground">{screen.type}</td>
                     <td className="px-4 py-3">{screen.seats}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                      {formatSeatLayoutSummary(screen.seatLayout)}
+                    </td>
                     <td className="px-4 py-3">{screen.occupancy}%</td>
                     <td className="px-4 py-3">
                       <Button
@@ -1055,11 +1155,53 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
   );
 }
 
+function SeatMiniMap({ layout }) {
+  const seatLayout = layout?.rows ? layout : buildSeatLayout(layout);
+
+  return (
+    <div className="inline-flex min-w-max flex-col gap-1">
+      {seatLayout.rows.map((row) => (
+        <div key={row} className="flex items-center gap-1">
+          <span className="w-4 text-[10px] text-muted-foreground">{row}</span>
+          {Array.from({ length: seatLayout.seatsPerRow }, (_, index) => index + 1).map((seat) => {
+            const id = `${row}${seat}`;
+            const tier = seatLayout.tierFor(row);
+            const isBlocked = seatLayout.blockedSet.has(id);
+            const tierClass =
+              tier === "platinum"
+                ? "bg-[var(--platinum)]"
+                : tier === "vip"
+                  ? "bg-[var(--vip)]"
+                  : "bg-[var(--gold)]";
+
+            return (
+              <span key={id} className="flex items-center gap-1">
+                <span
+                  className={`h-3 w-3 rounded-sm ${isBlocked ? "bg-muted-foreground/30" : tierClass}`}
+                  title={`${id} ${isBlocked ? "blocked" : tier}`}
+                />
+                {seatLayout.aisleAfter === seat && <span className="w-2" />}
+              </span>
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function formatSeatLayoutSummary(config) {
+  const layout = buildSeatLayout(config);
+  const goldRows = Math.max(0, layout.rowCount - layout.platinumRows - layout.vipRows);
+  return `${layout.rowCount} rows x ${layout.seatsPerRow}, ${layout.totalSeats} seats - Platinum ${layout.platinumRows}, Gold ${goldRows}, VIP ${layout.vipRows}`;
+}
+
 function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveShow }) {
   const update = (field) => (event) =>
     onFormChange((current) => ({ ...current, [field]: event.target.value }));
   const isComingSoon = showForm.listingType === "coming-soon";
   const selectedMovie = movies.find((movie) => movie.id === showForm.movieId) ?? movies[0];
+  const selectedScreen = screens.find((screen) => screen.name === showForm.screen);
   const previewShow = buildPreviewShow(showForm, selectedMovie);
 
   return (
@@ -1142,7 +1284,18 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
               />
             </FormField>
             <FormField label={isComingSoon ? "Preferred screen" : "Screen"}>
-              <select value={showForm.screen} onChange={update("screen")} className={selectClass}>
+              <select
+                value={showForm.screen}
+                onChange={(event) => {
+                  const screen = screens.find((item) => item.name === event.target.value);
+                  onFormChange((current) => ({
+                    ...current,
+                    screen: event.target.value,
+                    totalSeats: screen?.seats ? String(screen.seats) : current.totalSeats,
+                  }));
+                }}
+                className={selectClass}
+              >
                 {screens.length ? (
                   screens.map((screen) => (
                     <option key={screen.id} value={screen.name}>
@@ -1203,12 +1356,21 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
               </FormField>
               <FormField label="Total seats">
                 <Input
-                  value={showForm.totalSeats}
-                  onChange={update("totalSeats")}
+                  value={selectedScreen?.seats ?? showForm.totalSeats}
+                  readOnly
                   type="number"
                   min="20"
                 />
               </FormField>
+              {selectedScreen?.seatLayout && (
+                <div className="md:col-span-2 rounded-lg border border-border/60 bg-background/40 p-3 text-xs text-muted-foreground">
+                  <p className="font-medium text-foreground">Seat panel for this show</p>
+                  <p className="mt-1">{formatSeatLayoutSummary(selectedScreen.seatLayout)}</p>
+                  <div className="mt-3 overflow-x-auto">
+                    <SeatMiniMap layout={buildSeatLayout(selectedScreen.seatLayout)} />
+                  </div>
+                </div>
+              )}
             </FormSection>
           )}
 
@@ -1694,6 +1856,8 @@ function createInitialScreens(ownerKey, application = null) {
       id: `${slugify(seed.name)}-${index + 1}`,
       name: count === screenSeeds.length ? seed.name : `Screen ${index + 1}`,
       ownerKey,
+      seatLayout: normalizeSeatLayoutConfig(seed.seatLayout),
+      seats: buildSeatLayout(seed.seatLayout).totalSeats,
     };
   });
 }
@@ -1714,7 +1878,7 @@ function readOwnerWorkspace(ownerKey, application = null) {
     return {
       version: OWNER_WORKSPACE_VERSION,
       cinemaProfile: normalizeCinemaProfile(parsed.cinemaProfile, ownerKey),
-      screens: normalizeOwnerItems(parsed.screens, ownerKey),
+      screens: normalizeOwnerScreens(parsed.screens, ownerKey),
       shows: normalizeOwnerItems(parsed.shows, ownerKey),
       bookings: normalizeOwnerItems(parsed.bookings, ownerKey),
     };
@@ -1730,7 +1894,7 @@ function writeOwnerWorkspace(ownerKey, workspace) {
     JSON.stringify({
       version: OWNER_WORKSPACE_VERSION,
       cinemaProfile: normalizeCinemaProfile(workspace.cinemaProfile, ownerKey),
-      screens: normalizeOwnerItems(workspace.screens, ownerKey),
+      screens: normalizeOwnerScreens(workspace.screens, ownerKey),
       shows: normalizeOwnerItems(workspace.shows, ownerKey),
       bookings: normalizeOwnerItems(workspace.bookings, ownerKey),
     }),
@@ -1739,6 +1903,32 @@ function writeOwnerWorkspace(ownerKey, workspace) {
 
 function normalizeOwnerItems(items, ownerKey) {
   return Array.isArray(items) ? items.map((item) => ({ ...item, ownerKey })) : [];
+}
+
+function normalizeOwnerScreens(items, ownerKey) {
+  if (!Array.isArray(items)) return [];
+  return items.map((item) => {
+    const seatLayout = normalizeSeatLayoutConfig(
+      item.seatLayout ?? inferSeatLayoutFromCapacity(item.seats),
+    );
+    return {
+      ...item,
+      ownerKey,
+      seatLayout,
+      seats: buildSeatLayout(seatLayout).totalSeats,
+    };
+  });
+}
+
+function inferSeatLayoutFromCapacity(seats) {
+  const count = Number(seats) || 120;
+  return {
+    rowCount: Math.min(26, Math.max(4, Math.ceil(count / 14))),
+    seatsPerRow: 14,
+    platinumRows: 2,
+    vipRows: 2,
+    aisleAfter: 7,
+  };
 }
 
 function normalizeCinemaProfile(profile, ownerKey) {

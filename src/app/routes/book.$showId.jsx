@@ -29,12 +29,23 @@ const Route = createFileRoute("/book/$showId")({
     platinumPrice: parseSearchPrice(s.platinumPrice, tierPrice.platinum),
     goldPrice: parseSearchPrice(s.goldPrice, tierPrice.gold),
     vipPrice: parseSearchPrice(s.vipPrice, tierPrice.vip),
+    seatRows: parseSearchInteger(s.seatRows, undefined),
+    seatCols: parseSearchInteger(s.seatCols, undefined),
+    platinumRows: parseSearchInteger(s.platinumRows, undefined),
+    vipRows: parseSearchInteger(s.vipRows, undefined),
+    aisleAfter: parseSearchInteger(s.aisleAfter, undefined),
+    blockedSeats: typeof s.blockedSeats === "string" ? s.blockedSeats : "",
   }),
 });
 
 function parseSearchPrice(value, fallback) {
   const amount = Number(value);
   return Number.isFinite(amount) && amount > 0 ? amount : fallback;
+}
+
+function parseSearchInteger(value, fallback) {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? Math.round(amount) : fallback;
 }
 
 function getOwnerId() {
@@ -84,7 +95,25 @@ function BookingPage() {
   const search = Route.useSearch();
   const { showId } = Route.useParams();
   const navigate = useNavigate();
-  const layout = useMemo(buildSeatLayout, []);
+  const layout = useMemo(
+    () =>
+      buildSeatLayout({
+        rowCount: search.seatRows,
+        seatsPerRow: search.seatCols,
+        platinumRows: search.platinumRows,
+        vipRows: search.vipRows,
+        aisleAfter: search.aisleAfter,
+        blockedSeats: search.blockedSeats,
+      }),
+    [
+      search.aisleAfter,
+      search.blockedSeats,
+      search.platinumRows,
+      search.seatCols,
+      search.seatRows,
+      search.vipRows,
+    ],
+  );
   const [ownerId] = useState(getOwnerId);
   const [selected, setSelected] = useState([]);
   const [seatState, setSeatState] = useState({ booked: [], locks: [], lockTtlMs: 5 * 60 * 1000 });
@@ -163,7 +192,7 @@ function BookingPage() {
     [search.goldPrice, search.platinumPrice, search.vipPrice],
   );
   const total = selected.reduce((sum, id) => {
-    const row = id.charAt(0);
+    const row = id.match(/^[A-Z]+/)?.[0] ?? "";
     return sum + showTierPrice[layout.tierFor(row)];
   }, 0);
   const ownLocks = seatState.locks.filter(
@@ -393,6 +422,9 @@ function BookingPage() {
         <Legend color="bg-primary" label="Selected" />
         <Legend color="bg-amber-400/70" label="Locked by another user" />
         <Legend color="bg-muted-foreground/40" label="Booked" />
+        {layout.blockedSet.size > 0 && (
+          <Legend color="bg-muted-foreground/20" label="Unavailable" />
+        )}
         <div className="ml-auto flex gap-4">
           <Legend color="bg-[var(--platinum)]" label={`Platinum Rs ${showTierPrice.platinum}`} />
           <Legend color="bg-[var(--gold)]" label={`Gold Rs ${showTierPrice.gold}`} />
@@ -414,7 +446,7 @@ function BookingPage() {
             return (
               <div key={tier} className="w-full">
                 <p className="mb-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                  {tier} - Rs {tierPrice[tier]}
+                  {tier} - Rs {showTierPrice[tier]}
                 </p>
                 <div className="space-y-2">
                   {rowsForTier.map((row) => (
@@ -427,21 +459,24 @@ function BookingPage() {
                           const id = `${row}${c}`;
                           const lock = lockMap.get(id);
                           const isBooked = bookedSet.has(id);
+                          const isBlocked = layout.blockedSet.has(id);
                           const isLockedByOther = lock && lock.ownerId !== ownerId;
                           const isSel = selected.includes(id);
-                          const isAisle = c === 7;
-                          const stateClass = isBooked
-                            ? "cursor-not-allowed border-transparent bg-muted-foreground/30 text-transparent"
-                            : isLockedByOther
-                              ? "cursor-not-allowed border-amber-400/50 bg-amber-400/30 text-transparent"
-                              : isSel
-                                ? "scale-105 border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                                : "border-border/60 bg-card text-muted-foreground hover:border-primary hover:text-foreground";
+                          const isAisle = layout.aisleAfter > 0 && c === layout.aisleAfter;
+                          const stateClass = isBlocked
+                            ? "cursor-not-allowed border-transparent bg-muted-foreground/20 text-transparent"
+                            : isBooked
+                              ? "cursor-not-allowed border-transparent bg-muted-foreground/30 text-transparent"
+                              : isLockedByOther
+                                ? "cursor-not-allowed border-amber-400/50 bg-amber-400/30 text-transparent"
+                                : isSel
+                                  ? "scale-105 border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                                  : "border-border/60 bg-card text-muted-foreground hover:border-primary hover:text-foreground";
 
                           return (
                             <div key={id} className="flex items-center gap-1.5">
                               <button
-                                disabled={isBooked || isLockedByOther}
+                                disabled={isBlocked || isBooked || isLockedByOther}
                                 onClick={() => toggle(id)}
                                 className={`h-7 w-7 rounded-md border text-[10px] font-medium transition-all ${stateClass}`}
                               >
