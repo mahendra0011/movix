@@ -25,7 +25,7 @@ import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { StaggeredText } from "@/shared/components/reactbits/StaggeredText";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { requestJson } from "@/shared/services/httpClient";
+import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
 import {
   readHomeSearchQuery,
   subscribeHomeSearchQuery,
@@ -165,6 +165,13 @@ function Home() {
     event.preventDefault();
     setNewsletterBusy(true);
     setNewsletterMessage("");
+    if (!HAS_CONFIGURED_API_URL) {
+      setNewsletterMessage("Subscribed for demo alerts.");
+      setNewsletterEmail("");
+      setNewsletterBusy(false);
+      return;
+    }
+
     try {
       const result = await requestJson("/api/notifications/subscribe", {
         method: "POST",

@@ -5,7 +5,7 @@ import {
 } from "@/features/movies/data/movieCatalog";
 
 const PUBLIC_MOVIE_TIMEOUT_MS = 1800;
-const SHOULD_FETCH_PUBLIC_MOVIES = HAS_CONFIGURED_API_URL || import.meta.env.DEV;
+const SHOULD_FETCH_PUBLIC_MOVIES = HAS_CONFIGURED_API_URL;
 let moviesCache = null;
 let moviesRequest = null;
 

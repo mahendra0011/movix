@@ -1,10 +1,12 @@
-import { API_BASE_URL } from "@/shared/services/httpClient";
+import { API_BASE_URL, HAS_CONFIGURED_API_URL } from "@/shared/services/httpClient";
 
 async function createBookingSocket(ownerId) {
   if (typeof window === "undefined") return null;
+  const socketUrl = (import.meta.env.VITE_SOCKET_URL ?? "").trim();
+  if (!socketUrl && !HAS_CONFIGURED_API_URL) return null;
 
   const { io } = await import("socket.io-client");
-  return io((import.meta.env.VITE_SOCKET_URL ?? API_BASE_URL).replace(/\/$/, ""), {
+  return io((socketUrl || API_BASE_URL).replace(/\/$/, ""), {
     auth: { ownerId },
     transports: ["websocket", "polling"],
   });

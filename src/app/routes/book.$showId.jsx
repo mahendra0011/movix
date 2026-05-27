@@ -134,21 +134,30 @@ function BookingPage() {
   }, [selected]);
 
   useEffect(() => {
+    if (selected.length === 0) return undefined;
     const timer = setInterval(() => setTick((value) => value + 1), 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [selected.length]);
 
   useEffect(() => {
     let active = true;
     setConnection("connecting");
 
     fetchSeatState(showId)
-      .then((state) => active && setSeatState(state))
+      .then((state) => {
+        if (!active) return;
+        setSeatState(state);
+        setConnection((current) => (current === "connecting" ? "local" : current));
+      })
       .catch(() => active && setConnection("offline"));
 
     createBookingSocket(ownerId)
       .then((socket) => {
-        if (!active || !socket) return;
+        if (!active) return;
+        if (!socket) {
+          setConnection("local");
+          return;
+        }
 
         socketRef.current = socket;
         socket.on("connect", () => setConnection("live"));
@@ -403,10 +412,16 @@ function BookingPage() {
           <div className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-xs text-muted-foreground">
             {connection === "live" ? (
               <Radio className="h-3.5 w-3.5 text-emerald-400" />
+            ) : connection === "local" ? (
+              <Radio className="h-3.5 w-3.5 text-primary" />
             ) : (
               <WifiOff className="h-3.5 w-3.5 text-amber-400" />
             )}
-            {connection === "live" ? "Live seat sync" : "Reconnecting sync"}
+            {connection === "live"
+              ? "Live seat sync"
+              : connection === "local"
+                ? "Instant local sync"
+                : "Reconnecting sync"}
           </div>
           {selected.length > 0 && (
             <div className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary">

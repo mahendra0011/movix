@@ -73,7 +73,7 @@ function resetPassword(input) {
 }
 
 function shouldUseRemoteAuth() {
-  return HAS_CONFIGURED_API_URL || import.meta.env.DEV;
+  return HAS_CONFIGURED_API_URL;
 }
 
 function localRegister(input) {

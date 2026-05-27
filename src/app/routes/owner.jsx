@@ -2,17 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
   BadgeIndianRupee,
   Building2,
   CalendarClock,
@@ -38,6 +27,7 @@ import { movies } from "@/features/movies/data/movieCatalog";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { TrendAreaChart, VerticalBars } from "@/shared/components/ui/lightweight-chart";
 import { getOwnerApprovalForUser } from "@/shared/services/ownerApplications";
 
 const Route = createFileRoute("/owner")({
@@ -228,7 +218,10 @@ function OwnerDashboard() {
 
   useEffect(() => {
     if (!workspaceReady || auth.user?.role !== "theater-owner" || !ownerKey) return;
-    writeOwnerWorkspace(ownerKey, { cinemaProfile, screens, shows, bookings });
+    const timer = window.setTimeout(() => {
+      writeOwnerWorkspace(ownerKey, { cinemaProfile, screens, shows, bookings });
+    }, 250);
+    return () => window.clearTimeout(timer);
   }, [auth.user?.role, bookings, cinemaProfile, ownerKey, screens, shows, workspaceReady]);
 
   const ownerScreens = useMemo(
@@ -646,47 +639,19 @@ function OverviewTab({ earningsTrend, screens, popularMovies, listedMovies, tota
           action={formatCurrency(totals.earnings)}
         />
         <div className="mt-5 h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={earningsTrend}>
-              <defs>
-                <linearGradient id="ownerEarnings" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.03} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <Tooltip content={<ChartTooltip />} />
-              <Area
-                dataKey="earnings"
-                name="Earnings"
-                stroke="hsl(var(--primary))"
-                fill="url(#ownerEarnings)"
-                strokeWidth={3}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <TrendAreaChart data={earningsTrend} valueKey="earnings" formatValue={formatCurrency} />
         </div>
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader icon={Gauge} title="Occupancy rates" subtitle="Screen-wise occupancy" />
         <div className="mt-5 h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={screens}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <Tooltip content={<ChartTooltip />} />
-              <Bar
-                dataKey="occupancy"
-                name="Occupancy"
-                fill="hsl(var(--primary))"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <VerticalBars
+            data={screens}
+            labelKey="name"
+            valueKey="occupancy"
+            formatValue={(value) => `${value}%`}
+          />
         </div>
       </SpotlightCard>
 
@@ -1786,25 +1751,6 @@ function StatusPill({ status }) {
 
   return (
     <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${tone}`}>{status}</span>
-  );
-}
-
-function ChartTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-xl">
-      <p className="font-semibold">{label}</p>
-      {payload.map((item) => (
-        <p key={item.dataKey} className="mt-1 text-muted-foreground">
-          {item.name}:{" "}
-          <span className="font-medium text-foreground">
-            {item.dataKey === "earnings" || item.dataKey === "value"
-              ? formatCurrency(item.value)
-              : item.value}
-          </span>
-        </p>
-      ))}
-    </div>
   );
 }
 

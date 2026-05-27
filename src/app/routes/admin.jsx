@@ -2,17 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
   BadgeIndianRupee,
   Building2,
   CheckCircle2,
@@ -38,6 +27,7 @@ import { movies as catalogMovies } from "@/features/movies/data/movieCatalog";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { TrendAreaChart, VerticalBars } from "@/shared/components/ui/lightweight-chart";
 
 const emptyTrend = Array.from({ length: 7 }, (_, index) => {
   const date = new Date();
@@ -466,27 +456,7 @@ function AnalyticsTab({
         />
         <div className="mt-5 h-80">
           {hasRevenueData ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueTrend}>
-                <defs>
-                  <linearGradient id="adminRevenue" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.03} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <Tooltip content={<ChartTooltip />} />
-                <Area
-                  dataKey="revenue"
-                  name="Revenue"
-                  stroke="hsl(var(--primary))"
-                  fill="url(#adminRevenue)"
-                  strokeWidth={3}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <TrendAreaChart data={revenueTrend} valueKey="revenue" formatValue={formatCurrency} />
           ) : (
             <EmptyState icon={BadgeIndianRupee} title="No revenue yet" text="Sales appear here." />
           )}
@@ -496,26 +466,12 @@ function AnalyticsTab({
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader icon={Film} title="Popular movies" subtitle="Revenue by title" />
         <div className="mt-5 h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={popularMovies} layout="vertical" margin={{ left: 12, right: 12 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis type="number" hide />
-              <YAxis
-                type="category"
-                dataKey="movie"
-                stroke="hsl(var(--muted-foreground))"
-                width={92}
-                fontSize={11}
-              />
-              <Tooltip content={<ChartTooltip />} />
-              <Bar
-                dataKey="value"
-                name="Revenue"
-                fill="hsl(var(--primary))"
-                radius={[0, 4, 4, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <VerticalBars
+            data={popularMovies}
+            labelKey="movie"
+            valueKey="value"
+            formatValue={formatCurrency}
+          />
         </div>
       </SpotlightCard>
 
@@ -863,25 +819,6 @@ function EmptyState({ icon: Icon, title, text }) {
         <h3 className="mt-4 font-semibold">{title}</h3>
         <p className="mt-1 max-w-sm text-sm text-muted-foreground">{text}</p>
       </div>
-    </div>
-  );
-}
-
-function ChartTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-xl">
-      <p className="font-semibold">{label}</p>
-      {payload.map((item) => (
-        <p key={item.dataKey} className="mt-1 text-muted-foreground">
-          {item.name}:{" "}
-          <span className="font-medium text-foreground">
-            {item.dataKey === "revenue" || item.dataKey === "value"
-              ? formatCurrency(item.value)
-              : item.value}
-          </span>
-        </p>
-      ))}
     </div>
   );
 }
