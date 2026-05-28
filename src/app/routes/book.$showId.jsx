@@ -25,11 +25,13 @@ const Route = createFileRoute("/book/$showId")({
     theaterId: typeof s.theaterId === "string" ? s.theaterId : "",
     screen: typeof s.screen === "string" ? s.screen : "Screen 3",
     platinumPrice: parseSearchPrice(s.platinumPrice, tierPrice.platinum),
+    silverPrice: parseSearchPrice(s.silverPrice, tierPrice.silver),
     goldPrice: parseSearchPrice(s.goldPrice, tierPrice.gold),
     vipPrice: parseSearchPrice(s.vipPrice, tierPrice.vip),
     seatRows: parseSearchInteger(s.seatRows, undefined),
     seatCols: parseSearchInteger(s.seatCols, undefined),
     platinumRows: parseSearchInteger(s.platinumRows, undefined),
+    silverRows: parseSearchInteger(s.silverRows, undefined),
     vipRows: parseSearchInteger(s.vipRows, undefined),
     aisleAfter: parseSearchInteger(s.aisleAfter, undefined),
     blockedSeats: typeof s.blockedSeats === "string" ? s.blockedSeats : "",
@@ -71,6 +73,7 @@ function BookingPage() {
         rowCount: search.seatRows,
         seatsPerRow: search.seatCols,
         platinumRows: search.platinumRows,
+        silverRows: search.silverRows,
         vipRows: search.vipRows,
         aisleAfter: search.aisleAfter,
         blockedSeats: search.blockedSeats,
@@ -81,6 +84,7 @@ function BookingPage() {
       search.platinumRows,
       search.seatCols,
       search.seatRows,
+      search.silverRows,
       search.vipRows,
     ],
   );
@@ -140,10 +144,11 @@ function BookingPage() {
   const showTierPrice = useMemo(
     () => ({
       platinum: search.platinumPrice,
+      silver: search.silverPrice,
       gold: search.goldPrice,
       vip: search.vipPrice,
     }),
-    [search.goldPrice, search.platinumPrice, search.vipPrice],
+    [search.goldPrice, search.platinumPrice, search.silverPrice, search.vipPrice],
   );
   const total = selected.reduce((sum, id) => {
     const row = id.match(/^[A-Z]+/)?.[0] ?? "";
@@ -333,6 +338,7 @@ function BookingPage() {
         )}
         <div className="ml-auto flex gap-4">
           <Legend color="bg-[var(--platinum)]" label={`Platinum Rs ${showTierPrice.platinum}`} />
+          <Legend color="bg-[var(--silver)]" label={`Silver Rs ${showTierPrice.silver}`} />
           <Legend color="bg-[var(--gold)]" label={`Gold Rs ${showTierPrice.gold}`} />
           <Legend color="bg-[var(--vip)]" label={`VIP Rs ${showTierPrice.vip}`} />
         </div>
@@ -347,7 +353,7 @@ function BookingPage() {
 
       <div className="mt-10 overflow-x-auto">
         <div className="mx-auto inline-flex min-w-full flex-col items-center gap-6">
-          {["platinum", "gold", "vip"].map((tier) => {
+          {["platinum", "silver", "gold", "vip"].map((tier) => {
             const rowsForTier = layout.rows.filter((r) => layout.tierFor(r) === tier);
             return (
               <div key={tier} className="w-full">

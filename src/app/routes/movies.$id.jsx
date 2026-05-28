@@ -423,11 +423,13 @@ function CinemaShowCard({ cinema, movie, activeDateLabel }) {
                   theaterId: cinema.id,
                   screen: show.screen,
                   platinumPrice: show.price.platinum,
+                  silverPrice: show.price.silver,
                   goldPrice: show.price.gold,
                   vipPrice: show.price.vip,
                   seatRows: show.seatLayout?.rowCount,
                   seatCols: show.seatLayout?.seatsPerRow,
                   platinumRows: show.seatLayout?.platinumRows,
+                  silverRows: show.seatLayout?.silverRows,
                   vipRows: show.seatLayout?.vipRows,
                   aisleAfter: show.seatLayout?.aisleAfter,
                   blockedSeats: show.seatLayout?.blockedSeats?.join(","),
@@ -587,6 +589,7 @@ function buildStaticShow(movie, theater, plan, index) {
     cancellable: typeof plan === "string" ? index % 2 === 1 : Boolean(plan.cancellable),
     price: {
       platinum: 180 + index * 10,
+      silver: 220 + index * 12,
       gold: 250 + index * 15,
       vip: 400 + index * 20,
     },
@@ -595,6 +598,7 @@ function buildStaticShow(movie, theater, plan, index) {
 
 function formatOwnerShow(show) {
   const gold = Number(show.pricing?.gold || show.price || 250);
+  const silver = Number(show.pricing?.silver || gold);
   const platinum = Number(show.pricing?.platinum || gold);
   const vip = Number(show.pricing?.vip || platinum);
 
@@ -606,7 +610,7 @@ function formatOwnerShow(show) {
     format: show.format || "2D",
     language: show.language || "English",
     cancellable: show.cancellable !== false,
-    price: { platinum, gold, vip },
+    price: { platinum, silver, gold, vip },
     seatLayout: show.seatLayout,
   };
 }

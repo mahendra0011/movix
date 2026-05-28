@@ -49,7 +49,14 @@ const screenSeeds = [
     type: "IMAX Laser",
     seats: 148,
     occupancy: 82,
-    seatLayout: { rowCount: 11, seatsPerRow: 14, platinumRows: 2, vipRows: 2, aisleAfter: 7 },
+    seatLayout: {
+      rowCount: 11,
+      seatsPerRow: 14,
+      platinumRows: 2,
+      silverRows: 2,
+      vipRows: 2,
+      aisleAfter: 7,
+    },
   },
   {
     id: "dolby-02",
@@ -57,7 +64,14 @@ const screenSeeds = [
     type: "Dolby Atmos",
     seats: 126,
     occupancy: 76,
-    seatLayout: { rowCount: 9, seatsPerRow: 14, platinumRows: 2, vipRows: 2, aisleAfter: 7 },
+    seatLayout: {
+      rowCount: 9,
+      seatsPerRow: 14,
+      platinumRows: 2,
+      silverRows: 2,
+      vipRows: 2,
+      aisleAfter: 7,
+    },
   },
   {
     id: "premiere-03",
@@ -65,7 +79,14 @@ const screenSeeds = [
     type: "Premium",
     seats: 96,
     occupancy: 68,
-    seatLayout: { rowCount: 8, seatsPerRow: 12, platinumRows: 1, vipRows: 2, aisleAfter: 6 },
+    seatLayout: {
+      rowCount: 8,
+      seatsPerRow: 12,
+      platinumRows: 1,
+      silverRows: 2,
+      vipRows: 2,
+      aisleAfter: 6,
+    },
   },
 ];
 
@@ -75,6 +96,7 @@ const blankScreen = {
   rowCount: "10",
   seatsPerRow: "14",
   platinumRows: "2",
+  silverRows: "2",
   vipRows: "2",
   aisleAfter: "7",
   blockedSeats: "",
@@ -108,6 +130,7 @@ function createBlankShow(screens = screenSeeds) {
     format: "2D",
     certificate: "UA",
     goldPrice: "350",
+    silverPrice: "420",
     platinumPrice: "480",
     vipPrice: "650",
     totalSeats: "120",
@@ -219,6 +242,51 @@ const scanRows = [
   { gate: "Gate A", value: "124 scanned", text: "Peak entry window 7:10 PM" },
   { gate: "Gate B", value: "86 scanned", text: "No duplicate QR attempts" },
   { gate: "Exceptions", value: "3 checks", text: "Manual ticket verification needed" },
+];
+
+const ownerBookingPreviewRows = [
+  {
+    ref: "BMS9X2K8",
+    customer: "Riya Sharma",
+    email: "riya.sharma@example.com",
+    phone: "+91 98765 41021",
+    movie: "Interstellar",
+    screen: "IMAX 01",
+    time: "07:15 PM",
+    seats: ["C7", "C8"],
+    total: 960,
+    paymentStatus: "Paid",
+    ticketStatus: "Confirmed",
+    bookedAt: "Today, 5:42 PM",
+  },
+  {
+    ref: "BMS7Q4L2",
+    customer: "Arjun Verma",
+    email: "arjun.verma@example.com",
+    phone: "+91 98222 77661",
+    movie: "Dune: Part Two",
+    screen: "Dolby 02",
+    time: "09:30 PM",
+    seats: ["F11", "F12", "F13"],
+    total: 1260,
+    paymentStatus: "Paid",
+    ticketStatus: "Confirmed",
+    bookedAt: "Today, 4:18 PM",
+  },
+  {
+    ref: "BMS3M8N6",
+    customer: "Meera Joshi",
+    email: "meera.joshi@example.com",
+    phone: "+91 90011 22334",
+    movie: "The Dark Knight",
+    screen: "Premiere 03",
+    time: "04:20 PM",
+    seats: ["B4"],
+    total: 420,
+    paymentStatus: "Paid",
+    ticketStatus: "Checked in",
+    bookedAt: "Today, 2:05 PM",
+  },
 ];
 
 const selectClass =
@@ -425,6 +493,7 @@ function OwnerDashboard() {
     if (!title || (!isComingSoon && !showForm.screen)) return;
 
     const goldPrice = Number(showForm.goldPrice) || 300;
+    const silverPrice = Number(showForm.silverPrice) || goldPrice;
     const platinumPrice = Number(showForm.platinumPrice) || goldPrice;
     const vipPrice = Number(showForm.vipPrice) || platinumPrice;
     const date = isComingSoon ? showForm.comingSoonDate : showForm.showDate;
@@ -457,8 +526,8 @@ function OwnerDashboard() {
       price: isComingSoon ? 0 : goldPrice,
       priceLabel: isComingSoon ? "Notify me" : `${formatCurrency(goldPrice)} onwards`,
       pricing: isComingSoon
-        ? { gold: 0, platinum: 0, vip: 0 }
-        : { gold: goldPrice, platinum: platinumPrice, vip: vipPrice },
+        ? { gold: 0, silver: 0, platinum: 0, vip: 0 }
+        : { gold: goldPrice, silver: silverPrice, platinum: platinumPrice, vip: vipPrice },
       seats: isComingSoon ? 0 : seatCount,
       seatLayout: isComingSoon ? null : seatLayout,
       status: isComingSoon ? "Coming soon" : showForm.status,
@@ -672,7 +741,9 @@ function OwnerDashboard() {
 
       {activeTab === "services" && <OwnerServicesTab bookings={ownerBookings} totals={totals} />}
 
-      {activeTab === "bookings" && <BookingsTab bookings={ownerBookings} totals={totals} />}
+      {activeTab === "bookings" && (
+        <BookingsTab bookings={ownerBookings} totals={totals} screens={ownerScreens} />
+      )}
     </div>
   );
 }
@@ -1079,6 +1150,13 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
             min="0"
           />
           <Input
+            value={screenForm.silverRows}
+            onChange={update("silverRows")}
+            placeholder="Silver rows after platinum"
+            type="number"
+            min="0"
+          />
+          <Input
             value={screenForm.vipRows}
             onChange={update("vipRows")}
             placeholder="VIP rows from back"
@@ -1104,10 +1182,14 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
               {previewLayout.totalSeats} bookable seats
             </p>
             <p className="mt-1">
-              Platinum {previewLayout.platinumRows} rows, Gold{" "}
+              Platinum {previewLayout.platinumRows} rows, Silver {previewLayout.silverRows} rows,
+              Gold{" "}
               {Math.max(
                 0,
-                previewLayout.rowCount - previewLayout.platinumRows - previewLayout.vipRows,
+                previewLayout.rowCount -
+                  previewLayout.platinumRows -
+                  previewLayout.silverRows -
+                  previewLayout.vipRows,
               )}{" "}
               rows, VIP {previewLayout.vipRows} rows
             </p>
@@ -1169,35 +1251,47 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
   );
 }
 
-function SeatMiniMap({ layout }) {
+function SeatMiniMap({ layout, bookedSeats = [] }) {
   const seatLayout = layout?.rows ? layout : buildSeatLayout(layout);
+  const bookedSet = new Set(bookedSeats.map((seat) => String(seat).trim().toUpperCase()));
 
   return (
     <div className="inline-flex min-w-max flex-col gap-1">
-      {seatLayout.rows.map((row) => (
+      {seatLayout.rows.map((row, rowIndex) => (
         <div key={row} className="flex items-center gap-1">
           <span className="w-4 text-[10px] text-muted-foreground">{row}</span>
-          {Array.from({ length: seatLayout.seatsPerRow }, (_, index) => index + 1).map((seat) => {
-            const id = `${row}${seat}`;
-            const tier = seatLayout.tierFor(row);
-            const isBlocked = seatLayout.blockedSet.has(id);
-            const tierClass =
-              tier === "platinum"
-                ? "bg-[var(--platinum)]"
-                : tier === "vip"
-                  ? "bg-[var(--vip)]"
-                  : "bg-[var(--gold)]";
+          {Array.from({ length: seatLayout.seatsPerRow }, (_, index) => index + 1).map(
+            (seat, seatIndex) => {
+              const id = `${row}${seat}`;
+              const tier = seatLayout.tierFor(row);
+              const isBlocked = seatLayout.blockedSet.has(id);
+              const isBooked = bookedSet.has(id) || seatLayout.bookedSet?.has(id);
+              const tierClass =
+                tier === "platinum"
+                  ? "bg-[var(--platinum)]"
+                  : tier === "silver"
+                    ? "bg-[var(--silver)]"
+                    : tier === "vip"
+                      ? "bg-[var(--vip)]"
+                      : "bg-[var(--gold)]";
+              const seatClass = isBooked
+                ? "bg-primary ring-2 ring-primary/30"
+                : isBlocked
+                  ? "bg-muted-foreground/30"
+                  : tierClass;
 
-            return (
-              <span key={id} className="flex items-center gap-1">
-                <span
-                  className={`h-3 w-3 rounded-sm ${isBlocked ? "bg-muted-foreground/30" : tierClass}`}
-                  title={`${id} ${isBlocked ? "blocked" : tier}`}
-                />
-                {seatLayout.aisleAfter === seat && <span className="w-2" />}
-              </span>
-            );
-          })}
+              return (
+                <span key={id} className="flex items-center gap-1">
+                  <span
+                    className={`h-3 w-3 rounded-sm transition-transform duration-200 hover:scale-125 ${seatClass} animate-[seat-rise_420ms_ease-out_both]`}
+                    style={{ animationDelay: `${Math.min(360, rowIndex * 24 + seatIndex * 8)}ms` }}
+                    title={`${id} ${isBooked ? "booked" : isBlocked ? "blocked" : tier}`}
+                  />
+                  {seatLayout.aisleAfter === seat && <span className="w-2" />}
+                </span>
+              );
+            },
+          )}
         </div>
       ))}
     </div>
@@ -1206,8 +1300,11 @@ function SeatMiniMap({ layout }) {
 
 function formatSeatLayoutSummary(config) {
   const layout = buildSeatLayout(config);
-  const goldRows = Math.max(0, layout.rowCount - layout.platinumRows - layout.vipRows);
-  return `${layout.rowCount} rows x ${layout.seatsPerRow}, ${layout.totalSeats} seats - Platinum ${layout.platinumRows}, Gold ${goldRows}, VIP ${layout.vipRows}`;
+  const goldRows = Math.max(
+    0,
+    layout.rowCount - layout.platinumRows - layout.silverRows - layout.vipRows,
+  );
+  return `${layout.rowCount} rows x ${layout.seatsPerRow}, ${layout.totalSeats} seats - Platinum ${layout.platinumRows}, Silver ${layout.silverRows}, Gold ${goldRows}, VIP ${layout.vipRows}`;
 }
 
 function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveShow }) {
@@ -1348,6 +1445,14 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
                 <Input
                   value={showForm.goldPrice}
                   onChange={update("goldPrice")}
+                  type="number"
+                  min="50"
+                />
+              </FormField>
+              <FormField label="Silver price">
+                <Input
+                  value={showForm.silverPrice}
+                  onChange={update("silverPrice")}
                   type="number"
                   min="50"
                 />
@@ -1750,7 +1855,19 @@ function OwnerServicesTab({ bookings, totals }) {
   );
 }
 
-function BookingsTab({ bookings, totals }) {
+function BookingsTab({ bookings, totals, screens }) {
+  const displayBookings = bookings.length ? bookings : ownerBookingPreviewRows;
+  const [selectedRef, setSelectedRef] = useState(displayBookings[0]?.ref ?? "");
+  const selectedBooking =
+    displayBookings.find((booking) => booking.ref === selectedRef) ?? displayBookings[0];
+  const selectedScreen =
+    screens.find((screen) => screen.name === selectedBooking?.screen) ??
+    screenSeeds.find((screen) => screen.name === selectedBooking?.screen) ??
+    screens[0] ??
+    screenSeeds[0];
+  const selectedLayout = buildSeatLayout(selectedScreen?.seatLayout);
+  const displayTotals = bookings.length ? totals : summarizeBookings(displayBookings);
+
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[0.75fr_1.25fr]">
       <SpotlightCard className="rounded-lg p-5">
@@ -1760,12 +1877,14 @@ function BookingsTab({ bookings, totals }) {
           subtitle="Today's confirmed tickets"
         />
         <div className="mt-5 grid gap-3">
-          <SnapshotRow label="Bookings" value={totals.bookings.toLocaleString()} />
-          <SnapshotRow label="Seats sold" value={totals.seatsSold.toLocaleString()} />
-          <SnapshotRow label="Revenue" value={formatCurrency(totals.earnings)} />
+          <SnapshotRow label="Bookings" value={displayTotals.bookings.toLocaleString()} />
+          <SnapshotRow label="Seats sold" value={displayTotals.seatsSold.toLocaleString()} />
+          <SnapshotRow label="Revenue" value={formatCurrency(displayTotals.earnings)} />
           <SnapshotRow
             label="Average order"
-            value={formatCurrency(totals.earnings / totals.bookings)}
+            value={formatCurrency(
+              displayTotals.bookings ? displayTotals.earnings / displayTotals.bookings : 0,
+            )}
           />
         </div>
       </SpotlightCard>
@@ -1786,8 +1905,16 @@ function BookingsTab({ bookings, totals }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {bookings.map((booking) => (
-                  <tr key={booking.ref} className="bg-card/20">
+                {displayBookings.map((booking) => (
+                  <tr
+                    key={booking.ref}
+                    onClick={() => setSelectedRef(booking.ref)}
+                    className={`cursor-pointer transition-colors ${
+                      selectedBooking?.ref === booking.ref
+                        ? "bg-primary/10"
+                        : "bg-card/20 hover:bg-muted/30"
+                    }`}
+                  >
                     <td className="px-4 py-3 font-mono text-xs text-primary">{booking.ref}</td>
                     <td className="px-4 py-3 font-medium">{booking.customer}</td>
                     <td className="px-4 py-3">{booking.movie}</td>
@@ -1800,6 +1927,51 @@ function BookingsTab({ bookings, totals }) {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
+        <PanelHeader
+          icon={QrCode}
+          title="Booked seat and ticket details"
+          subtitle="Selected customer, highlighted seats and ticket audit"
+          action={selectedBooking?.ticketStatus || "Confirmed"}
+        />
+        <div className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="overflow-x-auto rounded-lg border border-border/60 bg-background/35 p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold">{selectedScreen?.name || "Screen"}</p>
+                <p className="text-xs text-muted-foreground">
+                  Blue seats are booked by {selectedBooking?.customer || "customer"}
+                </p>
+              </div>
+              <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+                {formatSeatList(selectedBooking?.seats)}
+              </span>
+            </div>
+            <SeatMiniMap layout={selectedLayout} bookedSeats={selectedBooking?.seats ?? []} />
+          </div>
+
+          <div className="grid gap-3">
+            <SnapshotRow label="Booked user" value={selectedBooking?.customer || "Customer"} />
+            <SnapshotRow label="Email" value={selectedBooking?.email || "Not available"} />
+            <SnapshotRow label="Phone" value={selectedBooking?.phone || "Not available"} />
+            <SnapshotRow label="Movie" value={selectedBooking?.movie || "Movie"} />
+            <SnapshotRow
+              label="Show"
+              value={`${selectedBooking?.screen || "Screen"} - ${selectedBooking?.time || "Time"}`}
+            />
+            <SnapshotRow label="Seats" value={formatSeatList(selectedBooking?.seats)} />
+            <SnapshotRow label="Ticket ref" value={selectedBooking?.ref || "No ref"} />
+            <SnapshotRow
+              label="Payment"
+              value={`${selectedBooking?.paymentStatus || "Paid"} - ${formatCurrency(
+                selectedBooking?.total,
+              )}`}
+            />
+            <SnapshotRow label="Booked at" value={selectedBooking?.bookedAt || "Today"} />
           </div>
         </div>
       </SpotlightCard>
@@ -2061,6 +2233,7 @@ function inferSeatLayoutFromCapacity(seats) {
     rowCount: Math.min(26, Math.max(4, Math.ceil(count / 14))),
     seatsPerRow: 14,
     platinumRows: 2,
+    silverRows: 2,
     vipRows: 2,
     aisleAfter: 7,
   };
@@ -2157,6 +2330,18 @@ function normalizeDateKey(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
   return date.toISOString().slice(0, 10);
+}
+
+function summarizeBookings(bookings) {
+  return {
+    bookings: bookings.length,
+    seatsSold: bookings.reduce((sum, booking) => sum + (booking.seats?.length ?? 0), 0),
+    earnings: bookings.reduce((sum, booking) => sum + Number(booking.total || 0), 0),
+  };
+}
+
+function formatSeatList(seats) {
+  return Array.isArray(seats) && seats.length ? seats.join(", ") : "Seats not assigned";
 }
 
 function formatCurrency(value) {

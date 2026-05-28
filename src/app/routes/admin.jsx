@@ -40,7 +40,10 @@ import {
 } from "@/features/admin/api/adminApi";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { createMovie, deleteMovie, fetchMovies } from "@/features/movies/api/moviesApi";
-import { movies as catalogMovies } from "@/features/movies/data/movieCatalog";
+import {
+  movies as catalogMovies,
+  theaters as theaterCatalog,
+} from "@/features/movies/data/movieCatalog";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -111,6 +114,7 @@ const adminTabs = [
   { id: "theaters", label: "Theaters", icon: Building2 },
   { id: "shows", label: "Shows", icon: CalendarDays },
   { id: "users", label: "Users", icon: UserCog },
+  { id: "refunds", label: "Refunds", icon: RefreshCcw },
   { id: "finance", label: "Revenue", icon: ReceiptText },
   { id: "marketing", label: "Offers & CMS", icon: Megaphone },
   { id: "payments", label: "Payments", icon: CreditCard },
@@ -217,20 +221,59 @@ const userOpsRows = [
   {
     name: "Aditi Sharma",
     status: "Active",
-    issue: "Refund requested for duplicate payment",
-    action: "Review refund",
+    issue: "Complaint: recliner seat not working",
+    action: "Assign support",
   },
   {
     name: "Rohan Mehta",
     status: "Watchlist",
     issue: "3 payment failures in 24 hours",
-    action: "Block check",
+    action: "Block user",
   },
   {
     name: "Neha Kapoor",
-    status: "Active",
-    issue: "Complaint: food order not delivered",
-    action: "Assign support",
+    status: "Blocked",
+    issue: "Chargeback abuse under review",
+    action: "Unblock user",
+  },
+];
+
+const cancelledTicketRows = [
+  {
+    ref: "BMS-CNL-1042",
+    user: "Aditi Sharma",
+    email: "aditi.sharma@example.com",
+    movie: "Dune: Part Two",
+    theater: "PVR INOX: Orion Mall",
+    seats: ["F7", "F8"],
+    amount: 960,
+    reason: "User cancelled ticket",
+    status: "Pending refund",
+    cancelledAt: "Today, 3:20 PM",
+  },
+  {
+    ref: "BMS-CNL-1038",
+    user: "Kabir Khan",
+    email: "kabir.khan@example.com",
+    movie: "Avengers: Endgame",
+    theater: "Movie Magic (SAM)",
+    seats: ["D11"],
+    amount: 420,
+    reason: "Show cancelled by cinema",
+    status: "Manual review",
+    cancelledAt: "Today, 1:05 PM",
+  },
+  {
+    ref: "BMS-CNL-1029",
+    user: "Meera Joshi",
+    email: "meera.joshi@example.com",
+    movie: "Interstellar",
+    theater: "Samdareeya Era Cinema",
+    seats: ["C4", "C5"],
+    amount: 780,
+    reason: "Payment captured after cancellation",
+    status: "Gateway initiated",
+    cancelledAt: "Yesterday, 8:42 PM",
   },
 ];
 
@@ -285,6 +328,9 @@ const blankMovie = {
   trailerUrl: "",
 };
 
+const adminSelectClass =
+  "h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring";
+
 const Route = createFileRoute("/admin")({
   component: AdminDashboard,
 });
@@ -300,6 +346,7 @@ function AdminDashboard() {
   const [managedMovies, setManagedMovies] = useState(() => catalogMovies.slice(0, 8));
   const [movieBusy, setMovieBusy] = useState("");
   const [theaterApprovals, setTheaterApprovals] = useState(pendingTheatersSeed);
+  const [selectedTheaterCity, setSelectedTheaterCity] = useState("Jabalpur");
   const [approvalBusy, setApprovalBusy] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -378,6 +425,24 @@ function AdminDashboard() {
   const theaterPerformance = charts.theaterPerformance ?? [];
   const hasRevenueData = revenueTrend.some((row) => row.revenue > 0 || row.bookings > 0);
   const pendingCount = theaterApprovals.filter((theater) => theater.status === "Pending").length;
+  const managedTheaters = useMemo(
+    () => buildManagedTheaters(theaterCatalog, theaterApprovals),
+    [theaterApprovals],
+  );
+  const theaterCityOptions = useMemo(
+    () => buildTheaterCityOptions(managedTheaters),
+    [managedTheaters],
+  );
+  const cityTheaters = useMemo(
+    () => managedTheaters.filter((theater) => theater.city === selectedTheaterCity),
+    [managedTheaters, selectedTheaterCity],
+  );
+
+  useEffect(() => {
+    if (theaterCityOptions.length && !theaterCityOptions.includes(selectedTheaterCity)) {
+      setSelectedTheaterCity(theaterCityOptions[0]);
+    }
+  }, [selectedTheaterCity, theaterCityOptions]);
 
   const metrics = useMemo(
     () => [
@@ -638,6 +703,10 @@ function AdminDashboard() {
       {activeTab === "theaters" && (
         <TheaterApprovalsTab
           theaters={theaterApprovals}
+          cityOptions={theaterCityOptions}
+          cityTheaters={cityTheaters}
+          selectedCity={selectedTheaterCity}
+          onCityChange={setSelectedTheaterCity}
           onUpdate={updateApproval}
           approvalBusy={approvalBusy}
         />
@@ -648,6 +717,8 @@ function AdminDashboard() {
       )}
 
       {activeTab === "users" && <UserManagementTab />}
+
+      {activeTab === "refunds" && <RefundsTab recentBookings={recentBookings} />}
 
       {activeTab === "finance" && <FinanceTab summary={summary} />}
 
@@ -866,7 +937,15 @@ function MoviesTab({
   );
 }
 
-function TheaterApprovalsTab({ theaters, onUpdate, approvalBusy }) {
+function TheaterApprovalsTab({
+  theaters,
+  cityOptions,
+  cityTheaters,
+  selectedCity,
+  onCityChange,
+  onUpdate,
+  approvalBusy,
+}) {
   return (
     <section className="mt-6 grid gap-4">
       <div className="grid gap-3 md:grid-cols-3">
@@ -888,6 +967,80 @@ function TheaterApprovalsTab({ theaters, onUpdate, approvalBusy }) {
           );
         })}
       </div>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={Building2}
+          title="Theater management"
+          subtitle="City-wise cinema list for admin review"
+          action={`${cityTheaters.length} theaters`}
+        />
+        <div className="mt-5 grid gap-4 xl:grid-cols-[0.35fr_0.65fr]">
+          <div className="rounded-lg border border-border/60 bg-background/40 p-4">
+            <label>
+              <span className="text-xs font-medium uppercase text-muted-foreground">City</span>
+              <select
+                value={selectedCity}
+                onChange={(event) => onCityChange(event.target.value)}
+                className={`${adminSelectClass} mt-2`}
+              >
+                {cityOptions.map((city) => (
+                  <option key={city}>{city}</option>
+                ))}
+              </select>
+            </label>
+            <div className="mt-4 grid gap-2">
+              <SnapshotRow label="Selected city" value={selectedCity || "No city selected"} />
+              <SnapshotRow label="Cinemas" value={cityTheaters.length.toLocaleString()} />
+              <SnapshotRow
+                label="Screens"
+                value={cityTheaters
+                  .reduce((sum, theater) => sum + Number(theater.screens || 0), 0)
+                  .toLocaleString()}
+              />
+            </div>
+          </div>
+
+          {cityTheaters.length ? (
+            <div className="grid gap-3 md:grid-cols-2">
+              {cityTheaters.map((theater) => (
+                <div
+                  key={theater.id}
+                  className="rounded-lg border border-border/60 bg-background/35 p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-semibold">{theater.name}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {theater.area || "Area not set"}
+                      </p>
+                    </div>
+                    <StatusPill status={theater.status} />
+                  </div>
+                  <div className="mt-4 grid gap-2 text-sm">
+                    <SnapshotRow label="Address" value={theater.address || "Address not set"} />
+                    <SnapshotRow
+                      label="Screens"
+                      value={Number(theater.screens || 0).toLocaleString()}
+                    />
+                    <SnapshotRow
+                      label="Shows"
+                      value={Number(theater.showCount || 0).toLocaleString()}
+                    />
+                    <SnapshotRow label="Amenities" value={theater.amenities || "Not listed"} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={Building2}
+              title="No theaters in this city"
+              text="Select another city to view cinema partners."
+            />
+          )}
+        </div>
+      </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
@@ -1031,7 +1184,7 @@ function UserManagementTab() {
         <PanelHeader
           icon={UserCog}
           title="User management"
-          subtitle="Block, unblock, refund and complaint workflows"
+          subtitle="Block, unblock and complaint workflows"
         />
         <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
           <div className="overflow-x-auto">
@@ -1049,7 +1202,7 @@ function UserManagementTab() {
                   <tr key={user.name} className="bg-card/20">
                     <td className="px-4 py-3 font-medium">{user.name}</td>
                     <td className="px-4 py-3">
-                      <StatusPill status={user.status === "Active" ? "Approved" : "Pending"} />
+                      <UserStatusPill status={user.status} />
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{user.issue}</td>
                     <td className="px-4 py-3">
@@ -1067,11 +1220,11 @@ function UserManagementTab() {
 
       <div className="grid gap-4">
         <SpotlightCard className="rounded-lg p-5">
-          <PanelHeader icon={RefreshCcw} title="Refund queue" subtitle="Customer refund handling" />
+          <PanelHeader icon={UserCog} title="User controls" subtitle="Admin account actions" />
           <div className="mt-5 grid gap-3">
-            <SnapshotRow label="Pending refunds" value="14" />
-            <SnapshotRow label="Auto approved" value="8" />
-            <SnapshotRow label="Manual review" value="6" />
+            <SnapshotRow label="Block / unblock" value="Enabled" />
+            <SnapshotRow label="Watchlist checks" value="3 users" />
+            <SnapshotRow label="Support assignment" value="Live" />
           </div>
         </SpotlightCard>
         <SpotlightCard className="rounded-lg p-5">
@@ -1087,6 +1240,109 @@ function UserManagementTab() {
           </div>
         </SpotlightCard>
       </div>
+    </section>
+  );
+}
+
+function RefundsTab({ recentBookings }) {
+  const cancelledFromBookings = (recentBookings ?? [])
+    .filter((booking) =>
+      String(booking.status ?? booking.ticketStatus ?? "")
+        .toLowerCase()
+        .includes("cancel"),
+    )
+    .map((booking) => ({
+      ref: booking.ref,
+      user: booking.customer || booking.user || "Customer",
+      email: booking.email || "Not available",
+      movie: booking.movie,
+      theater: booking.theater,
+      seats: Array.isArray(booking.seats) ? booking.seats : [],
+      amount: Number(booking.total || booking.amount || 0),
+      reason: booking.reason || "Ticket cancelled by user",
+      status: booking.refundStatus || "Pending refund",
+      cancelledAt: booking.cancelledAt || "Recent cancellation",
+    }));
+  const refundRows = cancelledFromBookings.length ? cancelledFromBookings : cancelledTicketRows;
+  const pendingAmount = refundRows.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+  const manualReviewCount = refundRows.filter((row) =>
+    String(row.status).toLowerCase().includes("manual"),
+  ).length;
+
+  return (
+    <section className="mt-6 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={RefreshCcw}
+          title="Refund dashboard"
+          subtitle="Cancelled tickets land here for admin refund review"
+          action={`${refundRows.length} cases`}
+        />
+        <div className="mt-5 grid gap-3">
+          <SnapshotRow label="Pending amount" value={formatCurrency(pendingAmount)} />
+          <SnapshotRow label="Manual review" value={manualReviewCount.toLocaleString()} />
+          <SnapshotRow label="Gateway SLA" value="T+1 settlement" />
+          <SnapshotRow label="Customer alerts" value="Email + SMS" />
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={Ticket}
+          title="Cancelled ticket queue"
+          subtitle="Approve, retry or audit refund cases"
+        />
+        <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[880px] text-left text-sm">
+              <thead className="bg-muted/40 text-xs text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Reference</th>
+                  <th className="px-4 py-3 font-medium">User</th>
+                  <th className="px-4 py-3 font-medium">Ticket</th>
+                  <th className="px-4 py-3 font-medium">Reason</th>
+                  <th className="px-4 py-3 font-medium">Amount</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {refundRows.map((row) => (
+                  <tr key={row.ref} className="bg-card/20">
+                    <td className="px-4 py-3 font-mono text-xs text-primary">{row.ref}</td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium">{row.user}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{row.email}</p>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      <p className="font-medium text-foreground">{row.movie}</p>
+                      <p className="mt-1">
+                        {row.theater} - {formatSeatList(row.seats)}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      <p>{row.reason}</p>
+                      <p className="mt-1 text-xs">{row.cancelledAt}</p>
+                    </td>
+                    <td className="px-4 py-3 font-semibold">{formatCurrency(row.amount)}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill
+                        status={row.status.includes("Gateway") ? "Approved" : "Pending"}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Button size="sm" variant="secondary" className="gap-2">
+                        <RefreshCcw className="h-4 w-4" />
+                        Process
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </SpotlightCard>
     </section>
   );
 }
@@ -1380,6 +1636,19 @@ function TheaterRow({ theater }) {
   );
 }
 
+function UserStatusPill({ status }) {
+  const tone =
+    status === "Active"
+      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
+      : status === "Blocked"
+        ? "border-destructive/30 bg-destructive/10 text-destructive"
+        : "border-amber-500/30 bg-amber-500/10 text-amber-500";
+
+  return (
+    <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${tone}`}>{status}</span>
+  );
+}
+
 function StatusPill({ status }) {
   const tone =
     status === "Approved"
@@ -1390,6 +1659,56 @@ function StatusPill({ status }) {
   return (
     <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${tone}`}>{status}</span>
   );
+}
+
+function buildManagedTheaters(catalog, applications) {
+  const approvalRows = (applications ?? []).map((theater, index) => ({
+    id: theater.id || `application-${index}`,
+    name: theater.name || theater.theaterName || "Unnamed theater",
+    owner: theater.owner || theater.ownerName || "Owner details pending",
+    city: theater.city || "Pending city",
+    area: theater.area || "Area not set",
+    address: theater.address || "Address not set",
+    screens: Number(theater.screens || 1),
+    showCount: Number(theater.showCount || 0),
+    amenities: theater.amenities || theater.documents || "Partner onboarding",
+    status: theater.status || "Pending",
+  }));
+  const approvalKeys = new Set(approvalRows.map((theater) => normalizeAdminKey(theater.name)));
+  const catalogRows = (catalog ?? [])
+    .filter((theater) => !approvalKeys.has(normalizeAdminKey(theater.name)))
+    .map((theater) => ({
+      id: theater.id,
+      name: theater.name,
+      owner: "Catalog cinema",
+      city: theater.city || "City not set",
+      area: theater.area || "Area not set",
+      address: theater.address || "Address not set",
+      screens: Math.max(1, new Set((theater.showPlan ?? []).map((show) => show.screen)).size || 1),
+      showCount: theater.showPlan?.length ?? 0,
+      amenities: Array.isArray(theater.amenities)
+        ? theater.amenities.join(", ")
+        : theater.amenities || "Amenities not listed",
+      status: "Approved",
+    }));
+
+  return [...catalogRows, ...approvalRows];
+}
+
+function buildTheaterCityOptions(theaters) {
+  return [...new Set(theaters.map((theater) => theater.city).filter(Boolean))].sort((left, right) =>
+    left.localeCompare(right),
+  );
+}
+
+function normalizeAdminKey(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function formatSeatList(seats) {
+  return Array.isArray(seats) && seats.length ? seats.join(", ") : "Seats not assigned";
 }
 
 function EmptyState({ icon: Icon, title, text }) {

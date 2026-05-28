@@ -1,5 +1,6 @@
 const tierPrice = {
   platinum: 180,
+  silver: 220,
   gold: 250,
   vip: 400,
 };
@@ -8,6 +9,7 @@ const defaultSeatLayoutConfig = {
   rowCount: 10,
   seatsPerRow: 14,
   platinumRows: 2,
+  silverRows: 2,
   vipRows: 2,
   aisleAfter: 7,
   blockedSeats: [],
@@ -20,6 +22,8 @@ function buildSeatLayout(config = defaultSeatLayoutConfig) {
   const tierFor = (row) => {
     const index = rows.indexOf(row);
     if (index >= 0 && index < normalized.platinumRows) return "platinum";
+    if (index >= normalized.platinumRows && index < normalized.platinumRows + normalized.silverRows)
+      return "silver";
     if (index >= rows.length - normalized.vipRows) return "vip";
     return "gold";
   };
@@ -60,6 +64,12 @@ function normalizeSeatLayoutConfig(config = {}) {
     Math.max(0, rowCount - platinumRows),
     defaultSeatLayoutConfig.vipRows,
   );
+  const silverRows = clampNumber(
+    config.silverRows,
+    0,
+    Math.max(0, rowCount - platinumRows - vipRows),
+    defaultSeatLayoutConfig.silverRows,
+  );
   const aisleAfter = clampNumber(
     config.aisleAfter,
     0,
@@ -71,6 +81,7 @@ function normalizeSeatLayoutConfig(config = {}) {
     rowCount,
     seatsPerRow,
     platinumRows,
+    silverRows,
     vipRows,
     aisleAfter,
     blockedSeats: normalizeBlockedSeats(config.blockedSeats, rowCount, seatsPerRow),
