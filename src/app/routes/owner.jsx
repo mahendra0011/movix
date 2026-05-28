@@ -835,7 +835,7 @@ function OwnerMoviesTab({
   const [uploadNotice, setUploadNotice] = useState("");
   const castRows = normalizeCastRows(showForm.cast);
 
-  const selectBaseMovie = (event) => {
+  const selectMovieName = (event) => {
     const movie = movies.find((item) => item.id === event.target.value) ?? movies[0];
     onFormChange((current) => ({
       ...current,
@@ -913,8 +913,8 @@ function OwnerMoviesTab({
 
         <form onSubmit={onAddMovie} className="mt-5 space-y-5">
           <FormSection title="Movie information">
-            <FormField label="Base movie">
-              <select value={showForm.movieId} onChange={selectBaseMovie} className={selectClass}>
+            <FormField label="Movie name">
+              <select value={showForm.movieId} onChange={selectMovieName} className={selectClass}>
                 {movies.map((movie) => (
                   <option key={movie.id} value={movie.id}>
                     {movie.title}
@@ -922,7 +922,7 @@ function OwnerMoviesTab({
                 ))}
               </select>
             </FormField>
-            <FormField label="Movie title">
+            <FormField label="Display title">
               <Input
                 value={showForm.customTitle}
                 onChange={update("customTitle")}
