@@ -7,6 +7,21 @@ const showSchema = new mongoose.Schema(
     movieId: { type: String, required: true, index: true },
     movie: { type: String, default: "" },
     poster: { type: String, default: "" },
+    backdrop: { type: String, default: "" },
+    duration: { type: String, default: "" },
+    genres: { type: [String], default: [] },
+    releaseDate: { type: String, default: "" },
+    description: { type: String, default: "" },
+    cast: {
+      type: [
+        {
+          name: { type: String, default: "" },
+          role: { type: String, default: "Actor" },
+          avatar: { type: String, default: "" },
+        },
+      ],
+      default: [],
+    },
     theaterId: { type: String, required: true, index: true },
     theater: { type: String, default: "" },
     screenId: { type: String, required: true },

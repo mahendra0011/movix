@@ -9,6 +9,7 @@ import {
   CreditCard,
   Film,
   Gauge,
+  ImagePlus,
   LockKeyhole,
   LogIn,
   LogOut,
@@ -21,7 +22,9 @@ import {
   ShieldCheck,
   Ticket,
   Trash2,
+  UserPlus,
   Users,
+  X,
 } from "lucide-react";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { buildSeatLayout, normalizeSeatLayoutConfig } from "@/features/booking/data/seatLayout";
@@ -110,10 +113,18 @@ const defaultCinemaProfile = {
 };
 
 function createBlankShow(screens = screenSeeds) {
+  const baseMovie = movies[0] ?? {};
   return {
     listingType: "live",
-    movieId: movies[0]?.id ?? "",
+    movieId: baseMovie.id ?? "",
     customTitle: "",
+    poster: baseMovie.poster ?? "",
+    backdrop: baseMovie.backdrop ?? "",
+    duration: baseMovie.duration ?? "2h 10m",
+    genres: (baseMovie.genres ?? ["Drama"]).join(", "),
+    releaseDate: baseMovie.releaseDate ?? "",
+    description: baseMovie.description ?? "",
+    cast: normalizeCastRows(baseMovie.cast),
     screen: screens[0]?.name ?? "",
     showDate: getDateInputValue(0),
     startTime: "18:30",
@@ -138,6 +149,7 @@ const languageOptions = ["English", "Hindi", "Tamil", "Telugu", "Kannada"];
 const formatOptions = ["2D", "3D", "IMAX", "4DX", "Dolby Atmos"];
 const certificateOptions = ["U", "UA", "A"];
 const showStatusOptions = ["Open", "Selling fast", "Sold out", "Draft"];
+const MAX_IMAGE_UPLOAD_BYTES = 2.5 * 1024 * 1024;
 const ownerPanelTabs = [
   { id: "overview", label: "Overview", icon: Gauge },
   { id: "cinema", label: "Cinema", icon: Building2 },
@@ -430,6 +442,7 @@ function OwnerDashboard() {
     setShowForm((current) => ({
       ...current,
       customTitle: "",
+      description: "",
       notes: "",
       trailerUrl: "",
     }));
@@ -459,9 +472,12 @@ function OwnerDashboard() {
   };
 
   const createOwnerListing = ({ mode }) => {
-    const movie = movies.find((item) => item.id === showForm.movieId) ?? movies[0];
+    const listedMovie = listedMovies.find((item) => item.movieId === showForm.movieId);
+    const movie = listedMovie ?? movies.find((item) => item.id === showForm.movieId) ?? movies[0];
     const isMovieOnly = mode === "movie";
-    const title = showForm.customTitle.trim() || movie?.title;
+    const customTitle = showForm.customTitle.trim();
+    const title = customTitle || movie?.title;
+    const usesCustomTitle = Boolean(customTitle && customTitle !== movie?.title);
     if (!title || (!isMovieOnly && !showForm.screen)) return null;
 
     const goldPrice = Number(showForm.goldPrice) || 300;
@@ -472,6 +488,12 @@ function OwnerDashboard() {
     const selectedScreen = ownerScreens.find((screen) => screen.name === showForm.screen);
     const seatLayout = normalizeSeatLayoutConfig(selectedScreen?.seatLayout);
     const seatCount = selectedScreen?.seats ?? buildSeatLayout(seatLayout).totalSeats;
+    const poster = showForm.poster || movie?.poster || movies[0]?.poster || "";
+    const backdrop = showForm.backdrop || movie?.backdrop || poster;
+    const genres = splitAmenities(showForm.genres).length
+      ? splitAmenities(showForm.genres)
+      : movie?.genres || [];
+    const cast = normalizeCastRows(showForm.cast, movie?.cast);
 
     return {
       id: `${slugify(title)}-${Date.now()}`,
@@ -484,9 +506,16 @@ function OwnerDashboard() {
       distance: cinemaProfile.distance,
       amenities: cinemaProfile.amenities,
       listingType: isMovieOnly ? "coming-soon" : "live",
-      movieId: movie?.id ?? slugify(title),
+      movieId:
+        listedMovie?.movieId || (usesCustomTitle ? slugify(title) : movie?.id) || slugify(title),
       movie: title,
-      poster: movie?.poster,
+      poster,
+      backdrop,
+      duration: showForm.duration.trim() || movie?.duration || "",
+      genres,
+      releaseDate: showForm.releaseDate.trim() || movie?.releaseDate || "",
+      description: showForm.description.trim() || movie?.description || "",
+      cast,
       screen: isMovieOnly ? "Timing pending" : showForm.screen,
       date,
       time: isMovieOnly ? "Timing pending" : formatShowTime(showForm.startTime, showForm.endTime),
@@ -802,6 +831,75 @@ function OwnerMoviesTab({
   const update = (field) => (event) =>
     onFormChange((current) => ({ ...current, [field]: event.target.value }));
   const selectedMovie = movies.find((movie) => movie.id === showForm.movieId) ?? movies[0];
+  const moviePreview = buildMovieMasterPreview(showForm, selectedMovie);
+  const [uploadNotice, setUploadNotice] = useState("");
+  const castRows = normalizeCastRows(showForm.cast);
+
+  const selectBaseMovie = (event) => {
+    const movie = movies.find((item) => item.id === event.target.value) ?? movies[0];
+    onFormChange((current) => ({
+      ...current,
+      ...movieToFormPatch(movie),
+      movieId: event.target.value,
+    }));
+  };
+
+  const uploadImage = (field) => async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await readImageFile(file);
+      onFormChange((current) => ({ ...current, [field]: dataUrl }));
+      setUploadNotice(`${file.name} uploaded for preview and saving.`);
+    } catch (error) {
+      setUploadNotice(error.message || "Image upload failed.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const updateCast = (index, field) => (event) => {
+    const value = event.target.value;
+    onFormChange((current) => ({
+      ...current,
+      cast: normalizeCastRows(current.cast).map((member, memberIndex) =>
+        memberIndex === index ? { ...member, [field]: value } : member,
+      ),
+    }));
+  };
+
+  const uploadCastPhoto = (index) => async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await readImageFile(file);
+      onFormChange((current) => ({
+        ...current,
+        cast: normalizeCastRows(current.cast).map((member, memberIndex) =>
+          memberIndex === index ? { ...member, avatar: dataUrl } : member,
+        ),
+      }));
+      setUploadNotice(`${file.name} uploaded for cast photo.`);
+    } catch (error) {
+      setUploadNotice(error.message || "Cast photo upload failed.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const addCastMember = () => {
+    onFormChange((current) => ({
+      ...current,
+      cast: [...normalizeCastRows(current.cast), { name: "", role: "Actor", avatar: "" }],
+    }));
+  };
+
+  const removeCastMember = (index) => {
+    onFormChange((current) => ({
+      ...current,
+      cast: normalizeCastRows(current.cast).filter((_, memberIndex) => memberIndex !== index),
+    }));
+  };
 
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
@@ -809,14 +907,14 @@ function OwnerMoviesTab({
         <PanelHeader
           icon={Film}
           title="Add movie details"
-          subtitle="Movie catalog owned by this cinema partner"
+          subtitle="Create a cinema-ready movie master with media, cast and release details"
           action="Movie master"
         />
 
         <form onSubmit={onAddMovie} className="mt-5 space-y-5">
           <FormSection title="Movie information">
-            <FormField label="Platform movie">
-              <select value={showForm.movieId} onChange={update("movieId")} className={selectClass}>
+            <FormField label="Base movie">
+              <select value={showForm.movieId} onChange={selectBaseMovie} className={selectClass}>
                 {movies.map((movie) => (
                   <option key={movie.id} value={movie.id}>
                     {movie.title}
@@ -824,11 +922,21 @@ function OwnerMoviesTab({
                 ))}
               </select>
             </FormField>
-            <FormField label="Custom title">
+            <FormField label="Movie title">
               <Input
                 value={showForm.customTitle}
                 onChange={update("customTitle")}
                 placeholder={selectedMovie?.title ?? "Movie title"}
+              />
+            </FormField>
+            <FormField label="Runtime">
+              <Input value={showForm.duration} onChange={update("duration")} placeholder="2h 46m" />
+            </FormField>
+            <FormField label="Genres">
+              <Input
+                value={showForm.genres}
+                onChange={update("genres")}
+                placeholder="Action, Drama, Thriller"
               />
             </FormField>
             <FormField label="Language">
@@ -860,6 +968,13 @@ function OwnerMoviesTab({
                 ))}
               </select>
             </FormField>
+            <FormField label="Release date">
+              <Input
+                value={showForm.releaseDate}
+                onChange={update("releaseDate")}
+                placeholder="07 Nov, 2026"
+              />
+            </FormField>
             <FormField label="Expected start date">
               <Input
                 value={showForm.comingSoonDate}
@@ -867,6 +982,26 @@ function OwnerMoviesTab({
                 type="date"
               />
             </FormField>
+          </FormSection>
+
+          <FormSection title="Poster and gallery">
+            <ImageUploadField
+              label="Poster upload"
+              value={showForm.poster}
+              placeholder="Paste poster URL or upload image"
+              onChange={update("poster")}
+              onUpload={uploadImage("poster")}
+            />
+            <ImageUploadField
+              label="Backdrop upload"
+              value={showForm.backdrop}
+              placeholder="Paste banner/backdrop URL or upload image"
+              onChange={update("backdrop")}
+              onUpload={uploadImage("backdrop")}
+            />
+          </FormSection>
+
+          <FormSection title="Story and trailer">
             <FormField label="Trailer URL">
               <Input
                 value={showForm.trailerUrl}
@@ -876,32 +1011,107 @@ function OwnerMoviesTab({
             </FormField>
             <label className="md:col-span-2">
               <span className="text-xs font-medium uppercase text-muted-foreground">
-                Movie notes
+                About the movie
+              </span>
+              <textarea
+                value={showForm.description}
+                onChange={update("description")}
+                placeholder="Storyline, language version, distributor synopsis..."
+                className="mt-2 min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </label>
+            <label className="md:col-span-2">
+              <span className="text-xs font-medium uppercase text-muted-foreground">
+                Owner notes
               </span>
               <textarea
                 value={showForm.notes}
                 onChange={update("notes")}
-                placeholder="Cast, dubbed language, special screening note, distributor note..."
+                placeholder="Dubbed version note, distributor terms, special screening note..."
                 className="mt-2 min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
               />
             </label>
           </FormSection>
 
+          <div>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-xs font-semibold uppercase text-muted-foreground">Cast</h3>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={addCastMember}
+                className="gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                Add cast
+              </Button>
+            </div>
+            <div className="mt-3 grid gap-3">
+              {castRows.map((member, index) => (
+                <div
+                  key={`${index}-${member.name || "cast"}`}
+                  className="grid gap-3 rounded-lg border border-border/60 bg-background/40 p-3 md:grid-cols-[76px_1fr_1fr_auto]"
+                >
+                  <CastPhotoControl
+                    member={member}
+                    index={index}
+                    onUpload={uploadCastPhoto(index)}
+                    onAvatarChange={updateCast(index, "avatar")}
+                  />
+                  <FormField label="Name">
+                    <Input
+                      value={member.name}
+                      onChange={updateCast(index, "name")}
+                      placeholder="Actor name"
+                    />
+                  </FormField>
+                  <FormField label="Role">
+                    <Input
+                      value={member.role}
+                      onChange={updateCast(index, "role")}
+                      placeholder="Actor / Director / Producer"
+                    />
+                  </FormField>
+                  <div className="flex items-end">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="secondary"
+                      onClick={() => removeCastMember(index)}
+                      aria-label={`Remove cast member ${index + 1}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {uploadNotice && (
+            <p className="rounded-md bg-primary/10 px-3 py-2 text-xs font-medium text-primary">
+              {uploadNotice}
+            </p>
+          )}
+
           <div className="overflow-hidden rounded-lg border border-border/60 bg-background/35">
             <div className="relative h-56">
               <img
-                src={selectedMovie?.poster || movies[0].poster}
-                alt={selectedMovie?.title}
+                src={moviePreview.backdrop || moviePreview.poster || movies[0].poster}
+                alt={moviePreview.title}
                 className="h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4">
                 <p className="text-xs uppercase text-primary">Preview</p>
-                <h3 className="mt-1 text-xl font-bold">
-                  {showForm.customTitle.trim() || selectedMovie?.title}
-                </h3>
+                <h3 className="mt-1 text-xl font-bold">{moviePreview.title}</h3>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {showForm.language} - {showForm.format} - {showForm.certificate}
+                  {moviePreview.duration} - {moviePreview.language} - {moviePreview.format} -{" "}
+                  {moviePreview.certificate}
+                </p>
+                <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                  {moviePreview.description || "Movie description will appear here."}
                 </p>
               </div>
             </div>
@@ -918,35 +1128,63 @@ function OwnerMoviesTab({
         <PanelHeader
           icon={Film}
           title="Movie list"
-          subtitle="Only movies added by this owner account"
+          subtitle="Full details saved by this owner account"
           action={`${listedMovies.length} movies`}
         />
 
         {listedMovies.length ? (
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <div className="mt-5 grid gap-4">
             {listedMovies.map((movie) => (
               <div
                 key={movie.movieId}
                 className="overflow-hidden rounded-lg border border-border/60 bg-background/35"
               >
-                <div className="relative h-56">
+                <div className="grid gap-4 p-4 md:grid-cols-[132px_1fr]">
                   <img
                     src={movie.poster || movies[0].poster}
                     alt={movie.title}
-                    className="h-full w-full object-cover"
+                    className="aspect-[2/3] w-full rounded-lg object-cover shadow-sm md:w-32"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="text-xl font-bold">{movie.title}</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {movie.language} - {movie.format} - {movie.certificate}
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-xl font-bold">{movie.title}</h3>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {movie.duration || "Runtime not set"} - {movie.language} - {movie.format}{" "}
+                          - {movie.certificate}
+                        </p>
+                      </div>
+                      <StatusPill status={movie.comingSoonCount ? "Listed" : "Open"} />
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {splitAmenities(movie.genres)
+                        .slice(0, 4)
+                        .map((genre) => (
+                          <span
+                            key={genre}
+                            className="rounded-md border border-border/60 px-2 py-1 text-xs text-muted-foreground"
+                          >
+                            {genre}
+                          </span>
+                        ))}
+                    </div>
+                    <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                      {movie.description || movie.notes || "No synopsis added yet."}
                     </p>
+                    {movie.cast?.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          Cast
+                        </p>
+                        <CastAvatarStack cast={movie.cast} />
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="grid gap-3 p-4">
+                <div className="grid gap-3 border-t border-border/60 p-4 md:grid-cols-2">
                   <SnapshotRow label="Timing slots" value={movie.liveCount.toLocaleString()} />
-                  <SnapshotRow label="Upcoming flag" value={movie.comingSoonCount ? "Yes" : "No"} />
+                  <SnapshotRow label="Release" value={movie.releaseDate || "Not set"} />
                   <SnapshotRow
                     label="Next date"
                     value={movie.nextDate ? formatDateLabel(movie.nextDate) : "Timing pending"}
@@ -1407,13 +1645,19 @@ function MovieTimingsTab({
         movieId: movie.id,
         title: movie.title,
         poster: movie.poster,
+        backdrop: movie.backdrop,
+        duration: movie.duration,
+        genres: movie.genres,
+        releaseDate: movie.releaseDate,
+        description: movie.description,
+        cast: movie.cast,
         language: movie.language || "English",
-        format: movie.format || "2D",
+        format: Array.isArray(movie.format) ? movie.format[0] : movie.format || "2D",
         certificate: movie.certificate || "UA",
       }));
   const selectedListedMovie = movieOptions.find((movie) => movie.movieId === showForm.movieId);
-  const selectedMovie = movies.find((movie) => movie.id === showForm.movieId) ??
-    selectedListedMovie ?? {
+  const selectedMovie = selectedListedMovie ??
+    movies.find((movie) => movie.id === showForm.movieId) ?? {
       title: selectedListedMovie?.title || "Movie",
       poster: selectedListedMovie?.poster,
     };
@@ -1439,11 +1683,8 @@ function MovieTimingsTab({
                   const movie = movieOptions.find((item) => item.movieId === event.target.value);
                   onFormChange((current) => ({
                     ...current,
+                    ...movieToFormPatch(movie),
                     movieId: event.target.value,
-                    customTitle: movie?.title || "",
-                    language: movie?.language || current.language,
-                    format: movie?.format || current.format,
-                    certificate: movie?.certificate || current.certificate,
                     listingType: "live",
                   }));
                 }}
@@ -1675,12 +1916,104 @@ function FormField({ label, children }) {
   );
 }
 
+function ImageUploadField({ label, value, placeholder, onChange, onUpload }) {
+  return (
+    <div>
+      <span className="text-xs font-medium uppercase text-muted-foreground">{label}</span>
+      <div className="mt-2 grid gap-3 rounded-lg border border-border/60 bg-background/40 p-3">
+        <div className="grid grid-cols-[88px_1fr] gap-3">
+          <div className="grid aspect-[2/3] place-items-center overflow-hidden rounded-md bg-muted">
+            {value ? (
+              <img src={value} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <ImagePlus className="h-6 w-6 text-muted-foreground" />
+            )}
+          </div>
+          <div className="grid content-start gap-2">
+            <Input value={value || ""} onChange={onChange} placeholder={placeholder} />
+            <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent">
+              <ImagePlus className="h-4 w-4" />
+              Upload image
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={onUpload}
+                className="sr-only"
+              />
+            </label>
+            <p className="text-xs text-muted-foreground">PNG, JPG or WebP under 2.5 MB.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CastPhotoControl({ member, index, onUpload, onAvatarChange }) {
+  return (
+    <div>
+      <span className="text-xs font-medium uppercase text-muted-foreground">Photo</span>
+      <div className="mt-2 grid gap-2">
+        <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-primary/10 ring-1 ring-primary/20">
+          {member.avatar ? (
+            <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
+          ) : (
+            <span className="text-sm font-bold text-primary">
+              {initials(member.name || "Cast")}
+            </span>
+          )}
+        </div>
+        <label className="inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-2 text-xs font-medium shadow-sm hover:bg-accent">
+          Upload
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={onUpload}
+            className="sr-only"
+          />
+        </label>
+        <Input
+          value={member.avatar || ""}
+          onChange={onAvatarChange}
+          placeholder={`Photo URL ${index + 1}`}
+          className="h-8 text-xs"
+        />
+      </div>
+    </div>
+  );
+}
+
+function CastAvatarStack({ cast }) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {cast.slice(0, 6).map((member, index) => (
+        <div
+          key={`${member.name}-${index}`}
+          className="flex items-center gap-2 rounded-full border border-border/60 bg-background/60 py-1 pl-1 pr-3"
+        >
+          <div className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-primary/10">
+            {member.avatar ? (
+              <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-[10px] font-bold text-primary">{initials(member.name)}</span>
+            )}
+          </div>
+          <div>
+            <p className="text-xs font-medium leading-tight">{member.name}</p>
+            <p className="text-[10px] leading-tight text-muted-foreground">{member.role}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function TimingPreview({ timing }) {
   return (
     <div className="mt-5 overflow-hidden rounded-lg border border-border/60 bg-background/35">
       <div className="relative h-64">
         <img
-          src={timing.poster || movies[0].poster}
+          src={timing.backdrop || timing.poster || movies[0].poster}
           alt={timing.movie}
           className="h-full w-full object-cover"
         />
@@ -1691,12 +2024,18 @@ function TimingPreview({ timing }) {
         <div className="absolute bottom-4 left-4 right-4">
           <h3 className="text-2xl font-bold tracking-tight">{timing.movie}</h3>
           <p className="mt-2 text-sm text-muted-foreground">
+            {timing.duration ? `${timing.duration} - ` : ""}
             {timing.language} - {timing.format} - {timing.certificate}
           </p>
+          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{timing.description}</p>
         </div>
       </div>
 
       <div className="grid gap-3 p-4">
+        <SnapshotRow
+          label="Genres"
+          value={splitAmenities(timing.genres).slice(0, 3).join(", ") || "Not set"}
+        />
         <SnapshotRow label="Day" value={formatWeekday(timing.date)} />
         <SnapshotRow label="Date" value={formatDateLabel(timing.date)} />
         <SnapshotRow label="Screen" value={timing.screen || "Screen not selected"} />
@@ -1720,7 +2059,14 @@ function buildPreviewTiming(showForm, selectedMovie) {
   return {
     listingType: "live",
     movie: title,
-    poster: selectedMovie?.poster,
+    poster: showForm.poster || selectedMovie?.poster,
+    backdrop: showForm.backdrop || selectedMovie?.backdrop,
+    duration: showForm.duration || selectedMovie?.duration,
+    genres: splitAmenities(showForm.genres).length
+      ? splitAmenities(showForm.genres)
+      : selectedMovie?.genres,
+    description: showForm.description || selectedMovie?.description || "",
+    cast: normalizeCastRows(showForm.cast, selectedMovie?.cast),
     screen: showForm.screen,
     date: showForm.showDate,
     time: formatShowTime(showForm.startTime, showForm.endTime),
@@ -2261,6 +2607,69 @@ function createDefaultServices() {
   };
 }
 
+function movieToFormPatch(movie = {}) {
+  const format = Array.isArray(movie.format) ? movie.format[0] : movie.format;
+  return {
+    customTitle: movie.title || "",
+    poster: movie.poster || "",
+    backdrop: movie.backdrop || "",
+    duration: movie.duration || "",
+    genres: splitAmenities(movie.genres).join(", "),
+    releaseDate: movie.releaseDate || "",
+    description: movie.description || "",
+    cast: normalizeCastRows(movie.cast),
+    language: movie.language || "English",
+    format: format || "2D",
+    certificate: movie.certificate || "UA",
+  };
+}
+
+function buildMovieMasterPreview(showForm, selectedMovie) {
+  return {
+    title: showForm.customTitle.trim() || selectedMovie?.title || "Movie title",
+    poster: showForm.poster || selectedMovie?.poster || "",
+    backdrop: showForm.backdrop || selectedMovie?.backdrop || showForm.poster || "",
+    duration: showForm.duration || selectedMovie?.duration || "Runtime",
+    language: showForm.language || selectedMovie?.language || "Language",
+    format: showForm.format || "2D",
+    certificate: showForm.certificate || "UA",
+    description: showForm.description || selectedMovie?.description || "",
+  };
+}
+
+function normalizeCastRows(input = [], fallback = []) {
+  const source =
+    Array.isArray(input) && input.length
+      ? input
+      : Array.isArray(fallback) && fallback.length
+        ? fallback
+        : [{ name: "", role: "Actor", avatar: "" }];
+
+  return source.slice(0, 12).map((member) => ({
+    name: String(member?.name ?? ""),
+    role: String(member?.role || "Actor"),
+    avatar: String(member?.avatar ?? ""),
+  }));
+}
+
+function readImageFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("Only image files are supported."));
+      return;
+    }
+    if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+      reject(new Error("Image size 2.5 MB se kam rakho."));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Image read nahi ho payi."));
+    reader.readAsDataURL(file);
+  });
+}
+
 function splitAmenities(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
   return String(value ?? "")
@@ -2282,6 +2691,12 @@ function buildListedMovies(shows, bookings) {
         movieId,
         title: show.movie,
         poster: show.poster,
+        backdrop: show.backdrop,
+        duration: show.duration,
+        genres: show.genres ?? [],
+        releaseDate: show.releaseDate,
+        description: show.description,
+        cast: normalizeCastRows(show.cast).filter((member) => member.name),
         language: show.language,
         format: show.format,
         certificate: show.certificate,
@@ -2307,6 +2722,15 @@ function buildListedMovies(shows, bookings) {
     }
     if (show.trailerUrl) acc[movieId].trailerUrl = show.trailerUrl;
     if (show.notes) acc[movieId].notes = show.notes;
+    if (show.poster) acc[movieId].poster = show.poster;
+    if (show.backdrop) acc[movieId].backdrop = show.backdrop;
+    if (show.duration) acc[movieId].duration = show.duration;
+    if (show.genres?.length) acc[movieId].genres = show.genres;
+    if (show.releaseDate) acc[movieId].releaseDate = show.releaseDate;
+    if (show.description) acc[movieId].description = show.description;
+    if (show.cast?.length) {
+      acc[movieId].cast = normalizeCastRows(show.cast).filter((member) => member.name);
+    }
     acc[movieId].revenue = revenueByMovie[show.movie] ?? acc[movieId].revenue;
     return acc;
   }, {});
@@ -2457,6 +2881,16 @@ function slugify(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function initials(value) {
+  return String(value || "NA")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 }
 
 function formatTimeLabel(value) {

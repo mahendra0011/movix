@@ -227,6 +227,12 @@ function mapShow(show, theater) {
     movieId: show.movieId,
     movie: show.movie || show.movieId,
     poster: show.poster || "",
+    backdrop: show.backdrop || "",
+    duration: show.duration || "",
+    genres: show.genres ?? [],
+    releaseDate: show.releaseDate || "",
+    description: show.description || "",
+    cast: Array.isArray(show.cast) ? show.cast : [],
     screen: show.screen,
     date: show.date || "",
     time: show.time || formatShowTime(show.startTime, show.endTime),
@@ -347,6 +353,12 @@ function normalizeShows(input = [], context) {
       movieId: cleanText(show.movieId) || slugify(movieTitle),
       movie: movieTitle,
       poster: cleanText(show.poster),
+      backdrop: cleanText(show.backdrop),
+      duration: cleanText(show.duration),
+      genres: splitList(show.genres),
+      releaseDate: cleanText(show.releaseDate),
+      description: cleanText(show.description),
+      cast: normalizeCast(show.cast),
       screenId: selectedScreen?.id || slugify(show.screen || "screen-1"),
       screen: cleanText(show.screen) || selectedScreen?.name || "Screen 1",
       date: cleanText(show.date || show.showDate || show.comingSoonDate),
@@ -381,6 +393,18 @@ function normalizeServices(input = {}) {
     refundCases: Array.isArray(input.refundCases) ? input.refundCases : defaultRefundCases(),
     scanStats: Array.isArray(input.scanStats) ? input.scanStats : defaultScanStats(),
   };
+}
+
+function normalizeCast(input = []) {
+  if (!Array.isArray(input)) return [];
+  return input
+    .slice(0, 16)
+    .map((member) => ({
+      name: cleanText(member?.name),
+      role: cleanText(member?.role) || "Actor",
+      avatar: cleanText(member?.avatar),
+    }))
+    .filter((member) => member.name);
 }
 
 function toTheaterScreen(screen) {
