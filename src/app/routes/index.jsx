@@ -157,13 +157,7 @@ function Home() {
   }, [activeGenre, catalog, query, sortBy]);
 
   const recommended = visibleMovies.slice(0, 6);
-  const topMovies = useMemo(
-    () =>
-      [...catalog]
-        .sort((left, right) => Number(right.rating || 0) - Number(left.rating || 0))
-        .slice(0, 4),
-    [catalog],
-  );
+  const premieres = rotateMovies(catalog, 3).slice(0, 4);
   const comingSoon = rotateMovies(catalog, 2).slice(0, 3);
   const comingSoonDates = useMemo(
     () => buildComingSoonDates(comingSoon.length),
@@ -402,15 +396,15 @@ function Home() {
 
       <section className="mx-auto mt-7 grid max-w-7xl gap-5 px-4 lg:grid-cols-[1.1fr_0.78fr_0.66fr]">
         <PanelCard
-          id="top-movies"
-          icon={Star}
-          title="Top movies"
-          subtitle="Highest-rated picks in theatres"
+          id="events"
+          icon={Gift}
+          title="Premieres of the week"
+          subtitle="Brand new releases in theatres"
           actionLabel="See all"
         >
           <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {topMovies.map((movie) => (
-              <MiniMovieTile key={movie.id} movie={movie} badge="TOP MOVIE" />
+            {premieres.map((movie) => (
+              <MiniMovieTile key={movie.id} movie={movie} badge="PREMIERE" />
             ))}
           </div>
         </PanelCard>
