@@ -27,6 +27,87 @@ import {
 const dateOptions = buildDateOptions();
 const ownerWorkspacePrefix = "bms-owner-workspace:";
 
+const detailAboutText =
+  "A seemingly perfect marriage in Prayagraj takes an unexpected turn when one decision leads to a chain of misunderstandings, suspicion, and comedic chaos.";
+
+const detailOffers = [
+  "YES Private Debit Card Offer",
+  "Buy 1 get 1 movie ticket free + 50% off on non movie tickets with Yes Private Credit Card",
+  "Enjoy B1G1 Ticket Free!* with Bandhan Bank Legacy Debit Cards",
+  "Get up to Rs 1000 off per calendar month with Bandhan Bank credit cards",
+  "Get upto INR1000 Off* every month using Apex International Metal Debit Card",
+];
+
+const detailCast = [
+  "Ayushmann Khurrana",
+  "Sara Ali Khan",
+  "Wamiqa Gabbi",
+  "Rakul Preet Singh",
+  "Vijay Raaz",
+  "Tigmanshu Dhulia",
+];
+
+const detailCrew = [
+  { name: "Mudassar Aziz", role: "Director" },
+  { name: "Bhushan Kumar", role: "Producer" },
+  { name: "Renu Ravi Chopra", role: "Producer" },
+  { name: "T-Series", role: "Presenter" },
+  { name: "B.R. Chopra", role: "Presenter" },
+];
+
+const reviewTags = [
+  ["#GreatActing", 2881],
+  ["#Wellmade", 2313],
+  ["#SuperDirection", 2107],
+  ["#AwesomeStory", 1841],
+  ["#Rocking", 1546],
+  ["#Blockbuster", 1540],
+  ["#WowMusic", 1168],
+  ["#Unbelievable", 759],
+  ["#Inspiring", 680],
+  ["#OneTimeWatch", 504],
+];
+
+const topReviews = [
+  {
+    name: "Hanzala",
+    rating: "10/10",
+    tags: "#SuperDirection #GreatActing #WowMusic #AwesomeStory #Blockbuster #Rocking #Unbelievable",
+    text: "Ayushman, wamiqa, rakul and Sara chemistry ek sth maza hi aagya dekh kr. Romance bhi acha h sbke sth. Movie to badiya h hi aur comedy too.",
+    likes: 795,
+  },
+  {
+    name: "Manish",
+    rating: "10/10",
+    tags: "",
+    text: "The film never takes itself seriously for a single moment and that consistency of tone is what makes it work from start to finish.",
+    likes: 343,
+  },
+  {
+    name: "Pranav",
+    rating: "10/10",
+    tags: "",
+    text: "Ketan Sodha's background score keeps the comic energy moving even in scenes that could have gone flat. Good comedy scoring is invisible when it works.",
+    likes: 199,
+  },
+  {
+    name: "Priyesh",
+    rating: "8/10",
+    tags: "#GreatActing #WowMusic #AwesomeStory #Rocking #Wellmade",
+    text: "A attention grabbing movie throughout. Superb acting by Ayushmann and Sara as well as other actresses.",
+    likes: 193,
+  },
+  {
+    name: "Harish",
+    rating: "10/10",
+    tags: "",
+    text: "Sara Ali Khan is looser and funnier here than I've seen her before. She seems genuinely comfortable in the chaos and it shows.",
+    likes: 188,
+  },
+];
+
+const suggestedTitles = ["Chand Mera Dil", "Rajni Ki Baraat", "Bhooth Bangla", "Daadi Ki Shaadi"];
+
 const Route = createFileRoute("/movies/$id")({
   component: MoviePage,
   loader: async ({ params }) => {
@@ -46,9 +127,19 @@ function MoviePage() {
   const [preferredTime, setPreferredTime] = useState("Any time");
   const [sortBy, setSortBy] = useState("Recommended");
   const [ownerWorkspaces, setOwnerWorkspaces] = useState([]);
+  const [bookingMode, setBookingMode] = useState(
+    () => typeof window !== "undefined" && window.location.hash === "#showtimes",
+  );
 
   useEffect(() => {
     setOwnerWorkspaces(readOwnerWorkspaces());
+  }, []);
+
+  useEffect(() => {
+    const syncHash = () => setBookingMode(window.location.hash === "#showtimes");
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
   }, []);
 
   const citySuggestions = useMemo(
@@ -168,9 +259,27 @@ function MoviePage() {
               </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button asChild size="lg">
-                  <a href="#showtimes">Book tickets</a>
+                <Button
+                  size="lg"
+                  onClick={() => {
+                    setBookingMode(true);
+                    window.location.hash = "showtimes";
+                  }}
+                >
+                  Book tickets
                 </Button>
+                {bookingMode && (
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    onClick={() => {
+                      setBookingMode(false);
+                      window.history.replaceState(null, "", window.location.pathname);
+                    }}
+                  >
+                    Movie details
+                  </Button>
+                )}
                 <Button size="lg" variant="secondary" className="gap-2" asChild>
                   <a href={trailerSearchUrl(movie.title)} target="_blank" rel="noreferrer">
                     <Play className="h-4 w-4" /> Trailer
@@ -193,154 +302,347 @@ function MoviePage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-12 max-w-7xl px-4">
+      {bookingMode ? (
+        <ShowtimesView
+          movie={movie}
+          selectedCity={selectedCity}
+          citySuggestions={citySuggestions}
+          onCityChange={setSelectedCity}
+          activeDate={activeDate}
+          onDateChange={setActiveDate}
+          activeFormat={activeFormat}
+          onFormatChange={setActiveFormat}
+          formatOptions={formatOptions}
+          preferredTime={preferredTime}
+          onPreferredTimeChange={setPreferredTime}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          theaterSearch={theaterSearch}
+          onTheaterSearchChange={setTheaterSearch}
+          visibleCinemaListings={visibleCinemaListings}
+          selectedDateLabel={selectedDateLabel}
+          onBackToDetails={() => {
+            setBookingMode(false);
+            window.history.replaceState(null, "", window.location.pathname);
+          }}
+        />
+      ) : (
+        <MovieDetailsContent movie={movie} />
+      )}
+    </div>
+  );
+}
+
+function MovieDetailsContent({ movie }) {
+  return (
+    <div className="mx-auto mt-12 grid max-w-7xl gap-10 px-4">
+      <section>
         <h2 className="text-xl font-bold">About the movie</h2>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          {movie.description}
+          {detailAboutText}
         </p>
       </section>
 
-      <section className="mx-auto mt-10 max-w-7xl px-4">
-        <h2 className="text-xl font-bold">Cast</h2>
-        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
-          {movie.cast.map((c) => (
-            <div key={c.name} className="text-center">
-              <div className="mx-auto grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-primary/25 to-accent/25 ring-1 ring-border/60">
-                {c.avatar ? (
-                  <img src={c.avatar} alt={c.name} className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-sm font-bold text-foreground">{initials(c.name)}</span>
-                )}
+      <section>
+        <h2 className="text-xl font-bold">Top offers for you</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {detailOffers.map((offer) => (
+            <div key={offer} className="rounded-lg border border-border/60 bg-card p-4">
+              <div className="flex items-start gap-3">
+                <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+                  offer
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">{offer}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Tap to view details</p>
+                </div>
               </div>
-              <p className="mt-2 text-sm font-medium">{c.name}</p>
-              <p className="text-xs text-muted-foreground">as {c.role}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section id="showtimes" className="mt-12 border-y border-border/60 bg-muted/30">
-        <div className="bg-background">
-          <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">{movie.title}</h2>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                <span className="rounded-full border border-border/70 px-2.5 py-1">
-                  Movie runtime: {movie.duration}
-                </span>
-                <span className="rounded-full border border-border/70 px-2.5 py-1">
-                  {movie.certificate}
-                </span>
-                {movie.genres.slice(0, 3).map((genre) => (
-                  <span key={genre} className="rounded-full border border-border/70 px-2.5 py-1">
-                    {genre}
-                  </span>
-                ))}
-              </div>
-            </div>
+      <section>
+        <h2 className="text-xl font-bold">Cast</h2>
+        <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+          {detailCast.map((name) => (
+            <ProfileBubble key={name} name={name} role="Actor" />
+          ))}
+        </div>
+      </section>
 
-            <CitySelect
-              value={selectedCity}
-              options={citySuggestions}
-              onChange={setSelectedCity}
-              className="w-full lg:w-auto"
-              selectClassName="min-w-40 flex-1"
+      <section>
+        <h2 className="text-xl font-bold">Crew</h2>
+        <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-5">
+          {detailCrew.map((person) => (
+            <ProfileBubble
+              key={`${person.name}-${person.role}`}
+              name={person.name}
+              role={person.role}
             />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold">Top reviews</h2>
+            <p className="mt-1 text-sm text-muted-foreground">8K reviews</p>
+            <p className="text-sm text-muted-foreground">Summary of 8K reviews.</p>
           </div>
         </div>
 
-        <div className="border-y border-border/60 bg-background/95 backdrop-blur">
-          <div className="mx-auto grid max-w-7xl gap-4 px-4 md:grid-cols-[minmax(0,1fr)_auto]">
-            <div className="flex gap-2 overflow-x-auto py-3">
-              {dateOptions.map((date) => (
-                <button
-                  key={date.key}
-                  type="button"
-                  onClick={() => setActiveDate(date.key)}
-                  className={`grid min-w-16 place-items-center rounded-lg border px-4 py-2 text-center transition-colors ${
-                    activeDate === date.key
-                      ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                      : "border-transparent hover:border-border/70 hover:bg-card"
-                  }`}
-                >
-                  <span className="text-[11px] font-semibold uppercase">{date.weekday}</span>
-                  <span className="text-xl font-bold leading-none">{date.day}</span>
-                  <span className="text-[11px] uppercase opacity-80">{date.month}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="grid gap-2 border-t border-border/60 py-3 md:flex md:border-l md:border-t-0 md:pl-4">
-              <FilterSelect
-                value={activeFormat}
-                onChange={setActiveFormat}
-                options={formatOptions}
-                label={`${movie.language} - ${activeFormat === "All" ? "All formats" : activeFormat}`}
-              />
-              <FilterSelect
-                value={preferredTime}
-                onChange={setPreferredTime}
-                options={["Any time", "Morning", "Afternoon", "Evening", "Night"]}
-                label={preferredTime}
-              />
-              <FilterSelect
-                value={sortBy}
-                onChange={setSortBy}
-                options={["Recommended", "Cinema A-Z", "Distance"]}
-                label={`Sort by ${sortBy}`}
-              />
-              <label className="flex h-11 min-w-48 items-center gap-2 rounded-md border border-border/60 bg-card px-3 text-sm">
-                <Search className="h-4 w-4 text-muted-foreground" />
-                <input
-                  value={theaterSearch}
-                  onChange={(event) => setTheaterSearch(event.target.value)}
-                  placeholder="Search cinema"
-                  className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
-                />
-              </label>
-            </div>
-          </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {reviewTags.map(([tag, count]) => (
+            <span
+              key={tag}
+              className="rounded-full border border-border/60 bg-card px-3 py-1.5 text-xs font-medium"
+            >
+              {tag} <span className="text-muted-foreground">{count}</span>
+            </span>
+          ))}
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 py-4">
-          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <Moon className="h-4 w-4" /> Late night shows
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Sunrise className="h-4 w-4" /> Early morning shows
-            </span>
-            <span className="ml-auto inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Available
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Fast filling
-            </span>
-          </div>
-
-          <div className="mt-4 overflow-hidden rounded-lg border border-border/60 bg-background shadow-sm">
-            {visibleCinemaListings.length > 0 ? (
-              visibleCinemaListings.map((cinema) => (
-                <CinemaShowCard
-                  key={cinema.id}
-                  cinema={cinema}
-                  movie={movie}
-                  activeDateLabel={selectedDateLabel}
-                />
-              ))
-            ) : (
-              <div className="p-8 text-center">
-                <SlidersHorizontal className="mx-auto h-8 w-8 text-primary" />
-                <h3 className="mt-3 font-semibold">No matching shows in {selectedCity}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Try another date, format, time, or cinema search.
-                </p>
+        <div className="mt-5 grid gap-3">
+          {topReviews.map((review) => (
+            <article key={review.name} className="rounded-lg border border-border/60 bg-card p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  {review.tags && (
+                    <p className="mb-2 text-xs font-medium text-primary">{review.tags}</p>
+                  )}
+                  <p className="font-semibold">{review.name}</p>
+                  <p className="text-xs text-muted-foreground">Booked on</p>
+                </div>
+                <span className="rounded-md bg-primary/10 px-2 py-1 text-sm font-bold text-primary">
+                  {review.rating}
+                </span>
               </div>
-            )}
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{review.text}</p>
+              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                <span>{review.likes}</span>
+                <span>12 Days ago</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-xl font-bold">Critic reviews</h2>
+          <button type="button" className="text-sm font-medium text-primary hover:underline">
+            See all
+          </button>
+        </div>
+        <article className="rounded-lg border border-border/60 bg-card p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold">Pati Patni Aur Woh Do</p>
+              <p className="mt-1 text-xs text-muted-foreground">News 18</p>
+            </div>
+            <span className="rounded-md bg-primary/10 px-2 py-1 text-sm font-bold text-primary">
+              7/10
+            </span>
           </div>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            It works best when you surrender to its logic-defying energy and go along for the ride.
+          </p>
+        </article>
+      </section>
+
+      <section>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-xl font-bold">You might also like</h2>
+          <button type="button" className="text-sm font-medium text-primary hover:underline">
+            View All
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {suggestedTitles.map((title) => (
+            <div key={title} className="overflow-hidden rounded-lg border border-border/60 bg-card">
+              <div className="grid aspect-[2/3] place-items-center bg-muted">
+                {movie.poster ? (
+                  <img
+                    src={movie.poster}
+                    alt={title}
+                    className="h-full w-full object-cover opacity-80"
+                  />
+                ) : (
+                  <span className="text-lg font-bold text-primary">{initials(title)}</span>
+                )}
+              </div>
+              <p className="p-3 text-sm font-semibold">{title}</p>
+            </div>
+          ))}
         </div>
       </section>
     </div>
+  );
+}
+
+function ProfileBubble({ name, role }) {
+  return (
+    <div className="text-center">
+      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-primary/25 to-accent/25 ring-1 ring-border/60">
+        <span className="text-sm font-bold text-foreground">{initials(name)}</span>
+      </div>
+      <p className="mt-2 text-sm font-medium">{name}</p>
+      <p className="text-xs text-muted-foreground">{role}</p>
+    </div>
+  );
+}
+
+function ShowtimesView({
+  movie,
+  selectedCity,
+  citySuggestions,
+  onCityChange,
+  activeDate,
+  onDateChange,
+  activeFormat,
+  onFormatChange,
+  formatOptions,
+  preferredTime,
+  onPreferredTimeChange,
+  sortBy,
+  onSortChange,
+  theaterSearch,
+  onTheaterSearchChange,
+  visibleCinemaListings,
+  selectedDateLabel,
+  onBackToDetails,
+}) {
+  return (
+    <section id="showtimes" className="mt-12 border-y border-border/60 bg-muted/30">
+      <div className="bg-background">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <button
+              type="button"
+              onClick={onBackToDetails}
+              className="mb-3 text-sm font-medium text-primary hover:underline"
+            >
+              Back to movie details
+            </button>
+            <h2 className="text-3xl font-bold tracking-tight">{movie.title}</h2>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+              <span className="rounded-full border border-border/70 px-2.5 py-1">
+                Movie runtime: {movie.duration}
+              </span>
+              <span className="rounded-full border border-border/70 px-2.5 py-1">
+                {movie.certificate}
+              </span>
+              {movie.genres.slice(0, 3).map((genre) => (
+                <span key={genre} className="rounded-full border border-border/70 px-2.5 py-1">
+                  {genre}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <CitySelect
+            value={selectedCity}
+            options={citySuggestions}
+            onChange={onCityChange}
+            className="w-full lg:w-auto"
+            selectClassName="min-w-40 flex-1"
+          />
+        </div>
+      </div>
+
+      <div className="border-y border-border/60 bg-background/95 backdrop-blur">
+        <div className="mx-auto grid max-w-7xl gap-4 px-4 md:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="flex gap-2 overflow-x-auto py-3">
+            {dateOptions.map((date) => (
+              <button
+                key={date.key}
+                type="button"
+                onClick={() => onDateChange(date.key)}
+                className={`grid min-w-16 place-items-center rounded-lg border px-4 py-2 text-center transition-colors ${
+                  activeDate === date.key
+                    ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                    : "border-transparent hover:border-border/70 hover:bg-card"
+                }`}
+              >
+                <span className="text-[11px] font-semibold uppercase">{date.weekday}</span>
+                <span className="text-xl font-bold leading-none">{date.day}</span>
+                <span className="text-[11px] uppercase opacity-80">{date.month}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="grid gap-2 border-t border-border/60 py-3 md:flex md:border-l md:border-t-0 md:pl-4">
+            <FilterSelect
+              value={activeFormat}
+              onChange={onFormatChange}
+              options={formatOptions}
+              label={`${movie.language} - ${activeFormat === "All" ? "All formats" : activeFormat}`}
+            />
+            <FilterSelect
+              value={preferredTime}
+              onChange={onPreferredTimeChange}
+              options={["Any time", "Morning", "Afternoon", "Evening", "Night"]}
+              label={preferredTime}
+            />
+            <FilterSelect
+              value={sortBy}
+              onChange={onSortChange}
+              options={["Recommended", "Cinema A-Z", "Distance"]}
+              label={`Sort by ${sortBy}`}
+            />
+            <label className="flex h-11 min-w-48 items-center gap-2 rounded-md border border-border/60 bg-card px-3 text-sm">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input
+                value={theaterSearch}
+                onChange={(event) => onTheaterSearchChange(event.target.value)}
+                placeholder="Search cinema"
+                className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 py-4">
+        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Moon className="h-4 w-4" /> Late night shows
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Sunrise className="h-4 w-4" /> Early morning shows
+          </span>
+          <span className="ml-auto inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Available
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Fast filling
+          </span>
+        </div>
+
+        <div className="mt-4 overflow-hidden rounded-lg border border-border/60 bg-background shadow-sm">
+          {visibleCinemaListings.length > 0 ? (
+            visibleCinemaListings.map((cinema) => (
+              <CinemaShowCard
+                key={cinema.id}
+                cinema={cinema}
+                movie={movie}
+                activeDateLabel={selectedDateLabel}
+              />
+            ))
+          ) : (
+            <div className="p-8 text-center">
+              <SlidersHorizontal className="mx-auto h-8 w-8 text-primary" />
+              <h3 className="mt-3 font-semibold">No matching shows in {selectedCity}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Try another date, format, time, or cinema search.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 
