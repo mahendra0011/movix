@@ -183,7 +183,7 @@ function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-[1216px] items-center gap-2 px-4 sm:gap-4">
+      <div className="mx-auto flex h-16 max-w-[1560px] items-center gap-2 px-4 sm:gap-4 sm:px-5 lg:px-6">
         <Link to="/" className="flex items-center gap-2">
           <div className="grid h-8 w-8 place-items-center rounded-md bg-primary">
             <Ticket className="h-4 w-4 text-primary-foreground" />
@@ -351,7 +351,7 @@ function Navbar() {
       </div>
 
       <div className="border-t border-border/60 px-4 py-2 xl:hidden">
-        <div className="mx-auto flex max-w-[1216px] gap-2 overflow-x-auto">
+        <div className="mx-auto flex max-w-[1560px] gap-2 overflow-x-auto">
           <Button
             size="sm"
             variant="secondary"
@@ -384,7 +384,7 @@ function Navbar() {
       </div>
 
       <div className="border-t border-border/60 px-4 py-2 md:hidden">
-        <form onSubmit={submitSearch} className="relative mx-auto max-w-[1216px]">
+        <form onSubmit={submitSearch} className="relative mx-auto max-w-[1560px]">
           <button
             type="submit"
             className="absolute left-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-primary"
@@ -400,7 +400,7 @@ function Navbar() {
       </div>
 
       <nav className="border-t border-border/60">
-        <div className="mx-auto flex max-w-[1216px] gap-6 overflow-x-auto px-4 py-2">
+        <div className="mx-auto flex max-w-[1560px] gap-6 overflow-x-auto px-4 py-2 sm:px-5 lg:px-6">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (

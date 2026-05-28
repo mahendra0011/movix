@@ -265,7 +265,7 @@ function Home() {
 
   if (showSearch) {
     return (
-      <main className="mx-auto max-w-[1168px] px-4 py-8">
+      <main className="mx-auto max-w-[1560px] px-4 py-8 sm:px-5 lg:px-6">
         <section className="rounded-lg border border-border/70 bg-card/85 p-5 shadow-sm">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -346,7 +346,7 @@ function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/65 to-background/10 dark:via-background/82 dark:to-background/35" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-        <div className="relative mx-auto grid min-h-[390px] max-w-[1168px] items-center gap-8 px-4 py-8 md:min-h-[398px] md:grid-cols-[minmax(0,1fr)_330px]">
+        <div className="relative mx-auto grid min-h-[390px] max-w-[1560px] items-center gap-8 px-4 py-8 sm:px-5 md:min-h-[398px] md:grid-cols-[minmax(0,1fr)_330px] lg:px-6 xl:grid-cols-[minmax(0,1fr)_370px]">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" />
@@ -396,7 +396,7 @@ function Home() {
           </div>
 
           <div className="hidden justify-start md:flex">
-            <div className="relative w-56 rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8">
+            <div className="relative w-56 rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8 xl:w-64">
               <img
                 src={featured.poster}
                 alt={featured.title}
@@ -418,7 +418,10 @@ function Home() {
         </div>
       </section>
 
-      <section id="movie-filters" className="scroll-mt-28 mx-auto -mt-5 max-w-[1248px] px-4">
+      <section
+        id="movie-filters"
+        className="scroll-mt-28 mx-auto -mt-5 max-w-[1560px] px-4 sm:px-5 lg:px-6"
+      >
         <div className="grid gap-2 rounded-xl border border-primary/15 bg-gradient-to-r from-card/95 via-background/95 to-primary/8 p-2 shadow-2xl shadow-black/8 backdrop-blur dark:from-card/92 dark:via-background/90 dark:to-primary/10 md:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,0.72fr))_minmax(0,3.1fr)]">
           <FilterMetric
             icon={Film}
@@ -508,7 +511,7 @@ function Home() {
         )}
       </HomeSection>
 
-      <section className="mx-auto mt-7 max-w-[1168px] px-4">
+      <section className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         <div className="grid gap-5 lg:grid-cols-3">
           {featureCards.map((card) => (
             <FeatureBanner key={card.title} card={card} />
@@ -516,7 +519,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="mx-auto mt-7 grid max-w-[1168px] gap-5 px-4 lg:grid-cols-[1.1fr_0.78fr_0.66fr]">
+      <section className="mx-auto mt-7 grid max-w-[1560px] gap-5 px-4 sm:px-5 lg:grid-cols-[1.08fr_0.78fr_0.66fr] lg:px-6">
         <PanelCard
           id="top-movies"
           icon={Star}
@@ -583,7 +586,7 @@ function Home() {
 
       <PremiereSpotlightSection movies={premieres} />
 
-      <section className="mx-auto mt-5 grid max-w-[1168px] gap-5 px-4">
+      <section className="mx-auto mt-5 grid max-w-[1560px] gap-5 px-4 sm:px-5 lg:grid-cols-[0.95fr_1.05fr] lg:px-6">
         <PanelCard
           icon={Quote}
           title="Loved by movie lovers"
@@ -643,7 +646,7 @@ function Home() {
         </PanelCard>
       </section>
 
-      <section className="mx-auto mt-7 max-w-[1168px] px-4">
+      <section className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         <div className="relative grid items-center gap-5 overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/18 via-card to-amber-200/30 p-6 shadow-sm dark:from-primary/12 dark:via-card dark:to-amber-500/10 md:grid-cols-[auto_1fr_auto]">
           <div className="grid h-20 w-20 place-items-center rounded-full bg-primary/15 text-primary">
             <BellRing className="h-10 w-10" />
@@ -755,11 +758,10 @@ function HomeSection({
   actionHref,
   actionLabel = "See all",
   onAction,
-  wide = false,
   children,
 }) {
   return (
-    <section id={id} className={`mx-auto mt-7 px-4 ${wide ? "max-w-[1248px]" : "max-w-[1168px]"}`}>
+    <section id={id} className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
       <div className="mb-4 flex items-end justify-between gap-3">
         <div className="flex items-start gap-2">
           <Icon className="mt-1 h-5 w-5 text-primary" />
@@ -969,7 +971,7 @@ function PanelCard({ id, icon: Icon, title, subtitle, actionLabel = "See all", c
 
 function PremiereSpotlightSection({ movies }) {
   return (
-    <section id="events" className="mx-auto mt-7 max-w-[1168px] px-4">
+    <section id="events" className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
       <div className="mb-5 flex items-end justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-lg bg-primary/14 text-primary">
