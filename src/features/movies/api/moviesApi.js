@@ -48,6 +48,22 @@ async function fetchMovie(id, options = {}) {
   }
 }
 
+async function fetchMovieReviews(id, options = {}) {
+  const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
+  try {
+    return await requestJson(`/api/movies/${encodeURIComponent(id)}/reviews`, { timeoutMs });
+  } catch {
+    return null;
+  }
+}
+
+async function createMovieReview(id, input) {
+  return requestJson(`/api/movies/${encodeURIComponent(id)}/reviews`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
 async function createMovie(input) {
   const data = await requestJson("/api/movies", {
     method: "POST",
@@ -65,4 +81,4 @@ async function deleteMovie(id) {
   return data.movie;
 }
 
-export { createMovie, deleteMovie, fetchMovie, fetchMovies };
+export { createMovie, createMovieReview, deleteMovie, fetchMovie, fetchMovieReviews, fetchMovies };

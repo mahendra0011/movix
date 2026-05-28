@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Award,
   BadgePercent,
@@ -22,7 +23,7 @@ import {
   Ticket,
   Users,
 } from "lucide-react";
-import { fetchMovie } from "@/features/movies/api/moviesApi";
+import { createMovieReview, fetchMovie, fetchMovieReviews } from "@/features/movies/api/moviesApi";
 import { theaters, showTimes } from "@/features/movies/data/movieCatalog";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
@@ -108,12 +109,6 @@ const topReviews = [
 
 const suggestedTitles = ["Chand Mera Dil", "Rajni Ki Baraat", "Bhooth Bangla", "Daadi Ki Shaadi"];
 
-const detailHighlights = [
-  { label: "Audience score", value: "8K reviews", icon: MessageCircle },
-  { label: "Top tag", value: "#GreatActing", icon: Award },
-  { label: "Offers live", value: "5 cards", icon: BadgePercent },
-];
-
 const Route = createFileRoute("/movies/$id")({
   component: MoviePage,
   loader: async ({ params }) => {
@@ -136,6 +131,9 @@ function MoviePage() {
   const [bookingMode, setBookingMode] = useState(
     () => typeof window !== "undefined" && window.location.hash === "#showtimes",
   );
+  const [reviewData, setReviewData] = useState(() => buildFallbackReviewData(movie));
+  const reviewSummary = getReviewDisplaySummary(movie, reviewData);
+  const pageHighlights = buildDetailHighlights(reviewSummary);
 
   useEffect(() => {
     const syncHash = () => setBookingMode(window.location.hash === "#showtimes");
@@ -151,6 +149,23 @@ function MoviePage() {
   }, [selectedCity]);
 
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
+
+  useEffect(() => {
+    setReviewData(buildFallbackReviewData(movie));
+    let active = true;
+
+    fetchMovieReviews(movie.id)
+      .then((data) => {
+        if (active && data) setReviewData(buildReviewData(movie, data));
+      })
+      .catch(() => {
+        if (active) setReviewData(buildFallbackReviewData(movie));
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [movie]);
 
   useEffect(() => {
     if (!HAS_CONFIGURED_API_URL) return undefined;
@@ -265,11 +280,13 @@ function MoviePage() {
               <div className="mt-4 flex flex-wrap items-center gap-4">
                 <div className="inline-flex items-center gap-2">
                   <Star className="h-5 w-5 fill-primary text-primary" />
-                  <span className="text-lg font-bold">{movie.rating}/10</span>
+                  <span className="text-lg font-bold">
+                    {formatRatingScore(reviewSummary.average || movie.rating)}/10
+                  </span>
                 </div>
                 <span className="text-sm text-muted-foreground">{movie.votes} votes</span>
                 <span className="hidden h-5 w-px bg-border sm:block" />
-                <span className="text-sm font-medium">8K reviews</span>
+                <span className="text-sm font-medium">{reviewSummary.countLabel}</span>
               </div>
 
               <div className="mt-5 flex flex-wrap gap-2 text-xs">
@@ -343,7 +360,7 @@ function MoviePage() {
             </div>
 
             <div className="hidden gap-3 lg:grid">
-              {detailHighlights.map(({ label, value, icon: Icon }) => (
+              {pageHighlights.map(({ label, value, icon: Icon }) => (
                 <div
                   key={label}
                   className="rounded-lg border border-border/60 bg-card/95 p-4 shadow-lg shadow-black/5 backdrop-blur"
@@ -389,13 +406,21 @@ function MoviePage() {
           }}
         />
       ) : (
-        <MovieDetailsContent movie={movie} />
+        <MovieDetailsContent
+          movie={movie}
+          reviewData={reviewData}
+          onReviewDataChange={(data) => setReviewData(buildReviewData(movie, data))}
+        />
       )}
     </div>
   );
 }
 
-function MovieDetailsContent({ movie }) {
+function MovieDetailsContent({ movie, reviewData, onReviewDataChange }) {
+  const reviewSummary = getReviewDisplaySummary(movie, reviewData);
+  const reviewTagsList = getReviewTags(reviewData);
+  const reviews = getVisibleReviews(reviewData);
+
   return (
     <div className="mx-auto mt-10 grid max-w-7xl gap-10 px-4">
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
@@ -405,7 +430,7 @@ function MovieDetailsContent({ movie }) {
             {detailAboutText}
           </p>
         </div>
-        <DetailsStatsPanel movie={movie} />
+        <DetailsStatsPanel movie={movie} summary={reviewSummary} />
       </section>
 
       <OfferSlider />
@@ -419,11 +444,24 @@ function MovieDetailsContent({ movie }) {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[260px_1fr]">
-        <div>
-          <SectionTitleBar title="Top reviews" />
-          <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-1">
-            {reviewTags.slice(0, 6).map(([tag, count]) => (
+      <section className="grid gap-6 lg:grid-cols-[300px_1fr]">
+        <div className="space-y-4">
+          <ReviewComposer
+            movie={movie}
+            userReview={reviewData?.userReview}
+            onReviewDataChange={onReviewDataChange}
+          />
+
+          <div>
+            <SectionTitleBar title="Top reviews" />
+            <p className="mt-1 text-sm text-muted-foreground">
+              {reviewSummary.countLabel} with {formatRatingScore(reviewSummary.average)}/10 average
+              rating
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+            {reviewTagsList.slice(0, 6).map(({ tag, count }) => (
               <div
                 key={tag}
                 className="flex items-center justify-between rounded-md border border-border/60 bg-card px-3 py-2 text-xs shadow-sm"
@@ -436,9 +474,17 @@ function MovieDetailsContent({ movie }) {
         </div>
 
         <div className="grid gap-3">
-          {topReviews.map((review) => (
-            <ReviewCard key={review.name} review={review} />
-          ))}
+          {reviews.length ? (
+            reviews.map((review) => <ReviewCard key={review.id || review.name} review={review} />)
+          ) : (
+            <article className="rounded-lg border border-dashed border-border/70 bg-card p-6 text-center">
+              <MessageCircle className="mx-auto h-8 w-8 text-primary" />
+              <h3 className="mt-3 font-semibold">No audience reviews yet</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                First review publish karte hi yaha live show hoga.
+              </p>
+            </article>
+          )}
         </div>
       </section>
 
@@ -499,11 +545,15 @@ function SectionTitleBar({ title, actionLabel }) {
   );
 }
 
-function DetailsStatsPanel({ movie }) {
+function DetailsStatsPanel({ movie, summary }) {
   const stats = [
-    { icon: Star, label: "Audience love", value: `${movie.rating}/10` },
-    { icon: MessageCircle, label: "Review volume", value: "8K reviews" },
-    { icon: Users, label: "Popular with", value: "Couples & groups" },
+    {
+      icon: Star,
+      label: "Audience love",
+      value: `${formatRatingScore(summary.average || movie.rating)}/10`,
+    },
+    { icon: MessageCircle, label: "Review volume", value: summary.countLabel },
+    { icon: Users, label: "Top reaction", value: summary.topTag || "#GreatActing" },
   ];
 
   return (
@@ -607,28 +657,193 @@ function ProfileBubble({ name, role }) {
   );
 }
 
+function ReviewComposer({ movie, userReview, onReviewDataChange }) {
+  const auth = useSelector((state) => state.auth);
+  const [rating, setRating] = useState(userReview?.rating || 9);
+  const [text, setText] = useState(userReview?.text || "");
+  const [selectedTags, setSelectedTags] = useState(userReview?.tags || ["#GreatActing"]);
+  const [status, setStatus] = useState({ type: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const isSignedIn = Boolean(auth.token && auth.user);
+
+  useEffect(() => {
+    setRating(userReview?.rating || 9);
+    setText(userReview?.text || "");
+    setSelectedTags(userReview?.tags?.length ? userReview.tags : ["#GreatActing"]);
+  }, [userReview]);
+
+  const toggleTag = (tag) => {
+    setSelectedTags((current) =>
+      current.includes(tag)
+        ? current.filter((item) => item !== tag)
+        : [...current, tag].slice(0, 5),
+    );
+  };
+
+  const submitReview = async (event) => {
+    event.preventDefault();
+    if (!text.trim() || text.trim().length < 10) {
+      setStatus({ type: "error", message: "Review me kam se kam 10 characters likho." });
+      return;
+    }
+
+    setSubmitting(true);
+    setStatus({ type: "", message: "" });
+    try {
+      const data = await createMovieReview(movie.id, {
+        rating,
+        text,
+        tags: selectedTags,
+      });
+      onReviewDataChange(data);
+      setStatus({
+        type: "success",
+        message: userReview ? "Review update ho gaya." : "Review publish ho gaya.",
+      });
+    } catch (error) {
+      setStatus({
+        type: "error",
+        message:
+          error.response?.data?.error || "Review save nahi ho paya. Thodi der baad try karo.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!isSignedIn) {
+    return (
+      <article className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+            <MessageCircle className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Write a review</h3>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              Rating aur review add karne ke liye sign in karo.
+            </p>
+          </div>
+        </div>
+        <Button asChild className="mt-4 w-full">
+          <Link to="/auth">Sign in to review</Link>
+        </Button>
+      </article>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={submitReview}
+      className="rounded-lg border border-primary/20 bg-card p-4 shadow-sm"
+    >
+      <div>
+        <p className="text-sm font-semibold">{userReview ? "Update your review" : "Rate movie"}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {auth.user?.name || auth.user?.email} ke naam se publish hoga.
+        </p>
+      </div>
+
+      <div className="mt-4 grid grid-cols-5 gap-1.5">
+        {Array.from({ length: 10 }, (_, index) => index + 1).map((value) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setRating(value)}
+            className={`h-9 rounded-md border text-sm font-semibold transition-colors ${
+              rating === value
+                ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                : "border-border/70 bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
+            }`}
+            aria-label={`Rate ${value} out of 10`}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {reviewTags.slice(0, 6).map(([tag]) => {
+          const active = selectedTags.includes(tag);
+          return (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => toggleTag(tag)}
+              className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+                active
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border/70 bg-background text-muted-foreground hover:border-primary/50"
+              }`}
+            >
+              {tag}
+            </button>
+          );
+        })}
+      </div>
+
+      <label className="mt-4 block">
+        <span className="sr-only">Review text</span>
+        <textarea
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          rows={4}
+          maxLength={1000}
+          placeholder="Movie ke acting, story, music ya overall experience ke baare me likho..."
+          className="min-h-28 w-full resize-none rounded-md border border-border/70 bg-background px-3 py-2 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
+        />
+      </label>
+
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <span className="text-xs text-muted-foreground">{text.length}/1000</span>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? "Saving..." : userReview ? "Update review" : "Publish review"}
+        </Button>
+      </div>
+
+      {status.message && (
+        <p
+          className={`mt-3 rounded-md px-3 py-2 text-xs ${
+            status.type === "error"
+              ? "bg-destructive/10 text-destructive"
+              : "bg-primary/10 text-primary"
+          }`}
+        >
+          {status.message}
+        </p>
+      )}
+    </form>
+  );
+}
+
 function ReviewCard({ review }) {
+  const tags = Array.isArray(review.tags) ? review.tags.join(" ") : review.tags || "";
+  const ratingLabel =
+    review.ratingLabel || `${formatRatingScore(Number.parseFloat(review.rating) || 0)}/10`;
+  const helpfulCount = review.helpfulCount ?? review.likes ?? 0;
+  const reviewerName = review.name || review.userName || "Movie fan";
+
   return (
     <article className="rounded-lg border border-border/60 bg-card p-4 shadow-sm transition-colors hover:border-primary/40">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          {review.tags && (
-            <p className="mb-2 break-words text-xs font-medium text-primary">{review.tags}</p>
-          )}
-          <p className="font-semibold">{review.name}</p>
-          <p className="text-xs text-muted-foreground">Booked on</p>
+          {tags && <p className="mb-2 break-words text-xs font-medium text-primary">{tags}</p>}
+          <p className="font-semibold">{reviewerName}</p>
+          <p className="text-xs text-muted-foreground">
+            {review.verifiedBooking === false ? "Reviewed" : "Booked on"}
+          </p>
         </div>
         <span className="rounded-md bg-primary/10 px-2 py-1 text-sm font-bold text-primary">
-          {review.rating}
+          {ratingLabel}
         </span>
       </div>
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{review.text}</p>
       <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           <ThumbsUp className="h-3.5 w-3.5" />
-          {review.likes}
+          {helpfulCount}
         </span>
-        <span>12 Days ago</span>
+        <span>{formatReviewAge(review.createdAt)}</span>
       </div>
     </article>
   );
@@ -650,6 +865,157 @@ function SuggestionCard({ title, poster }) {
       <p className="px-3 py-2 text-sm font-semibold text-foreground">{title}</p>
     </div>
   );
+}
+
+function buildDetailHighlights(summary) {
+  return [
+    {
+      label: "Audience score",
+      value: `${formatRatingScore(summary.average)}/10`,
+      icon: Star,
+    },
+    { label: "Review volume", value: summary.countLabel, icon: MessageCircle },
+    { label: "Top tag", value: summary.topTag || "#GreatActing", icon: Award },
+  ];
+}
+
+function buildFallbackReviewData(movie) {
+  return {
+    source: "fallback",
+    reviews: topReviews.map((review, index) => normalizeReview(review, index, movie.id)),
+    topTags: reviewTags.map(([tag, count]) => ({ tag, count })),
+    summary: {
+      average: Number(movie.rating || 0),
+      count: 8000,
+      countLabel: "8K reviews",
+      topTag: "#GreatActing",
+    },
+    userReview: null,
+  };
+}
+
+function buildReviewData(movie, data) {
+  if (!data) return buildFallbackReviewData(movie);
+  const reviews = (data.reviews ?? [])
+    .map((review, index) => normalizeReview(review, index, movie.id))
+    .filter((review) => review.text);
+  const topTags = getReviewTags(data);
+  const rawCount = Number(data.summary?.count ?? reviews.length);
+  const average = Number(data.summary?.average || 0);
+
+  return {
+    source: "api",
+    reviews,
+    topTags,
+    summary: {
+      average: average > 0 ? average : Number(movie.rating || 0),
+      count: rawCount,
+      countLabel: data.summary?.countLabel || formatReviewCount(rawCount),
+      topTag: topTags[0]?.tag || "#GreatActing",
+    },
+    userReview: data.userReview ? normalizeReview(data.userReview, 0, movie.id) : null,
+  };
+}
+
+function getReviewDisplaySummary(movie, reviewData) {
+  const fallback = buildFallbackReviewData(movie).summary;
+  const summary = reviewData?.summary ?? fallback;
+  const topTag = summary.topTag || reviewData?.topTags?.[0]?.tag || fallback.topTag;
+  const average = Number(summary.average || movie.rating || fallback.average || 0);
+  const count = Number(summary.count ?? fallback.count);
+  return {
+    average,
+    count,
+    countLabel: summary.countLabel || formatReviewCount(count),
+    topTag,
+  };
+}
+
+function getReviewTags(reviewData) {
+  const tags = reviewData?.topTags ?? [];
+  const normalized = tags
+    .map((item) => {
+      if (Array.isArray(item)) return { tag: item[0], count: item[1] };
+      return { tag: item.tag, count: item.count };
+    })
+    .filter((item) => item.tag);
+
+  return normalized.length ? normalized : reviewTags.map(([tag, count]) => ({ tag, count }));
+}
+
+function getVisibleReviews(reviewData) {
+  return (reviewData?.reviews ?? []).map((review, index) =>
+    normalizeReview(review, index, review.movieId),
+  );
+}
+
+function normalizeReview(review, index = 0, movieId = "") {
+  const rating = parseReviewRating(review.rating);
+  return {
+    id: review.id || `${movieId || review.movieId || "movie"}-review-${index}`,
+    movieId: review.movieId || movieId,
+    name: review.name || review.userName || "Movie fan",
+    userName: review.userName || review.name || "Movie fan",
+    userEmail: review.userEmail || "",
+    rating,
+    ratingLabel: review.ratingLabel || `${formatRatingScore(rating)}/10`,
+    tags: normalizeReviewTags(review.tags),
+    text: review.text || "",
+    helpfulCount: Number(review.helpfulCount ?? review.likes ?? 0),
+    verifiedBooking: review.verifiedBooking !== false,
+    createdAt: review.createdAt || fallbackReviewDate(index),
+    updatedAt: review.updatedAt || review.createdAt || fallbackReviewDate(index),
+  };
+}
+
+function normalizeReviewTags(tags) {
+  if (Array.isArray(tags)) return tags.filter(Boolean);
+  return String(tags ?? "")
+    .split(/\s+/)
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
+
+function parseReviewRating(value) {
+  if (typeof value === "string" && value.includes("/")) {
+    return Number.parseFloat(value.split("/")[0]) || 0;
+  }
+  return Number(value || 0);
+}
+
+function fallbackReviewDate(index) {
+  const date = new Date();
+  date.setDate(date.getDate() - (index + 12));
+  return date.toISOString();
+}
+
+function formatRatingScore(value) {
+  const rating = Number(value || 0);
+  if (!Number.isFinite(rating)) return "0";
+  return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
+}
+
+function formatReviewCount(count) {
+  const value = Number(count || 0);
+  if (value >= 1000000) return `${trimCompactNumber(value / 1000000)}M reviews`;
+  if (value >= 1000) return `${trimCompactNumber(value / 1000)}K reviews`;
+  return `${value} ${value === 1 ? "review" : "reviews"}`;
+}
+
+function trimCompactNumber(value) {
+  return Number(value.toFixed(1)).toString();
+}
+
+function formatReviewAge(value) {
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return "Recent";
+  const diffMs = Date.now() - date.getTime();
+  const diffDays = Math.max(0, Math.floor(diffMs / (24 * 60 * 60 * 1000)));
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "1 Day ago";
+  if (diffDays < 30) return `${diffDays} Days ago`;
+  const diffMonths = Math.max(1, Math.floor(diffDays / 30));
+  return diffMonths === 1 ? "1 Month ago" : `${diffMonths} Months ago`;
 }
 
 function ShowtimesView({

@@ -1,11 +1,21 @@
 import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { Booking } from "../models/Booking.js";
 import { Movie } from "../models/Movie.js";
+import { Review } from "../models/Review.js";
+import { buildSeedReviews, REVIEW_TAGS } from "../data/reviewSeeds.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
+import { getMemoryBookings } from "../services/bookingStore.js";
 import { movies } from "../../src/features/movies/data/movieCatalog.js";
 
 const router = Router();
+const memoryReviews = buildSeedReviews(movies.map((movie) => movie.id)).map((review, index) => ({
+  ...review,
+  id: `memory-review-${index + 1}`,
+  createdAt: new Date(Date.now() - (index + 1) * 36 * 60 * 60 * 1000).toISOString(),
+  updatedAt: new Date(Date.now() - (index + 1) * 36 * 60 * 60 * 1000).toISOString(),
+}));
 
 function slugify(value) {
   return String(value ?? "")
@@ -65,6 +75,185 @@ function getMemoryMovies(query = "") {
     const haystack = [movie.title, movie.language, ...movie.genres].join(" ").toLowerCase();
     return haystack.includes(needle);
   });
+}
+
+async function findMovieById(id) {
+  return isMongoReady()
+    ? cleanDocument(await Movie.findOne({ id }).lean())
+    : movies.find((item) => item.id === id);
+}
+
+function normalizeReviewInput(input = {}) {
+  const rating = Math.round(Number(input.rating));
+  const text = String(input.text ?? "").trim();
+  const tags = toList(input.tags, []).map(normalizeReviewTag).filter(Boolean).slice(0, 5);
+
+  if (!Number.isFinite(rating) || rating < 1 || rating > 10) {
+    const error = new Error("Rating must be between 1 and 10.");
+    error.status = 400;
+    throw error;
+  }
+
+  if (text.length < 10) {
+    const error = new Error("Review must be at least 10 characters.");
+    error.status = 400;
+    throw error;
+  }
+
+  return {
+    rating,
+    text: text.slice(0, 1000),
+    tags,
+  };
+}
+
+function normalizeReviewTag(tag) {
+  const value = String(tag ?? "")
+    .trim()
+    .replace(/\s+/g, "");
+  if (!value) return "";
+  return value.startsWith("#") ? value : `#${value}`;
+}
+
+async function hasVerifiedBooking({ email, userId, movie }) {
+  if (!movie) return false;
+  const normalizedEmail = normalizeEmail(email);
+
+  if (isMongoReady()) {
+    const filter = {
+      movieId: movie.id,
+      status: { $ne: "cancelled" },
+      $or: [{ email: normalizedEmail }],
+    };
+    if (userId) filter.$or.push({ userId });
+    return Boolean(await Booking.exists(filter));
+  }
+
+  return getMemoryBookings().some((booking) => {
+    const bookingEmail = normalizeEmail(booking.email);
+    const movieMatches = booking.movieId === movie.id || booking.movie === movie.title;
+    const userMatches = bookingEmail && bookingEmail === normalizedEmail;
+    return movieMatches && userMatches && booking.status !== "cancelled";
+  });
+}
+
+async function buildReviewsPayload(movieId, viewerUserId = "") {
+  if (isMongoReady()) {
+    const [reviewDocs, aggregateRows, tagRows, viewerReview] = await Promise.all([
+      Review.find({ movieId, status: "published" }).sort({ createdAt: -1 }).limit(8).lean(),
+      Review.aggregate([
+        { $match: { movieId, status: "published" } },
+        { $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } } },
+      ]),
+      Review.aggregate([
+        { $match: { movieId, status: "published", tags: { $ne: [] } } },
+        { $unwind: "$tags" },
+        { $group: { _id: "$tags", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+      viewerUserId
+        ? Review.findOne({ movieId, userId: viewerUserId, status: "published" }).lean()
+        : null,
+    ]);
+    const aggregate = aggregateRows[0] ?? { average: 0, count: 0 };
+    return {
+      reviews: reviewDocs.map(mapReview),
+      summary: mapReviewSummary(aggregate),
+      topTags: mapTopTags(tagRows),
+      userReview: viewerReview ? mapReview(viewerReview) : null,
+    };
+  }
+
+  const visibleReviews = memoryReviews
+    .filter((review) => review.movieId === movieId && review.status === "published")
+    .sort((left, right) => new Date(right.createdAt) - new Date(left.createdAt));
+  const viewerReview = viewerUserId
+    ? visibleReviews.find((review) => review.userId === viewerUserId)
+    : null;
+  return {
+    reviews: visibleReviews.slice(0, 8).map(mapReview),
+    summary: mapReviewSummary({
+      average: averageRating(visibleReviews),
+      count: visibleReviews.length,
+    }),
+    topTags: mapTopTagsFromReviews(visibleReviews),
+    userReview: viewerReview ? mapReview(viewerReview) : null,
+  };
+}
+
+function mapReview(document) {
+  const review = cleanDocument(document);
+  return {
+    id: String(review.id ?? review._id ?? `${review.movieId}-${review.userId}`),
+    movieId: review.movieId,
+    name: review.userName,
+    userName: review.userName,
+    rating: Number(review.rating || 0),
+    ratingLabel: `${Number(review.rating || 0)}/10`,
+    tags: Array.isArray(review.tags) ? review.tags : [],
+    text: review.text,
+    helpfulCount: Number(review.helpfulCount || 0),
+    verifiedBooking: Boolean(review.verifiedBooking),
+    status: review.status || "published",
+    createdAt: review.createdAt,
+    updatedAt: review.updatedAt,
+  };
+}
+
+function mapReviewSummary(aggregate) {
+  const count = Number(aggregate.count || 0);
+  const average = count ? Number(Number(aggregate.average || 0).toFixed(1)) : 0;
+  return {
+    average,
+    count,
+    countLabel: formatReviewCount(count),
+  };
+}
+
+function mapTopTags(rows) {
+  const tags = rows.map((row) => ({ tag: row._id, count: row.count }));
+  return tags.length ? tags : REVIEW_TAGS.map(([tag, count]) => ({ tag, count }));
+}
+
+function mapTopTagsFromReviews(reviews) {
+  const counts = reviews.reduce((acc, review) => {
+    (review.tags ?? []).forEach((tag) => {
+      acc[tag] = (acc[tag] || 0) + 1;
+    });
+    return acc;
+  }, {});
+  const tags = Object.entries(counts)
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((left, right) => right.count - left.count);
+  return tags.length ? tags : REVIEW_TAGS.map(([tag, count]) => ({ tag, count }));
+}
+
+function averageRating(reviews) {
+  if (!reviews.length) return 0;
+  const total = reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0);
+  return Number((total / reviews.length).toFixed(1));
+}
+
+function formatReviewCount(count) {
+  if (count >= 1000000) return `${trimNumber(count / 1000000)}M reviews`;
+  if (count >= 1000) return `${trimNumber(count / 1000)}K reviews`;
+  return `${count} ${count === 1 ? "review" : "reviews"}`;
+}
+
+function trimNumber(value) {
+  return Number(value.toFixed(1)).toString();
+}
+
+function normalizeEmail(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function emailName(email) {
+  const [name] = String(email || "").split("@");
+  return name || "User";
 }
 
 router.get(
@@ -127,12 +316,96 @@ router.post(
 );
 
 router.get(
+  "/:id/reviews",
+  asyncHandler(async (request, response) => {
+    const movie = await findMovieById(request.params.id);
+    if (!movie) {
+      response.status(404).json({ error: "Movie not found" });
+      return;
+    }
+
+    response.json(await buildReviewsPayload(movie.id));
+  }),
+);
+
+router.post(
+  "/:id/reviews",
+  requireAuth,
+  asyncHandler(async (request, response) => {
+    const movie = await findMovieById(request.params.id);
+    if (!movie) {
+      response.status(404).json({ error: "Movie not found" });
+      return;
+    }
+
+    if (request.user?.blocked || request.user?.status === "Blocked") {
+      response.status(403).json({ error: "This account is blocked by admin." });
+      return;
+    }
+
+    const input = normalizeReviewInput(request.body);
+    const userId = String(request.user?.id ?? request.user?._id ?? request.auth?.sub ?? "");
+    const userEmail = normalizeEmail(request.user?.email ?? request.auth?.email);
+    const userName = request.user?.name || emailName(userEmail);
+    if (!userId || !userEmail) {
+      response.status(401).json({ error: "Authentication required." });
+      return;
+    }
+
+    const verifiedBooking = await hasVerifiedBooking({ email: userEmail, userId, movie });
+    const payload = {
+      movieId: movie.id,
+      userId,
+      userEmail,
+      userName,
+      rating: input.rating,
+      text: input.text,
+      tags: input.tags,
+      verifiedBooking,
+      status: "published",
+      source: "user",
+    };
+
+    if (isMongoReady()) {
+      const exists = await Review.exists({ movieId: movie.id, userId });
+      await Review.findOneAndUpdate(
+        { movieId: movie.id, userId },
+        { $set: payload },
+        { new: true, runValidators: true, setDefaultsOnInsert: true, upsert: true },
+      );
+      response.status(exists ? 200 : 201).json(await buildReviewsPayload(movie.id, userId));
+      return;
+    }
+
+    const reviewIndex = memoryReviews.findIndex(
+      (review) => review.movieId === movie.id && review.userId === userId,
+    );
+    const timestamp = new Date().toISOString();
+    if (reviewIndex >= 0) {
+      memoryReviews[reviewIndex] = {
+        ...memoryReviews[reviewIndex],
+        ...payload,
+        updatedAt: timestamp,
+      };
+    } else {
+      memoryReviews.unshift({
+        ...payload,
+        id: `memory-review-${Date.now().toString(36)}`,
+        helpfulCount: 0,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+    }
+
+    response.status(reviewIndex >= 0 ? 200 : 201).json(await buildReviewsPayload(movie.id, userId));
+  }),
+);
+
+router.get(
   "/:id",
   asyncHandler(async (request, response) => {
     const { id } = request.params;
-    const movie = isMongoReady()
-      ? cleanDocument(await Movie.findOne({ id }).lean())
-      : movies.find((item) => item.id === id);
+    const movie = await findMovieById(id);
 
     if (!movie) {
       response.status(404).json({ error: "Movie not found" });
@@ -157,6 +430,7 @@ router.delete(
         return;
       }
 
+      await Review.deleteMany({ movieId: id });
       response.json({ ok: true, movie: cleanDocument(movie) });
       return;
     }
@@ -168,6 +442,9 @@ router.delete(
     }
 
     const [movie] = movies.splice(index, 1);
+    for (let reviewIndex = memoryReviews.length - 1; reviewIndex >= 0; reviewIndex -= 1) {
+      if (memoryReviews[reviewIndex].movieId === id) memoryReviews.splice(reviewIndex, 1);
+    }
     response.json({ ok: true, movie });
   }),
 );

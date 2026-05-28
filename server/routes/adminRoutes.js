@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { Booking } from "../models/Booking.js";
 import { Movie } from "../models/Movie.js";
+import { Review } from "../models/Review.js";
 import { Show } from "../models/Show.js";
 import { Theater } from "../models/Theater.js";
 import { User } from "../models/User.js";
@@ -246,6 +247,7 @@ router.delete(
     }
 
     await User.deleteOne({ _id: user._id });
+    await Review.deleteMany({ userId: String(user._id) });
     if (user.role === "theater-owner") {
       const ownerTheaterIds = await Theater.find({ ownerId: user._id }).distinct("id");
       await Theater.deleteMany({ ownerId: user._id });

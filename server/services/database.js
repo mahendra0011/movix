@@ -3,10 +3,12 @@ import bcrypt from "bcryptjs";
 import { env } from "../config/env.js";
 import { Booking } from "../models/Booking.js";
 import { Movie } from "../models/Movie.js";
+import { Review } from "../models/Review.js";
 import { Show } from "../models/Show.js";
 import { Subscriber } from "../models/Subscriber.js";
 import { Theater } from "../models/Theater.js";
 import { User } from "../models/User.js";
+import { buildSeedReviews } from "../data/reviewSeeds.js";
 import { getMemoryBookings } from "./bookingStore.js";
 import {
   movies as catalogMovies,
@@ -15,7 +17,7 @@ import {
 } from "../../src/features/movies/data/movieCatalog.js";
 
 let mongoReady = false;
-const collectionModels = [Booking, Movie, Show, Subscriber, Theater, User];
+const collectionModels = [Booking, Movie, Review, Show, Subscriber, Theater, User];
 const SHOW_WRITE_BATCH_SIZE = 500;
 
 function cleanDocument(document) {
@@ -95,11 +97,29 @@ async function seedBookings({ force = false } = {}) {
   console.log(`MongoDB booking history ready with ${bookings.length} bookings.`);
 }
 
+async function seedReviews({ force = false } = {}) {
+  const count = await Review.estimatedDocumentCount();
+  if (count > 0 && !force) return;
+
+  const reviews = buildSeedReviews(catalogMovies.map((movie) => movie.id));
+  await Review.bulkWrite(
+    reviews.map((review) => ({
+      updateOne: {
+        filter: { movieId: review.movieId, userId: review.userId },
+        update: force ? { $set: review } : { $setOnInsert: review },
+        upsert: true,
+      },
+    })),
+  );
+  console.log(`MongoDB review catalog ready with ${reviews.length} reviews.`);
+}
+
 async function seedCatalog(options = {}) {
   await seedMovies(options);
   await seedTheaters(options);
   await seedShows(options);
   await seedBookings(options);
+  await seedReviews(options);
 }
 
 async function ensureDefaultAdminUser() {
