@@ -124,9 +124,9 @@ async function ensureOwnerTheater(owner) {
       area: application.area || "",
       address: application.address || `${application.area || application.city || "Jabalpur"}`,
       contact: application.contact || "",
-      manager: application.companyName || owner.name || "Operations desk",
+      manager: application.companyName || owner.name || "Manager desk",
       amenities: ["M-Ticket", "Food & Beverage"],
-      cancellationPolicy: "Cancellation available up to 2 hours before showtime.",
+      cancellationPolicy: "Cancellation available up to 2 hours before movie timing.",
       ownerId: owner._id,
       approved: true,
       screens: buildInitialScreens(application.screens),
@@ -195,7 +195,7 @@ function mapCinemaProfile(theater, owner) {
     address: theater.address || "",
     distance: theater.distance || "",
     contact: theater.contact || "",
-    manager: theater.manager || owner.name || "Operations desk",
+    manager: theater.manager || owner.name || "Manager desk",
     amenities: (theater.amenities ?? []).join(", "),
     cancellationPolicy: theater.cancellationPolicy || "",
   };
@@ -267,7 +267,9 @@ function mapBooking(booking) {
     seats: booking.seats ?? [],
     total: Number(booking.total || booking.totalAmount || 0),
     paymentStatus: booking.paymentStatus === "paid" ? "Paid" : booking.paymentStatus || "Pending",
+    status: booking.status || "confirmed",
     ticketStatus: booking.status === "cancelled" ? "Cancelled" : "Confirmed",
+    createdAt: booking.createdAt?.toISOString?.() || "",
     bookedAt: booking.createdAt
       ? new Date(booking.createdAt).toLocaleString("en-IN", {
           day: "2-digit",
@@ -300,7 +302,7 @@ function normalizeProfile(input = {}, theater, owner) {
     cancellationPolicy:
       cleanText(input.cancellationPolicy) ||
       theater.cancellationPolicy ||
-      "Cancellation available up to 2 hours before showtime.",
+      "Cancellation available up to 2 hours before movie timing.",
   };
 }
 

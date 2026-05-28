@@ -451,7 +451,7 @@ async function syncApprovedTheater(user, status) {
         address: application.address || `${application.area || city}, ${city}`,
         contact: application.contact || "",
         manager: application.companyName || user.name || "",
-        cancellationPolicy: "Cancellation available up to 2 hours before showtime.",
+        cancellationPolicy: "Cancellation available up to 2 hours before movie timing.",
         ownerId: user._id,
         approved: true,
         amenities: ["M-Ticket", "Food & Beverage"],

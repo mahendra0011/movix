@@ -6,8 +6,6 @@ import {
   Building2,
   CalendarClock,
   CheckCircle2,
-  Clapperboard,
-  Clock3,
   CreditCard,
   Film,
   Gauge,
@@ -20,13 +18,9 @@ import {
   QrCode,
   RefreshCcw,
   Save,
-  ScanLine,
   ShieldCheck,
-  ShieldAlert,
   Ticket,
   Trash2,
-  UserCog,
-  Utensils,
   Users,
 } from "lucide-react";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
@@ -110,9 +104,9 @@ const defaultCinemaProfile = {
   address: "Orion Mall, Dr Rajkumar Road, Rajajinagar",
   distance: "3.2 km",
   contact: "+91 98765 43210",
-  manager: "Operations desk",
-  amenities: "IMAX Laser, Dolby Atmos, Recliners, Parking, F&B",
-  cancellationPolicy: "Cancellation available up to 2 hours before showtime.",
+  manager: "Manager desk",
+  amenities: "IMAX Laser, Dolby Atmos, Recliners, Parking, Food counter",
+  cancellationPolicy: "Cancellation available up to 2 hours before movie timing.",
 };
 
 function createBlankShow(screens = screenSeeds) {
@@ -140,68 +134,19 @@ function createBlankShow(screens = screenSeeds) {
   };
 }
 
-const listingTypes = [
-  { id: "live", label: "Now booking" },
-  { id: "coming-soon", label: "Coming soon" },
-];
-
 const languageOptions = ["English", "Hindi", "Tamil", "Telugu", "Kannada"];
 const formatOptions = ["2D", "3D", "IMAX", "4DX", "Dolby Atmos"];
 const certificateOptions = ["U", "UA", "A"];
 const showStatusOptions = ["Open", "Selling fast", "Sold out", "Draft"];
-const ownerOperationModules = [
-  {
-    title: "Cinema setup",
-    value: "Onboarding",
-    text: "Cinema profile, address, amenities, screen count and approval status.",
-    icon: Building2,
-    target: "cinema",
-  },
-  {
-    title: "Screen management",
-    value: "Screens",
-    text: "Screen type, capacity, cleaning gap, maintenance windows and seat layout.",
-    icon: Monitor,
-    target: "screens",
-  },
-  {
-    title: "F&B menu",
-    value: "Add-ons",
-    text: "Popcorn, beverages, combos, stock and pre-order availability.",
-    icon: Utensils,
-    target: "services",
-  },
-  {
-    title: "Reports",
-    value: "Analytics",
-    text: "Occupancy, peak hours, movie performance and downloadable settlements.",
-    icon: Gauge,
-    target: "overview",
-  },
-  {
-    title: "Staff access",
-    value: "Roles",
-    text: "Counter staff, manager access, shifts and QR scanner permissions.",
-    icon: UserCog,
-    target: "services",
-  },
-  {
-    title: "Refund & entry desk",
-    value: "Gate",
-    text: "Approve refunds, verify QR tickets and monitor entry scans.",
-    icon: QrCode,
-    target: "services",
-  },
-];
-
 const ownerPanelTabs = [
   { id: "overview", label: "Overview", icon: Gauge },
   { id: "cinema", label: "Cinema", icon: Building2 },
-  { id: "movies", label: "My movies", icon: Film },
-  { id: "operations", label: "Operations", icon: ShieldCheck },
+  { id: "movies", label: "Movies", icon: Film },
+  { id: "timings", label: "Timings", icon: CalendarClock },
   { id: "screens", label: "Screens", icon: Monitor },
-  { id: "services", label: "F&B / Staff", icon: Utensils },
   { id: "bookings", label: "Bookings", icon: Ticket },
+  { id: "refunds", label: "Refunds", icon: RefreshCcw },
+  { id: "revenue", label: "Revenue", icon: BadgeIndianRupee },
 ];
 
 const selectClass =
@@ -287,11 +232,19 @@ function OwnerDashboard() {
     () => buildListedMovies(ownerShows, ownerBookings),
     [ownerBookings, ownerShows],
   );
+  const ownerRefundCases = useMemo(
+    () => buildRefundCases(ownerBookings, services),
+    [ownerBookings, services],
+  );
   const ownerEarningsTrend = useMemo(() => buildEarningsTrend(ownerBookings), [ownerBookings]);
 
   const totals = useMemo(() => {
-    const earnings = ownerBookings.reduce((sum, booking) => sum + Number(booking.total || 0), 0);
-    const seatsSold = ownerBookings.reduce((sum, booking) => sum + booking.seats.length, 0);
+    const confirmedBookings = ownerBookings.filter((booking) => !isCancelledBooking(booking));
+    const earnings = confirmedBookings.reduce(
+      (sum, booking) => sum + Number(booking.total || 0),
+      0,
+    );
+    const seatsSold = confirmedBookings.reduce((sum, booking) => sum + booking.seats.length, 0);
     const capacity = ownerScreens.reduce((sum, screen) => sum + Number(screen.seats || 0), 0);
     const occupancy = ownerScreens.length
       ? Math.round(
@@ -305,12 +258,15 @@ function OwnerDashboard() {
       seatsSold,
       capacity,
       occupancy,
-      bookings: ownerBookings.length,
+      bookings: confirmedBookings.length,
+      totalBookings: ownerBookings.length,
       shows: ownerShows.length,
       movies: listedMovies.length,
       comingSoon: ownerShows.filter((show) => show.listingType === "coming-soon").length,
+      refunds: ownerRefundCases.length,
+      refundAmount: ownerRefundCases.reduce((sum, refund) => sum + Number(refund.amount || 0), 0),
     };
-  }, [listedMovies.length, ownerBookings, ownerScreens, ownerShows]);
+  }, [listedMovies.length, ownerBookings, ownerRefundCases, ownerScreens, ownerShows]);
 
   const popularMovies = useMemo(() => {
     const map = ownerBookings.reduce((acc, booking) => {
@@ -464,23 +420,60 @@ function OwnerDashboard() {
     );
   };
 
-  const addShow = async (event) => {
+  const addMovieListing = async (event) => {
     event.preventDefault();
+    const nextListing = createOwnerListing({ mode: "movie" });
+    if (!nextListing) return;
+
+    const nextShows = [nextListing, ...shows];
+    setShows(nextShows);
+    setShowForm((current) => ({
+      ...current,
+      customTitle: "",
+      notes: "",
+      trailerUrl: "",
+    }));
+    await persistWorkspace(
+      workspacePayload({ shows: nextShows }),
+      `${nextListing.movie} movie details saved. Add day and timing separately.`,
+    );
+  };
+
+  const addTiming = async (event) => {
+    event.preventDefault();
+    const nextTiming = createOwnerListing({ mode: "timing" });
+    if (!nextTiming) return;
+
+    const nextShows = [nextTiming, ...shows];
+    setShows(nextShows);
+    setShowForm((current) => ({
+      ...createBlankShow(ownerScreens),
+      movieId: current.movieId,
+      screen: current.screen,
+      totalSeats: current.totalSeats,
+    }));
+    await persistWorkspace(
+      workspacePayload({ shows: nextShows }),
+      `${nextTiming.movie} timing added for ${nextTiming.time} on ${nextTiming.screen}.`,
+    );
+  };
+
+  const createOwnerListing = ({ mode }) => {
     const movie = movies.find((item) => item.id === showForm.movieId) ?? movies[0];
-    const isComingSoon = showForm.listingType === "coming-soon";
+    const isMovieOnly = mode === "movie";
     const title = showForm.customTitle.trim() || movie?.title;
-    if (!title || (!isComingSoon && !showForm.screen)) return;
+    if (!title || (!isMovieOnly && !showForm.screen)) return null;
 
     const goldPrice = Number(showForm.goldPrice) || 300;
     const silverPrice = Number(showForm.silverPrice) || goldPrice;
     const platinumPrice = Number(showForm.platinumPrice) || goldPrice;
     const vipPrice = Number(showForm.vipPrice) || platinumPrice;
-    const date = isComingSoon ? showForm.comingSoonDate : showForm.showDate;
+    const date = isMovieOnly ? showForm.comingSoonDate : showForm.showDate;
     const selectedScreen = ownerScreens.find((screen) => screen.name === showForm.screen);
     const seatLayout = normalizeSeatLayoutConfig(selectedScreen?.seatLayout);
     const seatCount = selectedScreen?.seats ?? buildSeatLayout(seatLayout).totalSeats;
 
-    const nextShow = {
+    return {
       id: `${slugify(title)}-${Date.now()}`,
       ownerKey,
       theaterId: cinemaProfile.id || slugify(`${cinemaProfile.name}-${cinemaProfile.city}`),
@@ -490,45 +483,30 @@ function OwnerDashboard() {
       address: cinemaProfile.address,
       distance: cinemaProfile.distance,
       amenities: cinemaProfile.amenities,
-      listingType: showForm.listingType,
+      listingType: isMovieOnly ? "coming-soon" : "live",
       movieId: movie?.id ?? slugify(title),
       movie: title,
       poster: movie?.poster,
-      screen: isComingSoon ? showForm.screen || "TBA" : showForm.screen,
+      screen: isMovieOnly ? "Timing pending" : showForm.screen,
       date,
-      time: isComingSoon ? "Coming soon" : formatShowTime(showForm.startTime, showForm.endTime),
-      startTime: isComingSoon ? "TBA" : showForm.startTime,
-      endTime: isComingSoon ? "TBA" : showForm.endTime,
+      time: isMovieOnly ? "Timing pending" : formatShowTime(showForm.startTime, showForm.endTime),
+      startTime: isMovieOnly ? "TBA" : showForm.startTime,
+      endTime: isMovieOnly ? "TBA" : showForm.endTime,
       language: showForm.language,
       format: showForm.format,
       certificate: showForm.certificate,
-      price: isComingSoon ? 0 : goldPrice,
-      priceLabel: isComingSoon ? "Notify me" : `${formatCurrency(goldPrice)} onwards`,
-      pricing: isComingSoon
+      price: isMovieOnly ? 0 : goldPrice,
+      priceLabel: isMovieOnly ? "Timing pending" : `${formatCurrency(goldPrice)} onwards`,
+      pricing: isMovieOnly
         ? { gold: 0, silver: 0, platinum: 0, vip: 0 }
         : { gold: goldPrice, silver: silverPrice, platinum: platinumPrice, vip: vipPrice },
-      seats: isComingSoon ? 0 : seatCount,
-      seatLayout: isComingSoon ? null : seatLayout,
-      status: isComingSoon ? "Coming soon" : showForm.status,
+      seats: isMovieOnly ? 0 : seatCount,
+      seatLayout: isMovieOnly ? null : seatLayout,
+      status: isMovieOnly ? "Listed" : showForm.status,
       bookingOpensAt: showForm.bookingOpensAt,
       trailerUrl: showForm.trailerUrl.trim(),
       notes: showForm.notes.trim(),
     };
-
-    const nextShows = [nextShow, ...shows];
-    setShows(nextShows);
-    setShowForm((current) => ({
-      ...createBlankShow(ownerScreens),
-      listingType: current.listingType,
-      screen: current.screen,
-      totalSeats: current.totalSeats,
-    }));
-    await persistWorkspace(
-      workspacePayload({ shows: nextShows }),
-      isComingSoon
-        ? `${title} listed as coming soon.`
-        : `${title} listed for ${nextShow.time} on ${nextShow.screen}.`,
-    );
   };
 
   const removeShow = async (id) => {
@@ -631,7 +609,7 @@ function OwnerDashboard() {
             <PanelHeader
               icon={CheckCircle2}
               title="Cinema status"
-              subtitle="Live owner operations"
+              subtitle="Live cinema workspace"
               action={ownerApproval.status}
             />
             <div className="mt-5 grid gap-3">
@@ -696,21 +674,12 @@ function OwnerDashboard() {
 
       {activeTab === "movies" && (
         <OwnerMoviesTab
+          showForm={showForm}
           listedMovies={listedMovies}
-          onManageScreens={() => setActiveTab("screens")}
+          onFormChange={setShowForm}
+          onAddMovie={addMovieListing}
+          onOpenTimings={() => setActiveTab("timings")}
           onRemoveShow={removeShow}
-        />
-      )}
-
-      {activeTab === "operations" && (
-        <OwnerOperationsTab
-          totals={totals}
-          listedMovies={listedMovies}
-          screens={ownerScreens}
-          onOpen={(target, title) => {
-            if (target) setActiveTab(target);
-            setNotice(`${title} workspace ready for ${auth.user.name}.`);
-          }}
         />
       )}
 
@@ -724,23 +693,31 @@ function OwnerDashboard() {
         />
       )}
 
-      {activeTab === "shows" && (
-        <ShowsTab
+      {activeTab === "timings" && (
+        <MovieTimingsTab
           showForm={showForm}
-          shows={ownerShows}
+          timings={ownerShows.filter((item) => item.listingType !== "coming-soon")}
+          listedMovies={listedMovies}
           screens={ownerScreens}
           onFormChange={setShowForm}
-          onAddShow={addShow}
+          onAddTiming={addTiming}
           onRemoveShow={removeShow}
         />
       )}
 
-      {activeTab === "services" && (
-        <OwnerServicesTab bookings={ownerBookings} totals={totals} services={services} />
-      )}
-
       {activeTab === "bookings" && (
         <BookingsTab bookings={ownerBookings} totals={totals} screens={ownerScreens} />
+      )}
+
+      {activeTab === "refunds" && <RefundsTab refundCases={ownerRefundCases} totals={totals} />}
+
+      {activeTab === "revenue" && (
+        <RevenueTab
+          bookings={ownerBookings}
+          listedMovies={listedMovies}
+          earningsTrend={ownerEarningsTrend}
+          totals={totals}
+        />
       )}
     </div>
   );
@@ -814,19 +791,139 @@ function OverviewTab({ earningsTrend, screens, popularMovies, listedMovies, tota
   );
 }
 
-function OwnerMoviesTab({ listedMovies, onManageScreens, onRemoveShow }) {
+function OwnerMoviesTab({
+  showForm,
+  listedMovies,
+  onFormChange,
+  onAddMovie,
+  onOpenTimings,
+  onRemoveShow,
+}) {
+  const update = (field) => (event) =>
+    onFormChange((current) => ({ ...current, [field]: event.target.value }));
+  const selectedMovie = movies.find((movie) => movie.id === showForm.movieId) ?? movies[0];
+
   return (
-    <section className="mt-6">
+    <section className="mt-6 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
           icon={Film}
-          title="My listed movies"
-          subtitle="This owner can see only movies listed from this owner account"
+          title="Add movie details"
+          subtitle="Movie catalog owned by this cinema partner"
+          action="Movie master"
+        />
+
+        <form onSubmit={onAddMovie} className="mt-5 space-y-5">
+          <FormSection title="Movie information">
+            <FormField label="Platform movie">
+              <select value={showForm.movieId} onChange={update("movieId")} className={selectClass}>
+                {movies.map((movie) => (
+                  <option key={movie.id} value={movie.id}>
+                    {movie.title}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="Custom title">
+              <Input
+                value={showForm.customTitle}
+                onChange={update("customTitle")}
+                placeholder={selectedMovie?.title ?? "Movie title"}
+              />
+            </FormField>
+            <FormField label="Language">
+              <select
+                value={showForm.language}
+                onChange={update("language")}
+                className={selectClass}
+              >
+                {languageOptions.map((language) => (
+                  <option key={language}>{language}</option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="Format">
+              <select value={showForm.format} onChange={update("format")} className={selectClass}>
+                {formatOptions.map((format) => (
+                  <option key={format}>{format}</option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="Certificate">
+              <select
+                value={showForm.certificate}
+                onChange={update("certificate")}
+                className={selectClass}
+              >
+                {certificateOptions.map((certificate) => (
+                  <option key={certificate}>{certificate}</option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="Expected start date">
+              <Input
+                value={showForm.comingSoonDate}
+                onChange={update("comingSoonDate")}
+                type="date"
+              />
+            </FormField>
+            <FormField label="Trailer URL">
+              <Input
+                value={showForm.trailerUrl}
+                onChange={update("trailerUrl")}
+                placeholder="https://youtube.com/..."
+              />
+            </FormField>
+            <label className="md:col-span-2">
+              <span className="text-xs font-medium uppercase text-muted-foreground">
+                Movie notes
+              </span>
+              <textarea
+                value={showForm.notes}
+                onChange={update("notes")}
+                placeholder="Cast, dubbed language, special screening note, distributor note..."
+                className="mt-2 min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </label>
+          </FormSection>
+
+          <div className="overflow-hidden rounded-lg border border-border/60 bg-background/35">
+            <div className="relative h-56">
+              <img
+                src={selectedMovie?.poster || movies[0].poster}
+                alt={selectedMovie?.title}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <p className="text-xs uppercase text-primary">Preview</p>
+                <h3 className="mt-1 text-xl font-bold">
+                  {showForm.customTitle.trim() || selectedMovie?.title}
+                </h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {showForm.language} - {showForm.format} - {showForm.certificate}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Button className="h-11 w-full gap-2">
+            <Plus className="h-4 w-4" />
+            Save movie details
+          </Button>
+        </form>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={Film}
+          title="Movie list"
+          subtitle="Only movies added by this owner account"
           action={`${listedMovies.length} movies`}
         />
 
         {listedMovies.length ? (
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
             {listedMovies.map((movie) => (
               <div
                 key={movie.movieId}
@@ -848,16 +945,26 @@ function OwnerMoviesTab({ listedMovies, onManageScreens, onRemoveShow }) {
                 </div>
 
                 <div className="grid gap-3 p-4">
-                  <SnapshotRow label="Owner listings" value={movie.showCount.toLocaleString()} />
-                  <SnapshotRow label="Live listings" value={movie.liveCount.toLocaleString()} />
-                  <SnapshotRow label="Upcoming" value={movie.comingSoonCount.toLocaleString()} />
+                  <SnapshotRow label="Timing slots" value={movie.liveCount.toLocaleString()} />
+                  <SnapshotRow label="Upcoming flag" value={movie.comingSoonCount ? "Yes" : "No"} />
+                  <SnapshotRow
+                    label="Next date"
+                    value={movie.nextDate ? formatDateLabel(movie.nextDate) : "Timing pending"}
+                  />
                   <SnapshotRow label="Revenue" value={formatCurrency(movie.revenue)} />
+                  {movie.trailerUrl && <SnapshotRow label="Trailer" value="Added" />}
                 </div>
 
+                {movie.notes && (
+                  <p className="border-t border-border/60 px-4 py-3 text-sm text-muted-foreground">
+                    {movie.notes}
+                  </p>
+                )}
+
                 <div className="flex items-center gap-2 border-t border-border/60 p-4">
-                  <Button size="sm" onClick={onManageScreens} className="flex-1 gap-2">
-                    <Plus className="h-4 w-4" />
-                    Manage screens
+                  <Button size="sm" onClick={onOpenTimings} className="flex-1 gap-2">
+                    <CalendarClock className="h-4 w-4" />
+                    Add timing
                   </Button>
                   {movie.latestShowId && (
                     <Button
@@ -867,7 +974,7 @@ function OwnerMoviesTab({ listedMovies, onManageScreens, onRemoveShow }) {
                       className="gap-2"
                     >
                       <Trash2 className="h-4 w-4" />
-                      Remove latest
+                      Remove
                     </Button>
                   )}
                 </div>
@@ -879,86 +986,13 @@ function OwnerMoviesTab({ listedMovies, onManageScreens, onRemoveShow }) {
             <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-primary/15 text-primary">
               <Film className="h-6 w-6" />
             </div>
-            <h3 className="mt-4 font-semibold">No movies listed by this owner yet</h3>
+            <h3 className="mt-4 font-semibold">No movie added yet</h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Approved cinema activity and confirmed bookings will appear here for this
-              theater-owner account.
+              Add movie details first, then open Timings to set day, screen, price and time.
             </p>
-            <Button onClick={onManageScreens} className="mt-5 gap-2">
-              <Plus className="h-4 w-4" />
-              Manage screens
-            </Button>
           </div>
         )}
       </SpotlightCard>
-    </section>
-  );
-}
-
-function OwnerOperationsTab({ totals, listedMovies, screens, onOpen }) {
-  return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={Building2}
-          title="Owner operations"
-          subtitle="Cinema owner control modules"
-          action={`${listedMovies.length} listed movies`}
-        />
-        <div className="mt-5 grid gap-3 md:grid-cols-2">
-          {ownerOperationModules.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.title}
-                type="button"
-                onClick={() => onOpen(item.target, item.title)}
-                className="group rounded-lg border border-border/60 bg-background/35 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/50"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15 text-primary">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <span className="rounded-md bg-muted/60 px-2 py-1 text-[11px] font-medium text-muted-foreground">
-                    {item.value}
-                  </span>
-                </div>
-                <h3 className="mt-4 font-semibold">{item.title}</h3>
-              </button>
-            );
-          })}
-        </div>
-      </SpotlightCard>
-
-      <div className="grid gap-4">
-        <SpotlightCard className="rounded-lg p-5">
-          <PanelHeader
-            icon={BadgeIndianRupee}
-            title="Settlement snapshot"
-            subtitle="Owner revenue"
-          />
-          <div className="mt-5 grid gap-3">
-            <SnapshotRow label="Gross revenue" value={formatCurrency(totals.earnings)} />
-            <SnapshotRow
-              label="Platform commission"
-              value={formatCurrency(totals.earnings * 0.1)}
-            />
-            <SnapshotRow
-              label="Estimated settlement"
-              value={formatCurrency(totals.earnings * 0.9)}
-            />
-          </div>
-        </SpotlightCard>
-
-        <SpotlightCard className="rounded-lg p-5">
-          <PanelHeader icon={Monitor} title="Cinema inventory" subtitle="Owner-owned capacity" />
-          <div className="mt-5 grid gap-3">
-            <SnapshotRow label="Screens" value={screens.length.toLocaleString()} />
-            <SnapshotRow label="Seats" value={totals.capacity.toLocaleString()} />
-            <SnapshotRow label="Occupancy" value={`${totals.occupancy}%`} />
-          </div>
-        </SpotlightCard>
-      </div>
     </section>
   );
 }
@@ -1015,7 +1049,7 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
             </label>
           </FormSection>
 
-          <FormSection title="Operations">
+          <FormSection title="Contact and rules">
             <FormField label="Contact number">
               <Input
                 value={cinemaProfile.contact}
@@ -1027,7 +1061,7 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
               <Input
                 value={cinemaProfile.manager}
                 onChange={update("manager")}
-                placeholder="Manager or operations desk"
+                placeholder="Manager or support desk"
               />
             </FormField>
             <label className="md:col-span-2">
@@ -1035,7 +1069,7 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
               <textarea
                 value={cinemaProfile.amenities}
                 onChange={update("amenities")}
-                placeholder="IMAX, Dolby Atmos, Parking, F&B"
+                placeholder="IMAX, Dolby Atmos, Parking, Food counter"
                 className="mt-2 min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
               />
             </label>
@@ -1109,6 +1143,16 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
   const update = (field) => (event) =>
     onFormChange((current) => ({ ...current, [field]: event.target.value }));
   const previewLayout = buildSeatLayout(normalizeSeatLayoutConfig(screenForm));
+  const totalSeats = screens.reduce((sum, screen) => sum + Number(screen.seats || 0), 0);
+  const averageOccupancy = screens.length
+    ? Math.round(
+        screens.reduce((sum, screen) => sum + Number(screen.occupancy || 0), 0) / screens.length,
+      )
+    : 0;
+  const blockedSeats = screens.reduce(
+    (sum, screen) => sum + (screen.seatLayout?.blockedSeats?.length ?? 0),
+    0,
+  );
 
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
@@ -1201,46 +1245,89 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={Building2} title="Screens" subtitle="Active cinema screens" />
-        <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="bg-muted/40 text-xs text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Screen</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Seats</th>
-                  <th className="px-4 py-3 font-medium">Layout</th>
-                  <th className="px-4 py-3 font-medium">Occupancy</th>
-                  <th className="px-4 py-3 font-medium">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {screens.map((screen) => (
-                  <tr key={screen.id} className="bg-card/20">
-                    <td className="px-4 py-3 font-medium">{screen.name}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{screen.type}</td>
-                    <td className="px-4 py-3">{screen.seats}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
+        <PanelHeader
+          icon={Building2}
+          title="Screen inventory"
+          subtitle="Seat maps, capacity and blocked-seat control"
+          action={`${screens.length} screens`}
+        />
+
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <SnapshotRow label="Total seats" value={totalSeats.toLocaleString()} />
+          <SnapshotRow label="Avg occupancy" value={`${averageOccupancy}%`} />
+          <SnapshotRow label="Blocked seats" value={blockedSeats.toLocaleString()} />
+        </div>
+
+        <div className="mt-5 grid gap-4">
+          {screens.map((screen) => {
+            const layout = buildSeatLayout(screen.seatLayout);
+            return (
+              <div
+                key={screen.id}
+                className="rounded-lg border border-border/60 bg-background/35 p-4"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-semibold">{screen.name}</h3>
+                      <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                        {screen.type}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">
                       {formatSeatLayoutSummary(screen.seatLayout)}
-                    </td>
-                    <td className="px-4 py-3">{screen.occupancy}%</td>
-                    <td className="px-4 py-3">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => onRemoveScreen(screen.id)}
-                        className="gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Remove
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => onRemoveScreen(screen.id)}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
+                </div>
+
+                <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
+                  <div className="overflow-x-auto rounded-lg border border-border/60 bg-card/30 p-3">
+                    <SeatMiniMap layout={layout} />
+                  </div>
+                  <div className="grid content-start gap-3">
+                    <SnapshotRow
+                      label="Capacity"
+                      value={Number(screen.seats || 0).toLocaleString()}
+                    />
+                    <SnapshotRow label="Occupancy" value={`${screen.occupancy || 0}%`} />
+                    <SnapshotRow
+                      label="Blocked"
+                      value={(screen.seatLayout?.blockedSeats?.length ?? 0).toLocaleString()}
+                    />
+                    <div>
+                      <div className="h-2 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${Math.min(100, Number(screen.occupancy || 0))}%` }}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {layout.rowCount} rows, {layout.seatsPerRow} seats per row
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {!screens.length && (
+            <div className="rounded-lg border border-dashed border-border/70 p-8 text-center">
+              <Monitor className="mx-auto h-8 w-8 text-muted-foreground" />
+              <h3 className="mt-3 font-semibold">No screen added yet</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                Add at least one screen with a seat map before creating movie timings.
+              </p>
+            </div>
+          )}
         </div>
       </SpotlightCard>
     </section>
@@ -1303,94 +1390,73 @@ function formatSeatLayoutSummary(config) {
   return `${layout.rowCount} rows x ${layout.seatsPerRow}, ${layout.totalSeats} seats - Platinum ${layout.platinumRows}, Silver ${layout.silverRows}, Gold ${goldRows}, VIP ${layout.vipRows}`;
 }
 
-function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveShow }) {
+function MovieTimingsTab({
+  showForm,
+  timings,
+  listedMovies,
+  screens,
+  onFormChange,
+  onAddTiming,
+  onRemoveShow,
+}) {
   const update = (field) => (event) =>
     onFormChange((current) => ({ ...current, [field]: event.target.value }));
-  const isComingSoon = showForm.listingType === "coming-soon";
-  const selectedMovie = movies.find((movie) => movie.id === showForm.movieId) ?? movies[0];
+  const movieOptions = listedMovies.length
+    ? listedMovies
+    : movies.map((movie) => ({
+        movieId: movie.id,
+        title: movie.title,
+        poster: movie.poster,
+        language: movie.language || "English",
+        format: movie.format || "2D",
+        certificate: movie.certificate || "UA",
+      }));
+  const selectedListedMovie = movieOptions.find((movie) => movie.movieId === showForm.movieId);
+  const selectedMovie = movies.find((movie) => movie.id === showForm.movieId) ??
+    selectedListedMovie ?? {
+      title: selectedListedMovie?.title || "Movie",
+      poster: selectedListedMovie?.poster,
+    };
   const selectedScreen = screens.find((screen) => screen.name === showForm.screen);
-  const previewShow = buildPreviewShow(showForm, selectedMovie);
+  const previewTiming = buildPreviewTiming(showForm, selectedMovie);
 
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
-          icon={Clapperboard}
-          title="Create movie listing"
-          subtitle="Complete cinema listing form for booking or coming soon"
-          action={isComingSoon ? "Coming soon" : "Now booking"}
+          icon={CalendarClock}
+          title="Movie timing and day"
+          subtitle="Set movie, screen, day, time, price and seat map"
+          action="Timing desk"
         />
 
-        <form onSubmit={onAddShow} className="mt-5 space-y-5">
-          <div className="grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-background/50 p-1 text-sm">
-            {listingTypes.map((type) => (
-              <button
-                key={type.id}
-                type="button"
-                onClick={() =>
+        <form onSubmit={onAddTiming} className="mt-5 space-y-5">
+          <FormSection title="Movie and screen">
+            <FormField label="Movie">
+              <select
+                value={showForm.movieId}
+                onChange={(event) => {
+                  const movie = movieOptions.find((item) => item.movieId === event.target.value);
                   onFormChange((current) => ({
                     ...current,
-                    listingType: type.id,
-                    status: type.id === "coming-soon" ? "Coming soon" : "Open",
-                  }))
-                }
-                className={`rounded-md px-3 py-2 font-medium transition-colors ${
-                  showForm.listingType === type.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
+                    movieId: event.target.value,
+                    customTitle: movie?.title || "",
+                    language: movie?.language || current.language,
+                    format: movie?.format || current.format,
+                    certificate: movie?.certificate || current.certificate,
+                    listingType: "live",
+                  }));
+                }}
+                className={selectClass}
               >
-                {type.label}
-              </button>
-            ))}
-          </div>
-
-          <FormSection title="Movie details">
-            <FormField label="Platform movie to list">
-              <select value={showForm.movieId} onChange={update("movieId")} className={selectClass}>
-                {movies.map((movie) => (
-                  <option key={movie.id} value={movie.id}>
+                {movieOptions.map((movie) => (
+                  <option key={movie.movieId} value={movie.movieId}>
                     {movie.title}
                   </option>
                 ))}
               </select>
             </FormField>
-            <FormField label="Custom listing title">
-              <Input
-                value={showForm.customTitle}
-                onChange={update("customTitle")}
-                placeholder={selectedMovie?.title ?? "Movie title"}
-              />
-            </FormField>
-            <FormField label="Language">
-              <select
-                value={showForm.language}
-                onChange={update("language")}
-                className={selectClass}
-              >
-                {languageOptions.map((language) => (
-                  <option key={language}>{language}</option>
-                ))}
-              </select>
-            </FormField>
-            <FormField label="Format">
-              <select value={showForm.format} onChange={update("format")} className={selectClass}>
-                {formatOptions.map((format) => (
-                  <option key={format}>{format}</option>
-                ))}
-              </select>
-            </FormField>
-          </FormSection>
-
-          <FormSection title={isComingSoon ? "Launch window" : "Timing"}>
-            <FormField label={isComingSoon ? "Expected release date" : "Date"}>
-              <Input
-                value={isComingSoon ? showForm.comingSoonDate : showForm.showDate}
-                onChange={update(isComingSoon ? "comingSoonDate" : "showDate")}
-                type="date"
-              />
-            </FormField>
-            <FormField label={isComingSoon ? "Preferred screen" : "Screen"}>
+            <FormField label="Screen">
               <select
                 value={showForm.screen}
                 onChange={(event) => {
@@ -1414,201 +1480,159 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
                 )}
               </select>
             </FormField>
-
-            {isComingSoon ? (
-              <FormField label="Booking opens">
-                <Input
-                  value={showForm.bookingOpensAt}
-                  onChange={update("bookingOpensAt")}
-                  type="date"
-                />
-              </FormField>
-            ) : (
-              <>
-                <FormField label="Start time">
-                  <Input value={showForm.startTime} onChange={update("startTime")} type="time" />
-                </FormField>
-                <FormField label="End time">
-                  <Input value={showForm.endTime} onChange={update("endTime")} type="time" />
-                </FormField>
-              </>
-            )}
           </FormSection>
 
-          {!isComingSoon && (
-            <FormSection title="Pricing and seats">
-              <FormField label="Gold price">
-                <Input
-                  value={showForm.goldPrice}
-                  onChange={update("goldPrice")}
-                  type="number"
-                  min="50"
-                />
-              </FormField>
-              <FormField label="Silver price">
-                <Input
-                  value={showForm.silverPrice}
-                  onChange={update("silverPrice")}
-                  type="number"
-                  min="50"
-                />
-              </FormField>
-              <FormField label="Platinum price">
-                <Input
-                  value={showForm.platinumPrice}
-                  onChange={update("platinumPrice")}
-                  type="number"
-                  min="50"
-                />
-              </FormField>
-              <FormField label="VIP price">
-                <Input
-                  value={showForm.vipPrice}
-                  onChange={update("vipPrice")}
-                  type="number"
-                  min="50"
-                />
-              </FormField>
-              <FormField label="Total seats">
-                <Input
-                  value={selectedScreen?.seats ?? showForm.totalSeats}
-                  readOnly
-                  type="number"
-                  min="20"
-                />
-              </FormField>
-              {selectedScreen?.seatLayout && (
-                <div className="md:col-span-2 rounded-lg border border-border/60 bg-background/40 p-3 text-xs text-muted-foreground">
-                  <p className="font-medium text-foreground">Seat panel for this listing</p>
-                  <p className="mt-1">{formatSeatLayoutSummary(selectedScreen.seatLayout)}</p>
-                  <div className="mt-3 overflow-x-auto">
-                    <SeatMiniMap layout={buildSeatLayout(selectedScreen.seatLayout)} />
-                  </div>
-                </div>
-              )}
-            </FormSection>
-          )}
-
-          <FormSection title="Publishing">
-            <FormField label="Certificate">
-              <select
-                value={showForm.certificate}
-                onChange={update("certificate")}
-                className={selectClass}
-              >
-                {certificateOptions.map((certificate) => (
-                  <option key={certificate}>{certificate}</option>
+          <FormSection title="Day and time">
+            <FormField label="Date">
+              <Input value={showForm.showDate} onChange={update("showDate")} type="date" />
+            </FormField>
+            <FormField label="Day">
+              <Input value={formatWeekday(showForm.showDate)} readOnly />
+            </FormField>
+            <FormField label="Start time">
+              <Input value={showForm.startTime} onChange={update("startTime")} type="time" />
+            </FormField>
+            <FormField label="End time">
+              <Input value={showForm.endTime} onChange={update("endTime")} type="time" />
+            </FormField>
+            <FormField label="Status">
+              <select value={showForm.status} onChange={update("status")} className={selectClass}>
+                {showStatusOptions.map((status) => (
+                  <option key={status}>{status}</option>
                 ))}
               </select>
             </FormField>
-            <FormField label="Status">
-              <select
-                value={isComingSoon ? "Coming soon" : showForm.status}
-                onChange={update("status")}
-                className={selectClass}
-                disabled={isComingSoon}
-              >
-                {isComingSoon ? (
-                  <option>Coming soon</option>
-                ) : (
-                  showStatusOptions.map((status) => <option key={status}>{status}</option>)
-                )}
-              </select>
-            </FormField>
-            <FormField label="Trailer URL">
+            <FormField label="Booking opens">
               <Input
-                value={showForm.trailerUrl}
-                onChange={update("trailerUrl")}
-                placeholder="https://youtube.com/..."
+                value={showForm.bookingOpensAt}
+                onChange={update("bookingOpensAt")}
+                type="date"
               />
             </FormField>
-            <label className="md:col-span-2">
-              <span className="text-xs font-medium uppercase text-muted-foreground">
-                Listing note
-              </span>
-              <textarea
-                value={showForm.notes}
-                onChange={update("notes")}
-                placeholder={
-                  isComingSoon
-                    ? "Advance booking opens soon..."
-                    : "Premium format, special screening, offers..."
-                }
-                className="mt-2 min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+          </FormSection>
+
+          <FormSection title="Pricing and seats">
+            <FormField label="Gold price">
+              <Input
+                value={showForm.goldPrice}
+                onChange={update("goldPrice")}
+                type="number"
+                min="50"
               />
-            </label>
+            </FormField>
+            <FormField label="Silver price">
+              <Input
+                value={showForm.silverPrice}
+                onChange={update("silverPrice")}
+                type="number"
+                min="50"
+              />
+            </FormField>
+            <FormField label="Platinum price">
+              <Input
+                value={showForm.platinumPrice}
+                onChange={update("platinumPrice")}
+                type="number"
+                min="50"
+              />
+            </FormField>
+            <FormField label="VIP price">
+              <Input
+                value={showForm.vipPrice}
+                onChange={update("vipPrice")}
+                type="number"
+                min="50"
+              />
+            </FormField>
+            <FormField label="Total seats">
+              <Input
+                value={selectedScreen?.seats ?? showForm.totalSeats}
+                readOnly
+                type="number"
+                min="20"
+              />
+            </FormField>
+            {selectedScreen?.seatLayout && (
+              <div className="md:col-span-2 rounded-lg border border-border/60 bg-background/40 p-3 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground">Seat panel for this timing</p>
+                <p className="mt-1">{formatSeatLayoutSummary(selectedScreen.seatLayout)}</p>
+                <div className="mt-3 overflow-x-auto">
+                  <SeatMiniMap layout={buildSeatLayout(selectedScreen.seatLayout)} />
+                </div>
+              </div>
+            )}
           </FormSection>
 
           <Button className="h-11 w-full gap-2">
             <Plus className="h-4 w-4" />
-            {isComingSoon ? "List coming soon" : "Publish listing"}
+            Add timing
           </Button>
         </form>
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={Film} title="Listing preview" subtitle="User-facing movie card" />
-        <ShowPreview show={previewShow} />
+        <PanelHeader icon={Film} title="Timing preview" subtitle="Customer-facing booking slot" />
+        <TimingPreview timing={previewTiming} />
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
-        <PanelHeader icon={CalendarClock} title="Movie timings" subtitle="Listed cinema timings" />
+        <PanelHeader icon={CalendarClock} title="Timing calendar" subtitle="Day-wise movie slots" />
         <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[880px] text-left text-sm">
               <thead className="bg-muted/40 text-xs text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Listing</th>
+                  <th className="px-4 py-3 font-medium">Movie</th>
+                  <th className="px-4 py-3 font-medium">Day</th>
                   <th className="px-4 py-3 font-medium">Screen</th>
-                  <th className="px-4 py-3 font-medium">Schedule</th>
+                  <th className="px-4 py-3 font-medium">Time</th>
                   <th className="px-4 py-3 font-medium">Pricing</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {shows.map((show) => (
-                  <tr key={show.id} className="bg-card/20">
+                {timings.map((timing) => (
+                  <tr key={timing.id} className="bg-card/20">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={show.poster || movies[0].poster}
-                          alt={show.movie}
+                          src={timing.poster || movies[0].poster}
+                          alt={timing.movie}
                           className="h-14 w-10 rounded-md object-cover"
                         />
                         <div>
-                          <p className="font-medium">{show.movie}</p>
+                          <p className="font-medium">{timing.movie}</p>
                           <p className="mt-1 text-xs text-muted-foreground">
-                            {show.language} - {show.format} - {show.certificate}
+                            {timing.language} - {timing.format} - {timing.certificate}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{show.screen}</td>
                     <td className="px-4 py-3">
-                      <p>{formatDateLabel(show.date)}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{show.time}</p>
+                      <p>{formatWeekday(timing.date)}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatDateLabel(timing.date)}
+                      </p>
                     </td>
+                    <td className="px-4 py-3 text-muted-foreground">{timing.screen}</td>
+                    <td className="px-4 py-3">{timing.time}</td>
                     <td className="px-4 py-3">
                       <p className="font-semibold">
-                        {show.listingType === "coming-soon"
-                          ? "Notify me"
-                          : show.priceLabel || formatCurrency(show.price)}
+                        {timing.priceLabel || formatCurrency(timing.price)}
                       </p>
-                      {show.listingType !== "coming-soon" && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {show.seats} seats - VIP {formatCurrency(show.pricing?.vip)}
-                        </p>
-                      )}
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {timing.seats} seats - VIP {formatCurrency(timing.pricing?.vip)}
+                      </p>
                     </td>
                     <td className="px-4 py-3">
-                      <StatusPill status={show.status} />
+                      <StatusPill status={timing.status} />
                     </td>
                     <td className="px-4 py-3">
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => onRemoveShow(show.id)}
+                        onClick={() => onRemoveShow(timing.id)}
                         className="gap-2"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -1617,6 +1641,13 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
                     </td>
                   </tr>
                 ))}
+                {!timings.length && (
+                  <tr className="bg-card/20">
+                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                      No timing added yet. Add movie details first, then create a timing here.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -1644,216 +1675,255 @@ function FormField({ label, children }) {
   );
 }
 
-function ShowPreview({ show }) {
-  const isComingSoon = show.listingType === "coming-soon";
-
+function TimingPreview({ timing }) {
   return (
     <div className="mt-5 overflow-hidden rounded-lg border border-border/60 bg-background/35">
       <div className="relative h-64">
         <img
-          src={show.poster || movies[0].poster}
-          alt={show.movie}
+          src={timing.poster || movies[0].poster}
+          alt={timing.movie}
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         <div className="absolute left-4 top-4">
-          <StatusPill status={show.status} />
+          <StatusPill status={timing.status} />
         </div>
         <div className="absolute bottom-4 left-4 right-4">
-          <h3 className="text-2xl font-bold tracking-tight">{show.movie}</h3>
+          <h3 className="text-2xl font-bold tracking-tight">{timing.movie}</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            {show.language} - {show.format} - {show.certificate}
+            {timing.language} - {timing.format} - {timing.certificate}
           </p>
         </div>
       </div>
 
       <div className="grid gap-3 p-4">
-        <SnapshotRow
-          label={isComingSoon ? "Expected date" : "Date"}
-          value={formatDateLabel(show.date)}
-        />
-        <SnapshotRow label="Screen" value={show.screen || "TBA"} />
-        <SnapshotRow
-          label={isComingSoon ? "Booking opens" : "Time"}
-          value={isComingSoon ? formatDateLabel(show.bookingOpensAt) : show.time}
-        />
-        <SnapshotRow label="Price" value={isComingSoon ? "Notify me" : show.priceLabel} />
+        <SnapshotRow label="Day" value={formatWeekday(timing.date)} />
+        <SnapshotRow label="Date" value={formatDateLabel(timing.date)} />
+        <SnapshotRow label="Screen" value={timing.screen || "Screen not selected"} />
+        <SnapshotRow label="Time" value={timing.time} />
+        <SnapshotRow label="Price" value={timing.priceLabel} />
       </div>
 
-      {show.notes && (
+      {timing.notes && (
         <p className="border-t border-border/60 px-4 py-3 text-sm text-muted-foreground">
-          {show.notes}
+          {timing.notes}
         </p>
       )}
     </div>
   );
 }
 
-function buildPreviewShow(showForm, selectedMovie) {
-  const isComingSoon = showForm.listingType === "coming-soon";
-  const title = showForm.customTitle.trim() || selectedMovie?.title || "Untitled show";
+function buildPreviewTiming(showForm, selectedMovie) {
+  const title = showForm.customTitle.trim() || selectedMovie?.title || "Movie";
   const goldPrice = Number(showForm.goldPrice) || 300;
 
   return {
-    listingType: showForm.listingType,
+    listingType: "live",
     movie: title,
     poster: selectedMovie?.poster,
-    screen: isComingSoon ? showForm.screen || "TBA" : showForm.screen,
-    date: isComingSoon ? showForm.comingSoonDate : showForm.showDate,
-    time: isComingSoon ? "Coming soon" : formatShowTime(showForm.startTime, showForm.endTime),
+    screen: showForm.screen,
+    date: showForm.showDate,
+    time: formatShowTime(showForm.startTime, showForm.endTime),
     language: showForm.language,
     format: showForm.format,
     certificate: showForm.certificate,
-    priceLabel: isComingSoon ? "Notify me" : `${formatCurrency(goldPrice)} onwards`,
-    status: isComingSoon ? "Coming soon" : showForm.status,
+    priceLabel: `${formatCurrency(goldPrice)} onwards`,
+    status: showForm.status,
     bookingOpensAt: showForm.bookingOpensAt,
     notes: showForm.notes.trim(),
   };
 }
 
-function OwnerServicesTab({ bookings, totals, services }) {
-  const foodOrders = Math.max(0, Math.round(totals.bookings * 0.42));
-  const foodRows = services?.foodMenu ?? [];
-  const staff = services?.staff ?? [];
-  const refunds = services?.refundCases ?? [];
-  const scans = services?.scanStats ?? [];
+function RefundsTab({ refundCases, totals }) {
+  const pendingCount = refundCases.filter((refund) => refund.status !== "Refunded").length;
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[1fr_1fr]">
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={Utensils}
-          title="Food & beverage"
-          subtitle="Combo menu, stock and pre-order dashboard"
-          action={`${foodOrders} orders`}
-        />
-        <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[620px] text-left text-sm">
-              <thead className="bg-muted/40 text-xs text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Item</th>
-                  <th className="px-4 py-3 font-medium">Stock</th>
-                  <th className="px-4 py-3 font-medium">Price</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {foodRows.map((row) => (
-                  <tr key={row.item} className="bg-card/20">
-                    <td className="px-4 py-3 font-medium">{row.item}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{row.stock}</td>
-                    <td className="px-4 py-3">{formatCurrency(row.price)}</td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                        {row.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <SnapshotRow label="Pre-orders" value={foodOrders.toLocaleString()} />
-          <SnapshotRow label="F&B revenue" value={formatCurrency(foodOrders * 285)} />
-        </div>
-      </SpotlightCard>
-
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={UserCog}
-          title="Staff management"
-          subtitle="Counter staff, manager permissions and shifts"
-        />
-        <div className="mt-5 grid gap-3">
-          {staff.map((staff) => (
-            <div
-              key={staff.name}
-              className="rounded-lg border border-border/60 bg-background/40 p-4"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-semibold">{staff.name}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{staff.role}</p>
-                </div>
-                <span className="rounded-md bg-muted/60 px-2 py-1 text-xs text-muted-foreground">
-                  {staff.access}
-                </span>
-              </div>
-              <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock3 className="h-4 w-4" />
-                {staff.shift}
-              </div>
-            </div>
-          ))}
-        </div>
-      </SpotlightCard>
-
+    <section className="mt-6 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
           icon={RefreshCcw}
-          title="Refund handling"
-          subtitle="Approve refunds and cancel show impact"
+          title="Refund queue"
+          subtitle="Cancelled tickets land here for owner review"
+          action={`${refundCases.length} cases`}
         />
         <div className="mt-5 grid gap-3">
-          {refunds.map((refund) => (
+          <SnapshotRow label="Pending cases" value={pendingCount.toLocaleString()} />
+          <SnapshotRow label="Refund amount" value={formatCurrency(totals.refundAmount)} />
+          <SnapshotRow label="Gateway SLA" value="T+1 settlement" />
+          <SnapshotRow label="Customer alerts" value="Email + SMS" />
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={CreditCard}
+          title="Cancelled ticket details"
+          subtitle="Customer, email, ticket and payment trail"
+        />
+        <div className="mt-5 grid gap-3">
+          {refundCases.map((refund) => (
             <div
               key={refund.ref}
-              className="rounded-lg border border-border/60 bg-background/40 p-4"
+              className="rounded-lg border border-border/60 bg-background/35 p-4"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="font-mono text-xs text-primary">{refund.ref}</p>
-                  <p className="mt-1 font-semibold">{refund.reason}</p>
+                  <h3 className="mt-1 font-semibold">{refund.movie}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Amount {formatCurrency(refund.amount)}
+                    {refund.customer} - {refund.email || "Email not available"}
                   </p>
                 </div>
-                <Button size="sm" variant="secondary" className="gap-2">
+                <StatusPill status={refund.status} />
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <SnapshotRow label="Seats" value={formatSeatList(refund.seats)} />
+                <SnapshotRow label="Timing" value={`${refund.screen} - ${refund.time}`} />
+                <SnapshotRow label="Refundable" value={formatCurrency(refund.amount)} />
+                <SnapshotRow label="Payment" value={refund.paymentStatus || "Paid"} />
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button size="sm" className="gap-2">
                   <CreditCard className="h-4 w-4" />
-                  {refund.status}
+                  Approve refund
+                </Button>
+                <Button size="sm" variant="secondary" className="gap-2">
+                  <Ticket className="h-4 w-4" />
+                  View ticket
                 </Button>
               </div>
             </div>
           ))}
-          {!refunds.length && (
-            <div className="rounded-lg border border-dashed border-border/70 bg-background/30 p-4 text-sm text-muted-foreground">
-              Cancelled tickets from this cinema will appear here for review.
+          {!refundCases.length && (
+            <div className="rounded-lg border border-dashed border-border/70 p-8 text-center">
+              <RefreshCcw className="mx-auto h-8 w-8 text-muted-foreground" />
+              <h3 className="mt-3 font-semibold">No cancelled tickets yet</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                When a customer cancels a ticket, it will appear here with email, seats, amount and
+                refund status.
+              </p>
             </div>
           )}
+        </div>
+      </SpotlightCard>
+    </section>
+  );
+}
+
+function RevenueTab({ bookings, listedMovies, earningsTrend, totals }) {
+  const [period, setPeriod] = useState("7");
+  const [movieFilter, setMovieFilter] = useState("all");
+  const filteredBookings = useMemo(
+    () => filterRevenueBookings(bookings, period, movieFilter),
+    [bookings, movieFilter, period],
+  );
+  const revenueTrend = useMemo(
+    () => buildRevenueTrend(filteredBookings, Number(period)),
+    [filteredBookings, period],
+  );
+  const revenue = filteredBookings.reduce((sum, booking) => sum + Number(booking.total || 0), 0);
+  const seats = filteredBookings.reduce((sum, booking) => sum + (booking.seats?.length ?? 0), 0);
+  const commission = revenue * 0.1;
+  const settlement = revenue - commission;
+
+  return (
+    <section className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={BadgeIndianRupee}
+          title="Revenue analytics"
+          subtitle="Filter by period and movie"
+          action={formatCurrency(revenue)}
+        />
+        <div className="mt-5 flex flex-wrap gap-3">
+          <select
+            value={period}
+            onChange={(event) => setPeriod(event.target.value)}
+            className={selectClass}
+          >
+            <option value="1">Today</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+          </select>
+          <select
+            value={movieFilter}
+            onChange={(event) => setMovieFilter(event.target.value)}
+            className={selectClass}
+          >
+            <option value="all">All movies</option>
+            {listedMovies.map((movie) => (
+              <option key={movie.movieId} value={movie.title}>
+                {movie.title}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="mt-5 h-80">
+          <TrendAreaChart
+            data={revenueTrend.length ? revenueTrend : earningsTrend}
+            valueKey="earnings"
+            formatValue={formatCurrency}
+          />
         </div>
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
-          icon={QrCode}
-          title="QR / ticket scanning"
-          subtitle="Entry verification and duplicate ticket checks"
-          action={`${bookings.length} tickets`}
+          icon={CreditCard}
+          title="Settlement details"
+          subtitle="Owner payout estimate"
+          action="Production view"
         />
         <div className="mt-5 grid gap-3">
-          {scans.map((scan) => (
-            <div
-              key={scan.gate}
-              className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-4"
-            >
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
-                {scan.gate === "Exceptions" ? (
-                  <ShieldAlert className="h-5 w-5" />
-                ) : (
-                  <ScanLine className="h-5 w-5" />
+          <SnapshotRow label="Gross revenue" value={formatCurrency(revenue)} />
+          <SnapshotRow label="Platform commission" value={formatCurrency(commission)} />
+          <SnapshotRow label="Estimated payout" value={formatCurrency(settlement)} />
+          <SnapshotRow label="Tickets" value={filteredBookings.length.toLocaleString()} />
+          <SnapshotRow label="Seats" value={seats.toLocaleString()} />
+          <SnapshotRow
+            label="Avg order"
+            value={formatCurrency(filteredBookings.length ? revenue / filteredBookings.length : 0)}
+          />
+          <SnapshotRow label="All-time revenue" value={formatCurrency(totals.earnings)} />
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
+        <PanelHeader icon={Ticket} title="Revenue ledger" subtitle="Paid booking details" />
+        <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[840px] text-left text-sm">
+              <thead className="bg-muted/40 text-xs text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Ref</th>
+                  <th className="px-4 py-3 font-medium">Customer email</th>
+                  <th className="px-4 py-3 font-medium">Movie</th>
+                  <th className="px-4 py-3 font-medium">Seats</th>
+                  <th className="px-4 py-3 font-medium">Payment</th>
+                  <th className="px-4 py-3 font-medium">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {filteredBookings.map((booking) => (
+                  <tr key={booking.ref} className="bg-card/20">
+                    <td className="px-4 py-3 font-mono text-xs text-primary">{booking.ref}</td>
+                    <td className="px-4 py-3">{booking.email || "Not available"}</td>
+                    <td className="px-4 py-3">{booking.movie}</td>
+                    <td className="px-4 py-3">{formatSeatList(booking.seats)}</td>
+                    <td className="px-4 py-3">{booking.paymentStatus || "Paid"}</td>
+                    <td className="px-4 py-3 font-semibold">{formatCurrency(booking.total)}</td>
+                  </tr>
+                ))}
+                {!filteredBookings.length && (
+                  <tr className="bg-card/20">
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      No paid bookings match this revenue filter.
+                    </td>
+                  </tr>
                 )}
-              </div>
-              <div>
-                <p className="font-semibold">
-                  {scan.gate} - {scan.value}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">{scan.text}</p>
-              </div>
-            </div>
-          ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </SpotlightCard>
     </section>
@@ -1885,11 +1955,13 @@ function BookingsTab({ bookings, totals, screens }) {
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
           icon={Ticket}
-          title="Booking statistics"
-          subtitle="Today's confirmed tickets"
+          title="Booking control"
+          subtitle="Customer tickets, emails, seats and payment status"
         />
         <div className="mt-5 grid gap-3">
-          <SnapshotRow label="Bookings" value={displayTotals.bookings.toLocaleString()} />
+          <SnapshotRow label="Total tickets" value={displayTotals.totalBookings.toLocaleString()} />
+          <SnapshotRow label="Confirmed" value={displayTotals.bookings.toLocaleString()} />
+          <SnapshotRow label="Refund queue" value={displayTotals.refunds.toLocaleString()} />
           <SnapshotRow label="Seats sold" value={displayTotals.seatsSold.toLocaleString()} />
           <SnapshotRow label="Revenue" value={formatCurrency(displayTotals.earnings)} />
           <SnapshotRow
@@ -1902,17 +1974,23 @@ function BookingsTab({ bookings, totals, screens }) {
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={Users} title="View bookings" subtitle="Customer booking list" />
+        <PanelHeader
+          icon={Users}
+          title="Booking list"
+          subtitle="Click a booking to inspect ticket"
+        />
         <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="w-full min-w-[960px] text-left text-sm">
               <thead className="bg-muted/40 text-xs text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Reference</th>
                   <th className="px-4 py-3 font-medium">Customer</th>
+                  <th className="px-4 py-3 font-medium">Email</th>
                   <th className="px-4 py-3 font-medium">Movie</th>
-                  <th className="px-4 py-3 font-medium">Show</th>
+                  <th className="px-4 py-3 font-medium">Timing</th>
                   <th className="px-4 py-3 font-medium">Seats</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Total</th>
                 </tr>
               </thead>
@@ -1929,17 +2007,23 @@ function BookingsTab({ bookings, totals, screens }) {
                   >
                     <td className="px-4 py-3 font-mono text-xs text-primary">{booking.ref}</td>
                     <td className="px-4 py-3 font-medium">{booking.customer}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {booking.email || "Not available"}
+                    </td>
                     <td className="px-4 py-3">{booking.movie}</td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {booking.screen} - {booking.time}
                     </td>
                     <td className="px-4 py-3">{booking.seats.join(", ")}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill status={booking.ticketStatus || "Confirmed"} />
+                    </td>
                     <td className="px-4 py-3 font-semibold">{formatCurrency(booking.total)}</td>
                   </tr>
                 ))}
                 {!bookings.length && (
                   <tr className="bg-card/20">
-                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                       No customer bookings for this cinema yet.
                     </td>
                   </tr>
@@ -1980,7 +2064,7 @@ function BookingsTab({ bookings, totals, screens }) {
               <SnapshotRow label="Phone" value={selectedBooking.phone || "Not available"} />
               <SnapshotRow label="Movie" value={selectedBooking.movie || "Movie"} />
               <SnapshotRow
-                label="Show"
+                label="Timing"
                 value={`${selectedBooking.screen || "Screen"} - ${selectedBooking.time || "Time"}`}
               />
               <SnapshotRow label="Seats" value={formatSeatList(selectedBooking.seats)} />
@@ -2032,7 +2116,7 @@ function OwnerApprovalState({ application, status, user, onLogout }) {
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               {isRejected
                 ? "Admin rejected this theater owner request. Update your cinema details and submit again."
-                : "Admin approval is required before this owner account can manage locations, movies, screens, show days, time slots and pricing."}
+                : "Admin approval is required before this owner account can manage locations, movies, screens, movie days, time slots and pricing."}
             </p>
           </div>
           <StatusPill status={status} />
@@ -2124,6 +2208,11 @@ function StatusPill({ status }) {
     Approved: "border-emerald-500/30 bg-emerald-500/10 text-emerald-500",
     Pending: "border-amber-500/30 bg-amber-500/10 text-amber-500",
     Rejected: "border-destructive/30 bg-destructive/10 text-destructive",
+    Listed: "border-primary/30 bg-primary/10 text-primary",
+    Confirmed: "border-emerald-500/30 bg-emerald-500/10 text-emerald-500",
+    Cancelled: "border-destructive/30 bg-destructive/10 text-destructive",
+    Review: "border-amber-500/30 bg-amber-500/10 text-amber-500",
+    Refunded: "border-cyan-500/30 bg-cyan-500/10 text-cyan-500",
     "Coming soon": "border-cyan-500/30 bg-cyan-500/10 text-cyan-500",
     "Selling fast": "border-amber-500/30 bg-amber-500/10 text-amber-500",
     "Sold out": "border-destructive/30 bg-destructive/10 text-destructive",
@@ -2201,13 +2290,23 @@ function buildListedMovies(shows, bookings) {
         comingSoonCount: 0,
         revenue: revenueByMovie[show.movie] ?? 0,
         latestShowId: show.id,
+        nextDate: "",
+        trailerUrl: show.trailerUrl,
+        notes: show.notes,
       };
     }
 
     acc[movieId].showCount += 1;
     acc[movieId].latestShowId = show.id;
     if (show.listingType === "coming-soon") acc[movieId].comingSoonCount += 1;
-    else acc[movieId].liveCount += 1;
+    else {
+      acc[movieId].liveCount += 1;
+      if (!acc[movieId].nextDate || show.date < acc[movieId].nextDate) {
+        acc[movieId].nextDate = show.date;
+      }
+    }
+    if (show.trailerUrl) acc[movieId].trailerUrl = show.trailerUrl;
+    if (show.notes) acc[movieId].notes = show.notes;
     acc[movieId].revenue = revenueByMovie[show.movie] ?? acc[movieId].revenue;
     return acc;
   }, {});
@@ -2231,16 +2330,98 @@ function buildEarningsTrend(bookings) {
   });
 
   const byKey = new Map(days.map((day) => [day.key, day]));
+  bookings
+    .filter((booking) => !isCancelledBooking(booking))
+    .forEach((booking) => {
+      const key = normalizeDateKey(booking.bookedAt || booking.createdAt || booking.date);
+      const row = byKey.get(key) ?? days[days.length - 1];
+      row.earnings += Number(booking.total || 0);
+      row.bookings += 1;
+      row.seats += booking.seats?.length ?? 0;
+      row.occupancy = Math.min(100, Math.round(row.seats * 8));
+    });
+
+  return days;
+}
+
+function buildRefundCases(bookings, services = {}) {
+  const cancelledTickets = bookings.filter(isCancelledBooking).map((booking) => ({
+    ref: booking.ref,
+    customer: booking.customer,
+    email: booking.email,
+    movie: booking.movie,
+    screen: booking.screen,
+    time: booking.time,
+    seats: booking.seats ?? [],
+    amount: Number(booking.total || 0),
+    paymentStatus: booking.paymentStatus,
+    status: booking.paymentStatus === "Refunded" ? "Refunded" : "Review",
+  }));
+  const serviceCases = (services?.refundCases ?? [])
+    .filter((refund) => refund?.ref)
+    .map((refund) => ({
+      ref: refund.ref,
+      customer: refund.customer || "Customer",
+      email: refund.email || "",
+      movie: refund.movie || refund.reason || "Cancelled ticket",
+      screen: refund.screen || "Screen",
+      time: refund.time || "Timing",
+      seats: refund.seats || [],
+      amount: Number(refund.amount || 0),
+      paymentStatus: refund.paymentStatus || "Paid",
+      status: refund.status || "Review",
+    }));
+
+  return [...cancelledTickets, ...serviceCases];
+}
+
+function isCancelledBooking(booking) {
+  const status = String(booking?.status || booking?.ticketStatus || "").toLowerCase();
+  return status.includes("cancel");
+}
+
+function filterRevenueBookings(bookings, period, movieFilter) {
+  const days = Math.max(1, Number(period) || 7);
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+
+  return bookings
+    .filter((booking) => !isCancelledBooking(booking))
+    .filter((booking) => movieFilter === "all" || booking.movie === movieFilter)
+    .filter((booking) => getBookingDate(booking) >= start);
+}
+
+function buildRevenueTrend(bookings, periodDays) {
+  const count = Math.min(30, Math.max(1, Number(periodDays) || 7));
+  const days = Array.from({ length: count }, (_, index) => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - (count - 1 - index));
+    const key = date.toISOString().slice(0, 10);
+    return {
+      key,
+      day: date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+      earnings: 0,
+      bookings: 0,
+      seats: 0,
+    };
+  });
+  const byKey = new Map(days.map((day) => [day.key, day]));
   bookings.forEach((booking) => {
-    const key = normalizeDateKey(booking.bookedAt || booking.createdAt || booking.date);
-    const row = byKey.get(key) ?? days[days.length - 1];
+    const key = getBookingDate(booking).toISOString().slice(0, 10);
+    const row = byKey.get(key);
+    if (!row) return;
     row.earnings += Number(booking.total || 0);
     row.bookings += 1;
     row.seats += booking.seats?.length ?? 0;
-    row.occupancy = Math.min(100, Math.round(row.seats * 8));
   });
-
   return days;
+}
+
+function getBookingDate(booking) {
+  const date = new Date(booking.createdAt || booking.bookedAt || booking.date || Date.now());
+  return Number.isNaN(date.getTime()) ? new Date() : date;
 }
 
 function normalizeDateKey(value) {
@@ -2256,6 +2437,12 @@ function formatSeatList(seats) {
 
 function formatCurrency(value) {
   return `Rs ${Number(value || 0).toLocaleString("en-IN")}`;
+}
+
+function formatWeekday(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Day not set";
+  return date.toLocaleDateString("en-IN", { weekday: "long" });
 }
 
 function getDateInputValue(offsetDays = 0) {
