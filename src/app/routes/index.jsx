@@ -44,24 +44,27 @@ const Route = createFileRoute("/")({
 const featureCards = [
   {
     title: "ScreenCare",
-    text: "Hygienic theatres for your safe and comfortable experience.",
+    text: "Hygienic theatres for your safe & comfortable experience.",
     icon: CarFront,
-    visualIcon: ShieldCheck,
-    tone: "from-emerald-400/24 via-teal-200/18 to-cyan-200/30",
+    visual: "screen",
+    tone: "from-emerald-100 via-teal-50 to-cyan-100 dark:from-emerald-500/18 dark:via-teal-500/12 dark:to-cyan-500/16",
+    iconTone: "bg-emerald-100 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-300",
   },
   {
     title: "Gift Passes",
     text: "Send movie magic to your loved ones.",
     icon: Gift,
-    visualIcon: Gift,
-    tone: "from-violet-400/22 via-fuchsia-200/18 to-amber-200/30",
+    visual: "gift",
+    tone: "from-violet-100 via-fuchsia-50 to-amber-100 dark:from-violet-500/18 dark:via-fuchsia-500/12 dark:to-amber-500/14",
+    iconTone: "bg-violet-100 text-violet-600 dark:bg-violet-400/15 dark:text-violet-300",
   },
   {
     title: "Film Journal",
     text: "Reviews, stories and exclusive guides for movie lovers.",
     icon: BookOpen,
-    visualIcon: Film,
-    tone: "from-sky-400/22 via-blue-200/18 to-cyan-200/30",
+    visual: "journal",
+    tone: "from-sky-100 via-blue-50 to-cyan-100 dark:from-sky-500/18 dark:via-blue-500/12 dark:to-cyan-500/14",
+    iconTone: "bg-sky-100 text-blue-600 dark:bg-sky-400/15 dark:text-sky-300",
   },
 ];
 
@@ -651,31 +654,100 @@ function CompactMovieCard({ movie }) {
 
 function FeatureBanner({ card }) {
   const Icon = card.icon;
-  const VisualIcon = card.visualIcon ?? card.icon;
   const id = card.title.toLowerCase().replace(/\s+/g, "-");
   return (
     <a
       id={id}
       href={`#${id}`}
-      className={`group block h-[132px] overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br ${card.tone} p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35`}
+      className={`group relative block h-[132px] overflow-hidden rounded-lg border border-white/70 bg-gradient-to-br ${card.tone} p-4 shadow-sm shadow-slate-200/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:shadow-black/20`}
     >
-      <div className="grid min-h-[100px] grid-cols-[auto_1fr_auto] items-center gap-4">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-background/75 text-primary shadow-sm">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_24%,rgba(255,255,255,0.92),transparent_28%)] dark:bg-[radial-gradient(circle_at_82%_24%,rgba(255,255,255,0.12),transparent_30%)]" />
+      <div className="relative z-10 flex h-full max-w-[60%] items-center gap-3 pr-2">
+        <div
+          className={`grid h-11 w-11 shrink-0 place-items-center rounded-lg ${card.iconTone} shadow-sm`}
+        >
           <Icon className="h-6 w-6" />
         </div>
-        <div className="min-w-0">
-          <h3 className="text-lg font-bold tracking-tight">{card.title}</h3>
-          <p className="mt-1 max-w-xs text-sm text-muted-foreground">{card.text}</p>
-          <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+        <div className="min-w-0 pt-1">
+          <h3 className="text-lg font-extrabold tracking-tight text-slate-950 dark:text-foreground">
+            {card.title}
+          </h3>
+          <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-700 dark:text-muted-foreground">
+            {card.text}
+          </p>
+          <span className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-primary">
             Explore{" "}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>
-        <div className="hidden h-20 w-24 place-items-center rounded-lg bg-background/45 text-primary shadow-inner sm:grid">
-          <VisualIcon className="h-12 w-12 drop-shadow-sm" />
-        </div>
       </div>
+      <FeatureArtwork type={card.visual} />
     </a>
+  );
+}
+
+function FeatureArtwork({ type }) {
+  if (type === "screen") {
+    return (
+      <div className="pointer-events-none absolute bottom-0 right-1 h-full w-[36%] min-w-28">
+        <div className="absolute bottom-4 right-3 h-14 w-24 rounded-[18px] bg-emerald-300/55 blur-xl dark:bg-emerald-400/20" />
+        <div className="absolute bottom-4 right-6 flex items-end gap-1.5">
+          {[0, 1, 2].map((seat) => (
+            <div
+              key={seat}
+              className="relative h-10 w-8 rounded-b-xl rounded-t-md bg-gradient-to-b from-emerald-400 to-teal-600 shadow-lg shadow-emerald-700/20"
+            >
+              <span className="absolute -top-4 left-1/2 h-5 w-6 -translate-x-1/2 rounded-t-xl bg-gradient-to-b from-emerald-200 to-emerald-400 shadow-sm" />
+              <span className="absolute bottom-2 left-1/2 h-1.5 w-5 -translate-x-1/2 rounded-full bg-white/45" />
+            </div>
+          ))}
+        </div>
+        <div className="absolute right-9 top-5 grid h-12 w-12 place-items-center rounded-2xl bg-white/78 text-emerald-600 shadow-xl shadow-emerald-700/15 rotate-6 dark:bg-background/55">
+          <ShieldCheck className="h-7 w-7" />
+        </div>
+        <span className="absolute right-24 top-8 h-2 w-2 rounded-full bg-emerald-400/70" />
+        <span className="absolute bottom-8 right-2 h-2.5 w-2.5 rounded-full bg-teal-300/80" />
+      </div>
+    );
+  }
+
+  if (type === "gift") {
+    return (
+      <div className="pointer-events-none absolute bottom-0 right-2 h-full w-[36%] min-w-28">
+        <div className="absolute bottom-5 right-4 h-14 w-24 rounded-[20px] bg-violet-300/35 blur-xl dark:bg-violet-400/18" />
+        <div className="absolute bottom-5 right-7 h-16 w-20 rounded-xl bg-gradient-to-br from-violet-300 via-fuchsia-200 to-amber-200 shadow-xl shadow-violet-700/15 rotate-3">
+          <span className="absolute left-1/2 top-0 h-full w-3 -translate-x-1/2 bg-violet-600/75" />
+          <span className="absolute left-0 top-6 h-3 w-full bg-violet-600/75" />
+          <span className="absolute -top-3 left-5 h-6 w-6 rounded-full border-[6px] border-violet-500/85" />
+          <span className="absolute -top-3 right-5 h-6 w-6 rounded-full border-[6px] border-fuchsia-500/85" />
+        </div>
+        <Gift className="absolute bottom-10 right-12 h-9 w-9 text-white/80 drop-shadow" />
+        <span className="absolute right-6 top-8 h-3 w-3 rounded-full bg-amber-300 shadow-sm" />
+        <span className="absolute right-28 top-5 h-2.5 w-2.5 rounded-full bg-fuchsia-300 shadow-sm" />
+        <span className="absolute bottom-11 right-2 h-2 w-2 rounded-full bg-violet-400/80" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="pointer-events-none absolute bottom-0 right-1 h-full w-[36%] min-w-28">
+      <div className="absolute bottom-4 right-4 h-16 w-24 rounded-[20px] bg-blue-300/40 blur-xl dark:bg-blue-400/18" />
+      <div className="absolute bottom-5 right-8 h-20 w-14 rounded-xl bg-gradient-to-br from-blue-500 via-sky-400 to-cyan-300 shadow-xl shadow-blue-800/20 -rotate-12">
+        <span className="absolute left-2 top-2 h-3 w-3 rounded-sm bg-white/65" />
+        <span className="absolute bottom-3 left-2 h-1.5 w-9 rounded-full bg-white/65" />
+        <span className="absolute bottom-7 left-2 h-1.5 w-8 rounded-full bg-white/45" />
+        <span className="absolute right-1 top-3 grid gap-1">
+          {[0, 1, 2, 3].map((dot) => (
+            <i key={dot} className="h-1.5 w-1.5 rounded-sm bg-white/70" />
+          ))}
+        </span>
+      </div>
+      <div className="absolute bottom-8 right-[72px] grid h-10 w-10 place-items-center rounded-xl bg-white/75 text-blue-600 shadow-lg dark:bg-background/55">
+        <Film className="h-6 w-6" />
+      </div>
+      <span className="absolute right-5 top-7 h-2.5 w-2.5 rounded-full bg-cyan-300" />
+      <span className="absolute bottom-10 right-2 h-2 w-2 rounded-full bg-blue-400/80" />
+    </div>
   );
 }
 
