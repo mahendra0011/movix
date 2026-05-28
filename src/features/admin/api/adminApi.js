@@ -58,7 +58,7 @@ async function updateTheaterApplicationStatus(id, status) {
 }
 
 function shouldUseLocalAdminFallback() {
-  return !HAS_CONFIGURED_API_URL && !import.meta.env.DEV;
+  return !HAS_CONFIGURED_API_URL;
 }
 
 export { fetchAdminSummary, fetchTheaterApplications, updateTheaterApplicationStatus };

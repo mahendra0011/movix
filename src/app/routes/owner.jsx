@@ -612,12 +612,8 @@ function OwnerDashboard() {
               Theater owner dashboard
             </div>
             <h1 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
-              Manage screens, shows, bookings and earnings for {cinemaProfile.name}.
+              Theater owner panel
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Add your cinema location, schedule shows, view booking activity and track cinema
-              revenue from one focused workspace.
-            </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button onClick={() => setActiveTab("shows")} className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -927,7 +923,6 @@ function OwnerOperationsTab({ totals, listedMovies, screens, onOpen }) {
                   </span>
                 </div>
                 <h3 className="mt-4 font-semibold">{item.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
               </button>
             );
           })}
