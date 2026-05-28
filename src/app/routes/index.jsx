@@ -454,31 +454,36 @@ function Home() {
             options={sortOptions}
             onChange={setSortBy}
           />
-          <div className="relative min-w-0 overflow-hidden rounded-xl border border-border/60 bg-background/70 p-1.5 shadow-sm md:col-span-2 lg:col-span-1">
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-cyan-400/10" />
-            <div className="relative flex items-center gap-2">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-primary/12 text-primary">
-                <SlidersHorizontal className="h-3 w-3" />
-              </span>
-              <p className="text-[11px] font-extrabold uppercase tracking-wide text-foreground">
-                Quick Filters
-              </p>
-            </div>
-            <div className="relative mt-1 flex gap-1.5 overflow-x-auto rounded-full border border-border/50 bg-card/80 p-1 shadow-inner">
-              {genres.slice(0, 8).map((genre) => (
-                <button
-                  key={genre}
-                  type="button"
-                  onClick={() => setActiveGenre(genre)}
-                  className={`h-6 shrink-0 whitespace-nowrap rounded-full border px-2.5 text-[11px] font-bold transition-all ${
-                    activeGenre === genre
-                      ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                      : "border-transparent bg-transparent text-foreground hover:border-primary/35 hover:bg-background hover:text-primary"
-                  }`}
-                >
-                  {genre}
-                </button>
-              ))}
+          <div className="relative min-w-0 overflow-hidden rounded-xl border border-border/60 bg-background/75 p-2 shadow-sm md:col-span-2 lg:col-span-1">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,color-mix(in_oklch,var(--primary)_18%,transparent),transparent_34%)]" />
+            <div className="relative flex min-h-[62px] items-center gap-3">
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary/12 text-primary">
+                  <SlidersHorizontal className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-wide text-muted-foreground">
+                    Quick
+                  </p>
+                  <p className="text-sm font-extrabold text-foreground">Filters</p>
+                </div>
+              </div>
+              <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto rounded-xl border border-border/50 bg-card/85 p-1.5 shadow-inner">
+                {genres.slice(0, 8).map((genre) => (
+                  <button
+                    key={genre}
+                    type="button"
+                    onClick={() => setActiveGenre(genre)}
+                    className={`h-8 shrink-0 whitespace-nowrap rounded-lg border px-3 text-xs font-bold transition-all ${
+                      activeGenre === genre
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/25"
+                        : "border-border/50 bg-background/70 text-foreground hover:border-primary/35 hover:bg-primary/8 hover:text-primary"
+                    }`}
+                  >
+                    {genre}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -690,61 +695,67 @@ function Home() {
 
 function FilterMetric({ icon: Icon, title, value, detail, options = [], onChange }) {
   const isActive = value !== allFilterValue && value !== "Popularity";
+  const selectId = `home-filter-${toDomId(title)}`;
   return (
-    <label
-      className={`group relative block overflow-hidden rounded-xl border p-1.5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+    <div
+      className={`group relative overflow-hidden rounded-xl border p-2 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
         isActive
           ? "border-primary/35 bg-primary/8 shadow-primary/10"
           : "border-border/60 bg-background/72 hover:border-primary/30"
       }`}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(20,184,166,0.16),transparent_34%)] opacity-80" />
-      <div className="relative flex h-full items-center gap-2">
+      <div className="relative flex items-center gap-2">
         <div
-          className={`grid h-7 w-7 shrink-0 place-items-center rounded-full transition-colors ${
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-colors ${
             isActive
               ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
               : "bg-primary/12 text-primary"
           }`}
         >
-          <Icon className="h-3.5 w-3.5" />
+          <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[9px] font-extrabold uppercase tracking-wide text-muted-foreground">
-            {title}
-          </p>
-          <span
-            className={`mt-1 flex min-w-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] shadow-sm transition-colors ${
-              isActive
-                ? "border-primary/25 bg-primary/10"
-                : "border-border/50 bg-card/85 group-hover:bg-primary/8"
-            }`}
+          <label
+            htmlFor={selectId}
+            className="block text-[10px] font-extrabold uppercase tracking-wide text-muted-foreground"
           >
-            <span className="min-w-0 flex-1 truncate font-bold text-foreground">{value}</span>
+            {title}
+          </label>
+          <div className="mt-1 flex min-h-5 items-center gap-1.5">
             {detail ? (
-              <span className="shrink-0 rounded-full bg-primary/14 px-1.5 py-0.5 text-[10px] font-extrabold text-primary">
-                {detail}
+              <span className="shrink-0 rounded-full bg-primary/12 px-1.5 py-0.5 text-[10px] font-extrabold text-primary">
+                {detail} options
               </span>
-            ) : null}
-            <ChevronDown
-              className={`h-3 w-3 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`}
-            />
-          </span>
+            ) : (
+              <span aria-hidden="true" className="text-[11px]">
+                &nbsp;
+              </span>
+            )}
+          </div>
         </div>
       </div>
-      <select
-        aria-label={title}
-        value={value}
-        onChange={(event) => onChange?.(event.target.value)}
-        className="absolute inset-0 h-full w-full cursor-pointer appearance-none border-0 bg-transparent text-transparent opacity-0"
-      >
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </label>
+      <div className="relative mt-2">
+        <select
+          id={selectId}
+          aria-label={title}
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
+          className="h-9 w-full cursor-pointer appearance-none rounded-lg border border-border/60 bg-card/90 px-3 pr-9 text-sm font-bold text-foreground shadow-inner outline-none transition-colors hover:border-primary/35 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+        >
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
+            isActive ? "text-primary" : "text-muted-foreground"
+          }`}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -1289,6 +1300,12 @@ function normalizeHomeText(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase();
+}
+
+function toDomId(value) {
+  return normalizeHomeText(value)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function initials(name) {
