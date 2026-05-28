@@ -468,7 +468,7 @@ function Home() {
             }`}
           >
             {displayedMovies.map((movie) => (
-              <CompactMovieCard key={movie.id} movie={movie} />
+              <CompactMovieCard key={movie.id} movie={movie} prominent={!showAllMovies} />
             ))}
           </div>
         ) : (
@@ -557,30 +557,39 @@ function Home() {
 
       <PremiereSpotlightSection movies={premieres} />
 
-      <section className="mx-auto mt-5 grid max-w-[1168px] gap-5 px-4 lg:grid-cols-[1fr_1fr]">
+      <section className="mx-auto mt-5 grid max-w-[1168px] gap-5 px-4">
         <PanelCard
           icon={Quote}
           title="Loved by movie lovers"
           subtitle="Real reviews from real users"
         >
-          <div className="mt-4 grid items-start gap-3 md:grid-cols-3">
+          <div className="mt-4 grid items-stretch gap-3 md:grid-cols-3">
             {testimonials.map((item) => (
               <article
                 key={item.name}
-                className="h-40 overflow-hidden rounded-lg border border-border/60 bg-background/55 p-4 shadow-sm"
+                className="relative min-h-[188px] overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br from-background via-card to-primary/8 p-4 shadow-sm"
               >
-                <Quote className="h-5 w-5 text-primary" />
-                <p className="mt-2 line-clamp-3 text-sm leading-relaxed">"{item.text}"</p>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-primary/12 text-primary">
+                    <Quote className="h-4 w-4" />
+                  </span>
+                  <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
+                    Verified
+                  </span>
+                </div>
+                <p className="mt-3 line-clamp-4 text-sm leading-6 text-foreground/85">
+                  "{item.text}"
+                </p>
                 <div className="mt-3 flex gap-0.5 text-primary">
                   {Array.from({ length: 5 }, (_, index) => (
                     <Star key={index} className="h-3.5 w-3.5 fill-primary" />
                   ))}
                 </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <div className="grid h-9 w-9 place-items-center rounded-full bg-primary/15 text-sm font-bold text-primary">
+                <div className="mt-3 flex items-center gap-2 border-t border-border/50 pt-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-primary to-emerald-400 text-sm font-extrabold text-white shadow-sm">
                     {item.name[0]}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold">{item.name}</p>
                     <p className="text-[11px] text-muted-foreground">{item.role}</p>
                   </div>
@@ -728,28 +737,44 @@ function HomeSection({
   );
 }
 
-function CompactMovieCard({ movie }) {
+function CompactMovieCard({ movie, prominent = false }) {
   return (
     <Link
       to="/movies/$id"
       params={{ id: movie.id }}
-      className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
+      className={`group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg ${
+        prominent ? "shadow-md" : ""
+      }`}
     >
-      <div className="relative aspect-[1.08/1] overflow-hidden bg-muted">
+      <div
+        className={`relative overflow-hidden bg-muted ${
+          prominent ? "aspect-[4/5]" : "aspect-[1.08/1]"
+        }`}
+      >
         <img
           src={movie.poster}
           alt={movie.title}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-xs font-semibold text-white backdrop-blur">
-          <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+        <span
+          className={`absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-black/70 font-semibold text-white backdrop-blur ${
+            prominent ? "px-2.5 py-1.5 text-sm" : "px-2 py-1 text-xs"
+          }`}
+        >
+          <Star className={`${prominent ? "h-4 w-4" : "h-3.5 w-3.5"} fill-primary text-primary`} />
           {displayMovieRating(movie)}
         </span>
       </div>
-      <div className="p-2.5">
-        <h3 className="line-clamp-2 min-h-9 text-sm font-bold leading-5">{movie.title}</h3>
-        <p className="mt-1 truncate text-xs text-muted-foreground">
+      <div className={prominent ? "p-3.5" : "p-2.5"}>
+        <h3
+          className={`line-clamp-2 font-bold ${
+            prominent ? "min-h-11 text-[15px] leading-[22px]" : "min-h-9 text-sm leading-5"
+          }`}
+        >
+          {movie.title}
+        </h3>
+        <p className={`${prominent ? "mt-1.5" : "mt-1"} truncate text-xs text-muted-foreground`}>
           {movie.genres.slice(0, 3).join(" - ")}
         </p>
       </div>
@@ -1045,24 +1070,43 @@ function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
 }
 
 function CinemaCard({ cinema, image }) {
+  const featureBadges = splitList(cinema.features).slice(0, 2);
   return (
-    <a href={`/movies/interstellar#showtimes`} className="group block">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+    <a
+      href={`/movies/interstellar#showtimes`}
+      className="group block overflow-hidden rounded-lg border border-border/60 bg-background/55 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md"
+    >
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
         <img
           src={image}
           alt={cinema.name}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white">
+        <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white backdrop-blur">
           <Heart className="h-3.5 w-3.5 fill-white" />
         </span>
-        <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-1 text-[11px] font-semibold text-white">
+        <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur">
+          <Star className="h-3 w-3 fill-primary text-primary" />
           {cinema.rating}
         </span>
       </div>
-      <p className="mt-2 truncate text-sm font-bold">{cinema.name}</p>
-      <p className="truncate text-[11px] text-muted-foreground">{cinema.features}</p>
+      <div className="p-3">
+        <p className="truncate text-sm font-bold">{cinema.name}</p>
+        <p className="mt-1 truncate text-[11px] text-muted-foreground">
+          {cinema.area}, {cinema.city}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {featureBadges.map((feature) => (
+            <span
+              key={feature}
+              className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary"
+            >
+              {feature}
+            </span>
+          ))}
+        </div>
+      </div>
     </a>
   );
 }
