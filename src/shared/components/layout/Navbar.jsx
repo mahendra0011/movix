@@ -2,7 +2,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
   Building2,
-  CalendarDays,
   Film,
   Gift,
   LayoutDashboard,
@@ -10,6 +9,7 @@ import {
   Moon,
   Percent,
   Search,
+  Star,
   Sun,
   User,
 } from "lucide-react";
@@ -34,7 +34,7 @@ const navItems = [
   { label: "Cinemas", href: "#cinemas", icon: Building2 },
   { label: "Offers", href: "#offers", icon: Percent },
   { label: "Gift Cards", href: "#gift-passes", icon: Gift },
-  { label: "Events", href: "#events", icon: CalendarDays },
+  { label: "Top Movies", href: "#top-movies", icon: Star },
 ];
 
 const panelLinks = [
