@@ -16,6 +16,7 @@ import { Route as AdminRouteImport } from "./routes/admin";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as MoviesIndexRouteImport } from "./routes/movies.index";
 import { Route as MoviesIdRouteImport } from "./routes/movies.$id";
+import { Route as CinemasIdRouteImport } from "./routes/cinemas.$id";
 import { Route as BookShowIdRouteImport } from "./routes/book.$showId";
 
 const OwnerRoute = OwnerRouteImport.update({
@@ -63,6 +64,11 @@ const MoviesIdRoute = MoviesIdRouteImport.update({
   path: "/$id",
   getParentRoute: () => MoviesRoute,
 });
+const CinemasIdRoute = CinemasIdRouteImport.update({
+  id: "/cinemas/$id",
+  path: "/cinemas/$id",
+  getParentRoute: () => rootRouteImport,
+});
 const BookShowIdRoute = BookShowIdRouteImport.update({
   id: "/book/$showId",
   path: "/book/$showId",
@@ -86,5 +92,6 @@ const rootRouteChildren = {
   MoviesRoute: MoviesRouteWithChildren,
   OwnerRoute: OwnerRoute,
   BookShowIdRoute: BookShowIdRoute,
+  CinemasIdRoute: CinemasIdRoute,
 };
 export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren);

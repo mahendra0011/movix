@@ -231,6 +231,10 @@ function Home() {
   );
   const topCinemas = buildTopCinemas(selectedCity, cinemaCatalog);
   const showSearch = query.trim().length > 0;
+  const matchingCinemas = useMemo(
+    () => searchCinemas(cinemaCatalog, selectedCity, query).slice(0, 8),
+    [cinemaCatalog, query, selectedCity],
+  );
 
   const subscribe = async (event) => {
     event.preventDefault();
@@ -267,7 +271,7 @@ function Home() {
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Search results</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {visibleMovies.length} movie result{visibleMovies.length === 1 ? "" : "s"} for "
+                {visibleMovies.length} movies and {matchingCinemas.length} cinemas for "
                 {query.trim()}"
               </p>
             </div>
@@ -283,11 +287,39 @@ function Home() {
             </Button>
           </div>
 
-          {visibleMovies.length ? (
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {visibleMovies.map((movie) => (
-                <CompactMovieCard key={movie.id} movie={movie} />
-              ))}
+          {visibleMovies.length || matchingCinemas.length ? (
+            <div className="mt-6 grid gap-7">
+              {visibleMovies.length ? (
+                <div>
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h2 className="text-lg font-bold">Movies</h2>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {visibleMovies.length} found
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                    {visibleMovies.map((movie) => (
+                      <CompactMovieCard key={movie.id} movie={movie} />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {matchingCinemas.length ? (
+                <div>
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h2 className="text-lg font-bold">Cinemas</h2>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {matchingCinemas.length} found in {selectedCity}
+                    </span>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {matchingCinemas.map((cinema) => (
+                      <CinemaSearchResult key={cinema.id} cinema={cinema} />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : (
             <div className="mt-8 rounded-lg border border-dashed border-border/70 p-10 text-center">
@@ -1108,8 +1140,9 @@ function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
 function CinemaCard({ cinema, image }) {
   const featureBadges = splitList(cinema.features).slice(0, 2);
   return (
-    <a
-      href={`/movies/interstellar#showtimes`}
+    <Link
+      to="/cinemas/$id"
+      params={{ id: cinema.id }}
       className="group block overflow-hidden rounded-lg border border-border/60 bg-background/55 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-muted">
@@ -1143,7 +1176,7 @@ function CinemaCard({ cinema, image }) {
           ))}
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
 
@@ -1155,12 +1188,52 @@ function buildTopCinemas(selectedCity, cinemaCatalog) {
   const source = local.length ? local : cinemaCatalog.slice(0, 4);
 
   return source.map((theater, index) => ({
+    id: theater.id,
     name: theater.name,
     area: theater.area,
     city: theater.city,
     features: splitList(theater.amenities).slice(0, 2).join(", ") || "M-Ticket, Snacks",
     rating: (4.5 + (index % 3) * 0.1).toFixed(1),
   }));
+}
+
+function CinemaSearchResult({ cinema }) {
+  const amenities = splitList(cinema.amenities).slice(0, 4);
+  const movieCount = splitList(cinema.movieIds).length || fallbackMovies.length;
+  return (
+    <Link
+      to="/cinemas/$id"
+      params={{ id: cinema.id }}
+      className="group grid gap-3 rounded-lg border border-border/60 bg-background/65 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg sm:grid-cols-[56px_1fr_auto]"
+    >
+      <div className="grid h-14 w-14 place-items-center rounded-lg border border-primary/20 bg-primary/10 text-sm font-extrabold text-primary">
+        {cinema.logoText || initials(cinema.name)}
+      </div>
+      <div className="min-w-0">
+        <h3 className="truncate text-base font-bold">{cinema.name}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {cinema.area}, {cinema.city} - {cinema.distance || "near you"}
+        </p>
+        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{cinema.address}</p>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {amenities.map((amenity) => (
+            <span
+              key={amenity}
+              className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary"
+            >
+              {amenity}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-3 text-xs font-semibold text-muted-foreground sm:flex-col sm:items-end">
+        <span>{movieCount} movies</span>
+        <span className="inline-flex items-center gap-1 text-primary">
+          View shows <ChevronRight className="h-3.5 w-3.5" />
+        </span>
+      </div>
+    </Link>
+  );
 }
 
 function rotateMovies(list, offset) {
@@ -1188,10 +1261,40 @@ function splitList(value) {
     .filter(Boolean);
 }
 
+function searchCinemas(cinemaCatalog, selectedCity, query) {
+  const needle = normalizeHomeText(query);
+  if (!needle) return [];
+  const cityKey = normalizeHomeText(selectedCity);
+  return cinemaCatalog.filter((cinema) => {
+    if (cityKey && normalizeHomeText(cinema.city) !== cityKey) return false;
+    const text = [
+      cinema.name,
+      cinema.city,
+      cinema.area,
+      cinema.address,
+      cinema.distance,
+      ...splitList(cinema.amenities),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return text.includes(needle);
+  });
+}
+
 function normalizeHomeText(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase();
+}
+
+function initials(name) {
+  return String(name)
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 }
 
 function trailerSearchUrl(title) {
