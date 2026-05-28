@@ -212,38 +212,35 @@ function MoviePage() {
 
   return (
     <div className="pb-20">
-      <section className="relative overflow-hidden border-b border-border/60 bg-card">
-        <div className="relative h-64 overflow-hidden md:h-80 lg:h-[22rem]">
-          <img
-            src={movie.backdrop}
-            alt={movie.title}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/75 to-background/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/20" />
-        </div>
+      <section className="relative overflow-hidden border-b border-border/60 bg-background">
+        <img
+          src={movie.backdrop}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-y-0 right-0 h-full w-full object-cover opacity-20 md:w-[72%] md:opacity-25"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-        <div className="relative mx-auto max-w-7xl px-4">
-          <div className="-mt-24 grid gap-5 pb-8 md:-mt-32 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
-            <div className="mx-auto w-full max-w-[220px] overflow-hidden rounded-lg border border-border/70 bg-card shadow-xl shadow-black/20 md:mx-0 md:max-w-none">
-              <div className="relative">
-                <img
-                  src={movie.poster}
-                  alt={movie.title}
-                  className="aspect-[2/3] w-full object-cover"
-                />
-                <a
-                  href={trailerSearchUrl(movie.title)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="absolute inset-x-3 bottom-3 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-background/90 text-sm font-semibold text-foreground backdrop-blur transition-colors hover:bg-primary hover:text-primary-foreground"
-                >
-                  <Play className="h-4 w-4" /> Watch trailer
-                </a>
-              </div>
+        <div className="relative mx-auto max-w-7xl px-4 py-8 md:py-10">
+          <div className="grid gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)_280px] lg:items-center">
+            <div className="mx-auto w-full max-w-[220px] overflow-hidden rounded-lg border border-border/70 bg-card shadow-lg shadow-black/10 md:mx-0 md:max-w-none">
+              <img
+                src={movie.poster}
+                alt={movie.title}
+                className="aspect-[2/3] w-full object-cover"
+              />
+              <a
+                href={trailerSearchUrl(movie.title)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-11 items-center justify-center gap-2 border-t border-border/60 bg-card text-sm font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+              >
+                <Play className="h-4 w-4" /> Watch trailer
+              </a>
             </div>
 
-            <div className="self-end pb-1">
+            <div>
               <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
                 <Ticket className="h-4 w-4" />
                 In cinemas now
@@ -252,52 +249,34 @@ function MoviePage() {
                 {movie.title}
               </h1>
 
-              <div className="mt-4 rounded-lg border border-border/60 bg-background/85 p-4 shadow-lg shadow-black/10 backdrop-blur">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <div className="inline-flex items-center gap-2">
-                      <Star className="h-5 w-5 fill-primary text-primary" />
-                      <span className="text-lg font-bold">{movie.rating}/10</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">{movie.votes} votes</span>
-                    <span className="hidden h-5 w-px bg-border sm:block" />
-                    <span className="text-sm font-medium">8K reviews</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    {movie.format.map((format) => (
-                      <span
-                        key={format}
-                        className="rounded-md border border-border/60 bg-card px-2.5 py-1 font-medium"
-                      >
-                        {format}
-                      </span>
-                    ))}
-                    <span className="rounded-md border border-border/60 bg-card px-2.5 py-1 font-medium">
-                      {movie.language}
-                    </span>
-                    <span className="rounded-md border border-border/60 bg-card px-2.5 py-1 font-medium">
-                      {movie.certificate}
-                    </span>
-                  </div>
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                <div className="inline-flex items-center gap-2">
+                  <Star className="h-5 w-5 fill-primary text-primary" />
+                  <span className="text-lg font-bold">{movie.rating}/10</span>
                 </div>
-
-                <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                  {detailHighlights.map(({ label, value, icon: Icon }) => (
-                    <div
-                      key={label}
-                      className="flex items-center gap-3 rounded-lg border border-border/60 bg-card/80 px-3 py-2.5"
-                    >
-                      <Icon className="h-4 w-4 shrink-0 text-primary" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">{label}</p>
-                        <p className="text-sm font-semibold">{value}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <span className="text-sm text-muted-foreground">{movie.votes} votes</span>
+                <span className="hidden h-5 w-px bg-border sm:block" />
+                <span className="text-sm font-medium">8K reviews</span>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <div className="mt-5 flex flex-wrap gap-2 text-xs">
+                {movie.format.map((format) => (
+                  <span
+                    key={format}
+                    className="rounded-md border border-border/60 bg-card px-3 py-1.5 font-semibold shadow-sm"
+                  >
+                    {format}
+                  </span>
+                ))}
+                <span className="rounded-md border border-border/60 bg-card px-3 py-1.5 font-semibold shadow-sm">
+                  {movie.language}
+                </span>
+                <span className="rounded-md border border-border/60 bg-card px-3 py-1.5 font-semibold shadow-sm">
+                  {movie.certificate}
+                </span>
+              </div>
+
+              <div className="mt-8 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-4 w-4" /> {movie.duration}
                 </span>
@@ -349,6 +328,25 @@ function MoviePage() {
                 </p>
               )}
             </div>
+
+            <div className="hidden gap-3 lg:grid">
+              {detailHighlights.map(({ label, value, icon: Icon }) => (
+                <div
+                  key={label}
+                  className="rounded-lg border border-border/60 bg-card/95 p-4 shadow-lg shadow-black/5 backdrop-blur"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">{label}</p>
+                      <p className="mt-1 text-sm font-semibold">{value}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -386,25 +384,21 @@ function MoviePage() {
 
 function MovieDetailsContent({ movie }) {
   return (
-    <div className="mx-auto mt-8 grid max-w-7xl gap-8 px-4">
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
+    <div className="mx-auto mt-10 grid max-w-7xl gap-10 px-4">
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         <div>
           <SectionHeader icon={Info} eyebrow="Story" title="About the movie" />
           <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
             {detailAboutText}
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-          <StatTile icon={Star} label="Audience love" value={`${movie.rating}/10`} />
-          <StatTile icon={MessageCircle} label="Review volume" value="8K reviews" />
-          <StatTile icon={Users} label="Popular with" value="Couples & groups" />
-        </div>
+        <DetailsStatsPanel movie={movie} />
       </section>
 
       <OfferSlider />
 
       <section>
-        <SectionHeader icon={Users} eyebrow="On screen" title="Cast" />
+        <SectionTitleBar title="Cast" actionLabel="View all" />
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
           {detailCast.map((name) => (
             <ProfileBubble key={name} name={name} role="Actor" />
@@ -412,15 +406,14 @@ function MovieDetailsContent({ movie }) {
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[300px_1fr]">
+      <section className="grid gap-6 lg:grid-cols-[260px_1fr]">
         <div>
-          <SectionHeader icon={MessageCircle} eyebrow="8K reviews" title="Top reviews" />
-          <p className="mt-3 text-sm text-muted-foreground">Summary of 8K reviews.</p>
+          <SectionTitleBar title="Top reviews" />
           <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-1">
             {reviewTags.slice(0, 6).map(([tag, count]) => (
               <div
                 key={tag}
-                className="flex items-center justify-between rounded-lg border border-border/60 bg-card px-3 py-2 text-xs"
+                className="flex items-center justify-between rounded-md border border-border/60 bg-card px-3 py-2 text-xs shadow-sm"
               >
                 <span className="font-medium">{tag}</span>
                 <span className="text-muted-foreground">{count}</span>
@@ -437,13 +430,8 @@ function MovieDetailsContent({ movie }) {
       </section>
 
       <section>
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <SectionHeader icon={Award} eyebrow="Critics" title="Critic reviews" />
-          <button type="button" className="text-sm font-medium text-primary hover:underline">
-            See all
-          </button>
-        </div>
-        <article className="rounded-lg border border-border/60 bg-card p-4">
+        <SectionTitleBar title="Critic reviews" actionLabel="See all" />
+        <article className="mt-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold">Pati Patni Aur Woh Do</p>
@@ -460,13 +448,8 @@ function MovieDetailsContent({ movie }) {
       </section>
 
       <section>
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <SectionHeader icon={Heart} eyebrow="More picks" title="You might also like" />
-          <button type="button" className="text-sm font-medium text-primary hover:underline">
-            View All
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <SectionTitleBar title="You might also like" actionLabel="View all" />
+        <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
           {suggestedTitles.map((title) => (
             <SuggestionCard key={title} title={title} poster={movie.poster} />
           ))}
@@ -479,8 +462,8 @@ function MovieDetailsContent({ movie }) {
 function SectionHeader({ icon: Icon, eyebrow, title }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
-        <Icon className="h-5 w-5" />
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+        <Icon className="h-4 w-4" />
       </div>
       <div>
         <p className="text-xs font-semibold uppercase text-muted-foreground">{eyebrow}</p>
@@ -490,13 +473,42 @@ function SectionHeader({ icon: Icon, eyebrow, title }) {
   );
 }
 
-function StatTile({ icon: Icon, label, value }) {
+function SectionTitleBar({ title, actionLabel }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-card p-3.5">
-      <Icon className="h-5 w-5 text-primary" />
-      <p className="mt-2.5 text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-semibold">{value}</p>
+    <div className="flex w-full items-center justify-between gap-3">
+      <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+      {actionLabel && (
+        <button type="button" className="text-sm font-semibold text-primary hover:underline">
+          {actionLabel}
+        </button>
+      )}
     </div>
+  );
+}
+
+function DetailsStatsPanel({ movie }) {
+  const stats = [
+    { icon: Star, label: "Audience love", value: `${movie.rating}/10` },
+    { icon: MessageCircle, label: "Review volume", value: "8K reviews" },
+    { icon: Users, label: "Popular with", value: "Couples & groups" },
+  ];
+
+  return (
+    <aside className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
+      <div className="divide-y divide-border/60">
+        {stats.map(({ icon: Icon, label, value }) => (
+          <div key={label} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+              <Icon className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">{label}</p>
+              <p className="mt-1 text-sm font-semibold">{value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </aside>
   );
 }
 
@@ -512,23 +524,23 @@ function OfferSlider() {
   return (
     <section className="min-w-0">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <SectionHeader icon={BadgePercent} eyebrow="Savings" title="Top offers for you" />
-        <div className="flex gap-2">
+        <SectionTitleBar title="Top offers for you" actionLabel="View all" />
+        <div className="hidden gap-2 sm:flex">
           <button
             type="button"
             onClick={() => slideOffers(-1)}
-            className="grid h-10 w-10 place-items-center rounded-md border border-border/60 bg-card text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+            className="grid h-9 w-9 place-items-center rounded-md border border-border/60 bg-card text-muted-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
             aria-label="Slide offers left"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={() => slideOffers(1)}
-            className="grid h-10 w-10 place-items-center rounded-md border border-border/60 bg-card text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+            className="grid h-9 w-9 place-items-center rounded-md border border-border/60 bg-card text-muted-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
             aria-label="Slide offers right"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -552,18 +564,19 @@ function OfferCard({ offer }) {
   return (
     <button
       type="button"
-      className="group min-h-28 w-[78vw] shrink-0 snap-start rounded-lg border border-border/60 bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-primary/5 sm:w-80 lg:w-[22rem] xl:w-[24rem]"
+      className="group min-h-28 w-[78vw] shrink-0 snap-start rounded-lg border border-border/60 bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-primary/5 sm:w-80 lg:w-[22rem] xl:w-[24rem]"
     >
-      <div className="flex items-start gap-3">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+      <div className="flex items-center gap-3">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
           <BadgePercent className="h-5 w-5" />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold leading-5">{offer}</p>
           <p className="mt-1 text-xs text-muted-foreground group-hover:text-primary">
             Tap to view details
           </p>
         </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
       </div>
     </button>
   );
@@ -571,7 +584,7 @@ function OfferCard({ offer }) {
 
 function ProfileBubble({ name, role }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-card p-3 text-center transition-transform hover:-translate-y-0.5">
+    <div className="rounded-lg border border-border/60 bg-card p-4 text-center shadow-sm transition-transform hover:-translate-y-0.5">
       <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary/15 ring-1 ring-primary/20">
         <span className="text-sm font-bold text-foreground">{initials(name)}</span>
       </div>
@@ -583,10 +596,12 @@ function ProfileBubble({ name, role }) {
 
 function ReviewCard({ review }) {
   return (
-    <article className="rounded-lg border border-border/60 bg-card p-4 transition-colors hover:border-primary/40">
+    <article className="rounded-lg border border-border/60 bg-card p-4 shadow-sm transition-colors hover:border-primary/40">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          {review.tags && <p className="mb-2 text-xs font-medium text-primary">{review.tags}</p>}
+          {review.tags && (
+            <p className="mb-2 break-words text-xs font-medium text-primary">{review.tags}</p>
+          )}
           <p className="font-semibold">{review.name}</p>
           <p className="text-xs text-muted-foreground">Booked on</p>
         </div>
@@ -608,8 +623,8 @@ function ReviewCard({ review }) {
 
 function SuggestionCard({ title, poster }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border/60 bg-card transition-transform hover:-translate-y-0.5">
-      <div className="relative aspect-[2/3] bg-muted">
+    <div className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-transform hover:-translate-y-0.5">
+      <div className="relative aspect-[16/9] bg-muted">
         {poster ? (
           <img src={poster} alt={title} className="h-full w-full object-cover opacity-85" />
         ) : (
@@ -618,10 +633,8 @@ function SuggestionCard({ title, poster }) {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-        <p className="absolute bottom-3 left-3 right-3 text-sm font-semibold text-foreground">
-          {title}
-        </p>
       </div>
+      <p className="px-3 py-2 text-sm font-semibold text-foreground">{title}</p>
     </div>
   );
 }
