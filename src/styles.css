@@ -37,25 +37,25 @@
 :root {
   --radius: 0.5rem;
   color-scheme: light;
-  --background: oklch(0.976 0.006 220);
-  --foreground: oklch(0.22 0.018 230);
+  --background: oklch(0.988 0.004 230);
+  --foreground: oklch(0.22 0.02 245);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.018 230);
+  --card-foreground: oklch(0.22 0.02 245);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.018 230);
-  --primary: oklch(0.56 0.13 178);
+  --popover-foreground: oklch(0.22 0.02 245);
+  --primary: oklch(0.55 0.125 178);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.935 0.012 220);
-  --secondary-foreground: oklch(0.29 0.024 230);
-  --muted: oklch(0.945 0.009 220);
-  --muted-foreground: oklch(0.48 0.018 230);
-  --accent: oklch(0.89 0.12 82);
-  --accent-foreground: oklch(0.31 0.06 78);
+  --secondary: oklch(0.955 0.006 235);
+  --secondary-foreground: oklch(0.3 0.024 245);
+  --muted: oklch(0.96 0.006 235);
+  --muted-foreground: oklch(0.47 0.018 245);
+  --accent: oklch(0.93 0.035 180);
+  --accent-foreground: oklch(0.28 0.06 178);
   --destructive: oklch(0.56 0.22 25);
   --destructive-foreground: oklch(0.99 0.004 230);
-  --border: oklch(0.875 0.012 220);
-  --input: oklch(0.9 0.01 220);
-  --ring: oklch(0.56 0.13 178);
+  --border: oklch(0.895 0.008 235);
+  --input: oklch(0.91 0.008 235);
+  --ring: oklch(0.55 0.125 178);
   --gold: oklch(0.74 0.16 82);
   --silver: oklch(0.78 0.02 240);
   --platinum: oklch(0.6 0.035 235);
@@ -145,30 +145,13 @@
   }
 
   .spotlight-card {
-    --mouse-x: 50%;
-    --mouse-y: 0%;
     position: relative;
     overflow: hidden;
-    border: 1px solid color-mix(in oklch, var(--border) 86%, transparent);
-    background-color: color-mix(in oklch, var(--card) 90%, transparent);
-  }
-
-  .spotlight-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-      420px circle at var(--mouse-x) var(--mouse-y),
-      var(--spotlight-color),
-      transparent 42%
-    );
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 180ms ease;
-  }
-
-  .spotlight-card:hover::before {
-    opacity: 1;
+    border: 1px solid color-mix(in oklch, var(--border) 92%, transparent);
+    background-color: color-mix(in oklch, var(--card) 96%, transparent);
+    box-shadow:
+      0 1px 2px color-mix(in oklch, var(--foreground) 6%, transparent),
+      0 18px 48px color-mix(in oklch, var(--foreground) 5%, transparent);
   }
 
   .spotlight-card > * {
