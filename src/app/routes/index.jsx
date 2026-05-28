@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Clapperboard,
   Film,
+  Flame,
   Gift,
   Heart,
   Landmark,
@@ -156,6 +157,7 @@ function Home() {
     () => buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog),
     [catalog, cinemaCatalog, selectedCity],
   );
+  const topMovies = useMemo(() => buildTopMovies(cityListedMovies), [cityListedMovies]);
   const genres = useMemo(
     () => [
       allFilterValue,
@@ -490,15 +492,15 @@ function Home() {
 
       <section className="mx-auto mt-7 grid max-w-[1168px] gap-5 px-4 lg:grid-cols-[1.1fr_0.78fr_0.66fr]">
         <PanelCard
-          id="events"
-          icon={Gift}
-          title="Premieres of the week"
-          subtitle="Brand new releases in theatres"
+          id="top-movies"
+          icon={Star}
+          title="Top movies"
+          subtitle="Highest rated films this week"
           actionLabel="See all"
         >
           <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {premieres.map((movie) => (
-              <MiniMovieTile key={movie.id} movie={movie} badge="PREMIERE" />
+            {topMovies.map((movie) => (
+              <MiniMovieTile key={movie.id} movie={movie} badge="TOP" />
             ))}
           </div>
         </PanelCard>
@@ -552,6 +554,8 @@ function Home() {
           </div>
         </PanelCard>
       </section>
+
+      <PremiereSpotlightSection movies={premieres} />
 
       <section className="mx-auto mt-5 grid max-w-[1168px] gap-5 px-4 lg:grid-cols-[1fr_1fr]">
         <PanelCard
@@ -874,6 +878,82 @@ function PanelCard({ id, icon: Icon, title, subtitle, actionLabel = "See all", c
   );
 }
 
+function PremiereSpotlightSection({ movies }) {
+  return (
+    <section id="events" className="mx-auto mt-7 max-w-[1168px] px-4">
+      <div className="mb-5 flex items-end justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-lg bg-primary/14 text-primary">
+            <Flame className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-extrabold tracking-tight">Premieres of the week</h2>
+            <p className="text-sm text-muted-foreground">Brand new films, only in theatres</p>
+          </div>
+        </div>
+        <a
+          href="#events"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+        >
+          See all <ChevronRight className="h-4 w-4" />
+        </a>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {movies.map((movie) => (
+          <PremiereSpotlightCard key={movie.id} movie={movie} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PremiereSpotlightCard({ movie }) {
+  return (
+    <Link
+      to="/movies/$id"
+      params={{ id: movie.id }}
+      className="group relative grid min-h-[176px] overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg sm:grid-cols-[108px_1fr]"
+    >
+      <img
+        src={movie.backdrop || movie.poster}
+        alt=""
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover opacity-85 transition-transform duration-500 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/86 to-background/20 dark:from-card dark:via-card/82 dark:to-card/25" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/45 via-transparent to-transparent dark:from-background/80" />
+
+      <div className="relative z-10 hidden items-center p-5 sm:flex">
+        <img
+          src={movie.poster}
+          alt={movie.title}
+          loading="lazy"
+          className="h-28 w-20 rounded-md object-cover shadow-xl shadow-black/25"
+        />
+      </div>
+      <div className="relative z-10 flex min-w-0 flex-col justify-center p-5 sm:pl-0">
+        <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/18 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+          <Flame className="h-3.5 w-3.5" />
+          Premiere
+        </span>
+        <h3 className="line-clamp-2 text-xl font-extrabold tracking-tight text-foreground">
+          {movie.title}
+        </h3>
+        <p className="mt-2 line-clamp-2 max-w-xl text-sm leading-6 text-muted-foreground">
+          {movie.description}
+        </p>
+        <p className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-foreground">
+          <Star className="h-4 w-4 fill-primary text-primary" />
+          <span>{displayMovieRating(movie, "premiere")}</span>
+          <span className="text-muted-foreground">
+            - {movie.duration} - {movie.certificate}
+          </span>
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 function MiniMovieTile({ movie, badge }) {
   return (
     <Link to="/movies/$id" params={{ id: movie.id }} className="group block">
@@ -901,6 +981,12 @@ function buildRecommendedMovies(list) {
   const preferred = recommendedOrder.map((id) => byId.get(id)).filter(Boolean);
   const rest = list.filter((movie) => !recommendedOrder.includes(movie.id));
   return [...preferred, ...rest].slice(0, 6);
+}
+
+function buildTopMovies(list) {
+  return [...list]
+    .sort((left, right) => Number(right.rating || 0) - Number(left.rating || 0))
+    .slice(0, 4);
 }
 
 function getMovieGenres(movie) {
