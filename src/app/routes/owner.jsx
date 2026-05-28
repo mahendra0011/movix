@@ -113,18 +113,17 @@ const defaultCinemaProfile = {
 };
 
 function createBlankShow(screens = screenSeeds) {
-  const baseMovie = movies[0] ?? {};
   return {
     listingType: "live",
-    movieId: baseMovie.id ?? "",
+    movieId: "",
     customTitle: "",
-    poster: baseMovie.poster ?? "",
-    backdrop: baseMovie.backdrop ?? "",
-    duration: baseMovie.duration ?? "2h 10m",
-    genres: (baseMovie.genres ?? ["Drama"]).join(", "),
-    releaseDate: baseMovie.releaseDate ?? "",
-    description: baseMovie.description ?? "",
-    cast: normalizeCastRows(baseMovie.cast),
+    poster: "",
+    backdrop: "",
+    duration: "",
+    genres: "",
+    releaseDate: "",
+    description: "",
+    cast: normalizeCastRows(),
     screen: screens[0]?.name ?? "",
     showDate: getDateInputValue(0),
     startTime: "18:30",
@@ -440,11 +439,10 @@ function OwnerDashboard() {
     const nextShows = [nextListing, ...shows];
     setShows(nextShows);
     setShowForm((current) => ({
-      ...current,
-      customTitle: "",
-      description: "",
-      notes: "",
-      trailerUrl: "",
+      ...createBlankShow(ownerScreens),
+      movieId: nextListing.movieId,
+      screen: current.screen,
+      totalSeats: current.totalSeats,
     }));
     await persistWorkspace(
       workspacePayload({ shows: nextShows }),
@@ -473,11 +471,11 @@ function OwnerDashboard() {
 
   const createOwnerListing = ({ mode }) => {
     const listedMovie = listedMovies.find((item) => item.movieId === showForm.movieId);
-    const movie = listedMovie ?? movies.find((item) => item.id === showForm.movieId) ?? movies[0];
+    const movie = listedMovie ?? movies.find((item) => item.id === showForm.movieId);
     const isMovieOnly = mode === "movie";
+    const sourceMovie = isMovieOnly ? null : movie;
     const customTitle = showForm.customTitle.trim();
-    const title = customTitle || movie?.title;
-    const usesCustomTitle = Boolean(customTitle && customTitle !== movie?.title);
+    const title = isMovieOnly ? customTitle : customTitle || sourceMovie?.title;
     if (!title || (!isMovieOnly && !showForm.screen)) return null;
 
     const goldPrice = Number(showForm.goldPrice) || 300;
@@ -488,12 +486,12 @@ function OwnerDashboard() {
     const selectedScreen = ownerScreens.find((screen) => screen.name === showForm.screen);
     const seatLayout = normalizeSeatLayoutConfig(selectedScreen?.seatLayout);
     const seatCount = selectedScreen?.seats ?? buildSeatLayout(seatLayout).totalSeats;
-    const poster = showForm.poster || movie?.poster || movies[0]?.poster || "";
-    const backdrop = showForm.backdrop || movie?.backdrop || poster;
+    const poster = showForm.poster || sourceMovie?.poster || "";
+    const backdrop = showForm.backdrop || sourceMovie?.backdrop || poster;
     const genres = splitAmenities(showForm.genres).length
       ? splitAmenities(showForm.genres)
-      : movie?.genres || [];
-    const cast = normalizeCastRows(showForm.cast, movie?.cast);
+      : sourceMovie?.genres || [];
+    const cast = normalizeCastRows(showForm.cast, sourceMovie?.cast);
 
     return {
       id: `${slugify(title)}-${Date.now()}`,
@@ -506,15 +504,16 @@ function OwnerDashboard() {
       distance: cinemaProfile.distance,
       amenities: cinemaProfile.amenities,
       listingType: isMovieOnly ? "coming-soon" : "live",
-      movieId:
-        listedMovie?.movieId || (usesCustomTitle ? slugify(title) : movie?.id) || slugify(title),
+      movieId: isMovieOnly
+        ? slugify(title)
+        : sourceMovie?.movieId || sourceMovie?.id || slugify(title),
       movie: title,
       poster,
       backdrop,
-      duration: showForm.duration.trim() || movie?.duration || "",
+      duration: showForm.duration.trim() || sourceMovie?.duration || "",
       genres,
-      releaseDate: showForm.releaseDate.trim() || movie?.releaseDate || "",
-      description: showForm.description.trim() || movie?.description || "",
+      releaseDate: showForm.releaseDate.trim() || sourceMovie?.releaseDate || "",
+      description: showForm.description.trim() || sourceMovie?.description || "",
       cast,
       screen: isMovieOnly ? "Timing pending" : showForm.screen,
       date,
@@ -830,19 +829,9 @@ function OwnerMoviesTab({
 }) {
   const update = (field) => (event) =>
     onFormChange((current) => ({ ...current, [field]: event.target.value }));
-  const selectedMovie = movies.find((movie) => movie.id === showForm.movieId) ?? movies[0];
-  const moviePreview = buildMovieMasterPreview(showForm, selectedMovie);
+  const moviePreview = buildMovieMasterPreview(showForm);
   const [uploadNotice, setUploadNotice] = useState("");
   const castRows = normalizeCastRows(showForm.cast);
-
-  const selectMovieName = (event) => {
-    const movie = movies.find((item) => item.id === event.target.value) ?? movies[0];
-    onFormChange((current) => ({
-      ...current,
-      ...movieToFormPatch(movie),
-      movieId: event.target.value,
-    }));
-  };
 
   const uploadImage = (field) => async (event) => {
     const file = event.target.files?.[0];
@@ -914,19 +903,11 @@ function OwnerMoviesTab({
         <form onSubmit={onAddMovie} className="mt-5 space-y-5">
           <FormSection title="Movie information">
             <FormField label="Movie name">
-              <select value={showForm.movieId} onChange={selectMovieName} className={selectClass}>
-                {movies.map((movie) => (
-                  <option key={movie.id} value={movie.id}>
-                    {movie.title}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-            <FormField label="Display title">
               <Input
                 value={showForm.customTitle}
                 onChange={update("customTitle")}
-                placeholder={selectedMovie?.title ?? "Movie title"}
+                placeholder="Enter any movie name"
+                required
               />
             </FormField>
             <FormField label="Runtime">
@@ -1097,11 +1078,19 @@ function OwnerMoviesTab({
 
           <div className="overflow-hidden rounded-lg border border-border/60 bg-background/35">
             <div className="relative h-56">
-              <img
-                src={moviePreview.backdrop || moviePreview.poster || movies[0].poster}
-                alt={moviePreview.title}
-                className="h-full w-full object-cover"
-              />
+              {moviePreview.backdrop || moviePreview.poster ? (
+                <img
+                  src={moviePreview.backdrop || moviePreview.poster}
+                  alt={moviePreview.title}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="grid h-full place-items-center bg-gradient-to-br from-primary/20 via-background to-secondary">
+                  <div className="grid h-20 w-20 place-items-center rounded-full bg-primary/15 text-primary">
+                    <Film className="h-9 w-9" />
+                  </div>
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4">
                 <p className="text-xs uppercase text-primary">Preview</p>
@@ -1140,10 +1129,10 @@ function OwnerMoviesTab({
                 className="overflow-hidden rounded-lg border border-border/60 bg-background/35"
               >
                 <div className="grid gap-4 p-4 md:grid-cols-[132px_1fr]">
-                  <img
-                    src={movie.poster || movies[0].poster}
-                    alt={movie.title}
-                    className="aspect-[2/3] w-full rounded-lg object-cover shadow-sm md:w-32"
+                  <MoviePosterFrame
+                    src={movie.poster}
+                    title={movie.title}
+                    className="aspect-[2/3] w-full rounded-lg shadow-sm md:w-32"
                   />
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1639,28 +1628,18 @@ function MovieTimingsTab({
 }) {
   const update = (field) => (event) =>
     onFormChange((current) => ({ ...current, [field]: event.target.value }));
-  const movieOptions = listedMovies.length
-    ? listedMovies
-    : movies.map((movie) => ({
-        movieId: movie.id,
-        title: movie.title,
-        poster: movie.poster,
-        backdrop: movie.backdrop,
-        duration: movie.duration,
-        genres: movie.genres,
-        releaseDate: movie.releaseDate,
-        description: movie.description,
-        cast: movie.cast,
-        language: movie.language || "English",
-        format: Array.isArray(movie.format) ? movie.format[0] : movie.format || "2D",
-        certificate: movie.certificate || "UA",
-      }));
+  const movieOptions = listedMovies;
+  const selectedMovieId = movieOptions.some((movie) => movie.movieId === showForm.movieId)
+    ? showForm.movieId
+    : "";
   const selectedListedMovie = movieOptions.find((movie) => movie.movieId === showForm.movieId);
-  const selectedMovie = selectedListedMovie ??
-    movies.find((movie) => movie.id === showForm.movieId) ?? {
-      title: selectedListedMovie?.title || "Movie",
-      poster: selectedListedMovie?.poster,
-    };
+  const selectedMovie = selectedListedMovie ?? {
+    title: "Movie",
+    poster: "",
+    backdrop: "",
+    genres: [],
+    cast: [],
+  };
   const selectedScreen = screens.find((screen) => screen.name === showForm.screen);
   const previewTiming = buildPreviewTiming(showForm, selectedMovie);
 
@@ -1678,9 +1657,10 @@ function MovieTimingsTab({
           <FormSection title="Movie and screen">
             <FormField label="Movie">
               <select
-                value={showForm.movieId}
+                value={selectedMovieId}
                 onChange={(event) => {
                   const movie = movieOptions.find((item) => item.movieId === event.target.value);
+                  if (!movie) return;
                   onFormChange((current) => ({
                     ...current,
                     ...movieToFormPatch(movie),
@@ -1688,13 +1668,18 @@ function MovieTimingsTab({
                     listingType: "live",
                   }));
                 }}
+                disabled={!movieOptions.length}
                 className={selectClass}
               >
-                {movieOptions.map((movie) => (
-                  <option key={movie.movieId} value={movie.movieId}>
-                    {movie.title}
-                  </option>
-                ))}
+                {movieOptions.length ? (
+                  movieOptions.map((movie) => (
+                    <option key={movie.movieId} value={movie.movieId}>
+                      {movie.title}
+                    </option>
+                  ))
+                ) : (
+                  <option value="">Add movie details first</option>
+                )}
               </select>
             </FormField>
             <FormField label="Screen">
@@ -1837,10 +1822,10 @@ function MovieTimingsTab({
                   <tr key={timing.id} className="bg-card/20">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={timing.poster || movies[0].poster}
-                          alt={timing.movie}
-                          className="h-14 w-10 rounded-md object-cover"
+                        <MoviePosterFrame
+                          src={timing.poster}
+                          title={timing.movie}
+                          className="h-14 w-10 rounded-md"
                         />
                         <div>
                           <p className="font-medium">{timing.movie}</p>
@@ -1949,6 +1934,28 @@ function ImageUploadField({ label, value, placeholder, onChange, onUpload }) {
   );
 }
 
+function MoviePosterFrame({ src, title, className = "" }) {
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={title || "Movie"}
+        className={`overflow-hidden object-cover ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`grid place-items-center overflow-hidden bg-gradient-to-br from-primary/20 via-background to-secondary text-primary ${className}`}
+    >
+      <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/15">
+        <span className="text-xs font-bold">{initials(title || "Movie")}</span>
+      </div>
+    </div>
+  );
+}
+
 function CastPhotoControl({ member, index, onUpload, onAvatarChange }) {
   return (
     <div>
@@ -2009,14 +2016,20 @@ function CastAvatarStack({ cast }) {
 }
 
 function TimingPreview({ timing }) {
+  const heroImage = timing.backdrop || timing.poster;
+
   return (
     <div className="mt-5 overflow-hidden rounded-lg border border-border/60 bg-background/35">
       <div className="relative h-64">
-        <img
-          src={timing.backdrop || timing.poster || movies[0].poster}
-          alt={timing.movie}
-          className="h-full w-full object-cover"
-        />
+        {heroImage ? (
+          <img src={heroImage} alt={timing.movie} className="h-full w-full object-cover" />
+        ) : (
+          <div className="grid h-full place-items-center bg-gradient-to-br from-primary/20 via-background to-secondary">
+            <div className="grid h-20 w-20 place-items-center rounded-full bg-primary/15 text-primary">
+              <Film className="h-9 w-9" />
+            </div>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         <div className="absolute left-4 top-4">
           <StatusPill status={timing.status} />
@@ -2624,16 +2637,16 @@ function movieToFormPatch(movie = {}) {
   };
 }
 
-function buildMovieMasterPreview(showForm, selectedMovie) {
+function buildMovieMasterPreview(showForm) {
   return {
-    title: showForm.customTitle.trim() || selectedMovie?.title || "Movie title",
-    poster: showForm.poster || selectedMovie?.poster || "",
-    backdrop: showForm.backdrop || selectedMovie?.backdrop || showForm.poster || "",
-    duration: showForm.duration || selectedMovie?.duration || "Runtime",
-    language: showForm.language || selectedMovie?.language || "Language",
+    title: showForm.customTitle.trim() || "Movie name",
+    poster: showForm.poster || "",
+    backdrop: showForm.backdrop || showForm.poster || "",
+    duration: showForm.duration || "Runtime",
+    language: showForm.language || "Language",
     format: showForm.format || "2D",
     certificate: showForm.certificate || "UA",
-    description: showForm.description || selectedMovie?.description || "",
+    description: showForm.description || "",
   };
 }
 
