@@ -227,7 +227,7 @@ function UserDashboard() {
                       <tr>
                         <th className="px-4 py-3 font-medium">Reference</th>
                         <th className="px-4 py-3 font-medium">Movie</th>
-                        <th className="px-4 py-3 font-medium">Show</th>
+                        <th className="px-4 py-3 font-medium">Time</th>
                         <th className="px-4 py-3 font-medium">Seats</th>
                         <th className="px-4 py-3 font-medium">Total</th>
                         <th className="px-4 py-3 font-medium">Files</th>
@@ -307,7 +307,7 @@ function UserDashboard() {
           <PanelHeader
             icon={Heart}
             title="My shortlist"
-            subtitle="Movies and sports saved from the frontend"
+            subtitle="Movies saved from the frontend"
           />
           {shortlist.length ? (
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">

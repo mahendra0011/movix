@@ -8,6 +8,7 @@ import { authRoutes } from "./routes/authRoutes.js";
 import { createBookingRoutes } from "./routes/bookingRoutes.js";
 import { movieRoutes } from "./routes/movieRoutes.js";
 import { notificationRoutes } from "./routes/notificationRoutes.js";
+import { ownerRoutes } from "./routes/ownerRoutes.js";
 import { paymentRoutes } from "./routes/paymentRoutes.js";
 import { showRoutes } from "./routes/showRoutes.js";
 import { theaterRoutes } from "./routes/theaterRoutes.js";
@@ -58,6 +59,7 @@ app.get("/api/health", (_request, response) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/owner", ownerRoutes);
 app.use("/api/theaters", theaterRoutes);
 app.use("/api/shows", showRoutes);
 app.use("/api/payments", paymentRoutes);

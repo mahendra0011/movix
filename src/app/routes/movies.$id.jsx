@@ -34,7 +34,6 @@ import {
 } from "@/shared/services/cityPreference";
 
 const dateOptions = buildDateOptions();
-const ownerWorkspacePrefix = "bms-owner-workspace:";
 
 const detailAboutText =
   "A seemingly perfect marriage in Prayagraj takes an unexpected turn when one decision leads to a chain of misunderstandings, suspicion, and comedic chaos.";
@@ -133,15 +132,10 @@ function MoviePage() {
   const [activeFormat, setActiveFormat] = useState("All");
   const [preferredTime, setPreferredTime] = useState("Any time");
   const [sortBy, setSortBy] = useState("Recommended");
-  const [ownerWorkspaces, setOwnerWorkspaces] = useState([]);
   const [remoteShows, setRemoteShows] = useState([]);
   const [bookingMode, setBookingMode] = useState(
     () => typeof window !== "undefined" && window.location.hash === "#showtimes",
   );
-
-  useEffect(() => {
-    setOwnerWorkspaces(readOwnerWorkspaces());
-  }, []);
 
   useEffect(() => {
     const syncHash = () => setBookingMode(window.location.hash === "#showtimes");
@@ -150,10 +144,7 @@ function MoviePage() {
     return () => window.removeEventListener("hashchange", syncHash);
   }, []);
 
-  const citySuggestions = useMemo(
-    () => buildMovieCitySuggestions(ownerWorkspaces),
-    [ownerWorkspaces],
-  );
+  const citySuggestions = useMemo(() => buildMovieCitySuggestions(remoteShows), [remoteShows]);
 
   useEffect(() => {
     writePreferredCity(selectedCity);
@@ -183,8 +174,8 @@ function MoviePage() {
 
   const selectedDateLabel = useMemo(() => getDateLabel(activeDate), [activeDate]);
   const cinemaListings = useMemo(
-    () => buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces, remoteShows }),
-    [activeDate, movie, ownerWorkspaces, remoteShows, selectedCity],
+    () => buildCinemaListings({ movie, selectedCity, remoteShows }),
+    [movie, remoteShows, selectedCity],
   );
   const formatOptions = useMemo(
     () =>
@@ -775,10 +766,10 @@ function ShowtimesView({
       <div className="mx-auto max-w-7xl px-4 py-4">
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
-            <Moon className="h-4 w-4" /> Late night shows
+            <Moon className="h-4 w-4" /> Late night
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Sunrise className="h-4 w-4" /> Early morning shows
+            <Sunrise className="h-4 w-4" /> Early morning
           </span>
           <span className="ml-auto inline-flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Available
@@ -801,7 +792,7 @@ function ShowtimesView({
           ) : (
             <div className="p-8 text-center">
               <SlidersHorizontal className="mx-auto h-8 w-8 text-primary" />
-              <h3 className="mt-3 font-semibold">No matching shows in {selectedCity}</h3>
+              <h3 className="mt-3 font-semibold">No matching timings in {selectedCity}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 Try another date, format, time, or cinema search.
               </p>
@@ -940,7 +931,7 @@ function FilterSelect({ value, onChange, options, label }) {
   );
 }
 
-function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces, remoteShows }) {
+function buildCinemaListings({ movie, selectedCity, remoteShows }) {
   const city = selectedCity || "Bengaluru";
   const staticListings = theaters
     .filter((theater) => sameCity(theater.city, city) && theaterHasMovie(theater, movie.id))
@@ -963,41 +954,8 @@ function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces,
     });
   const remoteListings = groupRemoteShows(remoteShows, movie);
 
-  const ownerListings = ownerWorkspaces
-    .map((workspace) => {
-      const profile = workspace.cinemaProfile;
-      const shows = workspace.shows
-        .filter((show) => {
-          const showCity = show.city || profile.city;
-          return (
-            show.movieId === movie.id &&
-            show.listingType !== "coming-soon" &&
-            show.status !== "Draft" &&
-            sameCity(showCity, city) &&
-            show.date === activeDate
-          );
-        })
-        .map(formatOwnerShow);
-
-      if (shows.length === 0) return null;
-
-      return {
-        id: profile.id,
-        name: profile.name,
-        city: profile.city,
-        area: profile.area,
-        address: profile.address,
-        distance: profile.distance,
-        amenities: splitAmenities(profile.amenities),
-        logoText: initials(profile.name),
-        isOwner: true,
-        shows,
-      };
-    })
-    .filter(Boolean);
-
   const catalogListings = HAS_CONFIGURED_API_URL ? remoteListings : staticListings;
-  return [...ownerListings, ...catalogListings].filter((cinema) => cinema.shows.length > 0);
+  return catalogListings.filter((cinema) => cinema.shows.length > 0);
 }
 
 function groupRemoteShows(remoteShows, movie) {
@@ -1042,6 +1000,7 @@ function formatRemoteShow(show, movie) {
       gold,
       vip,
     },
+    seatLayout: show.seatLayout,
   };
 }
 
@@ -1112,25 +1071,6 @@ function buildStaticShow(movie, theater, plan, index) {
   };
 }
 
-function formatOwnerShow(show) {
-  const gold = Number(show.pricing?.gold || show.price || 250);
-  const silver = Number(show.pricing?.silver || gold);
-  const platinum = Number(show.pricing?.platinum || gold);
-  const vip = Number(show.pricing?.vip || platinum);
-
-  return {
-    id: show.id,
-    label: show.startTime ? formatTimeLabel(show.startTime) : show.time || "Showtime",
-    screen: show.screen || "Screen 1",
-    status: normalizeShowStatus(show.status),
-    format: show.format || "2D",
-    language: show.language || "English",
-    cancellable: show.cancellable !== false,
-    price: { platinum, silver, gold, vip },
-    seatLayout: show.seatLayout,
-  };
-}
-
 function inferShowStatus(index) {
   if (index === 4) return "sold";
   if (index === 3) return "fast";
@@ -1172,10 +1112,10 @@ function showTimeClass(status) {
   return "border-emerald-500/70 bg-background text-foreground hover:bg-emerald-500/10";
 }
 
-function buildMovieCitySuggestions(ownerWorkspaces) {
+function buildMovieCitySuggestions(remoteShows = []) {
   const cities = theaters.map((theater) => theater.city).filter(Boolean);
-  ownerWorkspaces.forEach((workspace) => {
-    if (workspace.cinemaProfile?.city) cities.push(workspace.cinemaProfile.city);
+  remoteShows.forEach((show) => {
+    if (show.city) cities.push(show.city);
   });
 
   return cities;
@@ -1183,47 +1123,6 @@ function buildMovieCitySuggestions(ownerWorkspaces) {
 
 function theaterHasMovie(theater, movieId) {
   return !Array.isArray(theater.movieIds) || theater.movieIds.includes(movieId);
-}
-
-function readOwnerWorkspaces() {
-  if (typeof window === "undefined") return [];
-  const workspaces = [];
-
-  for (let index = 0; index < window.localStorage.length; index += 1) {
-    const key = window.localStorage.key(index);
-    if (!key?.startsWith(ownerWorkspacePrefix)) continue;
-
-    try {
-      const parsed = JSON.parse(window.localStorage.getItem(key) || "{}");
-      const ownerKey = decodeURIComponent(key.slice(ownerWorkspacePrefix.length));
-      workspaces.push({
-        cinemaProfile: normalizeCinemaProfile(parsed.cinemaProfile, ownerKey),
-        shows: Array.isArray(parsed.shows) ? parsed.shows : [],
-      });
-    } catch {
-      // Ignore older or partial owner workspace records.
-    }
-  }
-
-  return workspaces;
-}
-
-function normalizeCinemaProfile(profile, ownerKey) {
-  const fallback = {
-    id: `owner-cinema-${ownerKey || "local"}`,
-    name: "Owner cinema",
-    city: "Bengaluru",
-    area: "Local area",
-    address: "",
-    distance: "",
-    amenities: "",
-  };
-  const normalized =
-    profile && typeof profile === "object" ? { ...fallback, ...profile } : fallback;
-  return {
-    ...normalized,
-    id: normalized.id || slugify(`${normalized.name}-${normalized.city}`),
-  };
 }
 
 function buildDateOptions() {
@@ -1281,25 +1180,6 @@ function formatCurrency(value) {
 function parseDistance(distance) {
   const value = Number.parseFloat(String(distance ?? ""));
   return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
-}
-
-function formatTimeLabel(value) {
-  if (!value) return "Showtime";
-  const [hourText, minute = "00"] = value.split(":");
-  const hour = Number(hourText);
-  if (Number.isNaN(hour)) return value;
-
-  const suffix = hour >= 12 ? "PM" : "AM";
-  const hour12 = hour % 12 || 12;
-  return `${hour12.toString().padStart(2, "0")}:${minute} ${suffix}`;
-}
-
-function slugify(value) {
-  return String(value ?? "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
 }
 
 function initials(name) {

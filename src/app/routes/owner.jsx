@@ -32,11 +32,11 @@ import {
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { buildSeatLayout, normalizeSeatLayoutConfig } from "@/features/booking/data/seatLayout";
 import { movies } from "@/features/movies/data/movieCatalog";
+import { fetchOwnerWorkspace, saveOwnerWorkspace } from "@/features/owner/api/ownerApi";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { TrendAreaChart, VerticalBars } from "@/shared/components/ui/lightweight-chart";
-import { getOwnerApprovalForUser } from "@/shared/services/ownerApplications";
 
 const Route = createFileRoute("/owner")({
   component: OwnerDashboard,
@@ -149,7 +149,6 @@ const languageOptions = ["English", "Hindi", "Tamil", "Telugu", "Kannada"];
 const formatOptions = ["2D", "3D", "IMAX", "4DX", "Dolby Atmos"];
 const certificateOptions = ["U", "UA", "A"];
 const showStatusOptions = ["Open", "Selling fast", "Sold out", "Draft"];
-const OWNER_WORKSPACE_VERSION = 2;
 const ownerOperationModules = [
   {
     title: "Cinema setup",
@@ -164,20 +163,6 @@ const ownerOperationModules = [
     text: "Screen type, capacity, cleaning gap, maintenance windows and seat layout.",
     icon: Monitor,
     target: "screens",
-  },
-  {
-    title: "Show scheduling",
-    value: "Shows",
-    text: "Movie, date, time, language, format, draft/live and coming soon listings.",
-    icon: Clapperboard,
-    target: "shows",
-  },
-  {
-    title: "Pricing",
-    value: "Dynamic",
-    text: "Gold, Platinum, VIP, weekend, holiday, morning and occupancy pricing.",
-    icon: BadgeIndianRupee,
-    target: "shows",
   },
   {
     title: "F&B menu",
@@ -203,7 +188,7 @@ const ownerOperationModules = [
   {
     title: "Refund & entry desk",
     value: "Gate",
-    text: "Approve refunds, cancel shows, verify QR tickets and monitor entry scans.",
+    text: "Approve refunds, verify QR tickets and monitor entry scans.",
     icon: QrCode,
     target: "services",
   },
@@ -215,78 +200,8 @@ const ownerPanelTabs = [
   { id: "movies", label: "My movies", icon: Film },
   { id: "operations", label: "Operations", icon: ShieldCheck },
   { id: "screens", label: "Screens", icon: Monitor },
-  { id: "shows", label: "Shows", icon: Clapperboard },
   { id: "services", label: "F&B / Staff", icon: Utensils },
   { id: "bookings", label: "Bookings", icon: Ticket },
-];
-
-const foodMenuRows = [
-  { item: "Classic popcorn combo", stock: "86 packs", price: 349, status: "Live" },
-  { item: "Nachos and cola", stock: "42 packs", price: 299, status: "Live" },
-  { item: "Family interval box", stock: "18 packs", price: 699, status: "Low stock" },
-];
-
-const staffRows = [
-  { name: "Counter desk", role: "Counter staff", shift: "10 AM - 6 PM", access: "Bookings" },
-  { name: "Floor manager", role: "Manager", shift: "2 PM - 11 PM", access: "Refunds" },
-  { name: "Gate scanner", role: "Entry staff", shift: "5 PM - 12 AM", access: "QR scan" },
-];
-
-const refundRows = [
-  { ref: "BMS-RF-1024", reason: "Show cancelled", amount: 960, status: "Approve" },
-  { ref: "BMS-RF-1025", reason: "Payment duplicate", amount: 540, status: "Review" },
-  { ref: "BMS-RF-1026", reason: "Seat issue", amount: 780, status: "Review" },
-];
-
-const scanRows = [
-  { gate: "Gate A", value: "124 scanned", text: "Peak entry window 7:10 PM" },
-  { gate: "Gate B", value: "86 scanned", text: "No duplicate QR attempts" },
-  { gate: "Exceptions", value: "3 checks", text: "Manual ticket verification needed" },
-];
-
-const ownerBookingPreviewRows = [
-  {
-    ref: "BMS9X2K8",
-    customer: "Riya Sharma",
-    email: "riya.sharma@example.com",
-    phone: "+91 98765 41021",
-    movie: "Interstellar",
-    screen: "IMAX 01",
-    time: "07:15 PM",
-    seats: ["C7", "C8"],
-    total: 960,
-    paymentStatus: "Paid",
-    ticketStatus: "Confirmed",
-    bookedAt: "Today, 5:42 PM",
-  },
-  {
-    ref: "BMS7Q4L2",
-    customer: "Arjun Verma",
-    email: "arjun.verma@example.com",
-    phone: "+91 98222 77661",
-    movie: "Dune: Part Two",
-    screen: "Dolby 02",
-    time: "09:30 PM",
-    seats: ["F11", "F12", "F13"],
-    total: 1260,
-    paymentStatus: "Paid",
-    ticketStatus: "Confirmed",
-    bookedAt: "Today, 4:18 PM",
-  },
-  {
-    ref: "BMS3M8N6",
-    customer: "Meera Joshi",
-    email: "meera.joshi@example.com",
-    phone: "+91 90011 22334",
-    movie: "The Dark Knight",
-    screen: "Premiere 03",
-    time: "04:20 PM",
-    seats: ["B4"],
-    total: 420,
-    paymentStatus: "Paid",
-    ticketStatus: "Checked in",
-    bookedAt: "Today, 2:05 PM",
-  },
 ];
 
 const selectClass =
@@ -297,15 +212,17 @@ function OwnerDashboard() {
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const ownerKey = useMemo(() => getOwnerKey(auth.user), [auth.user]);
-  const ownerApproval = useMemo(() => getOwnerApprovalForUser(auth.user), [auth.user]);
+  const [ownerApproval, setOwnerApproval] = useState(() => getOwnerApprovalFromUser(null));
   const [activeTab, setActiveTab] = useState("overview");
   const [screens, setScreens] = useState([]);
   const [shows, setShows] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [services, setServices] = useState(createDefaultServices);
   const [cinemaProfile, setCinemaProfile] = useState(defaultCinemaProfile);
   const [screenForm, setScreenForm] = useState(blankScreen);
   const [showForm, setShowForm] = useState(() => createBlankShow(screenSeeds));
   const [workspaceReady, setWorkspaceReady] = useState(false);
+  const [workspaceState, setWorkspaceState] = useState("idle");
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
@@ -316,32 +233,43 @@ function OwnerDashboard() {
     if (!auth.hydrated || !auth.user) return;
     if (auth.user.role === "admin") navigate({ to: "/admin", replace: true });
     if (auth.user.role === "user") navigate({ to: "/dashboard", replace: true });
+    if (auth.user.role === "theater-owner") setOwnerApproval(getOwnerApprovalFromUser(auth.user));
   }, [auth.hydrated, auth.user, navigate]);
 
   useEffect(() => {
-    if (!auth.hydrated || auth.user?.role !== "theater-owner" || !ownerKey) return;
-    const workspace = readOwnerWorkspace(ownerKey, ownerApproval.application);
-    setCinemaProfile(workspace.cinemaProfile);
-    setScreens(workspace.screens);
-    setShows(workspace.shows);
-    setBookings(workspace.bookings);
-    setShowForm((current) => ({
-      ...current,
-      screen: workspace.screens[0]?.name ?? "",
-      totalSeats: workspace.screens[0]?.seats
-        ? String(workspace.screens[0].seats)
-        : current.totalSeats,
-    }));
-    setWorkspaceReady(true);
-  }, [auth.hydrated, auth.user?.role, ownerApproval.application, ownerKey]);
+    if (!auth.hydrated || auth.user?.role !== "theater-owner" || !ownerKey) return undefined;
+    let active = true;
+    setWorkspaceState("loading");
 
-  useEffect(() => {
-    if (!workspaceReady || auth.user?.role !== "theater-owner" || !ownerKey) return;
-    const timer = window.setTimeout(() => {
-      writeOwnerWorkspace(ownerKey, { cinemaProfile, screens, shows, bookings });
-    }, 250);
-    return () => window.clearTimeout(timer);
-  }, [auth.user?.role, bookings, cinemaProfile, ownerKey, screens, shows, workspaceReady]);
+    fetchOwnerWorkspace()
+      .then((workspace) => {
+        if (!active) return;
+        applyWorkspace(workspace);
+        setOwnerApproval({
+          status: workspace.ownerStatus || "Approved",
+          application: workspace.application || auth.user.ownerApplication || null,
+        });
+        setWorkspaceReady(true);
+        setWorkspaceState("ready");
+      })
+      .catch((error) => {
+        if (!active) return;
+        if (error.response?.status === 403) {
+          setOwnerApproval({
+            status: error.response.data?.status || auth.user.ownerStatus || "Pending",
+            application: error.response.data?.application || auth.user.ownerApplication || null,
+          });
+          setWorkspaceState("blocked");
+          return;
+        }
+        setNotice(error.response?.data?.error || "Could not load owner workspace.");
+        setWorkspaceState("error");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [auth.hydrated, auth.user, ownerKey]);
 
   const ownerScreens = useMemo(
     () => screens.filter((screen) => !screen.ownerKey || screen.ownerKey === ownerKey),
@@ -404,8 +332,8 @@ function OwnerDashboard() {
     {
       label: "Listed movies",
       value: totals.movies.toLocaleString(),
-      text: `${totals.shows} shows, ${totals.comingSoon} coming soon`,
-      icon: CalendarClock,
+      text: `${totals.bookings} bookings from owner cinemas`,
+      icon: Film,
       tone: "cyan",
     },
     {
@@ -424,27 +352,68 @@ function OwnerDashboard() {
     },
   ];
 
-  const saveCinemaProfile = (event) => {
+  const applyWorkspace = (workspace) => {
+    setCinemaProfile(workspace.cinemaProfile ?? defaultCinemaProfile);
+    setScreens(workspace.screens ?? []);
+    setShows(workspace.shows ?? []);
+    setBookings(workspace.bookings ?? []);
+    setServices(workspace.services ?? createDefaultServices());
+    setShowForm((current) => ({
+      ...current,
+      screen: workspace.screens?.[0]?.name ?? "",
+      totalSeats: workspace.screens?.[0]?.seats
+        ? String(workspace.screens[0].seats)
+        : current.totalSeats,
+    }));
+  };
+
+  const workspacePayload = (overrides = {}) => ({
+    cinemaProfile,
+    screens,
+    shows,
+    bookings,
+    services,
+    ...overrides,
+  });
+
+  const persistWorkspace = async (nextWorkspace, successMessage) => {
+    try {
+      const saved = await saveOwnerWorkspace(nextWorkspace);
+      applyWorkspace(saved);
+      setWorkspaceReady(true);
+      if (successMessage) setNotice(successMessage);
+      return true;
+    } catch (error) {
+      setNotice(error.response?.data?.error || "Could not save owner workspace.");
+      return false;
+    }
+  };
+
+  const saveCinemaProfile = async (event) => {
     event.preventDefault();
     const name = cinemaProfile.name.trim() || defaultCinemaProfile.name;
     const city = cinemaProfile.city.trim() || defaultCinemaProfile.city;
-    setCinemaProfile((current) => ({
-      ...current,
+    const nextProfile = {
+      ...cinemaProfile,
       id: slugify(`${name}-${city}`),
       name,
       city,
-      area: String(current.area ?? "").trim(),
-      address: String(current.address ?? "").trim(),
-      distance: String(current.distance ?? "").trim(),
-      contact: String(current.contact ?? "").trim(),
-      manager: String(current.manager ?? "").trim(),
-      amenities: String(current.amenities ?? "").trim(),
-      cancellationPolicy: String(current.cancellationPolicy ?? "").trim(),
-    }));
-    setNotice(`${name} location saved for ${city}. Users can find your shows in this city.`);
+      area: String(cinemaProfile.area ?? "").trim(),
+      address: String(cinemaProfile.address ?? "").trim(),
+      distance: String(cinemaProfile.distance ?? "").trim(),
+      contact: String(cinemaProfile.contact ?? "").trim(),
+      manager: String(cinemaProfile.manager ?? "").trim(),
+      amenities: String(cinemaProfile.amenities ?? "").trim(),
+      cancellationPolicy: String(cinemaProfile.cancellationPolicy ?? "").trim(),
+    };
+    setCinemaProfile(nextProfile);
+    await persistWorkspace(
+      workspacePayload({ cinemaProfile: nextProfile }),
+      `${name} location saved for ${city}. Users can find this cinema in this city.`,
+    );
   };
 
-  const addScreen = (event) => {
+  const addScreen = async (event) => {
     event.preventDefault();
     const name = screenForm.name.trim();
     if (!name) return;
@@ -464,28 +433,38 @@ function OwnerDashboard() {
       occupancy: 0,
     };
 
-    setScreens((current) => [nextScreen, ...current]);
+    const nextScreens = [nextScreen, ...screens];
+    setScreens(nextScreens);
     setShowForm((current) => ({
       ...current,
       screen: nextScreen.name,
       totalSeats: String(nextScreen.seats),
     }));
     setScreenForm(blankScreen);
-    setNotice(`${name} added. You can schedule shows on this screen now.`);
+    await persistWorkspace(
+      workspacePayload({ screens: nextScreens }),
+      `${name} added. Seat layout is ready for this cinema.`,
+    );
   };
 
-  const removeScreen = (id) => {
+  const removeScreen = async (id) => {
     const screen = screens.find((item) => item.id === id);
-    setScreens((current) => current.filter((item) => item.id !== id));
+    const nextScreens = screens.filter((item) => item.id !== id);
+    const nextShows = shows.filter((show) => show.screen !== screen?.name);
+    setScreens(nextScreens);
+    setShows(nextShows);
     setShowForm((current) =>
       current.screen === screen?.name
-        ? { ...current, screen: ownerScreens.find((item) => item.id !== id)?.name ?? "" }
+        ? { ...current, screen: nextScreens[0]?.name ?? "" }
         : current,
     );
-    setNotice(`${screen?.name ?? "Screen"} removed from owner dashboard.`);
+    await persistWorkspace(
+      workspacePayload({ screens: nextScreens, shows: nextShows }),
+      `${screen?.name ?? "Screen"} removed from owner dashboard.`,
+    );
   };
 
-  const addShow = (event) => {
+  const addShow = async (event) => {
     event.preventDefault();
     const movie = movies.find((item) => item.id === showForm.movieId) ?? movies[0];
     const isComingSoon = showForm.listingType === "coming-soon";
@@ -518,8 +497,8 @@ function OwnerDashboard() {
       screen: isComingSoon ? showForm.screen || "TBA" : showForm.screen,
       date,
       time: isComingSoon ? "Coming soon" : formatShowTime(showForm.startTime, showForm.endTime),
-      startTime: isComingSoon ? "" : showForm.startTime,
-      endTime: isComingSoon ? "" : showForm.endTime,
+      startTime: isComingSoon ? "TBA" : showForm.startTime,
+      endTime: isComingSoon ? "TBA" : showForm.endTime,
       language: showForm.language,
       format: showForm.format,
       certificate: showForm.certificate,
@@ -536,24 +515,30 @@ function OwnerDashboard() {
       notes: showForm.notes.trim(),
     };
 
-    setShows((current) => [nextShow, ...current]);
+    const nextShows = [nextShow, ...shows];
+    setShows(nextShows);
     setShowForm((current) => ({
       ...createBlankShow(ownerScreens),
       listingType: current.listingType,
       screen: current.screen,
       totalSeats: current.totalSeats,
     }));
-    setNotice(
+    await persistWorkspace(
+      workspacePayload({ shows: nextShows }),
       isComingSoon
         ? `${title} listed as coming soon.`
         : `${title} listed for ${nextShow.time} on ${nextShow.screen}.`,
     );
   };
 
-  const removeShow = (id) => {
+  const removeShow = async (id) => {
     const show = shows.find((item) => item.id === id);
-    setShows((current) => current.filter((item) => item.id !== id));
-    setNotice(`${show?.movie ?? "Show"} removed from today's schedule.`);
+    const nextShows = shows.filter((item) => item.id !== id);
+    setShows(nextShows);
+    await persistWorkspace(
+      workspacePayload({ shows: nextShows }),
+      `${show?.movie ?? "Listing"} removed from today's schedule.`,
+    );
   };
 
   if (!auth.hydrated) {
@@ -602,6 +587,22 @@ function OwnerDashboard() {
     );
   }
 
+  if (!workspaceReady) {
+    return (
+      <AccessState
+        icon={Building2}
+        title={
+          workspaceState === "error" ? "Owner workspace unavailable" : "Loading owner workspace"
+        }
+        text={
+          workspaceState === "error"
+            ? "The owner panel could not load live MongoDB data right now."
+            : "Fetching cinema, screens and bookings from MongoDB."
+        }
+      />
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 pb-20">
       <section className="cinema-grid overflow-hidden rounded-lg border border-border/60 bg-card/75 shadow-2xl shadow-black/20">
@@ -615,9 +616,9 @@ function OwnerDashboard() {
               Theater owner panel
             </h1>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button onClick={() => setActiveTab("shows")} className="gap-2">
+              <Button onClick={() => setActiveTab("screens")} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Add show
+                Add screen
               </Button>
               <Button variant="secondary" onClick={() => dispatch(logout())} className="gap-2">
                 <LogOut className="h-4 w-4" />
@@ -639,7 +640,6 @@ function OwnerDashboard() {
               <SnapshotRow label="Location" value={cinemaProfile.area || "Area not set"} />
               <SnapshotRow label="Screens" value={ownerScreens.length.toLocaleString()} />
               <SnapshotRow label="Listed movies" value={listedMovies.length.toLocaleString()} />
-              <SnapshotRow label="Listed shows" value={ownerShows.length.toLocaleString()} />
               <SnapshotRow label="Seats available" value={totals.capacity.toLocaleString()} />
             </div>
           </SpotlightCard>
@@ -697,7 +697,7 @@ function OwnerDashboard() {
       {activeTab === "movies" && (
         <OwnerMoviesTab
           listedMovies={listedMovies}
-          onListShow={() => setActiveTab("shows")}
+          onManageScreens={() => setActiveTab("screens")}
           onRemoveShow={removeShow}
         />
       )}
@@ -735,7 +735,9 @@ function OwnerDashboard() {
         />
       )}
 
-      {activeTab === "services" && <OwnerServicesTab bookings={ownerBookings} totals={totals} />}
+      {activeTab === "services" && (
+        <OwnerServicesTab bookings={ownerBookings} totals={totals} services={services} />
+      )}
 
       {activeTab === "bookings" && (
         <BookingsTab bookings={ownerBookings} totals={totals} screens={ownerScreens} />
@@ -803,8 +805,7 @@ function OverviewTab({ earningsTrend, screens, popularMovies, listedMovies, tota
           <div className="mt-5 rounded-lg border border-dashed border-border/70 p-6 text-center">
             <p className="text-sm font-semibold">No owner-listed movies yet</p>
             <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-              Movies will appear here only after this theater owner lists a live show or coming soon
-              release.
+              Movies appear here from confirmed bookings and approved cinema activity.
             </p>
           </div>
         )}
@@ -813,7 +814,7 @@ function OverviewTab({ earningsTrend, screens, popularMovies, listedMovies, tota
   );
 }
 
-function OwnerMoviesTab({ listedMovies, onListShow, onRemoveShow }) {
+function OwnerMoviesTab({ listedMovies, onManageScreens, onRemoveShow }) {
   return (
     <section className="mt-6">
       <SpotlightCard className="rounded-lg p-5">
@@ -847,16 +848,16 @@ function OwnerMoviesTab({ listedMovies, onListShow, onRemoveShow }) {
                 </div>
 
                 <div className="grid gap-3 p-4">
-                  <SnapshotRow label="Listings" value={movie.showCount.toLocaleString()} />
-                  <SnapshotRow label="Live shows" value={movie.liveCount.toLocaleString()} />
-                  <SnapshotRow label="Coming soon" value={movie.comingSoonCount.toLocaleString()} />
+                  <SnapshotRow label="Owner listings" value={movie.showCount.toLocaleString()} />
+                  <SnapshotRow label="Live listings" value={movie.liveCount.toLocaleString()} />
+                  <SnapshotRow label="Upcoming" value={movie.comingSoonCount.toLocaleString()} />
                   <SnapshotRow label="Revenue" value={formatCurrency(movie.revenue)} />
                 </div>
 
                 <div className="flex items-center gap-2 border-t border-border/60 p-4">
-                  <Button size="sm" onClick={onListShow} className="flex-1 gap-2">
+                  <Button size="sm" onClick={onManageScreens} className="flex-1 gap-2">
                     <Plus className="h-4 w-4" />
-                    Add show
+                    Manage screens
                   </Button>
                   {movie.latestShowId && (
                     <Button
@@ -880,12 +881,12 @@ function OwnerMoviesTab({ listedMovies, onListShow, onRemoveShow }) {
             </div>
             <h3 className="mt-4 font-semibold">No movies listed by this owner yet</h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              List a now-booking show or coming-soon movie first. It will appear here and only for
-              this theater-owner account.
+              Approved cinema activity and confirmed bookings will appear here for this
+              theater-owner account.
             </p>
-            <Button onClick={onListShow} className="mt-5 gap-2">
+            <Button onClick={onManageScreens} className="mt-5 gap-2">
               <Plus className="h-4 w-4" />
-              List first show
+              Manage screens
             </Button>
           </div>
         )}
@@ -1315,8 +1316,8 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
           icon={Clapperboard}
-          title="List a show"
-          subtitle="Complete listing form for booking or coming soon"
+          title="Create movie listing"
+          subtitle="Complete cinema listing form for booking or coming soon"
           action={isComingSoon ? "Coming soon" : "Now booking"}
         />
 
@@ -1381,8 +1382,8 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
             </FormField>
           </FormSection>
 
-          <FormSection title={isComingSoon ? "Launch window" : "Show schedule"}>
-            <FormField label={isComingSoon ? "Expected release date" : "Show date"}>
+          <FormSection title={isComingSoon ? "Launch window" : "Timing"}>
+            <FormField label={isComingSoon ? "Expected release date" : "Date"}>
               <Input
                 value={isComingSoon ? showForm.comingSoonDate : showForm.showDate}
                 onChange={update(isComingSoon ? "comingSoonDate" : "showDate")}
@@ -1478,7 +1479,7 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
               </FormField>
               {selectedScreen?.seatLayout && (
                 <div className="md:col-span-2 rounded-lg border border-border/60 bg-background/40 p-3 text-xs text-muted-foreground">
-                  <p className="font-medium text-foreground">Seat panel for this show</p>
+                  <p className="font-medium text-foreground">Seat panel for this listing</p>
                   <p className="mt-1">{formatSeatLayoutSummary(selectedScreen.seatLayout)}</p>
                   <div className="mt-3 overflow-x-auto">
                     <SeatMiniMap layout={buildSeatLayout(selectedScreen.seatLayout)} />
@@ -1540,18 +1541,18 @@ function ShowsTab({ showForm, shows, screens, onFormChange, onAddShow, onRemoveS
 
           <Button className="h-11 w-full gap-2">
             <Plus className="h-4 w-4" />
-            {isComingSoon ? "List coming soon" : "List show"}
+            {isComingSoon ? "List coming soon" : "Publish listing"}
           </Button>
         </form>
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={Film} title="Listing preview" subtitle="User-facing show card" />
+        <PanelHeader icon={Film} title="Listing preview" subtitle="User-facing movie card" />
         <ShowPreview show={previewShow} />
       </SpotlightCard>
 
       <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
-        <PanelHeader icon={CalendarClock} title="Shows" subtitle="Listed show schedule" />
+        <PanelHeader icon={CalendarClock} title="Movie timings" subtitle="Listed cinema timings" />
         <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[880px] text-left text-sm">
@@ -1668,7 +1669,7 @@ function ShowPreview({ show }) {
 
       <div className="grid gap-3 p-4">
         <SnapshotRow
-          label={isComingSoon ? "Expected date" : "Show date"}
+          label={isComingSoon ? "Expected date" : "Date"}
           value={formatDateLabel(show.date)}
         />
         <SnapshotRow label="Screen" value={show.screen || "TBA"} />
@@ -1710,8 +1711,12 @@ function buildPreviewShow(showForm, selectedMovie) {
   };
 }
 
-function OwnerServicesTab({ bookings, totals }) {
+function OwnerServicesTab({ bookings, totals, services }) {
   const foodOrders = Math.max(0, Math.round(totals.bookings * 0.42));
+  const foodRows = services?.foodMenu ?? [];
+  const staff = services?.staff ?? [];
+  const refunds = services?.refundCases ?? [];
+  const scans = services?.scanStats ?? [];
 
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[1fr_1fr]">
@@ -1734,7 +1739,7 @@ function OwnerServicesTab({ bookings, totals }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {foodMenuRows.map((row) => (
+                {foodRows.map((row) => (
                   <tr key={row.item} className="bg-card/20">
                     <td className="px-4 py-3 font-medium">{row.item}</td>
                     <td className="px-4 py-3 text-muted-foreground">{row.stock}</td>
@@ -1763,7 +1768,7 @@ function OwnerServicesTab({ bookings, totals }) {
           subtitle="Counter staff, manager permissions and shifts"
         />
         <div className="mt-5 grid gap-3">
-          {staffRows.map((staff) => (
+          {staff.map((staff) => (
             <div
               key={staff.name}
               className="rounded-lg border border-border/60 bg-background/40 p-4"
@@ -1793,7 +1798,7 @@ function OwnerServicesTab({ bookings, totals }) {
           subtitle="Approve refunds and cancel show impact"
         />
         <div className="mt-5 grid gap-3">
-          {refundRows.map((refund) => (
+          {refunds.map((refund) => (
             <div
               key={refund.ref}
               className="rounded-lg border border-border/60 bg-background/40 p-4"
@@ -1813,6 +1818,11 @@ function OwnerServicesTab({ bookings, totals }) {
               </div>
             </div>
           ))}
+          {!refunds.length && (
+            <div className="rounded-lg border border-dashed border-border/70 bg-background/30 p-4 text-sm text-muted-foreground">
+              Cancelled tickets from this cinema will appear here for review.
+            </div>
+          )}
         </div>
       </SpotlightCard>
 
@@ -1824,7 +1834,7 @@ function OwnerServicesTab({ bookings, totals }) {
           action={`${bookings.length} tickets`}
         />
         <div className="mt-5 grid gap-3">
-          {scanRows.map((scan) => (
+          {scans.map((scan) => (
             <div
               key={scan.gate}
               className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-4"
@@ -1851,17 +1861,24 @@ function OwnerServicesTab({ bookings, totals }) {
 }
 
 function BookingsTab({ bookings, totals, screens }) {
-  const displayBookings = bookings.length ? bookings : ownerBookingPreviewRows;
-  const [selectedRef, setSelectedRef] = useState(displayBookings[0]?.ref ?? "");
-  const selectedBooking =
-    displayBookings.find((booking) => booking.ref === selectedRef) ?? displayBookings[0];
+  const [selectedRef, setSelectedRef] = useState(bookings[0]?.ref ?? "");
+  const selectedBooking = bookings.find((booking) => booking.ref === selectedRef) ?? bookings[0];
   const selectedScreen =
     screens.find((screen) => screen.name === selectedBooking?.screen) ??
-    screenSeeds.find((screen) => screen.name === selectedBooking?.screen) ??
     screens[0] ??
     screenSeeds[0];
   const selectedLayout = buildSeatLayout(selectedScreen?.seatLayout);
-  const displayTotals = bookings.length ? totals : summarizeBookings(displayBookings);
+  const displayTotals = totals;
+
+  useEffect(() => {
+    if (!bookings.length) {
+      setSelectedRef("");
+      return;
+    }
+    if (!bookings.some((booking) => booking.ref === selectedRef)) {
+      setSelectedRef(bookings[0].ref);
+    }
+  }, [bookings, selectedRef]);
 
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[0.75fr_1.25fr]">
@@ -1900,7 +1917,7 @@ function BookingsTab({ bookings, totals, screens }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {displayBookings.map((booking) => (
+                {bookings.map((booking) => (
                   <tr
                     key={booking.ref}
                     onClick={() => setSelectedRef(booking.ref)}
@@ -1920,56 +1937,65 @@ function BookingsTab({ bookings, totals, screens }) {
                     <td className="px-4 py-3 font-semibold">{formatCurrency(booking.total)}</td>
                   </tr>
                 ))}
+                {!bookings.length && (
+                  <tr className="bg-card/20">
+                    <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      No customer bookings for this cinema yet.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </div>
       </SpotlightCard>
 
-      <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
-        <PanelHeader
-          icon={QrCode}
-          title="Booked seat and ticket details"
-          subtitle="Selected customer, highlighted seats and ticket audit"
-          action={selectedBooking?.ticketStatus || "Confirmed"}
-        />
-        <div className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="overflow-x-auto rounded-lg border border-border/60 bg-background/35 p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="font-semibold">{selectedScreen?.name || "Screen"}</p>
-                <p className="text-xs text-muted-foreground">
-                  Blue seats are booked by {selectedBooking?.customer || "customer"}
-                </p>
+      {selectedBooking ? (
+        <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
+          <PanelHeader
+            icon={QrCode}
+            title="Booked seat and ticket details"
+            subtitle="Selected customer, highlighted seats and ticket audit"
+            action={selectedBooking.ticketStatus || "Confirmed"}
+          />
+          <div className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="overflow-x-auto rounded-lg border border-border/60 bg-background/35 p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold">{selectedScreen?.name || "Screen"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Blue seats are booked by {selectedBooking.customer || "customer"}
+                  </p>
+                </div>
+                <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+                  {formatSeatList(selectedBooking.seats)}
+                </span>
               </div>
-              <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                {formatSeatList(selectedBooking?.seats)}
-              </span>
+              <SeatMiniMap layout={selectedLayout} bookedSeats={selectedBooking.seats ?? []} />
             </div>
-            <SeatMiniMap layout={selectedLayout} bookedSeats={selectedBooking?.seats ?? []} />
-          </div>
 
-          <div className="grid gap-3">
-            <SnapshotRow label="Booked user" value={selectedBooking?.customer || "Customer"} />
-            <SnapshotRow label="Email" value={selectedBooking?.email || "Not available"} />
-            <SnapshotRow label="Phone" value={selectedBooking?.phone || "Not available"} />
-            <SnapshotRow label="Movie" value={selectedBooking?.movie || "Movie"} />
-            <SnapshotRow
-              label="Show"
-              value={`${selectedBooking?.screen || "Screen"} - ${selectedBooking?.time || "Time"}`}
-            />
-            <SnapshotRow label="Seats" value={formatSeatList(selectedBooking?.seats)} />
-            <SnapshotRow label="Ticket ref" value={selectedBooking?.ref || "No ref"} />
-            <SnapshotRow
-              label="Payment"
-              value={`${selectedBooking?.paymentStatus || "Paid"} - ${formatCurrency(
-                selectedBooking?.total,
-              )}`}
-            />
-            <SnapshotRow label="Booked at" value={selectedBooking?.bookedAt || "Today"} />
+            <div className="grid gap-3">
+              <SnapshotRow label="Booked user" value={selectedBooking.customer || "Customer"} />
+              <SnapshotRow label="Email" value={selectedBooking.email || "Not available"} />
+              <SnapshotRow label="Phone" value={selectedBooking.phone || "Not available"} />
+              <SnapshotRow label="Movie" value={selectedBooking.movie || "Movie"} />
+              <SnapshotRow
+                label="Show"
+                value={`${selectedBooking.screen || "Screen"} - ${selectedBooking.time || "Time"}`}
+              />
+              <SnapshotRow label="Seats" value={formatSeatList(selectedBooking.seats)} />
+              <SnapshotRow label="Ticket ref" value={selectedBooking.ref || "No ref"} />
+              <SnapshotRow
+                label="Payment"
+                value={`${selectedBooking.paymentStatus || "Paid"} - ${formatCurrency(
+                  selectedBooking.total,
+                )}`}
+              />
+              <SnapshotRow label="Booked at" value={selectedBooking.bookedAt || "Today"} />
+            </div>
           </div>
-        </div>
-      </SpotlightCard>
+        </SpotlightCard>
+      ) : null}
     </section>
   );
 }
@@ -2117,135 +2143,32 @@ function getOwnerKey(user) {
     .toLowerCase();
 }
 
-function ownerStorageKey(ownerKey) {
-  return `bms-owner-workspace:${encodeURIComponent(ownerKey)}`;
-}
-
-function createCinemaProfile(ownerKey, application = null) {
-  const source = application && typeof application === "object" ? application : {};
-  const name = source.theaterName || defaultCinemaProfile.name;
-  const city = source.city || defaultCinemaProfile.city;
+function getOwnerApprovalFromUser(user) {
+  if (!user || user.role !== "theater-owner") return { status: "Approved", application: null };
   return {
-    ...defaultCinemaProfile,
-    name,
-    city,
-    area: source.area || defaultCinemaProfile.area,
-    address: source.address || defaultCinemaProfile.address,
-    contact: source.contact || defaultCinemaProfile.contact,
-    manager: source.ownerName || source.companyName || defaultCinemaProfile.manager,
-    amenities: source.documents || defaultCinemaProfile.amenities,
-    ownerKey,
-    id: slugify(`${name}-${city}`),
+    status: user.ownerStatus || "Pending",
+    application: user.ownerApplication || null,
   };
 }
 
-function createOwnerWorkspace(ownerKey, application = null) {
+function createDefaultServices() {
   return {
-    version: OWNER_WORKSPACE_VERSION,
-    cinemaProfile: createCinemaProfile(ownerKey, application),
-    screens: createInitialScreens(ownerKey, application),
-    shows: [],
-    bookings: [],
-  };
-}
-
-function createInitialScreens(ownerKey, application = null) {
-  const count = Math.min(12, Math.max(1, Number(application?.screens) || screenSeeds.length));
-  return Array.from({ length: count }, (_, index) => {
-    const seed = screenSeeds[index % screenSeeds.length];
-    return {
-      ...seed,
-      id: `${slugify(seed.name)}-${index + 1}`,
-      name: count === screenSeeds.length ? seed.name : `Screen ${index + 1}`,
-      ownerKey,
-      seatLayout: normalizeSeatLayoutConfig(seed.seatLayout),
-      seats: buildSeatLayout(seed.seatLayout).totalSeats,
-    };
-  });
-}
-
-function readOwnerWorkspace(ownerKey, application = null) {
-  if (typeof window === "undefined" || !ownerKey)
-    return createOwnerWorkspace(ownerKey, application);
-
-  try {
-    const raw = window.localStorage.getItem(ownerStorageKey(ownerKey));
-    if (!raw) return createOwnerWorkspace(ownerKey, application);
-
-    const parsed = JSON.parse(raw);
-    if (!parsed || parsed.version !== OWNER_WORKSPACE_VERSION) {
-      return createOwnerWorkspace(ownerKey, application);
-    }
-
-    return {
-      version: OWNER_WORKSPACE_VERSION,
-      cinemaProfile: normalizeCinemaProfile(parsed.cinemaProfile, ownerKey),
-      screens: normalizeOwnerScreens(parsed.screens, ownerKey),
-      shows: normalizeOwnerItems(parsed.shows, ownerKey),
-      bookings: normalizeOwnerItems(parsed.bookings, ownerKey),
-    };
-  } catch {
-    return createOwnerWorkspace(ownerKey, application);
-  }
-}
-
-function writeOwnerWorkspace(ownerKey, workspace) {
-  if (typeof window === "undefined" || !ownerKey) return;
-  window.localStorage.setItem(
-    ownerStorageKey(ownerKey),
-    JSON.stringify({
-      version: OWNER_WORKSPACE_VERSION,
-      cinemaProfile: normalizeCinemaProfile(workspace.cinemaProfile, ownerKey),
-      screens: normalizeOwnerScreens(workspace.screens, ownerKey),
-      shows: normalizeOwnerItems(workspace.shows, ownerKey),
-      bookings: normalizeOwnerItems(workspace.bookings, ownerKey),
-    }),
-  );
-}
-
-function normalizeOwnerItems(items, ownerKey) {
-  return Array.isArray(items) ? items.map((item) => ({ ...item, ownerKey })) : [];
-}
-
-function normalizeOwnerScreens(items, ownerKey) {
-  if (!Array.isArray(items)) return [];
-  return items.map((item) => {
-    const seatLayout = normalizeSeatLayoutConfig(
-      item.seatLayout ?? inferSeatLayoutFromCapacity(item.seats),
-    );
-    return {
-      ...item,
-      ownerKey,
-      seatLayout,
-      seats: buildSeatLayout(seatLayout).totalSeats,
-    };
-  });
-}
-
-function inferSeatLayoutFromCapacity(seats) {
-  const count = Number(seats) || 120;
-  return {
-    rowCount: Math.min(26, Math.max(4, Math.ceil(count / 14))),
-    seatsPerRow: 14,
-    platinumRows: 2,
-    silverRows: 2,
-    vipRows: 2,
-    aisleAfter: 7,
-  };
-}
-
-function normalizeCinemaProfile(profile, ownerKey) {
-  const normalized = {
-    ...createCinemaProfile(ownerKey),
-    ...(profile && typeof profile === "object" ? profile : {}),
-    ownerKey,
-  };
-  const idSource = `${normalized.name || defaultCinemaProfile.name}-${
-    normalized.city || defaultCinemaProfile.city
-  }`;
-  return {
-    ...normalized,
-    id: normalized.id || slugify(idSource),
+    foodMenu: [
+      { item: "Classic popcorn combo", stock: "86 packs", price: 349, status: "Live" },
+      { item: "Nachos and cola", stock: "42 packs", price: 299, status: "Live" },
+      { item: "Family interval box", stock: "18 packs", price: 699, status: "Low stock" },
+    ],
+    staff: [
+      { name: "Counter desk", role: "Counter staff", shift: "10 AM - 6 PM", access: "Bookings" },
+      { name: "Floor manager", role: "Manager", shift: "2 PM - 11 PM", access: "Refunds" },
+      { name: "Gate scanner", role: "Entry staff", shift: "5 PM - 12 AM", access: "QR scan" },
+    ],
+    refundCases: [],
+    scanStats: [
+      { gate: "Gate A", value: "0 scanned", text: "Entry scans appear here" },
+      { gate: "Gate B", value: "0 scanned", text: "No duplicate QR attempts" },
+      { gate: "Exceptions", value: "0 checks", text: "Manual verification queue" },
+    ],
   };
 }
 
@@ -2325,14 +2248,6 @@ function normalizeDateKey(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
   return date.toISOString().slice(0, 10);
-}
-
-function summarizeBookings(bookings) {
-  return {
-    bookings: bookings.length,
-    seatsSold: bookings.reduce((sum, booking) => sum + (booking.seats?.length ?? 0), 0),
-    earnings: bookings.reduce((sum, booking) => sum + Number(booking.total || 0), 0),
-  };
 }
 
 function formatSeatList(seats) {

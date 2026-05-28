@@ -37,7 +37,7 @@ const Route = createFileRoute("/auth")({
 const accessCards = [
   { label: "Moviegoer", value: "Book seats", icon: Ticket },
   { label: "Admin", value: "Approve & track", icon: ShieldCheck },
-  { label: "Owner", value: "List shows", icon: Building2 },
+  { label: "Owner", value: "Manage cinema", icon: Building2 },
 ];
 
 const authMovie = movies.find((movie) => movie.id === "dune-part-two") ?? movies[0];
@@ -289,10 +289,10 @@ function AuthPage() {
             Movie booking access
           </span>
           <h1 className="mt-6 max-w-3xl text-5xl font-bold tracking-tight">
-            Book seats, list shows and run cinema operations from one place.
+            Book seats, manage cinema operations and handle approvals from one place.
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Customers get OTP-secured tickets, theater owners manage their own shows, and admins
+            Customers get OTP-secured tickets, theater owners manage cinema operations, and admins
             control movies, approvals and revenue.
           </p>
 

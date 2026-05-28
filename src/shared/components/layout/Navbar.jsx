@@ -8,7 +8,6 @@ import {
   Moon,
   Search,
   Sun,
-  Trophy,
   User,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -27,10 +26,7 @@ import {
 import { writeHomeSearchQuery } from "@/shared/services/homeSearch";
 import { clearSearchBox, readSearchBoxValue } from "@/shared/services/searchBox";
 
-const navItems = [
-  { label: "Movies", to: "/", icon: Film },
-  { label: "Sports", to: "/sports", icon: Trophy },
-];
+const navItems = [{ label: "Movies", to: "/", icon: Film }];
 
 const panelLinks = [
   { label: "User Dashboard", to: "/dashboard", icon: User, roles: ["user"] },

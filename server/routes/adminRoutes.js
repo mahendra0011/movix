@@ -249,7 +249,12 @@ router.delete(
     if (user.role === "theater-owner") {
       const ownerTheaterIds = await Theater.find({ ownerId: user._id }).distinct("id");
       await Theater.deleteMany({ ownerId: user._id });
-      await Show.deleteMany({ theaterId: { $in: ownerTheaterIds } });
+      await Show.deleteMany({
+        $or: [
+          { ownerId: user._id },
+          { theaterId: { $in: unique([ownerTheaterId(user), ...ownerTheaterIds]) } },
+        ],
+      });
     }
 
     response.json({ ok: true, user: mapAdminUser(user) });
@@ -314,8 +319,14 @@ router.delete(
         return;
       }
 
+      const ownerTheaterIds = await Theater.find({ ownerId: user._id }).distinct("id");
       await Theater.deleteMany({ ownerId: user._id });
-      await Show.deleteMany({ theaterId: ownerTheaterId(user) });
+      await Show.deleteMany({
+        $or: [
+          { ownerId: user._id },
+          { theaterId: { $in: unique([ownerTheaterId(user), ...ownerTheaterIds]) } },
+        ],
+      });
       response.json({ theater: mapOwnerApplication({ ...user, ownerStatus: "Rejected" }) });
       return;
     }
@@ -419,8 +430,13 @@ async function syncApprovedTheater(user, status) {
 
   const theaterId = ownerTheaterId(user);
   if (status !== "Approved") {
+    const ownerTheaterIds = await Theater.find({
+      $or: [{ id: theaterId }, { ownerId: user._id }],
+    }).distinct("id");
     await Theater.deleteMany({ $or: [{ id: theaterId }, { ownerId: user._id }] });
-    await Show.deleteMany({ theaterId });
+    await Show.deleteMany({
+      $or: [{ ownerId: user._id }, { theaterId: { $in: unique([theaterId, ...ownerTheaterIds]) } }],
+    });
     return;
   }
 
@@ -433,6 +449,9 @@ async function syncApprovedTheater(user, status) {
         city,
         area: application.area || "",
         address: application.address || `${application.area || city}, ${city}`,
+        contact: application.contact || "",
+        manager: application.companyName || user.name || "",
+        cancellationPolicy: "Cancellation available up to 2 hours before showtime.",
         ownerId: user._id,
         approved: true,
         amenities: ["M-Ticket", "Food & Beverage"],
@@ -451,7 +470,9 @@ function buildScreens(countValue) {
   return Array.from({ length: count }, (_, index) => ({
     id: `screen-${index + 1}`,
     name: `Screen ${index + 1}`,
+    type: index === 0 ? "Premium" : "Regular",
     totalSeats: 120,
+    occupancy: 0,
     seatLayout: { rows: ["A", "B", "C", "D", "E", "F", "G", "H"], cols: 15 },
   }));
 }
@@ -489,6 +510,10 @@ function slugify(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function unique(values) {
+  return [...new Set(values.filter(Boolean).map(String))];
 }
 
 export { router as adminRoutes };

@@ -289,7 +289,9 @@ function buildScreensForTheater(theater, index) {
   return names.map((name, screenIndex) => ({
     id: `${theater.id}-${slugify(name) || `screen-${screenIndex + 1}`}`,
     name,
+    type: screenIndex === 0 ? "Premium" : "Regular",
     totalSeats: screenIndex === 0 ? 140 : 120,
+    occupancy: 0,
     seatLayout: {
       rows: ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K"],
       cols: screenIndex === 0 ? 14 : 12,

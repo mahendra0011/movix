@@ -114,7 +114,6 @@ const footerColumns = [
       { label: "Now showing", to: "/" },
       { label: "Coming soon", to: "/" },
       { label: "Cinemas", to: "/" },
-      { label: "Sports", to: "/sports" },
     ],
   },
   {
@@ -152,7 +151,7 @@ function RootComponent() {
                   book<span className="text-primary">my</span>screen
                 </h3>
                 <p className="mt-3 text-xs text-muted-foreground">
-                  The cinematic way to book movies and sports experiences with clean seat selection.
+                  The cinematic way to book movies with clean seat selection.
                 </p>
               </div>
               {footerColumns.map((col) => (

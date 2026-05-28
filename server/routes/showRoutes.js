@@ -59,13 +59,14 @@ router.get(
     const shows = await Show.find({ movieId: request.params.movieId })
       .sort({ startTime: 1 })
       .lean();
-    const theaterIds = [...new Set(shows.map((show) => show.theaterId).filter(Boolean))];
+    const visibleShows = shows.filter(isPublicShow);
+    const theaterIds = [...new Set(visibleShows.map((show) => show.theaterId).filter(Boolean))];
     const theaterFilter = { id: { $in: theaterIds }, approved: true };
     if (city) theaterFilter.city = new RegExp(`^${escapeRegExp(city)}$`, "i");
 
     const theaters = await Theater.find(theaterFilter).lean();
     const theaterById = new Map(theaters.map((theater) => [theater.id, theater]));
-    const rows = shows
+    const rows = visibleShows
       .map((show, index) => formatMongoShow(show, theaterById.get(show.theaterId), index))
       .filter(Boolean);
 
@@ -88,8 +89,10 @@ function formatMongoShow(show, theater, index) {
     logoText: theater.logoText,
     screenId: show.screenId,
     screen: show.screen || screen?.name || "Screen 1",
+    date: show.date || "",
     startTime: show.startTime,
     endTime: show.endTime,
+    time: show.time || show.startTime,
     format: show.format || "2D",
     language: show.language || "English",
     price: {
@@ -98,9 +101,15 @@ function formatMongoShow(show, theater, index) {
       gold: Number(show.price?.gold || 250 + index * 15),
       vip: Number(show.price?.vip || 400 + index * 20),
     },
+    seatLayout: show.seatLayout || screen?.seatLayout || {},
     status: show.status || "ok",
     cancellable: show.cancellable !== false,
   };
+}
+
+function isPublicShow(show) {
+  const status = String(show.status || "").toLowerCase();
+  return show.listingType !== "coming-soon" && status !== "draft" && status !== "coming soon";
 }
 
 function getTheaterPlans(theater) {
