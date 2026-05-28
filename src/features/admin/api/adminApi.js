@@ -53,7 +53,11 @@ async function fetchAdminSummary() {
 
 async function fetchTheaterApplications() {
   if (shouldUseLocalAdminFallback()) {
-    return { theaters: readOwnerApplications().map(mapOwnerApplicationForAdmin) };
+    return {
+      theaters: readOwnerApplications()
+        .filter((application) => application.status !== "Rejected")
+        .map(mapOwnerApplicationForAdmin),
+    };
   }
 
   return requestJson("/api/admin/theater-applications");

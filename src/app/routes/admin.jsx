@@ -224,7 +224,9 @@ function AdminDashboard() {
     fetchTheaterApplications()
       .then((result) => {
         if (!active) return;
-        const applications = result.theaters ?? [];
+        const applications = (result.theaters ?? []).filter(
+          (theater) => theater.status !== "Rejected",
+        );
         setTheaterApprovals(applications.length ? applications : pendingTheatersSeed);
       })
       .catch(() => {
@@ -320,11 +322,12 @@ function AdminDashboard() {
     setApprovalBusy(id);
     try {
       const result = await updateTheaterApplicationStatus(id, status);
-      setTheaterApprovals((current) =>
-        current.map((item) =>
+      setTheaterApprovals((current) => {
+        if (status === "Rejected") return current.filter((item) => item.id !== id);
+        return current.map((item) =>
           item.id === id ? { ...item, ...(result.theater ?? {}), status } : item,
-        ),
-      );
+        );
+      });
       setNotice(`${theater?.name ?? "Theater"} marked as ${status.toLowerCase()}.`);
     } catch (error) {
       setNotice(error.response?.data?.error ?? `Could not update ${theater?.name ?? "theater"}.`);
@@ -1259,18 +1262,20 @@ function StatusPill({ status }) {
 }
 
 function buildManagedTheaters(catalog, applications) {
-  const approvalRows = (applications ?? []).map((theater, index) => ({
-    id: theater.id || `application-${index}`,
-    name: theater.name || theater.theaterName || "Unnamed theater",
-    owner: theater.owner || theater.ownerName || "Owner details pending",
-    city: theater.city || "Pending city",
-    area: theater.area || "Area not set",
-    address: theater.address || "Address not set",
-    screens: Number(theater.screens || 1),
-    showCount: Number(theater.showCount || 0),
-    amenities: theater.amenities || theater.documents || "Partner onboarding",
-    status: theater.status || "Pending",
-  }));
+  const approvalRows = (applications ?? [])
+    .filter((theater) => theater.status !== "Rejected")
+    .map((theater, index) => ({
+      id: theater.id || `application-${index}`,
+      name: theater.name || theater.theaterName || "Unnamed theater",
+      owner: theater.owner || theater.ownerName || "Owner details pending",
+      city: theater.city || "Pending city",
+      area: theater.area || "Area not set",
+      address: theater.address || "Address not set",
+      screens: Number(theater.screens || 1),
+      showCount: Number(theater.showCount || 0),
+      amenities: theater.amenities || theater.documents || "Partner onboarding",
+      status: theater.status || "Pending",
+    }));
   const approvalKeys = new Set(approvalRows.map((theater) => normalizeAdminKey(theater.name)));
   const catalogRows = (catalog ?? [])
     .filter((theater) => !approvalKeys.has(normalizeAdminKey(theater.name)))
