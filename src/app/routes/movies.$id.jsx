@@ -1,11 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Award,
+  BadgePercent,
   Calendar,
   ChevronDown,
   Clock,
   Heart,
   Info,
+  MessageCircle,
   Moon,
   Play,
   Search,
@@ -13,6 +16,9 @@ import {
   SlidersHorizontal,
   Star,
   Sunrise,
+  ThumbsUp,
+  Ticket,
+  Users,
 } from "lucide-react";
 import { fetchMovie } from "@/features/movies/api/moviesApi";
 import { theaters, showTimes } from "@/features/movies/data/movieCatalog";
@@ -107,6 +113,12 @@ const topReviews = [
 ];
 
 const suggestedTitles = ["Chand Mera Dil", "Rajni Ki Baraat", "Bhooth Bangla", "Daadi Ki Shaadi"];
+
+const detailHighlights = [
+  { label: "Audience score", value: "8K reviews", icon: MessageCircle },
+  { label: "Top tag", value: "#GreatActing", icon: Award },
+  { label: "Offers live", value: "5 cards", icon: BadgePercent },
+];
 
 const Route = createFileRoute("/movies/$id")({
   component: MoviePage,
@@ -206,56 +218,97 @@ function MoviePage() {
 
   return (
     <div className="pb-20">
-      <section className="relative">
-        <div className="relative h-[360px] overflow-hidden md:h-[440px]">
+      <section className="relative overflow-hidden border-b border-border/60 bg-card">
+        <div className="relative h-[420px] overflow-hidden md:h-[500px]">
           <img
             src={movie.backdrop}
             alt={movie.title}
-            className="absolute inset-0 h-full w-full object-cover blur-sm"
+            className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/75 to-background/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/20" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4">
-          <div className="-mt-40 grid grid-cols-1 gap-6 md:grid-cols-[260px_1fr] md:gap-10">
-            <div className="overflow-hidden rounded-2xl shadow-2xl ring-1 ring-border/60">
-              <img
-                src={movie.poster}
-                alt={movie.title}
-                className="aspect-[2/3] w-full object-cover"
-              />
-            </div>
-            <div className="pt-2 md:pt-32">
-              <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{movie.title}</h1>
-              <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-card/70 px-3 py-2 backdrop-blur">
-                <Star className="h-4 w-4 fill-primary text-primary" />
-                <span className="text-sm font-semibold">{movie.rating}/10</span>
-                <span className="text-xs text-muted-foreground">({movie.votes} votes)</span>
+          <div className="-mt-72 grid gap-6 pb-10 md:grid-cols-[270px_1fr] md:gap-10 lg:-mt-80">
+            <div className="overflow-hidden rounded-lg border border-border/70 bg-card shadow-2xl shadow-black/25">
+              <div className="relative">
+                <img
+                  src={movie.poster}
+                  alt={movie.title}
+                  className="aspect-[2/3] w-full object-cover"
+                />
+                <a
+                  href={trailerSearchUrl(movie.title)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="absolute inset-x-3 bottom-3 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-background/90 text-sm font-semibold text-foreground backdrop-blur transition-colors hover:bg-primary hover:text-primary-foreground"
+                >
+                  <Play className="h-4 w-4" /> Watch trailer
+                </a>
               </div>
+            </div>
 
-              <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                {movie.format.map((f) => (
-                  <span
-                    key={f}
-                    className="rounded border border-border/60 px-2 py-1 text-muted-foreground"
-                  >
-                    {f}
-                  </span>
-                ))}
-                <span className="rounded border border-border/60 px-2 py-1 text-muted-foreground">
-                  {movie.language}
-                </span>
+            <div className="self-end pb-1">
+              <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
+                <Ticket className="h-4 w-4" />
+                In cinemas now
+              </div>
+              <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight md:text-5xl">
+                {movie.title}
+              </h1>
+
+              <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px]">
+                <div className="rounded-lg border border-border/60 bg-background/80 p-4 shadow-lg shadow-black/10 backdrop-blur">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="inline-flex items-center gap-2">
+                      <Star className="h-5 w-5 fill-primary text-primary" />
+                      <span className="text-lg font-bold">{movie.rating}/10</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">{movie.votes} votes</span>
+                    <span className="hidden h-5 w-px bg-border sm:block" />
+                    <span className="text-sm font-medium">8K reviews</span>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                    {movie.format.map((format) => (
+                      <span
+                        key={format}
+                        className="rounded-md border border-border/60 bg-card px-2.5 py-1 font-medium"
+                      >
+                        {format}
+                      </span>
+                    ))}
+                    <span className="rounded-md border border-border/60 bg-card px-2.5 py-1 font-medium">
+                      {movie.language}
+                    </span>
+                    <span className="rounded-md border border-border/60 bg-card px-2.5 py-1 font-medium">
+                      {movie.certificate}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 lg:grid-cols-1">
+                  {detailHighlights.map(({ label, value, icon: Icon }) => (
+                    <div
+                      key={label}
+                      className="rounded-lg border border-border/60 bg-background/80 p-3 backdrop-blur"
+                    >
+                      <Icon className="h-4 w-4 text-primary" />
+                      <p className="mt-2 text-xs text-muted-foreground">{label}</p>
+                      <p className="text-sm font-semibold">{value}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-4 w-4" /> {movie.duration}
                 </span>
-                <span>- {movie.genres.join(", ")}</span>
+                <span>{movie.genres.join(", ")}</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" /> {movie.releaseDate}
                 </span>
-                <span>- {movie.certificate}</span>
               </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -265,7 +318,9 @@ function MoviePage() {
                     setBookingMode(true);
                     window.location.hash = "showtimes";
                   }}
+                  className="gap-2"
                 >
+                  <Ticket className="h-4 w-4" />
                   Book tickets
                 </Button>
                 {bookingMode && (
@@ -335,35 +390,32 @@ function MoviePage() {
 
 function MovieDetailsContent({ movie }) {
   return (
-    <div className="mx-auto mt-12 grid max-w-7xl gap-10 px-4">
-      <section>
-        <h2 className="text-xl font-bold">About the movie</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          {detailAboutText}
-        </p>
+    <div className="mx-auto mt-12 grid max-w-7xl gap-12 px-4">
+      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
+        <div>
+          <SectionHeader icon={Info} eyebrow="Story" title="About the movie" />
+          <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
+            {detailAboutText}
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <StatTile icon={Star} label="Audience love" value={`${movie.rating}/10`} />
+          <StatTile icon={MessageCircle} label="Review volume" value="8K reviews" />
+          <StatTile icon={Users} label="Popular with" value="Couples & groups" />
+        </div>
       </section>
 
       <section>
-        <h2 className="text-xl font-bold">Top offers for you</h2>
+        <SectionHeader icon={BadgePercent} eyebrow="Savings" title="Top offers for you" />
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {detailOffers.map((offer) => (
-            <div key={offer} className="rounded-lg border border-border/60 bg-card p-4">
-              <div className="flex items-start gap-3">
-                <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                  offer
-                </span>
-                <div>
-                  <p className="text-sm font-semibold">{offer}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Tap to view details</p>
-                </div>
-              </div>
-            </div>
+            <OfferCard key={offer} offer={offer} />
           ))}
         </div>
       </section>
 
       <section>
-        <h2 className="text-xl font-bold">Cast</h2>
+        <SectionHeader icon={Users} eyebrow="On screen" title="Cast" />
         <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
           {detailCast.map((name) => (
             <ProfileBubble key={name} name={name} role="Actor" />
@@ -372,7 +424,7 @@ function MovieDetailsContent({ movie }) {
       </section>
 
       <section>
-        <h2 className="text-xl font-bold">Crew</h2>
+        <SectionHeader icon={Award} eyebrow="Behind the camera" title="Crew" />
         <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-5">
           {detailCrew.map((person) => (
             <ProfileBubble
@@ -384,54 +436,33 @@ function MovieDetailsContent({ movie }) {
         </div>
       </section>
 
-      <section>
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-bold">Top reviews</h2>
-            <p className="mt-1 text-sm text-muted-foreground">8K reviews</p>
-            <p className="text-sm text-muted-foreground">Summary of 8K reviews.</p>
+      <section className="grid gap-5 lg:grid-cols-[330px_1fr]">
+        <div>
+          <SectionHeader icon={MessageCircle} eyebrow="8K reviews" title="Top reviews" />
+          <p className="mt-3 text-sm text-muted-foreground">Summary of 8K reviews.</p>
+          <div className="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-1">
+            {reviewTags.slice(0, 6).map(([tag, count]) => (
+              <div
+                key={tag}
+                className="flex items-center justify-between rounded-lg border border-border/60 bg-card px-3 py-2 text-xs"
+              >
+                <span className="font-medium">{tag}</span>
+                <span className="text-muted-foreground">{count}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {reviewTags.map(([tag, count]) => (
-            <span
-              key={tag}
-              className="rounded-full border border-border/60 bg-card px-3 py-1.5 text-xs font-medium"
-            >
-              {tag} <span className="text-muted-foreground">{count}</span>
-            </span>
-          ))}
-        </div>
-
-        <div className="mt-5 grid gap-3">
+        <div className="grid gap-3">
           {topReviews.map((review) => (
-            <article key={review.name} className="rounded-lg border border-border/60 bg-card p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  {review.tags && (
-                    <p className="mb-2 text-xs font-medium text-primary">{review.tags}</p>
-                  )}
-                  <p className="font-semibold">{review.name}</p>
-                  <p className="text-xs text-muted-foreground">Booked on</p>
-                </div>
-                <span className="rounded-md bg-primary/10 px-2 py-1 text-sm font-bold text-primary">
-                  {review.rating}
-                </span>
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{review.text}</p>
-              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{review.likes}</span>
-                <span>12 Days ago</span>
-              </div>
-            </article>
+            <ReviewCard key={review.name} review={review} />
           ))}
         </div>
       </section>
 
       <section>
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-xl font-bold">Critic reviews</h2>
+          <SectionHeader icon={Award} eyebrow="Critics" title="Critic reviews" />
           <button type="button" className="text-sm font-medium text-primary hover:underline">
             See all
           </button>
@@ -454,27 +485,14 @@ function MovieDetailsContent({ movie }) {
 
       <section>
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-xl font-bold">You might also like</h2>
+          <SectionHeader icon={Heart} eyebrow="More picks" title="You might also like" />
           <button type="button" className="text-sm font-medium text-primary hover:underline">
             View All
           </button>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {suggestedTitles.map((title) => (
-            <div key={title} className="overflow-hidden rounded-lg border border-border/60 bg-card">
-              <div className="grid aspect-[2/3] place-items-center bg-muted">
-                {movie.poster ? (
-                  <img
-                    src={movie.poster}
-                    alt={title}
-                    className="h-full w-full object-cover opacity-80"
-                  />
-                ) : (
-                  <span className="text-lg font-bold text-primary">{initials(title)}</span>
-                )}
-              </div>
-              <p className="p-3 text-sm font-semibold">{title}</p>
-            </div>
+            <SuggestionCard key={title} title={title} poster={movie.poster} />
           ))}
         </div>
       </section>
@@ -482,14 +500,104 @@ function MovieDetailsContent({ movie }) {
   );
 }
 
+function SectionHeader({ icon: Icon, eyebrow, title }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+        <Icon className="h-5 w-5" />
+      </div>
+      <div>
+        <p className="text-xs font-semibold uppercase text-muted-foreground">{eyebrow}</p>
+        <h2 className="mt-0.5 text-xl font-bold tracking-tight">{title}</h2>
+      </div>
+    </div>
+  );
+}
+
+function StatTile({ icon: Icon, label, value }) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-card p-4">
+      <Icon className="h-5 w-5 text-primary" />
+      <p className="mt-3 text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 text-sm font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function OfferCard({ offer }) {
+  return (
+    <button
+      type="button"
+      className="group rounded-lg border border-border/60 bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-primary/5"
+    >
+      <div className="flex items-start gap-3">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+          <BadgePercent className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold leading-5">{offer}</p>
+          <p className="mt-1 text-xs text-muted-foreground group-hover:text-primary">
+            Tap to view details
+          </p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 function ProfileBubble({ name, role }) {
   return (
-    <div className="text-center">
-      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-primary/25 to-accent/25 ring-1 ring-border/60">
+    <div className="rounded-lg border border-border/60 bg-card p-4 text-center transition-transform hover:-translate-y-0.5">
+      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-primary/15 ring-1 ring-primary/20">
         <span className="text-sm font-bold text-foreground">{initials(name)}</span>
       </div>
       <p className="mt-2 text-sm font-medium">{name}</p>
       <p className="text-xs text-muted-foreground">{role}</p>
+    </div>
+  );
+}
+
+function ReviewCard({ review }) {
+  return (
+    <article className="rounded-lg border border-border/60 bg-card p-4 transition-colors hover:border-primary/40">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          {review.tags && <p className="mb-2 text-xs font-medium text-primary">{review.tags}</p>}
+          <p className="font-semibold">{review.name}</p>
+          <p className="text-xs text-muted-foreground">Booked on</p>
+        </div>
+        <span className="rounded-md bg-primary/10 px-2 py-1 text-sm font-bold text-primary">
+          {review.rating}
+        </span>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{review.text}</p>
+      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <ThumbsUp className="h-3.5 w-3.5" />
+          {review.likes}
+        </span>
+        <span>12 Days ago</span>
+      </div>
+    </article>
+  );
+}
+
+function SuggestionCard({ title, poster }) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-border/60 bg-card transition-transform hover:-translate-y-0.5">
+      <div className="relative aspect-[2/3] bg-muted">
+        {poster ? (
+          <img src={poster} alt={title} className="h-full w-full object-cover opacity-85" />
+        ) : (
+          <div className="grid h-full place-items-center">
+            <span className="text-lg font-bold text-primary">{initials(title)}</span>
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+        <p className="absolute bottom-3 left-3 right-3 text-sm font-semibold text-foreground">
+          {title}
+        </p>
+      </div>
     </div>
   );
 }
