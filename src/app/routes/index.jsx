@@ -431,18 +431,18 @@ function Home() {
             options={sortOptions}
             onChange={setSortBy}
           />
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-foreground">Quick Filters</p>
-            <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+          <div className="min-w-0 rounded-lg border border-border/60 bg-background/60 p-2.5">
+            <p className="text-xs font-bold text-foreground">Quick Filters</p>
+            <div className="mt-1.5 flex gap-1.5 overflow-x-auto rounded-full bg-muted/45 p-0.5">
               {genres.slice(0, 8).map((genre) => (
                 <button
                   key={genre}
                   type="button"
                   onClick={() => setActiveGenre(genre)}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`h-7 shrink-0 whitespace-nowrap rounded-full border px-3 text-xs font-bold transition-all ${
                     activeGenre === genre
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border/70 bg-background/70 text-foreground hover:border-primary/50"
+                      ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                      : "border-transparent bg-background/80 text-foreground hover:border-primary/35 hover:text-primary"
                   }`}
                 >
                   {genre}
@@ -652,33 +652,36 @@ function Home() {
 
 function FilterMetric({ icon: Icon, title, value, detail, options = [], onChange }) {
   return (
-    <label className="block rounded-lg border border-border/60 bg-background/60 p-3 transition-colors hover:border-primary/35">
-      <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
-          <Icon className="h-5 w-5" />
+    <label className="group relative block rounded-lg border border-border/60 bg-background/60 p-2.5 transition-colors hover:border-primary/35">
+      <div className="flex h-full items-center gap-3">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
+          <Icon className="h-4 w-4" />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-bold">{title}</p>
-          <span className="relative mt-0.5 flex items-center gap-1 pr-4">
-            <select
-              aria-label={title}
-              value={value}
-              onChange={(event) => onChange?.(event.target.value)}
-              className="min-w-0 flex-1 appearance-none bg-transparent text-xs font-medium text-muted-foreground outline-none"
-            >
-              {options.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+          <span className="mt-1 flex min-w-0 items-center gap-1.5 rounded-md bg-card/80 px-2.5 py-1 text-xs shadow-sm transition-colors group-hover:bg-primary/8">
+            <span className="min-w-0 flex-1 truncate font-bold text-foreground">{value}</span>
             {detail ? (
-              <span className="shrink-0 text-xs font-medium text-primary">{detail}</span>
+              <span className="shrink-0 rounded-full bg-primary/12 px-2 py-0.5 text-[11px] font-bold text-primary">
+                {detail}
+              </span>
             ) : null}
-            <ChevronDown className="pointer-events-none absolute right-0 h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           </span>
         </div>
       </div>
+      <select
+        aria-label={title}
+        value={value}
+        onChange={(event) => onChange?.(event.target.value)}
+        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }
