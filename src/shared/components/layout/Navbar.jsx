@@ -11,6 +11,7 @@ import {
   Percent,
   Search,
   Sun,
+  Ticket,
   User,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -67,7 +68,7 @@ function Navbar() {
   const [notifications, setNotifications] = useState([]);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notificationStatus, setNotificationStatus] = useState("connecting");
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(3);
   const notificationRef = useRef(null);
   const notificationOpenRef = useRef(false);
   const citySuggestions = useMemo(() => theaters.map((theater) => theater.city), []);
@@ -185,10 +186,10 @@ function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-4">
+      <div className="mx-auto flex h-16 max-w-[1216px] items-center gap-2 px-4 sm:gap-4">
         <Link to="/" className="flex items-center gap-2">
           <div className="grid h-8 w-8 place-items-center rounded-md bg-primary">
-            <Film className="h-4 w-4 text-primary-foreground" />
+            <Ticket className="h-4 w-4 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold tracking-tight">
             book<span className="text-primary">my</span>screen
@@ -353,7 +354,7 @@ function Navbar() {
       </div>
 
       <div className="border-t border-border/60 px-4 py-2 xl:hidden">
-        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto">
+        <div className="mx-auto flex max-w-[1216px] gap-2 overflow-x-auto">
           <Button
             size="sm"
             variant="secondary"
@@ -386,7 +387,7 @@ function Navbar() {
       </div>
 
       <div className="border-t border-border/60 px-4 py-2 md:hidden">
-        <form onSubmit={submitSearch} className="relative mx-auto max-w-7xl">
+        <form onSubmit={submitSearch} className="relative mx-auto max-w-[1216px]">
           <button
             type="submit"
             className="absolute left-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-primary"
@@ -402,18 +403,25 @@ function Navbar() {
       </div>
 
       <nav className="border-t border-border/60">
-        <div className="mx-auto flex max-w-7xl gap-6 overflow-x-auto px-4 py-2">
-          {navItems.map((item) => {
+        <div className="mx-auto flex max-w-[1216px] gap-6 overflow-x-auto px-4 py-2">
+          {navItems.map((item, index) => {
             const Icon = item.icon;
+            const active = index === 0;
             return (
               <a
                 key={item.label}
                 href={item.href}
-                className="group relative inline-flex min-h-9 shrink-0 items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-primary"
+                className={`group relative inline-flex min-h-9 shrink-0 items-center gap-2 text-sm font-semibold transition-colors hover:text-primary ${
+                  active ? "text-primary" : "text-muted-foreground"
+                }`}
               >
                 <Icon className="h-4 w-4" />
                 {item.label}
-                <span className="absolute inset-x-0 -bottom-2 h-0.5 scale-x-0 rounded-full bg-primary transition-transform group-hover:scale-x-100" />
+                <span
+                  className={`absolute inset-x-0 -bottom-2 h-0.5 rounded-full bg-primary transition-transform group-hover:scale-x-100 ${
+                    active ? "scale-x-100" : "scale-x-0"
+                  }`}
+                />
               </a>
             );
           })}

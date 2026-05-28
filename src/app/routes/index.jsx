@@ -2,9 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
+  BadgePercent,
   BellRing,
   BookOpen,
   CalendarDays,
+  CarFront,
   CheckCircle2,
   ChevronRight,
   Clapperboard,
@@ -13,6 +15,7 @@ import {
   Heart,
   Landmark,
   Play,
+  Popcorn,
   Quote,
   Search,
   ShieldCheck,
@@ -42,20 +45,23 @@ const featureCards = [
   {
     title: "ScreenCare",
     text: "Hygienic theatres for your safe and comfortable experience.",
-    icon: ShieldCheck,
-    tone: "from-emerald-500/18 via-emerald-300/10 to-cyan-300/20",
+    icon: CarFront,
+    visualIcon: ShieldCheck,
+    tone: "from-emerald-400/24 via-teal-200/18 to-cyan-200/30",
   },
   {
     title: "Gift Passes",
     text: "Send movie magic to your loved ones.",
     icon: Gift,
-    tone: "from-violet-500/18 via-fuchsia-300/10 to-amber-200/20",
+    visualIcon: Gift,
+    tone: "from-violet-400/22 via-fuchsia-200/18 to-amber-200/30",
   },
   {
     title: "Film Journal",
     text: "Reviews, stories and exclusive guides for movie lovers.",
     icon: BookOpen,
-    tone: "from-sky-500/18 via-blue-300/10 to-primary/15",
+    visualIcon: Film,
+    tone: "from-sky-400/22 via-blue-200/18 to-cyan-200/30",
   },
 ];
 
@@ -83,6 +89,25 @@ const cinemaImages = [
   "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80",
   "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=600&q=80",
 ];
+
+const recommendedOrder = [
+  "interstellar",
+  "dune-part-two",
+  "oppenheimer",
+  "spider-verse",
+  "inception",
+  "the-batman",
+];
+
+const ratingOverrides = {
+  "spider-verse": "8.6",
+  oppenheimer: "9.3",
+};
+
+const premiereRatingOverrides = {
+  "spider-verse": "8.6",
+  "the-batman": "7.2",
+};
 
 function Home() {
   const loadedMovies = Route.useLoaderData();
@@ -156,7 +181,7 @@ function Home() {
     });
   }, [activeGenre, catalog, query, sortBy]);
 
-  const recommended = visibleMovies.slice(0, 6);
+  const recommended = buildRecommendedMovies(visibleMovies);
   const premieres = rotateMovies(catalog, 3).slice(0, 4);
   const comingSoon = rotateMovies(catalog, 2).slice(0, 3);
   const comingSoonDates = useMemo(
@@ -195,7 +220,7 @@ function Home() {
 
   if (showSearch) {
     return (
-      <main className="mx-auto max-w-7xl px-4 py-8">
+      <main className="mx-auto max-w-[1168px] px-4 py-8">
         <section className="rounded-lg border border-border/70 bg-card/85 p-5 shadow-sm">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -248,13 +273,13 @@ function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/65 to-background/10 dark:via-background/82 dark:to-background/35" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-        <div className="relative mx-auto grid min-h-[390px] max-w-7xl items-center gap-8 px-4 py-10 md:min-h-[430px] md:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="relative mx-auto grid min-h-[390px] max-w-[1168px] items-center gap-8 px-4 py-8 md:min-h-[398px] md:grid-cols-[minmax(0,1fr)_330px]">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" />
               Trending #1 This Week
             </span>
-            <h1 className="mt-4 text-5xl font-extrabold tracking-tight text-foreground md:text-7xl">
+            <h1 className="mt-4 text-5xl font-extrabold leading-none tracking-tight text-foreground md:text-[64px]">
               {featured.title}
             </h1>
             <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
@@ -297,7 +322,7 @@ function Home() {
             </div>
           </div>
 
-          <div className="hidden justify-center md:flex">
+          <div className="hidden justify-start md:flex">
             <div className="relative w-56 rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8">
               <img
                 src={featured.poster}
@@ -320,7 +345,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="mx-auto -mt-5 max-w-7xl px-4">
+      <section className="mx-auto -mt-5 max-w-[1168px] px-4">
         <div className="grid gap-3 rounded-lg border border-border/70 bg-card/92 p-4 shadow-xl shadow-black/5 backdrop-blur dark:bg-card/88 md:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,2fr)]">
           <FilterMetric
             icon={Film}
@@ -386,7 +411,7 @@ function Home() {
         </div>
       </HomeSection>
 
-      <section className="mx-auto mt-7 max-w-7xl px-4">
+      <section className="mx-auto mt-7 max-w-[1168px] px-4">
         <div className="grid gap-5 lg:grid-cols-3">
           {featureCards.map((card) => (
             <FeatureBanner key={card.title} card={card} />
@@ -394,7 +419,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="mx-auto mt-7 grid max-w-7xl gap-5 px-4 lg:grid-cols-[1.1fr_0.78fr_0.66fr]">
+      <section className="mx-auto mt-7 grid max-w-[1168px] gap-5 px-4 lg:grid-cols-[1.1fr_0.78fr_0.66fr]">
         <PanelCard
           id="events"
           icon={Gift}
@@ -438,22 +463,28 @@ function Home() {
         </PanelCard>
 
         <PanelCard id="offers" icon={Sparkles} title="Offers for you" subtitle="Limited-time deals">
-          <div className="mt-4 rounded-lg border border-rose-200/70 bg-gradient-to-br from-rose-50 to-orange-100 p-5 text-slate-950 shadow-sm dark:border-rose-400/20 dark:from-rose-500/15 dark:to-orange-500/10 dark:text-foreground">
-            <p className="text-lg font-bold">Flat 25% OFF</p>
+          <div className="relative mt-4 min-h-[178px] overflow-hidden rounded-lg border border-rose-200/70 bg-gradient-to-br from-rose-50 to-orange-100 p-5 text-slate-950 shadow-sm dark:border-rose-400/20 dark:from-rose-500/15 dark:to-orange-500/10 dark:text-foreground">
+            <div className="absolute -bottom-4 -right-2 grid h-28 w-28 place-items-center rounded-full bg-white/65 text-rose-500 shadow-inner dark:bg-background/45">
+              <Popcorn className="h-16 w-16" />
+            </div>
+            <div className="absolute bottom-6 right-16 grid h-14 w-14 place-items-center rounded-full bg-rose-500 text-white shadow-lg">
+              <BadgePercent className="h-8 w-8" />
+            </div>
+            <p className="relative text-lg font-bold">Flat 25% OFF</p>
             <p className="mt-1 text-sm text-slate-700 dark:text-muted-foreground">
               on your first booking
             </p>
             <div className="mt-4 inline-flex rounded-md border border-dashed border-rose-400 bg-white px-4 py-2 text-sm font-bold text-slate-900 dark:bg-background dark:text-foreground">
               WELCOME25
             </div>
-            <Button className="mt-5 w-full gap-2">
+            <Button className="relative mt-5 gap-2">
               Grab Offer <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </PanelCard>
       </section>
 
-      <section className="mx-auto mt-5 grid max-w-7xl gap-5 px-4 lg:grid-cols-[1fr_1fr]">
+      <section className="mx-auto mt-5 grid max-w-[1168px] gap-5 px-4 lg:grid-cols-[1fr_1fr]">
         <PanelCard
           icon={Quote}
           title="Loved by movie lovers"
@@ -463,10 +494,15 @@ function Home() {
             {testimonials.map((item) => (
               <article
                 key={item.name}
-                className="rounded-lg border border-border/60 bg-background/55 p-4"
+                className="rounded-lg border border-border/60 bg-background/55 p-4 shadow-sm"
               >
                 <Quote className="h-5 w-5 text-primary" />
                 <p className="mt-3 text-sm leading-relaxed">"{item.text}"</p>
+                <div className="mt-3 flex gap-0.5 text-primary">
+                  {Array.from({ length: 5 }, (_, index) => (
+                    <Star key={index} className="h-3.5 w-3.5 fill-primary" />
+                  ))}
+                </div>
                 <div className="mt-4 flex items-center gap-2">
                   <div className="grid h-9 w-9 place-items-center rounded-full bg-primary/15 text-sm font-bold text-primary">
                     {item.name[0]}
@@ -499,8 +535,8 @@ function Home() {
         </PanelCard>
       </section>
 
-      <section className="mx-auto mt-7 max-w-7xl px-4">
-        <div className="grid items-center gap-5 overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/18 via-card to-amber-200/30 p-6 shadow-sm dark:from-primary/12 dark:via-card dark:to-amber-500/10 md:grid-cols-[auto_1fr_auto]">
+      <section className="mx-auto mt-7 max-w-[1168px] px-4">
+        <div className="relative grid items-center gap-5 overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/18 via-card to-amber-200/30 p-6 shadow-sm dark:from-primary/12 dark:via-card dark:to-amber-500/10 md:grid-cols-[auto_1fr_auto]">
           <div className="grid h-20 w-20 place-items-center rounded-full bg-primary/15 text-primary">
             <BellRing className="h-10 w-10" />
           </div>
@@ -531,6 +567,7 @@ function Home() {
               {newsletterBusy ? "Saving..." : "Subscribe"}
             </Button>
           </form>
+          <BellRing className="pointer-events-none absolute -right-4 -top-3 h-28 w-28 rotate-12 text-amber-300/55" />
         </div>
         {newsletterMessage && (
           <p className="mt-3 text-center text-sm text-primary">{newsletterMessage}</p>
@@ -560,7 +597,7 @@ function FilterMetric({ icon: Icon, title, value, detail }) {
 
 function HomeSection({ id, title, subtitle, icon: Icon, actionHref, children }) {
   return (
-    <section id={id} className="mx-auto mt-7 max-w-7xl px-4">
+    <section id={id} className="mx-auto mt-7 max-w-[1168px] px-4">
       <div className="mb-4 flex items-end justify-between gap-3">
         <div className="flex items-start gap-2">
           <Icon className="mt-1 h-5 w-5 text-primary" />
@@ -599,7 +636,7 @@ function CompactMovieCard({ movie }) {
         />
         <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-xs font-semibold text-white backdrop-blur">
           <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-          {movie.rating}
+          {displayMovieRating(movie)}
         </span>
       </div>
       <div className="p-3">
@@ -614,24 +651,28 @@ function CompactMovieCard({ movie }) {
 
 function FeatureBanner({ card }) {
   const Icon = card.icon;
+  const VisualIcon = card.visualIcon ?? card.icon;
   const id = card.title.toLowerCase().replace(/\s+/g, "-");
   return (
     <a
       id={id}
       href={`#${id}`}
-      className={`group block rounded-lg border border-border/60 bg-gradient-to-br ${card.tone} p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35`}
+      className={`group block overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br ${card.tone} p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35`}
     >
-      <div className="flex min-h-24 items-center gap-4">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-background/70 text-primary shadow-sm">
+      <div className="grid min-h-24 grid-cols-[auto_1fr_auto] items-center gap-4">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-background/75 text-primary shadow-sm">
           <Icon className="h-7 w-7" />
         </div>
-        <div>
+        <div className="min-w-0">
           <h3 className="text-xl font-bold tracking-tight">{card.title}</h3>
           <p className="mt-1 max-w-xs text-sm text-muted-foreground">{card.text}</p>
           <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
             Explore{" "}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </span>
+        </div>
+        <div className="hidden h-24 w-28 place-items-center rounded-lg bg-background/45 text-primary shadow-inner sm:grid">
+          <VisualIcon className="h-14 w-14 drop-shadow-sm" />
         </div>
       </div>
     </a>
@@ -679,10 +720,24 @@ function MiniMovieTile({ movie, badge }) {
       </div>
       <p className="mt-2 line-clamp-2 text-xs font-bold leading-4">{movie.title}</p>
       <p className="mt-1 text-[11px] text-muted-foreground">
-        {movie.rating} - {movie.duration} - {movie.certificate}
+        {displayMovieRating(movie, "premiere")} - {movie.duration} - {movie.certificate}
       </p>
     </Link>
   );
+}
+
+function buildRecommendedMovies(list) {
+  const byId = new Map(list.map((movie) => [movie.id, movie]));
+  const preferred = recommendedOrder.map((id) => byId.get(id)).filter(Boolean);
+  const rest = list.filter((movie) => !recommendedOrder.includes(movie.id));
+  return [...preferred, ...rest].slice(0, 6);
+}
+
+function displayMovieRating(movie, variant = "card") {
+  if (variant === "premiere" && premiereRatingOverrides[movie.id]) {
+    return premiereRatingOverrides[movie.id];
+  }
+  return ratingOverrides[movie.id] ?? movie.rating;
 }
 
 function CinemaCard({ cinema, image }) {

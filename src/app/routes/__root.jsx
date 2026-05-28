@@ -154,7 +154,7 @@ function RootComponent() {
           <Navbar />
           <Outlet />
           <footer className="border-t border-border/60 bg-card/45">
-            <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-[1.35fr_repeat(3,0.72fr)_1.1fr]">
+            <div className="mx-auto grid max-w-[1168px] gap-8 px-4 py-10 md:grid-cols-[1.35fr_repeat(3,0.72fr)_1.1fr]">
               <div>
                 <Link to="/" className="inline-flex items-center gap-2">
                   <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground">
@@ -228,8 +228,8 @@ function RootComponent() {
               </div>
             </div>
             <div className="border-t border-border/60">
-              <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-muted-foreground">
-                <span>(c) 2026 BookMyScreen. All rights reserved.</span>
+              <div className="mx-auto flex max-w-[1168px] flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-muted-foreground">
+                <span>(c) 2024 BookMyScreen. All rights reserved.</span>
                 <span className="flex gap-5">
                   <a href="#" className="hover:text-foreground">
                     Privacy Policy
