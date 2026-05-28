@@ -8,6 +8,7 @@ import {
   CalendarDays,
   CarFront,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Clapperboard,
   Film,
@@ -112,6 +113,9 @@ const premiereRatingOverrides = {
   "the-batman": "7.2",
 };
 
+const allFilterValue = "All";
+const sortOptions = ["Popularity", "Rating", "A-Z"];
+
 function Home() {
   const loadedMovies = Route.useLoaderData();
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
@@ -119,7 +123,9 @@ function Home() {
   const [query, setQuery] = useState(readHomeSearchQuery);
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
   const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
-  const [activeGenre, setActiveGenre] = useState("All");
+  const [activeGenre, setActiveGenre] = useState(allFilterValue);
+  const [activeLanguage, setActiveLanguage] = useState(allFilterValue);
+  const [activeFormat, setActiveFormat] = useState(allFilterValue);
   const [sortBy, setSortBy] = useState("Popularity");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
@@ -146,45 +152,64 @@ function Home() {
   }, []);
 
   const genres = useMemo(
-    () => ["All", ...Array.from(new Set(catalog.flatMap((movie) => movie.genres ?? [])))],
+    () => [
+      allFilterValue,
+      ...Array.from(new Set(catalog.flatMap((movie) => getMovieGenres(movie)))),
+    ],
     [catalog],
   );
   const languages = useMemo(
-    () => Array.from(new Set(catalog.map((movie) => movie.language).filter(Boolean))),
+    () => Array.from(new Set(catalog.flatMap((movie) => getMovieLanguages(movie)))),
     [catalog],
   );
   const formats = useMemo(
-    () => Array.from(new Set(catalog.flatMap((movie) => movie.format ?? []))),
+    () => Array.from(new Set(catalog.flatMap((movie) => getMovieFormats(movie)))),
     [catalog],
   );
+  const languageOptions = useMemo(() => [allFilterValue, ...languages], [languages]);
+  const formatOptions = useMemo(() => [allFilterValue, ...formats], [formats]);
+  const hasActiveFilters =
+    activeGenre !== allFilterValue ||
+    activeLanguage !== allFilterValue ||
+    activeFormat !== allFilterValue ||
+    sortBy !== "Popularity";
   const visibleMovies = useMemo(() => {
     const needle = query.trim().toLowerCase();
     const filtered = catalog.filter((movie) => {
-      const genreMatch = activeGenre === "All" || movie.genres?.includes(activeGenre);
+      const movieGenres = getMovieGenres(movie);
+      const movieLanguages = getMovieLanguages(movie);
+      const movieFormats = getMovieFormats(movie);
+      const genreMatch = activeGenre === allFilterValue || movieGenres.includes(activeGenre);
+      const languageMatch =
+        activeLanguage === allFilterValue || movieLanguages.includes(activeLanguage);
+      const formatMatch = activeFormat === allFilterValue || movieFormats.includes(activeFormat);
       const text = [
         movie.title,
-        movie.language,
         movie.duration,
         movie.certificate,
         movie.description,
-        ...(movie.genres ?? []),
-        ...(movie.format ?? []),
+        ...movieGenres,
+        ...movieLanguages,
+        ...movieFormats,
       ]
         .join(" ")
         .toLowerCase();
-      return genreMatch && (!needle || text.includes(needle));
+      return genreMatch && languageMatch && formatMatch && (!needle || text.includes(needle));
     });
 
-    return filtered.sort((left, right) => {
+    return [...filtered].sort((left, right) => {
       if (sortBy === "Rating") return Number(right.rating || 0) - Number(left.rating || 0);
       if (sortBy === "A-Z") return left.title.localeCompare(right.title);
       return (
-        Number(right.votesText || right.rating || 0) - Number(left.votesText || left.rating || 0)
+        parseVoteCount(right.votes ?? right.votesText) -
+        parseVoteCount(left.votes ?? left.votesText)
       );
     });
-  }, [activeGenre, catalog, query, sortBy]);
+  }, [activeFormat, activeGenre, activeLanguage, catalog, query, sortBy]);
 
-  const recommended = buildRecommendedMovies(visibleMovies);
+  const recommended = hasActiveFilters
+    ? visibleMovies.slice(0, 6)
+    : buildRecommendedMovies(visibleMovies);
   const premieres = rotateMovies(catalog, 3).slice(0, 4);
   const comingSoon = rotateMovies(catalog, 2).slice(0, 3);
   const comingSoonDates = useMemo(
@@ -354,30 +379,33 @@ function Home() {
             icon={Film}
             title="Genres"
             value={activeGenre}
-            detail={`+${genres.length - 1}`}
+            detail={activeGenre === allFilterValue ? `+${genres.length - 1}` : ""}
+            options={genres}
+            onChange={setActiveGenre}
           />
           <FilterMetric
             icon={Clapperboard}
             title="Languages"
-            value="All"
-            detail={`+${languages.length}`}
+            value={activeLanguage}
+            detail={activeLanguage === allFilterValue ? `+${languages.length}` : ""}
+            options={languageOptions}
+            onChange={setActiveLanguage}
           />
-          <FilterMetric icon={Ticket} title="Format" value="All" detail={`+${formats.length}`} />
-          <label className="rounded-lg border border-border/60 bg-background/60 p-3">
-            <span className="flex items-center gap-2 text-xs font-semibold text-foreground">
-              <SlidersHorizontal className="h-4 w-4 text-primary" />
-              Sort by
-            </span>
-            <select
-              value={sortBy}
-              onChange={(event) => setSortBy(event.target.value)}
-              className="mt-1 w-full bg-transparent text-xs font-medium outline-none"
-            >
-              <option>Popularity</option>
-              <option>Rating</option>
-              <option>A-Z</option>
-            </select>
-          </label>
+          <FilterMetric
+            icon={Ticket}
+            title="Format"
+            value={activeFormat}
+            detail={activeFormat === allFilterValue ? `+${formats.length}` : ""}
+            options={formatOptions}
+            onChange={setActiveFormat}
+          />
+          <FilterMetric
+            icon={SlidersHorizontal}
+            title="Sort by"
+            value={sortBy}
+            options={sortOptions}
+            onChange={setSortBy}
+          />
           <div className="min-w-0">
             <p className="text-xs font-semibold text-foreground">Quick Filters</p>
             <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
@@ -407,11 +435,21 @@ function Home() {
         icon={Star}
         actionHref="#movies"
       >
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {recommended.map((movie) => (
-            <CompactMovieCard key={movie.id} movie={movie} />
-          ))}
-        </div>
+        {recommended.length ? (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {recommended.map((movie) => (
+              <CompactMovieCard key={movie.id} movie={movie} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-border/70 bg-card/70 p-8 text-center">
+            <Search className="mx-auto h-7 w-7 text-primary" />
+            <h3 className="mt-3 text-base font-semibold">No movies match these filters</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Choose All in genres, languages, or format to see more movies.
+            </p>
+          </div>
+        )}
       </HomeSection>
 
       <section className="mx-auto mt-7 max-w-[1168px] px-4">
@@ -580,21 +618,36 @@ function Home() {
   );
 }
 
-function FilterMetric({ icon: Icon, title, value, detail }) {
+function FilterMetric({ icon: Icon, title, value, detail, options = [], onChange }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-background/60 p-3">
+    <label className="block rounded-lg border border-border/60 bg-background/60 p-3 transition-colors hover:border-primary/35">
       <div className="flex items-center gap-3">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
           <p className="text-xs font-bold">{title}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {value} <span className="text-primary">{detail}</span>
-          </p>
+          <span className="relative mt-0.5 flex items-center gap-1 pr-4">
+            <select
+              aria-label={title}
+              value={value}
+              onChange={(event) => onChange?.(event.target.value)}
+              className="min-w-0 flex-1 appearance-none bg-transparent text-xs font-medium text-muted-foreground outline-none"
+            >
+              {options.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            {detail ? (
+              <span className="shrink-0 text-xs font-medium text-primary">{detail}</span>
+            ) : null}
+            <ChevronDown className="pointer-events-none absolute right-0 h-3.5 w-3.5 text-muted-foreground" />
+          </span>
         </div>
       </div>
-    </div>
+    </label>
   );
 }
 
@@ -803,6 +856,35 @@ function buildRecommendedMovies(list) {
   const preferred = recommendedOrder.map((id) => byId.get(id)).filter(Boolean);
   const rest = list.filter((movie) => !recommendedOrder.includes(movie.id));
   return [...preferred, ...rest].slice(0, 6);
+}
+
+function getMovieGenres(movie) {
+  return toFilterList(movie.genres);
+}
+
+function getMovieLanguages(movie) {
+  return toFilterList(movie.languages ?? movie.language);
+}
+
+function getMovieFormats(movie) {
+  return toFilterList(movie.formats ?? movie.format);
+}
+
+function toFilterList(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return value ? [value] : [];
+}
+
+function parseVoteCount(value) {
+  if (typeof value === "number") return value;
+  const normalized = String(value ?? "")
+    .trim()
+    .toUpperCase();
+  const amount = Number.parseFloat(normalized.replace(/[^0-9.]/g, ""));
+  if (!Number.isFinite(amount)) return 0;
+  if (normalized.includes("M")) return amount * 1_000_000;
+  if (normalized.includes("K")) return amount * 1_000;
+  return amount;
 }
 
 function displayMovieRating(movie, variant = "card") {
