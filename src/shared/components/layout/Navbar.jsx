@@ -2,13 +2,12 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
   Building2,
-  CalendarDays,
   Film,
-  Gift,
+  Heart,
+  Home,
   LayoutDashboard,
   LogOut,
   Moon,
-  Percent,
   Search,
   Sun,
   Ticket,
@@ -31,11 +30,9 @@ import { writeHomeSearchQuery } from "@/shared/services/homeSearch";
 import { clearSearchBox, readSearchBoxValue } from "@/shared/services/searchBox";
 
 const navItems = [
-  { label: "Movies", href: "#movies", icon: Film },
-  { label: "Cinemas", href: "#cinemas", icon: Building2 },
-  { label: "Offers", href: "#offers", icon: Percent },
-  { label: "Gift Cards", href: "#gift-passes", icon: Gift },
-  { label: "Events", href: "#events", icon: CalendarDays },
+  { label: "Home", to: "/", icon: Home, exact: true },
+  { label: "Movies", to: "/movies/", icon: Film },
+  { label: "Wishlist", to: "/wishlist", icon: Heart },
 ];
 
 const panelLinks = [
@@ -404,25 +401,22 @@ function Navbar() {
 
       <nav className="border-t border-border/60">
         <div className="mx-auto flex max-w-[1216px] gap-6 overflow-x-auto px-4 py-2">
-          {navItems.map((item, index) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
-            const active = index === 0;
             return (
-              <a
+              <Link
                 key={item.label}
-                href={item.href}
-                className={`group relative inline-flex min-h-9 shrink-0 items-center gap-2 text-sm font-semibold transition-colors hover:text-primary ${
-                  active ? "text-primary" : "text-muted-foreground"
-                }`}
+                to={item.to}
+                search={item.to === "/movies/" ? { city: selectedCity } : undefined}
+                activeOptions={{ exact: item.exact }}
+                activeProps={{ className: "text-primary [&>span]:scale-x-100" }}
+                inactiveProps={{ className: "text-muted-foreground" }}
+                className="group relative inline-flex min-h-9 shrink-0 items-center gap-2 text-sm font-semibold transition-colors hover:text-primary"
               >
                 <Icon className="h-4 w-4" />
                 {item.label}
-                <span
-                  className={`absolute inset-x-0 -bottom-2 h-0.5 rounded-full bg-primary transition-transform group-hover:scale-x-100 ${
-                    active ? "scale-x-100" : "scale-x-0"
-                  }`}
-                />
-              </a>
+                <span className="absolute inset-x-0 -bottom-2 h-0.5 scale-x-0 rounded-full bg-primary transition-transform group-hover:scale-x-100" />
+              </Link>
             );
           })}
         </div>

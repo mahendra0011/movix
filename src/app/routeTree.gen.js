@@ -7,6 +7,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root";
+import { Route as WishlistRouteImport } from "./routes/wishlist";
 import { Route as OwnerRouteImport } from "./routes/owner";
 import { Route as MoviesRouteImport } from "./routes/movies";
 import { Route as DashboardRouteImport } from "./routes/dashboard";
@@ -19,6 +20,11 @@ import { Route as MoviesIdRouteImport } from "./routes/movies.$id";
 import { Route as CinemasIdRouteImport } from "./routes/cinemas.$id";
 import { Route as BookShowIdRouteImport } from "./routes/book.$showId";
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: "/wishlist",
+  path: "/wishlist",
+  getParentRoute: () => rootRouteImport,
+});
 const OwnerRoute = OwnerRouteImport.update({
   id: "/owner",
   path: "/owner",
@@ -91,6 +97,7 @@ const rootRouteChildren = {
   DashboardRoute: DashboardRoute,
   MoviesRoute: MoviesRouteWithChildren,
   OwnerRoute: OwnerRoute,
+  WishlistRoute: WishlistRoute,
   BookShowIdRoute: BookShowIdRoute,
   CinemasIdRoute: CinemasIdRoute,
 };
