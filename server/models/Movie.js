@@ -30,7 +30,14 @@ const movieSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-movieSchema.index({ title: "text", genres: "text", language: "text" });
+movieSchema.index(
+  { title: "text", genres: "text", language: "text" },
+  {
+    name: "movie_text_search",
+    default_language: "none",
+    language_override: "textLanguage",
+  },
+);
 
 const Movie = mongoose.models.Movie || mongoose.model("Movie", movieSchema);
 
