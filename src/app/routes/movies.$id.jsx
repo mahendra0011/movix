@@ -23,8 +23,13 @@ import {
   Ticket,
   Users,
 } from "lucide-react";
-import { createMovieReview, fetchMovie, fetchMovieReviews } from "@/features/movies/api/moviesApi";
-import { theaters, showTimes } from "@/features/movies/data/movieCatalog";
+import {
+  createMovieReview,
+  fetchMovie,
+  fetchMovieReviews,
+  fetchMovies,
+} from "@/features/movies/api/moviesApi";
+import { movies as catalogMovies, theaters, showTimes } from "@/features/movies/data/movieCatalog";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
 import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
@@ -107,8 +112,6 @@ const topReviews = [
   },
 ];
 
-const suggestedTitles = ["Chand Mera Dil", "Rajni Ki Baraat", "Bhooth Bangla", "Daadi Ki Shaadi"];
-
 const Route = createFileRoute("/movies/$id")({
   component: MoviePage,
   loader: async ({ params }) => {
@@ -132,6 +135,9 @@ function MoviePage() {
     () => typeof window !== "undefined" && window.location.hash === "#showtimes",
   );
   const [reviewData, setReviewData] = useState(() => buildFallbackReviewData(movie));
+  const [recommendations, setRecommendations] = useState(() =>
+    buildMovieRecommendations(movie, catalogMovies),
+  );
   const reviewSummary = getReviewDisplaySummary(movie, reviewData);
   const pageHighlights = buildDetailHighlights(reviewSummary);
 
@@ -149,6 +155,23 @@ function MoviePage() {
   }, [selectedCity]);
 
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
+
+  useEffect(() => {
+    setRecommendations(buildMovieRecommendations(movie, catalogMovies));
+    let active = true;
+
+    fetchMovies({ timeoutMs: 2500 })
+      .then((list) => {
+        if (active) setRecommendations(buildMovieRecommendations(movie, list));
+      })
+      .catch(() => {
+        if (active) setRecommendations(buildMovieRecommendations(movie, catalogMovies));
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [movie]);
 
   useEffect(() => {
     setReviewData(buildFallbackReviewData(movie));
@@ -409,6 +432,7 @@ function MoviePage() {
         <MovieDetailsContent
           movie={movie}
           reviewData={reviewData}
+          recommendations={recommendations}
           onReviewDataChange={(data) => setReviewData(buildReviewData(movie, data))}
         />
       )}
@@ -416,7 +440,7 @@ function MoviePage() {
   );
 }
 
-function MovieDetailsContent({ movie, reviewData, onReviewDataChange }) {
+function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataChange }) {
   const reviewSummary = getReviewDisplaySummary(movie, reviewData);
   const reviewTagsList = getReviewTags(reviewData);
   const reviews = getVisibleReviews(reviewData);
@@ -506,14 +530,21 @@ function MovieDetailsContent({ movie, reviewData, onReviewDataChange }) {
         </article>
       </section>
 
-      <section>
-        <SectionTitleBar title="You might also like" actionLabel="View all" />
-        <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-          {suggestedTitles.map((title) => (
-            <SuggestionCard key={title} title={title} poster={movie.poster} />
-          ))}
-        </div>
-      </section>
+      {recommendations.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight">You might also like</h2>
+            <Link to="/" className="text-sm font-semibold text-primary hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {recommendations.map((recommendedMovie) => (
+              <SuggestionCard key={recommendedMovie.id} movie={recommendedMovie} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -849,22 +880,82 @@ function ReviewCard({ review }) {
   );
 }
 
-function SuggestionCard({ title, poster }) {
+function SuggestionCard({ movie }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-transform hover:-translate-y-0.5">
-      <div className="relative aspect-[16/9] bg-muted">
-        {poster ? (
-          <img src={poster} alt={title} className="h-full w-full object-cover opacity-85" />
+    <Link
+      to="/movies/$id"
+      params={{ id: movie.id }}
+      className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+    >
+      <div className="relative aspect-[2/3] bg-muted">
+        {movie.poster ? (
+          <img
+            src={movie.poster}
+            alt={movie.title}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
         ) : (
           <div className="grid h-full place-items-center">
-            <span className="text-lg font-bold text-primary">{initials(title)}</span>
+            <span className="text-lg font-bold text-primary">{initials(movie.title)}</span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-background/95 px-2 py-1 text-xs font-bold text-foreground shadow-sm">
+          <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+          {formatRatingScore(movie.rating)}/10
+        </span>
       </div>
-      <p className="px-3 py-2 text-sm font-semibold text-foreground">{title}</p>
-    </div>
+      <div className="p-3">
+        <p className="min-h-10 text-sm font-semibold leading-5 text-foreground">{movie.title}</p>
+        <p className="mt-1 truncate text-xs text-muted-foreground">
+          {(movie.genres ?? []).slice(0, 2).join(", ") || movie.language}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+          <span className="rounded-md border border-border/70 px-2 py-0.5">
+            {movie.duration || "Runtime"}
+          </span>
+          <span className="rounded-md border border-border/70 px-2 py-0.5">
+            {movie.certificate || "UA"}
+          </span>
+        </div>
+      </div>
+    </Link>
   );
+}
+
+function buildMovieRecommendations(movie, list = []) {
+  const source = (list.length ? list : catalogMovies).filter(
+    (item) => item?.id && item.id !== movie.id,
+  );
+  const currentGenres = new Set((movie.genres ?? []).map(normalizeText));
+
+  return uniqueMovies(source)
+    .map((item) => {
+      const genreScore = (item.genres ?? []).filter((genre) =>
+        currentGenres.has(normalizeText(genre)),
+      ).length;
+      const languageScore = normalizeText(item.language) === normalizeText(movie.language) ? 1 : 0;
+      return {
+        ...item,
+        recommendationScore: genreScore * 3 + languageScore + Number(item.rating || 0) / 10,
+      };
+    })
+    .sort((left, right) => {
+      if (right.recommendationScore !== left.recommendationScore) {
+        return right.recommendationScore - left.recommendationScore;
+      }
+      return Number(left.sortOrder || 0) - Number(right.sortOrder || 0);
+    })
+    .slice(0, 4);
+}
+
+function uniqueMovies(list) {
+  const seen = new Set();
+  return list.filter((movie) => {
+    if (!movie?.id || seen.has(movie.id)) return false;
+    seen.add(movie.id);
+    return true;
+  });
 }
 
 function buildDetailHighlights(summary) {
