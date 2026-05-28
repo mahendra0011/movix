@@ -152,6 +152,7 @@ const adminSelectClass =
   "h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring";
 const LOCAL_USERS_KEY = "bms-local-auth-users";
 const DELETED_THEATERS_KEY = "bms-admin-deleted-theaters";
+const DEMO_THEATER_STATUSES_KEY = "bms-admin-demo-theater-statuses";
 const STATIC_ADMIN_USER = {
   id: "local-admin",
   name: "Mahendra Admin",
@@ -227,16 +228,18 @@ function AdminDashboard() {
         const applications = (result.theaters ?? []).filter(
           (theater) => theater.status !== "Rejected",
         );
-        setTheaterApprovals(applications.length ? applications : pendingTheatersSeed);
+        setTheaterApprovals(
+          applications.length ? applications : buildFallbackTheaterApprovals(deletedTheaterIds),
+        );
       })
       .catch(() => {
-        if (active) setTheaterApprovals(pendingTheatersSeed);
+        if (active) setTheaterApprovals(buildFallbackTheaterApprovals(deletedTheaterIds));
       });
 
     return () => {
       active = false;
     };
-  }, [auth.hydrated, auth.user?.role]);
+  }, [auth.hydrated, auth.user?.role, deletedTheaterIds]);
 
   const summary = data.summary ?? fallback.summary;
   const charts = data.charts ?? fallback.charts;
@@ -245,7 +248,11 @@ function AdminDashboard() {
   const popularMovies = charts.popularMovies ?? [];
   const theaterPerformance = charts.theaterPerformance ?? [];
   const hasRevenueData = revenueTrend.some((row) => row.revenue > 0 || row.bookings > 0);
-  const pendingCount = theaterApprovals.filter((theater) => theater.status === "Pending").length;
+  const approvalQueue = useMemo(
+    () => theaterApprovals.filter((theater) => theater.status === "Pending"),
+    [theaterApprovals],
+  );
+  const pendingCount = approvalQueue.length;
   const managedTheaters = useMemo(
     () =>
       buildManagedTheaters(theaterCatalog, theaterApprovals).filter(
@@ -319,9 +326,11 @@ function AdminDashboard() {
 
   const updateApproval = async (id, status) => {
     const theater = theaterApprovals.find((item) => item.id === id);
+    const isFallbackTheater = pendingTheatersSeed.some((item) => item.id === id);
     setApprovalBusy(id);
     try {
       const result = await updateTheaterApplicationStatus(id, status);
+      if (isFallbackTheater && !result.theater) writeDemoTheaterStatus(id, status);
       setTheaterApprovals((current) => {
         if (status === "Rejected") return current.filter((item) => item.id !== id);
         return current.map((item) =>
@@ -346,6 +355,7 @@ function AdminDashboard() {
       const nextDeletedIds = [...new Set([...deletedTheaterIds, theater.id])];
       setDeletedTheaterIds(nextDeletedIds);
       writeDeletedTheaterIds(nextDeletedIds);
+      removeDemoTheaterStatus(theater.id);
       setNotice(`${theater.name ?? "Theater"} deleted from admin theater list.`);
     } catch (error) {
       setNotice(error.response?.data?.error ?? `Could not delete ${theater.name ?? "theater"}.`);
@@ -500,7 +510,7 @@ function AdminDashboard() {
 
       {activeTab === "theaters" && (
         <TheaterApprovalsTab
-          theaters={theaterApprovals}
+          theaters={approvalQueue}
           cityOptions={theaterCityOptions}
           cityTheaters={cityTheaters}
           selectedCity={selectedTheaterCity}
@@ -1297,6 +1307,16 @@ function buildManagedTheaters(catalog, applications) {
   return [...catalogRows, ...approvalRows];
 }
 
+function buildFallbackTheaterApprovals(deletedIds = []) {
+  const statuses = readDemoTheaterStatuses();
+  return pendingTheatersSeed
+    .map((theater) => ({
+      ...theater,
+      status: statuses[theater.id] || theater.status,
+    }))
+    .filter((theater) => theater.status !== "Rejected" && !deletedIds.includes(theater.id));
+}
+
 function buildTheaterCityOptions(theaters) {
   return [...new Set(theaters.map((theater) => theater.city).filter(Boolean))].sort((left, right) =>
     left.localeCompare(right),
@@ -1370,6 +1390,21 @@ function readDeletedTheaterIds() {
 
 function writeDeletedTheaterIds(ids) {
   writeAdminJson(DELETED_THEATERS_KEY, ids);
+}
+
+function readDemoTheaterStatuses() {
+  return readAdminJson(DEMO_THEATER_STATUSES_KEY, {});
+}
+
+function writeDemoTheaterStatus(id, status) {
+  const statuses = readDemoTheaterStatuses();
+  writeAdminJson(DEMO_THEATER_STATUSES_KEY, { ...statuses, [id]: status });
+}
+
+function removeDemoTheaterStatus(id) {
+  const statuses = readDemoTheaterStatuses();
+  delete statuses[id];
+  writeAdminJson(DEMO_THEATER_STATUSES_KEY, statuses);
 }
 
 function buildFinanceChartData(revenueTrend, summary, days) {
