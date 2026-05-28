@@ -1,10 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Award,
   BadgePercent,
   Calendar,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Heart,
   Info,
@@ -397,14 +399,7 @@ function MovieDetailsContent({ movie }) {
         </div>
       </section>
 
-      <section>
-        <SectionHeader icon={BadgePercent} eyebrow="Savings" title="Top offers for you" />
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {detailOffers.map((offer) => (
-            <OfferCard key={offer} offer={offer} />
-          ))}
-        </div>
-      </section>
+      <OfferSlider />
 
       <section>
         <SectionHeader icon={Users} eyebrow="On screen" title="Cast" />
@@ -503,11 +498,59 @@ function StatTile({ icon: Icon, label, value }) {
   );
 }
 
+function OfferSlider() {
+  const sliderRef = useRef(null);
+  const slideOffers = (direction) => {
+    sliderRef.current?.scrollBy({
+      left: direction * 360,
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <section className="min-w-0">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <SectionHeader icon={BadgePercent} eyebrow="Savings" title="Top offers for you" />
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => slideOffers(-1)}
+            className="grid h-10 w-10 place-items-center rounded-md border border-border/60 bg-card text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+            aria-label="Slide offers left"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => slideOffers(1)}
+            className="grid h-10 w-10 place-items-center rounded-md border border-border/60 bg-card text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+            aria-label="Slide offers right"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="min-w-0 max-w-full overflow-hidden">
+        <div
+          ref={sliderRef}
+          data-offer-slider="true"
+          className="flex w-full min-w-0 snap-x gap-3 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {detailOffers.map((offer) => (
+            <OfferCard key={offer} offer={offer} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function OfferCard({ offer }) {
   return (
     <button
       type="button"
-      className="group rounded-lg border border-border/60 bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-primary/5"
+      className="group min-h-32 w-[82vw] shrink-0 snap-start rounded-lg border border-border/60 bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-primary/5 sm:w-[28rem] lg:w-[32rem] xl:w-[34rem]"
     >
       <div className="flex items-start gap-3">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
