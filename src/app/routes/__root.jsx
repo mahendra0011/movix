@@ -154,7 +154,7 @@ function RootComponent() {
           <Navbar />
           <Outlet />
           <footer className="border-t border-border/60 bg-card/45">
-            <div className="mx-auto grid max-w-[1168px] gap-8 px-4 py-10 md:grid-cols-[1.35fr_repeat(3,0.72fr)_1.1fr]">
+            <div className="mx-auto grid max-w-[1168px] gap-6 px-4 py-7 md:grid-cols-[1.35fr_repeat(3,0.72fr)_1.1fr]">
               <div>
                 <Link to="/" className="inline-flex items-center gap-2">
                   <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground">
@@ -164,10 +164,10 @@ function RootComponent() {
                     book<span className="text-primary">my</span>screen
                   </span>
                 </Link>
-                <p className="mt-3 max-w-56 text-sm leading-6 text-muted-foreground">
+                <p className="mt-3 max-w-56 text-sm leading-5 text-muted-foreground">
                   The cinematic way to book movies with ease.
                 </p>
-                <div className="mt-5 flex gap-2">
+                <div className="mt-4 flex gap-2">
                   {socialLinks.map((item) => (
                     <a
                       key={item}
@@ -182,7 +182,7 @@ function RootComponent() {
               {footerColumns.map((col) => (
                 <div key={col.title}>
                   <h4 className="text-sm font-semibold">{col.title}</h4>
-                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                  <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
                     {col.links.map((link) => (
                       <li key={link.label}>
                         <Link to={link.to} className="hover:text-foreground">
@@ -193,14 +193,14 @@ function RootComponent() {
                   </ul>
                 </div>
               ))}
-              <div>
+              <div className="relative min-h-[130px] pr-24">
                 <h4 className="text-sm font-semibold">Mobile App</h4>
                 <div className="mt-3 grid gap-2">
                   {appBadges.map((badge) => (
                     <a
                       key={badge.store}
                       href="#"
-                      className="inline-flex h-11 max-w-44 items-center gap-3 rounded-lg border border-border/70 bg-background px-3 text-left shadow-sm transition-colors hover:border-primary/40"
+                      className="inline-flex h-10 max-w-44 items-center gap-3 rounded-lg border border-border/70 bg-background px-3 text-left shadow-sm transition-colors hover:border-primary/40"
                     >
                       <MonitorSmartphone className="h-5 w-5 text-primary" />
                       <span>
@@ -212,23 +212,23 @@ function RootComponent() {
                     </a>
                   ))}
                 </div>
-                <div className="mt-4 w-36 rounded-[1.6rem] border border-border/70 bg-background p-2 shadow-xl">
+                <div className="absolute bottom-0 right-0 w-24 rounded-[1.35rem] border border-border/70 bg-background p-1.5 shadow-xl">
                   <div className="overflow-hidden rounded-[1.2rem] border border-border bg-card">
-                    <div className="h-16 bg-gradient-to-br from-primary/35 via-sky-300/20 to-background p-2">
-                      <div className="h-2 w-14 rounded-full bg-foreground/70" />
-                      <div className="mt-7 h-2 w-20 rounded-full bg-primary" />
+                    <div className="h-11 bg-gradient-to-br from-primary/35 via-sky-300/20 to-background p-2">
+                      <div className="h-1.5 w-12 rounded-full bg-foreground/70" />
+                      <div className="mt-4 h-1.5 w-14 rounded-full bg-primary" />
                     </div>
                     <div className="grid grid-cols-3 gap-1 p-2">
-                      <span className="h-7 rounded bg-primary/20" />
-                      <span className="h-7 rounded bg-amber-300/30" />
-                      <span className="h-7 rounded bg-sky-300/30" />
+                      <span className="h-5 rounded bg-primary/20" />
+                      <span className="h-5 rounded bg-amber-300/30" />
+                      <span className="h-5 rounded bg-sky-300/30" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <div className="border-t border-border/60">
-              <div className="mx-auto flex max-w-[1168px] flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-muted-foreground">
+              <div className="mx-auto flex max-w-[1168px] flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-muted-foreground">
                 <span>(c) 2024 BookMyScreen. All rights reserved.</span>
                 <span className="flex gap-5">
                   <a href="#" className="hover:text-foreground">

@@ -439,21 +439,21 @@ function Home() {
           title="Coming soon"
           subtitle="Exciting movies heading your way"
         >
-          <div className="mt-4 grid gap-3">
+          <div className="mt-4 grid gap-2">
             {comingSoon.map((movie, index) => (
               <Link
                 key={movie.id}
                 to="/movies/$id"
                 params={{ id: movie.id }}
-                className="grid grid-cols-[52px_1fr] gap-3 rounded-lg border border-border/60 bg-background/55 p-2 transition-colors hover:border-primary/40"
+                className="grid grid-cols-[44px_1fr] gap-2 rounded-lg border border-border/60 bg-background/55 p-1.5 transition-colors hover:border-primary/40"
               >
-                <div className="grid h-14 place-items-center rounded-md bg-primary/10 text-center text-primary">
+                <div className="grid h-11 place-items-center rounded-md bg-primary/10 text-center text-primary">
                   <span className="text-sm font-bold">{comingSoonDates[index]?.day}</span>
                   <span className="text-[10px] font-semibold">{comingSoonDates[index]?.month}</span>
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{movie.title}</p>
-                  <p className="mt-1 truncate text-xs text-muted-foreground">
+                  <p className="truncate text-sm font-semibold leading-5">{movie.title}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">
                     {movie.genres.slice(0, 3).join(" - ")}
                   </p>
                 </div>
@@ -463,12 +463,12 @@ function Home() {
         </PanelCard>
 
         <PanelCard id="offers" icon={Sparkles} title="Offers for you" subtitle="Limited-time deals">
-          <div className="relative mt-4 min-h-[178px] overflow-hidden rounded-lg border border-rose-200/70 bg-gradient-to-br from-rose-50 to-orange-100 p-5 text-slate-950 shadow-sm dark:border-rose-400/20 dark:from-rose-500/15 dark:to-orange-500/10 dark:text-foreground">
+          <div className="relative mt-4 min-h-[138px] overflow-hidden rounded-lg border border-rose-200/70 bg-gradient-to-br from-rose-50 to-orange-100 p-4 text-slate-950 shadow-sm dark:border-rose-400/20 dark:from-rose-500/15 dark:to-orange-500/10 dark:text-foreground">
             <div className="absolute -bottom-4 -right-2 grid h-28 w-28 place-items-center rounded-full bg-white/65 text-rose-500 shadow-inner dark:bg-background/45">
               <Popcorn className="h-16 w-16" />
             </div>
-            <div className="absolute bottom-6 right-16 grid h-14 w-14 place-items-center rounded-full bg-rose-500 text-white shadow-lg">
-              <BadgePercent className="h-8 w-8" />
+            <div className="absolute bottom-5 right-16 grid h-12 w-12 place-items-center rounded-full bg-rose-500 text-white shadow-lg">
+              <BadgePercent className="h-7 w-7" />
             </div>
             <p className="relative text-lg font-bold">Flat 25% OFF</p>
             <p className="mt-1 text-sm text-slate-700 dark:text-muted-foreground">
@@ -477,7 +477,7 @@ function Home() {
             <div className="mt-4 inline-flex rounded-md border border-dashed border-rose-400 bg-white px-4 py-2 text-sm font-bold text-slate-900 dark:bg-background dark:text-foreground">
               WELCOME25
             </div>
-            <Button className="relative mt-5 gap-2">
+            <Button className="relative mt-4 h-9 gap-2">
               Grab Offer <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -490,20 +490,20 @@ function Home() {
           title="Loved by movie lovers"
           subtitle="Real reviews from real users"
         >
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="mt-4 grid items-start gap-3 md:grid-cols-3">
             {testimonials.map((item) => (
               <article
                 key={item.name}
-                className="rounded-lg border border-border/60 bg-background/55 p-4 shadow-sm"
+                className="h-40 overflow-hidden rounded-lg border border-border/60 bg-background/55 p-4 shadow-sm"
               >
                 <Quote className="h-5 w-5 text-primary" />
-                <p className="mt-3 text-sm leading-relaxed">"{item.text}"</p>
+                <p className="mt-2 line-clamp-3 text-sm leading-relaxed">"{item.text}"</p>
                 <div className="mt-3 flex gap-0.5 text-primary">
                   {Array.from({ length: 5 }, (_, index) => (
                     <Star key={index} className="h-3.5 w-3.5 fill-primary" />
                   ))}
                 </div>
-                <div className="mt-4 flex items-center gap-2">
+                <div className="mt-3 flex items-center gap-2">
                   <div className="grid h-9 w-9 place-items-center rounded-full bg-primary/15 text-sm font-bold text-primary">
                     {item.name[0]}
                   </div>
@@ -627,7 +627,7 @@ function CompactMovieCard({ movie }) {
       params={{ id: movie.id }}
       className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+      <div className="relative aspect-[1.08/1] overflow-hidden bg-muted">
         <img
           src={movie.poster}
           alt={movie.title}
@@ -639,8 +639,8 @@ function CompactMovieCard({ movie }) {
           {displayMovieRating(movie)}
         </span>
       </div>
-      <div className="p-3">
-        <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-5">{movie.title}</h3>
+      <div className="p-2.5">
+        <h3 className="line-clamp-2 min-h-9 text-sm font-bold leading-5">{movie.title}</h3>
         <p className="mt-1 truncate text-xs text-muted-foreground">
           {movie.genres.slice(0, 3).join(" - ")}
         </p>
@@ -657,22 +657,22 @@ function FeatureBanner({ card }) {
     <a
       id={id}
       href={`#${id}`}
-      className={`group block overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br ${card.tone} p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35`}
+      className={`group block h-[132px] overflow-hidden rounded-lg border border-border/60 bg-gradient-to-br ${card.tone} p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35`}
     >
-      <div className="grid min-h-24 grid-cols-[auto_1fr_auto] items-center gap-4">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-background/75 text-primary shadow-sm">
-          <Icon className="h-7 w-7" />
+      <div className="grid min-h-[100px] grid-cols-[auto_1fr_auto] items-center gap-4">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-background/75 text-primary shadow-sm">
+          <Icon className="h-6 w-6" />
         </div>
         <div className="min-w-0">
-          <h3 className="text-xl font-bold tracking-tight">{card.title}</h3>
+          <h3 className="text-lg font-bold tracking-tight">{card.title}</h3>
           <p className="mt-1 max-w-xs text-sm text-muted-foreground">{card.text}</p>
           <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
             Explore{" "}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>
-        <div className="hidden h-24 w-28 place-items-center rounded-lg bg-background/45 text-primary shadow-inner sm:grid">
-          <VisualIcon className="h-14 w-14 drop-shadow-sm" />
+        <div className="hidden h-20 w-24 place-items-center rounded-lg bg-background/45 text-primary shadow-inner sm:grid">
+          <VisualIcon className="h-12 w-12 drop-shadow-sm" />
         </div>
       </div>
     </a>
