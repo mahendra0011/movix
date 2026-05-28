@@ -4,6 +4,7 @@ import {
   Building2,
   Film,
   LayoutDashboard,
+  LogOut,
   Moon,
   Search,
   Sun,
@@ -12,7 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { hydrateAuth, readStoredAuth } from "@/features/auth/authSlice";
+import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { theaters } from "@/features/movies/data/movieCatalog";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
@@ -30,6 +31,13 @@ const navItems = [
   { label: "Movies", to: "/", icon: Film },
   { label: "Sports", to: "/sports", icon: Trophy },
 ];
+
+const panelLinks = [
+  { label: "User Dashboard", to: "/dashboard", icon: User },
+  { label: "Theatre Owner Panel", to: "/owner", icon: Building2 },
+  { label: "Admin Panel", to: "/admin", icon: LayoutDashboard },
+];
+
 const THEME_STORAGE_KEY = "bms-theme";
 const MAX_NAV_NOTIFICATIONS = 8;
 
@@ -62,15 +70,6 @@ function Navbar() {
   const isOwner = auth.user?.role === "theater-owner";
   const accountPath = !auth.user ? "/auth" : isAdmin ? "/admin" : isOwner ? "/owner" : "/dashboard";
   const accountLabel = !auth.user ? "Sign in" : isAdmin ? "Admin" : isOwner ? "Owner" : "Dashboard";
-  const panelNavItems = useMemo(
-    () => [
-      ...navItems,
-      ...(isAdmin ? [{ label: "Admin Panel", to: "/admin", icon: LayoutDashboard }] : []),
-      ...(isOwner ? [{ label: "Theatre Owner", to: "/owner", icon: Building2 }] : []),
-      { label: accountLabel, to: accountPath, icon: User },
-    ],
-    [accountLabel, accountPath, isAdmin, isOwner],
-  );
 
   useEffect(() => {
     if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
@@ -160,6 +159,12 @@ function Navbar() {
     writePreferredCity(nextCity);
   };
 
+  const handleLogout = () => {
+    dispatch(logout());
+    setNotificationOpen(false);
+    void navigate({ to: "/auth" });
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-4">
@@ -195,21 +200,25 @@ function Navbar() {
           </form>
         </div>
 
-        {isAdmin && (
-          <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>
-            <Link to="/admin">
-              <LayoutDashboard className="h-4 w-4" /> Admin panel
-            </Link>
-          </Button>
-        )}
-
-        {isOwner && (
-          <Button size="sm" variant="secondary" className="hidden gap-2 sm:inline-flex" asChild>
-            <Link to="/owner">
-              <Building2 className="h-4 w-4" /> Owner panel
-            </Link>
-          </Button>
-        )}
+        <div className="hidden items-center gap-2 xl:flex">
+          {panelLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={item.to}
+                size="sm"
+                variant="secondary"
+                asChild
+                className="border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
+              >
+                <Link to={item.to}>
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              </Button>
+            );
+          })}
+        </div>
 
         <div ref={notificationRef} className="relative">
           <Button
@@ -290,11 +299,46 @@ function Navbar() {
           <span className="hidden sm:inline">{theme === "light" ? "Dark" : "Light"}</span>
         </Button>
 
-        <Button size="sm" className="gap-2" asChild>
-          <Link to={accountPath}>
-            <User className="h-4 w-4" /> <span className="hidden sm:inline">{accountLabel}</span>
-          </Link>
-        </Button>
+        {auth.user ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={handleLogout}
+            className="gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Logout</span>
+          </Button>
+        ) : (
+          <Button size="sm" className="gap-2" asChild>
+            <Link to={accountPath}>
+              <User className="h-4 w-4" /> <span className="hidden sm:inline">{accountLabel}</span>
+            </Link>
+          </Button>
+        )}
+      </div>
+
+      <div className="border-t border-border/60 px-4 py-2 xl:hidden">
+        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto">
+          {panelLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={item.to}
+                size="sm"
+                variant="secondary"
+                asChild
+                className="shrink-0 border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
+              >
+                <Link to={item.to}>
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              </Button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="border-t border-border/60 px-4 py-2 md:hidden">
@@ -315,7 +359,7 @@ function Navbar() {
 
       <nav className="border-t border-border/60">
         <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-2">
-          {panelNavItems.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <Button
