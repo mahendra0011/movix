@@ -132,6 +132,10 @@ function localLogin(input) {
     throwLocalError("Invalid email or password.", 401);
   }
 
+  if (user.blocked || user.status === "Blocked") {
+    throwLocalError("This user account is blocked by admin.", 403);
+  }
+
   return Promise.resolve(issueLocalOtp(email, "login"));
 }
 

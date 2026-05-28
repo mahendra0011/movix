@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   BadgeIndianRupee,
   BarChart3,
-  BellRing,
   Building2,
   CheckCircle2,
   CircleDollarSign,
@@ -14,16 +13,16 @@ import {
   Gauge,
   LockKeyhole,
   LogIn,
-  MonitorCog,
   ReceiptText,
   RefreshCcw,
   ShieldCheck,
   Ticket,
+  Trash2,
   UserCog,
-  WalletCards,
   XCircle,
 } from "lucide-react";
 import {
+  deleteTheaterApplication,
   fetchAdminSummary,
   fetchTheaterApplications,
   updateTheaterApplicationStatus,
@@ -103,81 +102,6 @@ const adminTabs = [
   { id: "bookings", label: "Bookings", icon: Ticket },
 ];
 
-const adminControlModules = [
-  {
-    title: "Theater Management",
-    value: "Partners",
-    text: "Approve cinemas, review documents, screens, seat layouts and service readiness.",
-    icon: Building2,
-  },
-  {
-    title: "User Management",
-    value: "Trust",
-    text: "Block or unblock users, complaints, refund requests and customer support queues.",
-    icon: UserCog,
-  },
-  {
-    title: "Revenue & Commission",
-    value: "Finance",
-    text: "Platform earnings, theatre payouts, commission rules, GST and tax reporting.",
-    icon: ReceiptText,
-  },
-  {
-    title: "Notifications",
-    value: "Campaigns",
-    text: "Push alerts, email campaigns and SMS updates for bookings and promotions.",
-    icon: BellRing,
-  },
-  {
-    title: "Payment Management",
-    value: "Gateway",
-    text: "Razorpay, Stripe, failed payments, settlement status and refund tracking.",
-    icon: CreditCard,
-  },
-];
-
-const theaterManagementTools = [
-  {
-    title: "Screen management",
-    value: "Layouts",
-    text: "Audit screens, capacities, VIP rows, wheelchair blocks and seat-map readiness.",
-    icon: MonitorCog,
-  },
-  {
-    title: "Partner compliance",
-    value: "Docs",
-    text: "GST, FSSAI, Fire NOC, lease documents and owner contact verification.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Payout readiness",
-    value: "Finance",
-    text: "Settlement account, commission slab and monthly tax report status.",
-    icon: WalletCards,
-  },
-];
-
-const userOpsRows = [
-  {
-    name: "Aditi Sharma",
-    status: "Active",
-    issue: "Complaint: recliner seat not working",
-    action: "Assign support",
-  },
-  {
-    name: "Rohan Mehta",
-    status: "Watchlist",
-    issue: "3 payment failures in 24 hours",
-    action: "Block user",
-  },
-  {
-    name: "Neha Kapoor",
-    status: "Blocked",
-    issue: "Chargeback abuse under review",
-    action: "Unblock user",
-  },
-];
-
 const cancelledTicketRows = [
   {
     ref: "BMS-CNL-1042",
@@ -212,18 +136,8 @@ const cancelledTicketRows = [
     seats: ["C4", "C5"],
     amount: 780,
     reason: "Payment captured after cancellation",
-    status: "Gateway initiated",
+    status: "Refund initiated",
     cancelledAt: "Yesterday, 8:42 PM",
-  },
-];
-
-const financeRows = [
-  { label: "Platform commission", value: "10%", text: "Default slab for standard cinema partners" },
-  { label: "GST report", value: "Ready", text: "Monthly taxable booking and convenience fees" },
-  {
-    label: "Theatre payouts",
-    value: "T+2",
-    text: "Auto settlement after successful reconciliation",
   },
 ];
 
@@ -231,11 +145,21 @@ const paymentRows = [
   { label: "Razorpay", value: "Live", text: "UPI, cards, netbanking and wallet checkout" },
   { label: "Stripe", value: "Ready", text: "International card payments and reconciliation" },
   { label: "Failed payments", value: "7", text: "Retry queue with user notification hooks" },
-  { label: "Refund tracking", value: "T+1", text: "Gateway refund status and support visibility" },
+  { label: "Refund tracking", value: "T+1", text: "Refund status and support visibility" },
 ];
 
 const adminSelectClass =
   "h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring";
+const LOCAL_USERS_KEY = "bms-local-auth-users";
+const DELETED_THEATERS_KEY = "bms-admin-deleted-theaters";
+const STATIC_ADMIN_USER = {
+  id: "local-admin",
+  name: "Mahendra Admin",
+  email: "mahendrapra0077@gmail.com",
+  role: "admin",
+  verified: true,
+  status: "Active",
+};
 
 const Route = createFileRoute("/admin")({
   component: AdminDashboard,
@@ -248,7 +172,12 @@ function AdminDashboard() {
   const [data, setData] = useState(fallback);
   const [loadState, setLoadState] = useState("idle");
   const [activeTab, setActiveTab] = useState("analytics");
+  const [adminUsers, setAdminUsers] = useState(readAdminUsers);
+  const [userQuery, setUserQuery] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState("All");
+  const [userStatusFilter, setUserStatusFilter] = useState("All");
   const [theaterApprovals, setTheaterApprovals] = useState(pendingTheatersSeed);
+  const [deletedTheaterIds, setDeletedTheaterIds] = useState(readDeletedTheaterIds);
   const [selectedTheaterCity, setSelectedTheaterCity] = useState("Jabalpur");
   const [approvalBusy, setApprovalBusy] = useState("");
   const [notice, setNotice] = useState("");
@@ -316,8 +245,11 @@ function AdminDashboard() {
   const hasRevenueData = revenueTrend.some((row) => row.revenue > 0 || row.bookings > 0);
   const pendingCount = theaterApprovals.filter((theater) => theater.status === "Pending").length;
   const managedTheaters = useMemo(
-    () => buildManagedTheaters(theaterCatalog, theaterApprovals),
-    [theaterApprovals],
+    () =>
+      buildManagedTheaters(theaterCatalog, theaterApprovals).filter(
+        (theater) => !deletedTheaterIds.includes(theater.id),
+      ),
+    [deletedTheaterIds, theaterApprovals],
   );
   const theaterCityOptions = useMemo(
     () => buildTheaterCityOptions(managedTheaters),
@@ -334,6 +266,21 @@ function AdminDashboard() {
     }
   }, [selectedTheaterCity, theaterCityOptions]);
 
+  useEffect(() => {
+    if (auth.hydrated && auth.user?.role === "admin") setAdminUsers(readAdminUsers());
+  }, [auth.hydrated, auth.user?.role]);
+
+  const filteredUsers = useMemo(
+    () =>
+      filterAdminUsers({
+        users: adminUsers,
+        query: userQuery,
+        role: userRoleFilter,
+        status: userStatusFilter,
+      }),
+    [adminUsers, userQuery, userRoleFilter, userStatusFilter],
+  );
+
   const metrics = useMemo(
     () => [
       {
@@ -344,7 +291,7 @@ function AdminDashboard() {
         tone: "primary",
       },
       {
-        label: "Booking statistics",
+        label: "Bookings",
         value: summary.bookings.toLocaleString(),
         sub: `${summary.averageOrderValue ? formatCurrency(summary.averageOrderValue) : "Rs 0"} AOV`,
         icon: Ticket,
@@ -384,6 +331,50 @@ function AdminDashboard() {
     } finally {
       setApprovalBusy("");
     }
+  };
+
+  const deleteTheater = async (theater) => {
+    setApprovalBusy(theater.id);
+    try {
+      if (theaterApprovals.some((item) => item.id === theater.id)) {
+        await deleteTheaterApplication(theater.id);
+        setTheaterApprovals((current) => current.filter((item) => item.id !== theater.id));
+      }
+      const nextDeletedIds = [...new Set([...deletedTheaterIds, theater.id])];
+      setDeletedTheaterIds(nextDeletedIds);
+      writeDeletedTheaterIds(nextDeletedIds);
+      setNotice(`${theater.name ?? "Theater"} deleted from admin theater list.`);
+    } catch (error) {
+      setNotice(error.response?.data?.error ?? `Could not delete ${theater.name ?? "theater"}.`);
+    } finally {
+      setApprovalBusy("");
+    }
+  };
+
+  const toggleUserBlock = (email) => {
+    const nextUsers = adminUsers.map((user) => {
+      if (normalizeAdminEmail(user.email) !== normalizeAdminEmail(email) || user.role === "admin") {
+        return user;
+      }
+      const blocked = isUserBlocked(user);
+      return { ...user, blocked: !blocked, status: blocked ? "Active" : "Blocked" };
+    });
+    setAdminUsers(nextUsers);
+    writeAdminUsers(nextUsers);
+    setNotice("User status updated.");
+  };
+
+  const deleteUser = (email) => {
+    const user = adminUsers.find(
+      (item) => normalizeAdminEmail(item.email) === normalizeAdminEmail(email),
+    );
+    if (!user || user.role === "admin") return;
+    const nextUsers = adminUsers.filter(
+      (item) => normalizeAdminEmail(item.email) !== normalizeAdminEmail(email),
+    );
+    setAdminUsers(nextUsers);
+    writeAdminUsers(nextUsers);
+    setNotice(`${user.name || user.email} deleted.`);
   };
 
   if (!auth.hydrated) {
@@ -512,21 +503,33 @@ function AdminDashboard() {
           selectedCity={selectedTheaterCity}
           onCityChange={setSelectedTheaterCity}
           onUpdate={updateApproval}
+          onDelete={deleteTheater}
           approvalBusy={approvalBusy}
         />
       )}
 
-      {activeTab === "users" && <UserManagementTab />}
+      {activeTab === "users" && (
+        <UserManagementTab
+          users={filteredUsers}
+          totalUsers={adminUsers.length}
+          query={userQuery}
+          roleFilter={userRoleFilter}
+          statusFilter={userStatusFilter}
+          onQueryChange={setUserQuery}
+          onRoleFilterChange={setUserRoleFilter}
+          onStatusFilterChange={setUserStatusFilter}
+          onToggleBlock={toggleUserBlock}
+          onDelete={deleteUser}
+        />
+      )}
 
       {activeTab === "refunds" && <RefundsTab recentBookings={recentBookings} />}
 
-      {activeTab === "finance" && <FinanceTab summary={summary} />}
+      {activeTab === "finance" && <FinanceTab summary={summary} revenueTrend={revenueTrend} />}
 
       {activeTab === "payments" && <PaymentsTab />}
 
-      {activeTab === "bookings" && (
-        <BookingStatisticsTab recentBookings={recentBookings} revenueTrend={revenueTrend} />
-      )}
+      {activeTab === "bookings" && <BookingStatisticsTab recentBookings={recentBookings} />}
     </div>
   );
 }
@@ -540,12 +543,6 @@ function AnalyticsTab({
 }) {
   return (
     <section className="mt-6 grid gap-4">
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {adminControlModules.map((item) => (
-          <ControlModuleCard key={item.title} {...item} />
-        ))}
-      </div>
-
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.85fr]">
         <SpotlightCard className="rounded-lg p-5">
           <PanelHeader
@@ -604,22 +601,6 @@ function AnalyticsTab({
   );
 }
 
-function ControlModuleCard({ icon: Icon, title, value }) {
-  return (
-    <SpotlightCard className="rounded-lg p-4 transition-transform hover:-translate-y-0.5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
-          <Icon className="h-5 w-5" />
-        </div>
-        <span className="rounded-md bg-muted/60 px-2 py-1 text-[11px] font-medium text-muted-foreground">
-          {value}
-        </span>
-      </div>
-      <h3 className="mt-4 font-semibold">{title}</h3>
-    </SpotlightCard>
-  );
-}
-
 function TheaterApprovalsTab({
   theaters,
   cityOptions,
@@ -627,29 +608,11 @@ function TheaterApprovalsTab({
   selectedCity,
   onCityChange,
   onUpdate,
+  onDelete,
   approvalBusy,
 }) {
   return (
     <section className="mt-6 grid gap-4">
-      <div className="grid gap-3 md:grid-cols-3">
-        {theaterManagementTools.map((item) => {
-          const Icon = item.icon;
-          return (
-            <SpotlightCard key={item.title} className="rounded-lg p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15 text-primary">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <span className="rounded-md bg-muted/60 px-2 py-1 text-[11px] font-medium text-muted-foreground">
-                  {item.value}
-                </span>
-              </div>
-              <h3 className="mt-4 font-semibold">{item.title}</h3>
-            </SpotlightCard>
-          );
-        })}
-      </div>
-
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
           icon={Building2}
@@ -706,11 +669,21 @@ function TheaterApprovalsTab({
                       value={Number(theater.screens || 0).toLocaleString()}
                     />
                     <SnapshotRow
-                      label="Shows"
+                      label="Listings"
                       value={Number(theater.showCount || 0).toLocaleString()}
                     />
                     <SnapshotRow label="Amenities" value={theater.amenities || "Not listed"} />
                   </div>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => onDelete(theater)}
+                    disabled={approvalBusy === theater.id}
+                    className="mt-4 gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
                 </div>
               ))}
             </div>
@@ -755,7 +728,7 @@ function TheaterApprovalsTab({
                   {theater.contact && <SnapshotRow label="Contact" value={theater.contact} />}
                   {theater.ownerEmail && <SnapshotRow label="Email" value={theater.ownerEmail} />}
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-2">
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
                   <Button
                     size="sm"
                     onClick={() => onUpdate(theater.id, "Approved")}
@@ -775,6 +748,16 @@ function TheaterApprovalsTab({
                     <XCircle className="h-4 w-4" />
                     Reject
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => onDelete(theater)}
+                    disabled={approvalBusy === theater.id}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
                 </div>
               </div>
             ))}
@@ -791,69 +774,124 @@ function TheaterApprovalsTab({
   );
 }
 
-function UserManagementTab() {
+function UserManagementTab({
+  users,
+  totalUsers,
+  query,
+  roleFilter,
+  statusFilter,
+  onQueryChange,
+  onRoleFilterChange,
+  onStatusFilterChange,
+  onToggleBlock,
+  onDelete,
+}) {
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+    <section className="mt-6 grid gap-4">
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
           icon={UserCog}
           title="User management"
-          subtitle="Block, unblock and complaint workflows"
+          subtitle={`${users.length} of ${totalUsers} users`}
         />
+        <div className="mt-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px]">
+          <label>
+            <span className="text-xs font-medium uppercase text-muted-foreground">Search</span>
+            <input
+              value={query}
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder="Name or email"
+              className={`${adminSelectClass} mt-2`}
+            />
+          </label>
+          <label>
+            <span className="text-xs font-medium uppercase text-muted-foreground">Role</span>
+            <select
+              value={roleFilter}
+              onChange={(event) => onRoleFilterChange(event.target.value)}
+              className={`${adminSelectClass} mt-2`}
+            >
+              <option>All</option>
+              <option>User</option>
+              <option>Theater owner</option>
+              <option>Admin</option>
+            </select>
+          </label>
+          <label>
+            <span className="text-xs font-medium uppercase text-muted-foreground">Status</span>
+            <select
+              value={statusFilter}
+              onChange={(event) => onStatusFilterChange(event.target.value)}
+              className={`${adminSelectClass} mt-2`}
+            >
+              <option>All</option>
+              <option>Active</option>
+              <option>Blocked</option>
+              <option>Pending</option>
+            </select>
+          </label>
+        </div>
         <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="w-full min-w-[860px] text-left text-sm">
               <thead className="bg-muted/40 text-xs text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">User</th>
+                  <th className="px-4 py-3 font-medium">Email</th>
+                  <th className="px-4 py-3 font-medium">Role</th>
                   <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Issue</th>
-                  <th className="px-4 py-3 font-medium">Action</th>
+                  <th className="px-4 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {userOpsRows.map((user) => (
-                  <tr key={user.name} className="bg-card/20">
-                    <td className="px-4 py-3 font-medium">{user.name}</td>
-                    <td className="px-4 py-3">
-                      <UserStatusPill status={user.status} />
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{user.issue}</td>
-                    <td className="px-4 py-3">
-                      <Button size="sm" variant="secondary">
-                        {user.action}
-                      </Button>
+                {users.map((user) => {
+                  const blocked = isUserBlocked(user);
+                  const isAdmin = user.role === "admin";
+                  return (
+                    <tr key={user.email || user.id} className="bg-card/20">
+                      <td className="px-4 py-3 font-medium">{user.name || "Unnamed user"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
+                      <td className="px-4 py-3">{formatUserRole(user.role)}</td>
+                      <td className="px-4 py-3">
+                        <UserStatusPill status={getUserStatus(user)} />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => onToggleBlock(user.email)}
+                            disabled={isAdmin}
+                          >
+                            {blocked ? "Unblock" : "Block"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => onDelete(user.email)}
+                            disabled={isAdmin}
+                            className="gap-2"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!users.length && (
+                  <tr className="bg-card/20">
+                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                      No users found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
         </div>
       </SpotlightCard>
-
-      <div className="grid gap-4">
-        <SpotlightCard className="rounded-lg p-5">
-          <PanelHeader icon={UserCog} title="User controls" subtitle="Admin account actions" />
-          <div className="mt-5 grid gap-3">
-            <SnapshotRow label="Block / unblock" value="Enabled" />
-            <SnapshotRow label="Watchlist checks" value="3 users" />
-            <SnapshotRow label="Support assignment" value="Live" />
-          </div>
-        </SpotlightCard>
-        <SpotlightCard className="rounded-lg p-5">
-          <PanelHeader
-            icon={ClipboardCheck}
-            title="Complaints"
-            subtitle="Support triage by severity"
-          />
-          <div className="mt-5 grid gap-3">
-            <SnapshotRow label="Payment complaints" value="5 open" />
-            <SnapshotRow label="Cinema complaints" value="3 open" />
-            <SnapshotRow label="F&B complaints" value="2 open" />
-          </div>
-        </SpotlightCard>
-      </div>
     </section>
   );
 }
@@ -878,28 +916,9 @@ function RefundsTab({ recentBookings }) {
       cancelledAt: booking.cancelledAt || "Recent cancellation",
     }));
   const refundRows = cancelledFromBookings.length ? cancelledFromBookings : cancelledTicketRows;
-  const pendingAmount = refundRows.reduce((sum, row) => sum + Number(row.amount || 0), 0);
-  const manualReviewCount = refundRows.filter((row) =>
-    String(row.status).toLowerCase().includes("manual"),
-  ).length;
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={RefreshCcw}
-          title="Refund dashboard"
-          subtitle="Cancelled tickets land here for admin refund review"
-          action={`${refundRows.length} cases`}
-        />
-        <div className="mt-5 grid gap-3">
-          <SnapshotRow label="Pending amount" value={formatCurrency(pendingAmount)} />
-          <SnapshotRow label="Manual review" value={manualReviewCount.toLocaleString()} />
-          <SnapshotRow label="Gateway SLA" value="T+1 settlement" />
-          <SnapshotRow label="Customer alerts" value="Email + SMS" />
-        </div>
-      </SpotlightCard>
-
+    <section className="mt-6 grid gap-4">
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
           icon={Ticket}
@@ -941,7 +960,7 @@ function RefundsTab({ recentBookings }) {
                     <td className="px-4 py-3 font-semibold">{formatCurrency(row.amount)}</td>
                     <td className="px-4 py-3">
                       <StatusPill
-                        status={row.status.includes("Gateway") ? "Approved" : "Pending"}
+                        status={row.status.includes("initiated") ? "Approved" : "Pending"}
                       />
                     </td>
                     <td className="px-4 py-3">
@@ -961,46 +980,87 @@ function RefundsTab({ recentBookings }) {
   );
 }
 
-function FinanceTab({ summary }) {
-  const commission = summary.revenue * 0.1;
-  const payout = Math.max(0, summary.revenue - commission);
+function FinanceTab({ summary, revenueTrend }) {
+  const [range, setRange] = useState("7");
+  const chartData = useMemo(
+    () => buildFinanceChartData(revenueTrend, summary, Number(range)),
+    [range, revenueTrend, summary],
+  );
+  const displayRevenue =
+    summary.revenue || chartData.reduce((sum, row) => sum + Number(row.revenue || 0), 0);
+  const commission = displayRevenue * 0.1;
+  const payout = Math.max(0, displayRevenue - commission);
+  const breakdown = [
+    { label: "Gross revenue", value: displayRevenue },
+    { label: "Platform fee", value: commission },
+    { label: "Theatre payout", value: payout },
+  ];
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={CircleDollarSign}
-          title="Revenue & commission"
-          subtitle="Platform earnings and theatre payouts"
-        />
-        <div className="mt-5 grid gap-3">
-          <SnapshotRow label="Gross booking revenue" value={formatCurrency(summary.revenue)} />
-          <SnapshotRow label="Platform commission" value={formatCurrency(commission)} />
-          <SnapshotRow label="Theatre payout" value={formatCurrency(payout)} />
-          <SnapshotRow label="Average order" value={formatCurrency(summary.averageOrderValue)} />
+    <section className="mt-6 grid gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Revenue</h2>
         </div>
-      </SpotlightCard>
-
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={ReceiptText}
-          title="Finance controls"
-          subtitle="GST, tax and payout ops"
-        />
-        <div className="mt-5 grid gap-3 md:grid-cols-3">
-          {financeRows.map((row) => (
-            <div
-              key={row.label}
-              className="rounded-lg border border-border/60 bg-background/40 p-4"
+        <div className="inline-flex rounded-lg border border-border/60 bg-card/60 p-1">
+          {["7", "14", "30"].map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setRange(option)}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                range === option
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
             >
-              <p className="text-xs uppercase text-muted-foreground">{row.label}</p>
-              <p className="mt-2 text-2xl font-bold tracking-tight">{row.value}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{row.text}</p>
-            </div>
+              {option} days
+            </button>
           ))}
         </div>
-      </SpotlightCard>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <FinanceMetric title="Gross revenue" value={formatCurrency(displayRevenue)} />
+        <FinanceMetric title="Platform fee" value={formatCurrency(commission)} />
+        <FinanceMetric title="Theatre payout" value={formatCurrency(payout)} />
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader
+            icon={CircleDollarSign}
+            title="Revenue trend"
+            subtitle={`${range}-day booking revenue`}
+            action={formatCurrency(summary.averageOrderValue)}
+          />
+          <div className="mt-5 h-80">
+            <TrendAreaChart data={chartData} valueKey="revenue" formatValue={formatCurrency} />
+          </div>
+        </SpotlightCard>
+
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader icon={ReceiptText} title="Revenue split" subtitle="Current settlement" />
+          <div className="mt-5 h-80">
+            <VerticalBars
+              data={breakdown}
+              labelKey="label"
+              valueKey="value"
+              formatValue={formatCurrency}
+            />
+          </div>
+        </SpotlightCard>
+      </div>
     </section>
+  );
+}
+
+function FinanceMetric({ title, value }) {
+  return (
+    <SpotlightCard className="rounded-lg p-5">
+      <p className="text-xs uppercase text-muted-foreground">{title}</p>
+      <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
+    </SpotlightCard>
   );
 }
 
@@ -1026,27 +1086,9 @@ function PaymentsTab() {
   );
 }
 
-function BookingStatisticsTab({ recentBookings, revenueTrend }) {
-  const totals = revenueTrend.reduce(
-    (acc, row) => ({
-      revenue: acc.revenue + Number(row.revenue || 0),
-      bookings: acc.bookings + Number(row.bookings || 0),
-      seats: acc.seats + Number(row.seats || 0),
-    }),
-    { revenue: 0, bookings: 0, seats: 0 },
-  );
-
+function BookingStatisticsTab({ recentBookings }) {
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={ClipboardCheck} title="Booking statistics" subtitle="7-day totals" />
-        <div className="mt-5 grid gap-3">
-          <SnapshotRow label="Revenue" value={formatCurrency(totals.revenue)} />
-          <SnapshotRow label="Bookings" value={totals.bookings.toLocaleString()} />
-          <SnapshotRow label="Seats" value={totals.seats.toLocaleString()} />
-        </div>
-      </SpotlightCard>
-
+    <section className="mt-6 grid gap-4">
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader icon={Ticket} title="Recent bookings" subtitle="Latest confirmed tickets" />
         <BookingsTable bookings={recentBookings} />
@@ -1059,10 +1101,11 @@ function BookingsTable({ bookings }) {
   return (
     <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[680px] text-left text-sm">
+        <table className="w-full min-w-[820px] text-left text-sm">
           <thead className="bg-muted/40 text-xs text-muted-foreground">
             <tr>
               <th className="px-4 py-3 font-medium">Reference</th>
+              <th className="px-4 py-3 font-medium">Customer</th>
               <th className="px-4 py-3 font-medium">Movie</th>
               <th className="px-4 py-3 font-medium">Theater</th>
               <th className="px-4 py-3 font-medium">Seats</th>
@@ -1073,12 +1116,25 @@ function BookingsTable({ bookings }) {
             {bookings.map((booking) => (
               <tr key={booking.ref} className="bg-card/20">
                 <td className="px-4 py-3 font-mono text-xs text-primary">{booking.ref}</td>
+                <td className="px-4 py-3">
+                  <p className="font-medium">{booking.customer || booking.user || "Customer"}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {booking.email || "Email not available"}
+                  </p>
+                </td>
                 <td className="px-4 py-3 font-medium">{booking.movie}</td>
                 <td className="px-4 py-3 text-muted-foreground">{booking.theater}</td>
-                <td className="px-4 py-3">{booking.seats.join(", ")}</td>
+                <td className="px-4 py-3">{formatSeatList(booking.seats)}</td>
                 <td className="px-4 py-3 font-semibold">{formatCurrency(booking.total)}</td>
               </tr>
             ))}
+            {!bookings.length && (
+              <tr className="bg-card/20">
+                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  No bookings yet.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -1242,7 +1298,135 @@ function buildTheaterCityOptions(theaters) {
   );
 }
 
+function readAdminUsers() {
+  const users = readAdminJson(LOCAL_USERS_KEY, []);
+  const hasAdmin = users.some(
+    (user) => normalizeAdminEmail(user.email) === STATIC_ADMIN_USER.email,
+  );
+  const normalizedUsers = users.map(normalizeAdminUser);
+  return hasAdmin ? normalizedUsers : [STATIC_ADMIN_USER, ...normalizedUsers];
+}
+
+function writeAdminUsers(users) {
+  const writableUsers = users
+    .filter((user) => normalizeAdminEmail(user.email) !== STATIC_ADMIN_USER.email)
+    .map((user) => ({
+      ...user,
+      status: getUserStatus(user),
+      blocked: isUserBlocked(user),
+    }));
+  writeAdminJson(LOCAL_USERS_KEY, writableUsers);
+}
+
+function filterAdminUsers({ users, query, role, status }) {
+  const normalizedQuery = normalizeAdminEmail(query);
+  return users.filter((user) => {
+    const userStatus = getUserStatus(user);
+    const roleLabel = formatUserRole(user.role);
+    const matchesQuery =
+      !normalizedQuery ||
+      normalizeAdminEmail(user.name).includes(normalizedQuery) ||
+      normalizeAdminEmail(user.email).includes(normalizedQuery);
+    const matchesRole = role === "All" || roleLabel === role;
+    const matchesStatus = status === "All" || userStatus === status;
+    return matchesQuery && matchesRole && matchesStatus;
+  });
+}
+
+function normalizeAdminUser(user) {
+  return {
+    ...user,
+    name: user.name || "Unnamed user",
+    email: normalizeAdminEmail(user.email),
+    role: user.role || "user",
+    status: getUserStatus(user),
+  };
+}
+
+function getUserStatus(user) {
+  if (isUserBlocked(user)) return "Blocked";
+  if (user.role === "theater-owner" && user.ownerStatus === "Pending") return "Pending";
+  return user.status || "Active";
+}
+
+function isUserBlocked(user) {
+  return Boolean(user.blocked || user.status === "Blocked");
+}
+
+function formatUserRole(role) {
+  if (role === "admin") return "Admin";
+  if (role === "theater-owner") return "Theater owner";
+  return "User";
+}
+
+function readDeletedTheaterIds() {
+  return readAdminJson(DELETED_THEATERS_KEY, []);
+}
+
+function writeDeletedTheaterIds(ids) {
+  writeAdminJson(DELETED_THEATERS_KEY, ids);
+}
+
+function buildFinanceChartData(revenueTrend, summary, days) {
+  const trend = revenueTrend?.length ? revenueTrend : [];
+  if (trend.some((row) => Number(row.revenue || 0) > 0)) {
+    return expandTrend(trend, days);
+  }
+
+  const total = Number(summary.revenue || 13900);
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (days - 1 - index));
+    const wave = 0.75 + (index % 5) * 0.08;
+    const revenue = Math.round((total / days) * wave);
+    return {
+      day: date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+      revenue,
+      bookings: Math.max(1, Math.round(revenue / 700)),
+      seats: Math.max(2, Math.round(revenue / 350)),
+    };
+  });
+}
+
+function expandTrend(trend, days) {
+  if (trend.length >= days) return trend.slice(-days);
+  const missing = days - trend.length;
+  const firstValue = Number(trend[0]?.revenue || 0);
+  const filler = Array.from({ length: missing }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (days - 1 - index));
+    return {
+      day: date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
+      revenue: Math.round(firstValue * (0.65 + (index % 4) * 0.08)),
+      bookings: 0,
+      seats: 0,
+    };
+  });
+  return [...filler, ...trend].slice(-days);
+}
+
+function readAdminJson(key, fallback) {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeAdminJson(key, value) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(key, JSON.stringify(value));
+}
+
 function normalizeAdminKey(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function normalizeAdminEmail(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase();

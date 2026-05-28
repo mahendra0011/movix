@@ -55,6 +55,26 @@ function updateOwnerApplicationStatus(id, status, reviewer = "Admin") {
   return updated;
 }
 
+function deleteOwnerApplication(id) {
+  let deleted = null;
+  const nextApplications = readOwnerApplications().filter((application) => {
+    const shouldDelete = application.id === id;
+    if (shouldDelete) deleted = application;
+    return !shouldDelete;
+  });
+
+  writeOwnerApplications(nextApplications);
+  if (deleted) {
+    syncLocalOwnerAccountStatus(deleted.ownerEmail, ownerStatuses.rejected, {
+      ...deleted,
+      status: ownerStatuses.rejected,
+      reviewedAt: new Date().toISOString(),
+      reviewedBy: "Admin",
+    });
+  }
+  return deleted;
+}
+
 function getOwnerApplicationForUser(user) {
   if (!user) return null;
   const applications = readOwnerApplications();
@@ -212,6 +232,7 @@ function slugify(value) {
 
 export {
   createOwnerApplication,
+  deleteOwnerApplication,
   getOwnerApplicationForUser,
   getOwnerApprovalForUser,
   mapOwnerApplicationForAdmin,
