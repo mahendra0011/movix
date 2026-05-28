@@ -127,6 +127,7 @@ function Home() {
   const [activeLanguage, setActiveLanguage] = useState(allFilterValue);
   const [activeFormat, setActiveFormat] = useState(allFilterValue);
   const [sortBy, setSortBy] = useState("Popularity");
+  const [showAllMovies, setShowAllMovies] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
@@ -151,20 +152,24 @@ function Home() {
     };
   }, []);
 
+  const cityListedMovies = useMemo(
+    () => buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog),
+    [catalog, cinemaCatalog, selectedCity],
+  );
   const genres = useMemo(
     () => [
       allFilterValue,
-      ...Array.from(new Set(catalog.flatMap((movie) => getMovieGenres(movie)))),
+      ...Array.from(new Set(cityListedMovies.flatMap((movie) => getMovieGenres(movie)))),
     ],
-    [catalog],
+    [cityListedMovies],
   );
   const languages = useMemo(
-    () => Array.from(new Set(catalog.flatMap((movie) => getMovieLanguages(movie)))),
-    [catalog],
+    () => Array.from(new Set(cityListedMovies.flatMap((movie) => getMovieLanguages(movie)))),
+    [cityListedMovies],
   );
   const formats = useMemo(
-    () => Array.from(new Set(catalog.flatMap((movie) => getMovieFormats(movie)))),
-    [catalog],
+    () => Array.from(new Set(cityListedMovies.flatMap((movie) => getMovieFormats(movie)))),
+    [cityListedMovies],
   );
   const languageOptions = useMemo(() => [allFilterValue, ...languages], [languages]);
   const formatOptions = useMemo(() => [allFilterValue, ...formats], [formats]);
@@ -175,7 +180,7 @@ function Home() {
     sortBy !== "Popularity";
   const visibleMovies = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const filtered = catalog.filter((movie) => {
+    const filtered = cityListedMovies.filter((movie) => {
       const movieGenres = getMovieGenres(movie);
       const movieLanguages = getMovieLanguages(movie);
       const movieFormats = getMovieFormats(movie);
@@ -205,11 +210,16 @@ function Home() {
         parseVoteCount(left.votes ?? left.votesText)
       );
     });
-  }, [activeFormat, activeGenre, activeLanguage, catalog, query, sortBy]);
+  }, [activeFormat, activeGenre, activeLanguage, cityListedMovies, query, sortBy]);
 
   const recommended = hasActiveFilters
     ? visibleMovies.slice(0, 6)
     : buildRecommendedMovies(visibleMovies);
+  const displayedMovies = showAllMovies ? visibleMovies : recommended;
+  const movieSectionTitle = showAllMovies ? `Movies in ${selectedCity}` : "Recommended for you";
+  const movieSectionSubtitle = showAllMovies
+    ? `${visibleMovies.length} of ${cityListedMovies.length} listed movies match your filters`
+    : `Curated picks from ${cityListedMovies.length} movies listed in ${selectedCity}`;
   const premieres = rotateMovies(catalog, 3).slice(0, 4);
   const comingSoon = rotateMovies(catalog, 2).slice(0, 3);
   const comingSoonDates = useMemo(
@@ -218,6 +228,19 @@ function Home() {
   );
   const topCinemas = buildTopCinemas(selectedCity, cinemaCatalog);
   const showSearch = query.trim().length > 0;
+
+  const toggleAllMovies = () => {
+    const nextValue = !showAllMovies;
+    setShowAllMovies(nextValue);
+    if (nextValue && typeof window !== "undefined") {
+      window.setTimeout(() => {
+        document.getElementById("movie-filters")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 0);
+    }
+  };
 
   const subscribe = async (event) => {
     event.preventDefault();
@@ -373,7 +396,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="mx-auto -mt-5 max-w-[1168px] px-4">
+      <section id="movie-filters" className="scroll-mt-28 mx-auto -mt-5 max-w-[1168px] px-4">
         <div className="grid gap-3 rounded-lg border border-border/70 bg-card/92 p-4 shadow-xl shadow-black/5 backdrop-blur dark:bg-card/88 md:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,2fr)]">
           <FilterMetric
             icon={Film}
@@ -430,14 +453,19 @@ function Home() {
 
       <HomeSection
         id="movies"
-        title="Recommended for you"
-        subtitle="Curated picks based on what you love"
+        title={movieSectionTitle}
+        subtitle={movieSectionSubtitle}
         icon={Star}
-        actionHref="#movies"
+        actionLabel={showAllMovies ? "Show less" : "See all"}
+        onAction={toggleAllMovies}
       >
-        {recommended.length ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {recommended.map((movie) => (
+        {displayedMovies.length ? (
+          <div
+            className={`grid grid-cols-2 gap-4 sm:grid-cols-3 ${
+              showAllMovies ? "md:grid-cols-4 lg:grid-cols-6" : "lg:grid-cols-6"
+            }`}
+          >
+            {displayedMovies.map((movie) => (
               <CompactMovieCard key={movie.id} movie={movie} />
             ))}
           </div>
@@ -651,7 +679,16 @@ function FilterMetric({ icon: Icon, title, value, detail, options = [], onChange
   );
 }
 
-function HomeSection({ id, title, subtitle, icon: Icon, actionHref, children }) {
+function HomeSection({
+  id,
+  title,
+  subtitle,
+  icon: Icon,
+  actionHref,
+  actionLabel = "See all",
+  onAction,
+  children,
+}) {
   return (
     <section id={id} className="mx-auto mt-7 max-w-[1168px] px-4">
       <div className="mb-4 flex items-end justify-between gap-3">
@@ -662,14 +699,22 @@ function HomeSection({ id, title, subtitle, icon: Icon, actionHref, children }) 
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           </div>
         </div>
-        {actionHref && (
+        {onAction ? (
+          <button
+            type="button"
+            onClick={onAction}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+          >
+            {actionLabel} <ArrowRight className="h-4 w-4" />
+          </button>
+        ) : actionHref ? (
           <a
             href={actionHref}
             className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
           >
-            See all <ArrowRight className="h-4 w-4" />
+            {actionLabel} <ArrowRight className="h-4 w-4" />
           </a>
-        )}
+        ) : null}
       </div>
       {children}
     </section>
@@ -892,6 +937,22 @@ function displayMovieRating(movie, variant = "card") {
     return premiereRatingOverrides[movie.id];
   }
   return ratingOverrides[movie.id] ?? movie.rating;
+}
+
+function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
+  const cityKey = normalizeHomeText(selectedCity);
+  const localTheaters = cinemaCatalog.filter(
+    (theater) => normalizeHomeText(theater.city) === cityKey,
+  );
+  if (!localTheaters.length) return catalog;
+
+  const theaterMovieIds = localTheaters.map((theater) => splitList(theater.movieIds));
+  const hasOpenCatalogTheater = theaterMovieIds.some((movieIds) => movieIds.length === 0);
+  if (hasOpenCatalogTheater) return catalog;
+
+  const listedMovieIds = new Set(theaterMovieIds.flat());
+  if (!listedMovieIds.size) return catalog;
+  return catalog.filter((movie) => listedMovieIds.has(movie.id));
 }
 
 function CinemaCard({ cinema, image }) {
