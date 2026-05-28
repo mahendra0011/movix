@@ -213,7 +213,7 @@ function MoviePage() {
   return (
     <div className="pb-20">
       <section className="relative overflow-hidden border-b border-border/60 bg-card">
-        <div className="relative h-[420px] overflow-hidden md:h-[500px]">
+        <div className="relative h-64 overflow-hidden md:h-80 lg:h-[22rem]">
           <img
             src={movie.backdrop}
             alt={movie.title}
@@ -224,8 +224,8 @@ function MoviePage() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4">
-          <div className="-mt-72 grid gap-6 pb-10 md:grid-cols-[270px_1fr] md:gap-10 lg:-mt-80">
-            <div className="overflow-hidden rounded-lg border border-border/70 bg-card shadow-2xl shadow-black/25">
+          <div className="-mt-24 grid gap-5 pb-8 md:-mt-32 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+            <div className="mx-auto w-full max-w-[220px] overflow-hidden rounded-lg border border-border/70 bg-card shadow-xl shadow-black/20 md:mx-0 md:max-w-none">
               <div className="relative">
                 <img
                   src={movie.poster}
@@ -244,16 +244,16 @@ function MoviePage() {
             </div>
 
             <div className="self-end pb-1">
-              <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
+              <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
                 <Ticket className="h-4 w-4" />
                 In cinemas now
               </div>
-              <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight md:text-5xl">
+              <h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
                 {movie.title}
               </h1>
 
-              <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px]">
-                <div className="rounded-lg border border-border/60 bg-background/80 p-4 shadow-lg shadow-black/10 backdrop-blur">
+              <div className="mt-4 rounded-lg border border-border/60 bg-background/85 p-4 shadow-lg shadow-black/10 backdrop-blur">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="inline-flex items-center gap-2">
                       <Star className="h-5 w-5 fill-primary text-primary" />
@@ -263,7 +263,7 @@ function MoviePage() {
                     <span className="hidden h-5 w-px bg-border sm:block" />
                     <span className="text-sm font-medium">8K reviews</span>
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                  <div className="flex flex-wrap gap-2 text-xs">
                     {movie.format.map((format) => (
                       <span
                         key={format}
@@ -281,21 +281,23 @@ function MoviePage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 lg:grid-cols-1">
+                <div className="mt-4 grid gap-2 sm:grid-cols-3">
                   {detailHighlights.map(({ label, value, icon: Icon }) => (
                     <div
                       key={label}
-                      className="rounded-lg border border-border/60 bg-background/80 p-3 backdrop-blur"
+                      className="flex items-center gap-3 rounded-lg border border-border/60 bg-card/80 px-3 py-2.5"
                     >
-                      <Icon className="h-4 w-4 text-primary" />
-                      <p className="mt-2 text-xs text-muted-foreground">{label}</p>
-                      <p className="text-sm font-semibold">{value}</p>
+                      <Icon className="h-4 w-4 shrink-0 text-primary" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">{label}</p>
+                        <p className="text-sm font-semibold">{value}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-4 w-4" /> {movie.duration}
                 </span>
@@ -305,7 +307,7 @@ function MoviePage() {
                 </span>
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-5 flex flex-wrap gap-3">
                 <Button
                   size="lg"
                   onClick={() => {
@@ -384,11 +386,11 @@ function MoviePage() {
 
 function MovieDetailsContent({ movie }) {
   return (
-    <div className="mx-auto mt-12 grid max-w-7xl gap-12 px-4">
-      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
+    <div className="mx-auto mt-8 grid max-w-7xl gap-8 px-4">
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
         <div>
           <SectionHeader icon={Info} eyebrow="Story" title="About the movie" />
-          <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
+          <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
             {detailAboutText}
           </p>
         </div>
@@ -403,18 +405,18 @@ function MovieDetailsContent({ movie }) {
 
       <section>
         <SectionHeader icon={Users} eyebrow="On screen" title="Cast" />
-        <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
           {detailCast.map((name) => (
             <ProfileBubble key={name} name={name} role="Actor" />
           ))}
         </div>
       </section>
 
-      <section className="grid gap-5 lg:grid-cols-[330px_1fr]">
+      <section className="grid gap-4 lg:grid-cols-[300px_1fr]">
         <div>
           <SectionHeader icon={MessageCircle} eyebrow="8K reviews" title="Top reviews" />
           <p className="mt-3 text-sm text-muted-foreground">Summary of 8K reviews.</p>
-          <div className="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-1">
+          <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-1">
             {reviewTags.slice(0, 6).map(([tag, count]) => (
               <div
                 key={tag}
@@ -490,9 +492,9 @@ function SectionHeader({ icon: Icon, eyebrow, title }) {
 
 function StatTile({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-card p-4">
+    <div className="rounded-lg border border-border/60 bg-card p-3.5">
       <Icon className="h-5 w-5 text-primary" />
-      <p className="mt-3 text-xs text-muted-foreground">{label}</p>
+      <p className="mt-2.5 text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm font-semibold">{value}</p>
     </div>
   );
@@ -502,14 +504,14 @@ function OfferSlider() {
   const sliderRef = useRef(null);
   const slideOffers = (direction) => {
     sliderRef.current?.scrollBy({
-      left: direction * 360,
+      left: direction * 300,
       behavior: "smooth",
     });
   };
 
   return (
     <section className="min-w-0">
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
         <SectionHeader icon={BadgePercent} eyebrow="Savings" title="Top offers for you" />
         <div className="flex gap-2">
           <button
@@ -550,7 +552,7 @@ function OfferCard({ offer }) {
   return (
     <button
       type="button"
-      className="group min-h-32 w-[82vw] shrink-0 snap-start rounded-lg border border-border/60 bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-primary/5 sm:w-[28rem] lg:w-[32rem] xl:w-[34rem]"
+      className="group min-h-28 w-[78vw] shrink-0 snap-start rounded-lg border border-border/60 bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-primary/5 sm:w-80 lg:w-[22rem] xl:w-[24rem]"
     >
       <div className="flex items-start gap-3">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
@@ -569,8 +571,8 @@ function OfferCard({ offer }) {
 
 function ProfileBubble({ name, role }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-card p-4 text-center transition-transform hover:-translate-y-0.5">
-      <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-primary/15 ring-1 ring-primary/20">
+    <div className="rounded-lg border border-border/60 bg-card p-3 text-center transition-transform hover:-translate-y-0.5">
+      <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary/15 ring-1 ring-primary/20">
         <span className="text-sm font-bold text-foreground">{initials(name)}</span>
       </div>
       <p className="mt-2 text-sm font-medium">{name}</p>
