@@ -455,6 +455,7 @@ function Home() {
         actionLabel="See all"
         actionTo="/movies/"
         actionSearch={moviesPageSearch}
+        wide
       >
         {recommended.length ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -720,10 +721,11 @@ function HomeSection({
   actionHref,
   actionLabel = "See all",
   onAction,
+  wide = false,
   children,
 }) {
   return (
-    <section id={id} className="mx-auto mt-7 max-w-[1168px] px-4">
+    <section id={id} className={`mx-auto mt-7 px-4 ${wide ? "max-w-[1248px]" : "max-w-[1168px]"}`}>
       <div className="mb-4 flex items-end justify-between gap-3">
         <div className="flex items-start gap-2">
           <Icon className="mt-1 h-5 w-5 text-primary" />
@@ -773,7 +775,7 @@ function CompactMovieCard({ movie, prominent = false }) {
     >
       <div
         className={`relative overflow-hidden bg-muted ${
-          prominent ? "aspect-[4/5]" : "aspect-[1.08/1]"
+          prominent ? "aspect-[3/4]" : "aspect-[1.08/1]"
         }`}
       >
         <img
@@ -791,10 +793,10 @@ function CompactMovieCard({ movie, prominent = false }) {
           {displayMovieRating(movie)}
         </span>
       </div>
-      <div className={prominent ? "p-3.5" : "p-2.5"}>
+      <div className={prominent ? "p-4" : "p-2.5"}>
         <h3
           className={`line-clamp-2 font-bold ${
-            prominent ? "min-h-11 text-[15px] leading-[22px]" : "min-h-9 text-sm leading-5"
+            prominent ? "min-h-12 text-base leading-6" : "min-h-9 text-sm leading-5"
           }`}
         >
           {movie.title}
