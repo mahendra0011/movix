@@ -399,7 +399,7 @@ function Home() {
       </section>
 
       <section id="movie-filters" className="scroll-mt-28 mx-auto -mt-5 max-w-[1168px] px-4">
-        <div className="grid gap-3 rounded-lg border border-border/70 bg-card/92 p-4 shadow-xl shadow-black/5 backdrop-blur dark:bg-card/88 md:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,2fr)]">
+        <div className="grid gap-3 rounded-xl border border-primary/15 bg-gradient-to-r from-card/95 via-background/95 to-primary/8 p-3 shadow-2xl shadow-black/8 backdrop-blur dark:from-card/92 dark:via-background/90 dark:to-primary/10 md:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,2fr)]">
           <FilterMetric
             icon={Film}
             title="Genres"
@@ -431,9 +431,15 @@ function Home() {
             options={sortOptions}
             onChange={setSortBy}
           />
-          <div className="min-w-0 rounded-lg border border-border/60 bg-background/60 p-2.5">
-            <p className="text-xs font-bold text-foreground">Quick Filters</p>
-            <div className="mt-1.5 flex gap-1.5 overflow-x-auto rounded-full bg-muted/45 p-0.5">
+          <div className="relative min-w-0 overflow-hidden rounded-xl border border-border/60 bg-background/70 p-2.5 shadow-sm">
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-cyan-400/10" />
+            <div className="relative flex items-center gap-2">
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/12 text-primary">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+              </span>
+              <p className="text-xs font-bold text-foreground">Quick Filters</p>
+            </div>
+            <div className="relative mt-2 flex gap-1.5 overflow-x-auto rounded-full border border-border/50 bg-card/80 p-1 shadow-inner">
               {genres.slice(0, 8).map((genre) => (
                 <button
                   key={genre}
@@ -442,7 +448,7 @@ function Home() {
                   className={`h-7 shrink-0 whitespace-nowrap rounded-full border px-3 text-xs font-bold transition-all ${
                     activeGenre === genre
                       ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                      : "border-transparent bg-background/80 text-foreground hover:border-primary/35 hover:text-primary"
+                      : "border-transparent bg-transparent text-foreground hover:border-primary/35 hover:bg-background hover:text-primary"
                   }`}
                 >
                   {genre}
@@ -660,22 +666,46 @@ function Home() {
 }
 
 function FilterMetric({ icon: Icon, title, value, detail, options = [], onChange }) {
+  const isActive = value !== allFilterValue && value !== "Popularity";
   return (
-    <label className="group relative block rounded-lg border border-border/60 bg-background/60 p-2.5 transition-colors hover:border-primary/35">
-      <div className="flex h-full items-center gap-3">
-        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
+    <label
+      className={`group relative block overflow-hidden rounded-xl border p-2.5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+        isActive
+          ? "border-primary/35 bg-primary/8 shadow-primary/10"
+          : "border-border/60 bg-background/72 hover:border-primary/30"
+      }`}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(20,184,166,0.16),transparent_34%)] opacity-80" />
+      <div className="relative flex h-full items-center gap-3">
+        <div
+          className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition-colors ${
+            isActive
+              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+              : "bg-primary/12 text-primary"
+          }`}
+        >
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold">{title}</p>
-          <span className="mt-1 flex min-w-0 items-center gap-1.5 rounded-md bg-card/80 px-2.5 py-1 text-xs shadow-sm transition-colors group-hover:bg-primary/8">
+          <p className="text-[11px] font-extrabold uppercase tracking-wide text-muted-foreground">
+            {title}
+          </p>
+          <span
+            className={`mt-1.5 flex min-w-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs shadow-sm transition-colors ${
+              isActive
+                ? "border-primary/25 bg-primary/10"
+                : "border-border/50 bg-card/85 group-hover:bg-primary/8"
+            }`}
+          >
             <span className="min-w-0 flex-1 truncate font-bold text-foreground">{value}</span>
             {detail ? (
-              <span className="shrink-0 rounded-full bg-primary/12 px-2 py-0.5 text-[11px] font-bold text-primary">
+              <span className="shrink-0 rounded-full bg-primary/14 px-2 py-0.5 text-[11px] font-extrabold text-primary">
                 {detail}
               </span>
             ) : null}
-            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <ChevronDown
+              className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`}
+            />
           </span>
         </div>
       </div>
