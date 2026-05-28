@@ -50,6 +50,16 @@ function sanitizeOwnerApplication(input = {}, user = {}) {
   };
 }
 
+function isOwnerApplicationComplete(application = {}) {
+  return Boolean(
+    cleanText(application.theaterName) &&
+    cleanText(application.city) &&
+    cleanText(application.address) &&
+    cleanText(application.contact) &&
+    Number(application.screens || 0) >= 1,
+  );
+}
+
 function createOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -163,6 +173,11 @@ router.post(
         ? sanitizeOwnerApplication(ownerApplication, { name, email: normalizedEmail })
         : undefined;
     let user;
+
+    if (safeRole === "theater-owner" && !isOwnerApplicationComplete(application)) {
+      response.status(400).json({ error: "Complete theater owner application is required." });
+      return;
+    }
 
     if (isMongoReady()) {
       const exists = await User.findOne({ email: normalizedEmail }).lean();

@@ -52,6 +52,7 @@ function AuthPage() {
   const auth = useSelector((state) => state.auth);
   const [mode, setMode] = useState("login");
   const [otpStep, setOtpStep] = useState(false);
+  const [ownerApplicationStep, setOwnerApplicationStep] = useState(false);
   const [pendingEmail, setPendingEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
@@ -102,6 +103,7 @@ function AuthPage() {
     if (mode !== "register") return false;
     if (!form.name.trim()) return true;
     if (form.role !== "theater-owner") return false;
+    if (!ownerApplicationStep) return false;
     return (
       !form.ownerApplication.theaterName.trim() ||
       !form.ownerApplication.city.trim() ||
@@ -119,6 +121,7 @@ function AuthPage() {
     form.password,
     form.role,
     mode,
+    ownerApplicationStep,
     otpStep,
   ]);
 
@@ -195,6 +198,15 @@ function AuthPage() {
         if (result.requiresOtp) startOtpStep(result, form.email);
         else await completeSignIn(result);
       } else {
+        if (form.role === "theater-owner" && !ownerApplicationStep) {
+          setOwnerApplicationStep(true);
+          setNotice({
+            tone: "success",
+            text: "Basic account ready. Fill the theatre owner application before email verification.",
+          });
+          return;
+        }
+
         const result = await register({
           name: form.name,
           email: form.email,
@@ -244,12 +256,13 @@ function AuthPage() {
   const switchMode = (nextMode) => {
     setMode(nextMode);
     setOtpStep(false);
+    setOwnerApplicationStep(false);
     setPendingEmail("");
     setNotice(null);
     setForm((current) => ({ ...current, password: "", confirmPassword: "", otp: "" }));
   };
 
-  const copy = authCopy(mode, otpStep, pendingEmail || form.email);
+  const copy = authCopy(mode, otpStep, pendingEmail || form.email, ownerApplicationStep, form.role);
 
   if (!authReady) {
     return <AuthLoading />;
@@ -357,38 +370,66 @@ function AuthPage() {
           <form onSubmit={submit} className="mt-6 space-y-4">
             {!otpStep && mode === "register" && (
               <>
-                <Field label="Full name" icon={UserRound}>
-                  <Input
-                    value={form.name}
-                    onChange={update("name")}
-                    placeholder="Mahendra Prajapati"
-                    autoComplete="name"
-                  />
-                </Field>
+                {!ownerApplicationStep && (
+                  <>
+                    <Field label="Full name" icon={UserRound}>
+                      <Input
+                        value={form.name}
+                        onChange={update("name")}
+                        placeholder="Mahendra Prajapati"
+                        autoComplete="name"
+                      />
+                    </Field>
 
-                <div>
-                  <span className="text-xs font-medium uppercase text-muted-foreground">
-                    Account type
-                  </span>
-                  <div className="mt-2 grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-background/50 p-1 text-sm">
-                    {accountTypes.map((type) => (
-                      <SegmentButton
-                        key={type.id}
-                        active={form.role === type.id}
-                        onClick={() =>
-                          setForm((current) => ({
-                            ...current,
-                            role: type.id,
-                          }))
-                        }
+                    <div>
+                      <span className="text-xs font-medium uppercase text-muted-foreground">
+                        Account type
+                      </span>
+                      <div className="mt-2 grid grid-cols-2 gap-1 rounded-lg border border-border/60 bg-background/50 p-1 text-sm">
+                        {accountTypes.map((type) => (
+                          <SegmentButton
+                            key={type.id}
+                            active={form.role === type.id}
+                            onClick={() => {
+                              setOwnerApplicationStep(false);
+                              setForm((current) => ({
+                                ...current,
+                                role: type.id,
+                              }));
+                            }}
+                          >
+                            {type.label}
+                          </SegmentButton>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {form.role === "theater-owner" && ownerApplicationStep && (
+                  <div className="rounded-lg border border-primary/30 bg-primary/10 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold">Owner account details saved</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {form.name} - {form.email}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOwnerApplicationStep(false);
+                          setNotice(null);
+                        }}
+                        className="text-xs font-medium text-primary hover:underline"
                       >
-                        {type.label}
-                      </SegmentButton>
-                    ))}
+                        Edit
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {form.role === "theater-owner" && (
+                {form.role === "theater-owner" && ownerApplicationStep && (
                   <div className="rounded-lg border border-border/60 bg-background/35 p-4">
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-primary" />
@@ -470,7 +511,7 @@ function AuthPage() {
               </>
             )}
 
-            {!otpStep && (
+            {!otpStep && !ownerApplicationStep && (
               <Field label="Email address" icon={Mail}>
                 <Input
                   value={form.email}
@@ -482,7 +523,7 @@ function AuthPage() {
               </Field>
             )}
 
-            {!otpStep && mode !== "forgot" && (
+            {!otpStep && mode !== "forgot" && !ownerApplicationStep && (
               <Field
                 label="Password"
                 icon={KeyRound}
@@ -572,7 +613,7 @@ function AuthPage() {
             {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
 
             <Button className="h-11 w-full gap-2" disabled={isSubmitDisabled}>
-              {submitLabel(mode, otpStep, busy)}
+              {submitLabel(mode, otpStep, busy, ownerApplicationStep, form.role)}
               {!busy && <ArrowRight className="h-4 w-4" />}
             </Button>
           </form>
@@ -591,6 +632,7 @@ function AuthPage() {
                 type="button"
                 onClick={() => {
                   setOtpStep(false);
+                  setOwnerApplicationStep(false);
                   setNotice(null);
                   setForm((current) => ({
                     ...current,
@@ -609,6 +651,11 @@ function AuthPage() {
               Password reset is protected with a one-time email code. The code expires in 10
               minutes.
             </div>
+          ) : ownerApplicationStep ? (
+            <div className="mt-5 rounded-lg border border-border/60 bg-background/35 p-3 text-xs text-muted-foreground">
+              After this form, email OTP verification runs. Owner access stays pending until admin
+              approval.
+            </div>
           ) : (
             <div className="mt-5 rounded-lg border border-border/60 bg-background/35 p-3 text-xs text-muted-foreground">
               Theater owner accounts can open the owner dashboard after admin approval.
@@ -620,7 +667,7 @@ function AuthPage() {
   );
 }
 
-function authCopy(mode, otpStep, email) {
+function authCopy(mode, otpStep, email, ownerApplicationStep, role) {
   if (mode === "forgot") {
     if (otpStep) {
       return {
@@ -638,14 +685,27 @@ function authCopy(mode, otpStep, email) {
   if (otpStep) {
     return {
       title: "Verify your email",
-      text: `Use the OTP sent to ${email || "your inbox"} to continue securely.`,
+      text:
+        role === "theater-owner"
+          ? `Use the OTP sent to ${email || "your inbox"}. Your owner account stays pending until admin approval.`
+          : `Use the OTP sent to ${email || "your inbox"} to continue securely.`,
+    };
+  }
+
+  if (ownerApplicationStep) {
+    return {
+      title: "Complete theatre details",
+      text: "Fill the cinema application. After email verification, admin approval is required before the owner panel becomes active.",
     };
   }
 
   if (mode === "register") {
     return {
       title: "Create your account",
-      text: "Register as a customer or submit a theater owner application for admin approval.",
+      text:
+        role === "theater-owner"
+          ? "Theatre owners start with name, email and password, then submit cinema details for approval."
+          : "Register as a customer to book seats, manage tickets and track refunds.",
     };
   }
 
@@ -655,10 +715,14 @@ function authCopy(mode, otpStep, email) {
   };
 }
 
-function submitLabel(mode, otpStep, busy) {
+function submitLabel(mode, otpStep, busy, ownerApplicationStep, role) {
   if (busy) return "Please wait";
   if (mode === "forgot") return otpStep ? "Reset password" : "Send reset OTP";
   if (otpStep) return "Verify OTP";
+  if (mode === "register" && role === "theater-owner" && !ownerApplicationStep) {
+    return "Continue to theatre form";
+  }
+  if (mode === "register" && ownerApplicationStep) return "Submit application";
   return mode === "register" ? "Create account" : "Sign in";
 }
 

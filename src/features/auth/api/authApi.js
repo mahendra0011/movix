@@ -95,6 +95,10 @@ function localRegister(input) {
     throwLocalError("Email is already registered.", 409);
   }
 
+  if (role === "theater-owner" && !isOwnerApplicationComplete(input?.ownerApplication)) {
+    throwLocalError("Complete theater owner application is required.", 400);
+  }
+
   const user = {
     id: `local_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
     name,
@@ -226,6 +230,16 @@ function publicLocalUser(user) {
   const publicUser = { ...user };
   delete publicUser.password;
   return publicUser;
+}
+
+function isOwnerApplicationComplete(application = {}) {
+  return Boolean(
+    String(application.theaterName || application.name || "").trim() &&
+    String(application.city || "").trim() &&
+    String(application.address || "").trim() &&
+    String(application.contact || "").trim() &&
+    Number(application.screens || 0) >= 1,
+  );
 }
 
 function createLocalToken(user) {
