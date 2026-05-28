@@ -8,7 +8,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { Film, MonitorSmartphone } from "lucide-react";
 import { store } from "@/app/store";
+import { Navbar } from "@/shared/components/layout/Navbar";
 import appCss from "../../styles.css?url";
 function NotFoundComponent() {
   return (
@@ -106,7 +108,6 @@ function RootShell({ children }) {
     </html>
   );
 }
-import { Navbar } from "@/shared/components/layout/Navbar";
 const footerColumns = [
   {
     title: "Movies",
@@ -114,6 +115,7 @@ const footerColumns = [
       { label: "Now showing", to: "/" },
       { label: "Coming soon", to: "/" },
       { label: "Cinemas", to: "/" },
+      { label: "Offers", to: "/" },
     ],
   },
   {
@@ -136,6 +138,13 @@ const footerColumns = [
   },
 ];
 
+const socialLinks = ["ig", "fb", "x", "yt"];
+
+const appBadges = [
+  { label: "Download on the", store: "App Store" },
+  { label: "Get it on", store: "Google Play" },
+];
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
@@ -144,20 +153,36 @@ function RootComponent() {
         <div className="min-h-screen bg-background text-foreground">
           <Navbar />
           <Outlet />
-          <footer className="mt-20 border-t border-border/60 bg-card/30">
-            <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-4">
+          <footer className="border-t border-border/60 bg-card/45">
+            <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-[1.35fr_repeat(3,0.72fr)_1.1fr]">
               <div>
-                <h3 className="text-lg font-bold tracking-tight">
-                  book<span className="text-primary">my</span>screen
-                </h3>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  The cinematic way to book movies with clean seat selection.
+                <Link to="/" className="inline-flex items-center gap-2">
+                  <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground">
+                    <Film className="h-4 w-4" />
+                  </span>
+                  <span className="text-lg font-bold tracking-tight">
+                    book<span className="text-primary">my</span>screen
+                  </span>
+                </Link>
+                <p className="mt-3 max-w-56 text-sm leading-6 text-muted-foreground">
+                  The cinematic way to book movies with ease.
                 </p>
+                <div className="mt-5 flex gap-2">
+                  {socialLinks.map((item) => (
+                    <a
+                      key={item}
+                      href="#"
+                      className="grid h-9 w-9 place-items-center rounded-md border border-border/70 bg-background/70 text-xs font-bold uppercase text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                    >
+                      {item}
+                    </a>
+                  ))}
+                </div>
               </div>
               {footerColumns.map((col) => (
                 <div key={col.title}>
                   <h4 className="text-sm font-semibold">{col.title}</h4>
-                  <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                     {col.links.map((link) => (
                       <li key={link.label}>
                         <Link to={link.to} className="hover:text-foreground">
@@ -168,9 +193,52 @@ function RootComponent() {
                   </ul>
                 </div>
               ))}
+              <div>
+                <h4 className="text-sm font-semibold">Mobile App</h4>
+                <div className="mt-3 grid gap-2">
+                  {appBadges.map((badge) => (
+                    <a
+                      key={badge.store}
+                      href="#"
+                      className="inline-flex h-11 max-w-44 items-center gap-3 rounded-lg border border-border/70 bg-background px-3 text-left shadow-sm transition-colors hover:border-primary/40"
+                    >
+                      <MonitorSmartphone className="h-5 w-5 text-primary" />
+                      <span>
+                        <span className="block text-[10px] leading-none text-muted-foreground">
+                          {badge.label}
+                        </span>
+                        <span className="block text-sm font-bold">{badge.store}</span>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+                <div className="mt-4 w-36 rounded-[1.6rem] border border-border/70 bg-background p-2 shadow-xl">
+                  <div className="overflow-hidden rounded-[1.2rem] border border-border bg-card">
+                    <div className="h-16 bg-gradient-to-br from-primary/35 via-sky-300/20 to-background p-2">
+                      <div className="h-2 w-14 rounded-full bg-foreground/70" />
+                      <div className="mt-7 h-2 w-20 rounded-full bg-primary" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 p-2">
+                      <span className="h-7 rounded bg-primary/20" />
+                      <span className="h-7 rounded bg-amber-300/30" />
+                      <span className="h-7 rounded bg-sky-300/30" />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground">
-              (c) 2026 BookMyScreen. All rights reserved.
+            <div className="border-t border-border/60">
+              <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-muted-foreground">
+                <span>(c) 2026 BookMyScreen. All rights reserved.</span>
+                <span className="flex gap-5">
+                  <a href="#" className="hover:text-foreground">
+                    Privacy Policy
+                  </a>
+                  <a href="#" className="hover:text-foreground">
+                    Terms & Conditions
+                  </a>
+                </span>
+              </div>
             </div>
           </footer>
         </div>

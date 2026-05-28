@@ -2,10 +2,13 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
   Building2,
+  CalendarDays,
   Film,
+  Gift,
   LayoutDashboard,
   LogOut,
   Moon,
+  Percent,
   Search,
   Sun,
   User,
@@ -26,7 +29,13 @@ import {
 import { writeHomeSearchQuery } from "@/shared/services/homeSearch";
 import { clearSearchBox, readSearchBoxValue } from "@/shared/services/searchBox";
 
-const navItems = [{ label: "Movies", to: "/", icon: Film }];
+const navItems = [
+  { label: "Movies", href: "#movies", icon: Film },
+  { label: "Cinemas", href: "#cinemas", icon: Building2 },
+  { label: "Offers", href: "#offers", icon: Percent },
+  { label: "Gift Cards", href: "#gift-passes", icon: Gift },
+  { label: "Events", href: "#events", icon: CalendarDays },
+];
 
 const panelLinks = [
   { label: "User Dashboard", to: "/dashboard", icon: User, roles: ["user"] },
@@ -65,9 +74,18 @@ function Navbar() {
   const isAdmin = auth.user?.role === "admin";
   const isOwner = auth.user?.role === "theater-owner";
   const accountPath = !auth.user ? "/auth" : isAdmin ? "/admin" : isOwner ? "/owner" : "/dashboard";
-  const accountLabel = !auth.user ? "Sign in" : isAdmin ? "Admin" : isOwner ? "Owner" : "Dashboard";
+  const accountLabel = !auth.user
+    ? "Login / Sign up"
+    : isAdmin
+      ? "Admin"
+      : isOwner
+        ? "Owner"
+        : "Dashboard";
   const visiblePanelLinks = useMemo(
-    () => panelLinks.filter((item) => auth.user && item.roles.includes(auth.user.role)),
+    () =>
+      panelLinks.filter(
+        (item) => auth.user && item.roles.includes(auth.user.role) && item.to !== "/owner",
+      ),
     [auth.user],
   );
 
@@ -194,33 +212,46 @@ function Navbar() {
               <Search className="h-4 w-4" />
             </button>
             <SearchBox
-              placeholder="Search for movies..."
-              className="h-10 border border-border/60 bg-card/60 pl-9"
+              placeholder="Search for movies, cinemas..."
+              className="h-10 border border-border/60 bg-card/70 pl-9 shadow-sm"
             />
           </form>
         </div>
 
-        {visiblePanelLinks.length > 0 && (
-          <div className="hidden items-center gap-2 xl:flex">
-            {visiblePanelLinks.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Button
-                  key={item.to}
-                  size="sm"
-                  variant="secondary"
-                  asChild
-                  className="border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
-                >
-                  <Link to={item.to}>
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                </Button>
-              );
-            })}
-          </div>
-        )}
+        <div className="hidden items-center gap-2 xl:flex">
+          <Button
+            size="sm"
+            variant="secondary"
+            asChild
+            className="border border-border/60 bg-card/80 hover:bg-primary/10 hover:text-primary"
+          >
+            <Link to="/owner">
+              <Building2 className="h-4 w-4" />
+              Theatre Owner Panel
+            </Link>
+          </Button>
+          {visiblePanelLinks.length > 0 && (
+            <>
+              {visiblePanelLinks.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Button
+                    key={item.to}
+                    size="sm"
+                    variant="secondary"
+                    asChild
+                    className="border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
+                  >
+                    <Link to={item.to}>
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </Link>
+                  </Button>
+                );
+              })}
+            </>
+          )}
+        </div>
 
         <div ref={notificationRef} className="relative">
           <Button
@@ -321,29 +352,38 @@ function Navbar() {
         )}
       </div>
 
-      {visiblePanelLinks.length > 0 && (
-        <div className="border-t border-border/60 px-4 py-2 xl:hidden">
-          <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto">
-            {visiblePanelLinks.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Button
-                  key={item.to}
-                  size="sm"
-                  variant="secondary"
-                  asChild
-                  className="shrink-0 border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
-                >
-                  <Link to={item.to}>
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                </Button>
-              );
-            })}
-          </div>
+      <div className="border-t border-border/60 px-4 py-2 xl:hidden">
+        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto">
+          <Button
+            size="sm"
+            variant="secondary"
+            asChild
+            className="shrink-0 border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
+          >
+            <Link to="/owner">
+              <Building2 className="h-4 w-4" />
+              Theatre Owner Panel
+            </Link>
+          </Button>
+          {visiblePanelLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={item.to}
+                size="sm"
+                variant="secondary"
+                asChild
+                className="shrink-0 border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
+              >
+                <Link to={item.to}>
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              </Button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       <div className="border-t border-border/60 px-4 py-2 md:hidden">
         <form onSubmit={submitSearch} className="relative mx-auto max-w-7xl">
@@ -355,29 +395,26 @@ function Navbar() {
             <Search className="h-4 w-4" />
           </button>
           <SearchBox
-            placeholder="Search movies..."
+            placeholder="Search movies, cinemas..."
             className="h-10 border border-border/60 bg-card/60 pl-9"
           />
         </form>
       </div>
 
       <nav className="border-t border-border/60">
-        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-2">
+        <div className="mx-auto flex max-w-7xl gap-6 overflow-x-auto px-4 py-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Button
-                key={`${item.to}-${item.label}`}
-                size="sm"
-                variant="secondary"
-                asChild
-                className="shrink-0 border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
+              <a
+                key={item.label}
+                href={item.href}
+                className="group relative inline-flex min-h-9 shrink-0 items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-primary"
               >
-                <Link to={item.to}>
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              </Button>
+                <Icon className="h-4 w-4" />
+                {item.label}
+                <span className="absolute inset-x-0 -bottom-2 h-0.5 scale-x-0 rounded-full bg-primary transition-transform group-hover:scale-x-100" />
+              </a>
             );
           })}
         </div>

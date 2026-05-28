@@ -1,28 +1,28 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowRight,
+  BellRing,
+  BookOpen,
+  CalendarDays,
+  CheckCircle2,
   ChevronRight,
+  Clapperboard,
+  Film,
+  Gift,
+  Heart,
+  Landmark,
   Play,
+  Quote,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
   Star,
-  TrendingUp,
   Ticket,
-  Calendar,
-  Gift,
-  Smartphone,
-  BellRing,
-  Quote,
-  Flame,
-  Clapperboard,
-  Search,
-  CheckCircle2,
-  Building2,
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
-import { movies as fallbackMovies, showTimes, theaters } from "@/features/movies/data/movieCatalog";
-import { MovieCard } from "@/features/movies/components/MovieCard";
-import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
-import { StaggeredText } from "@/shared/components/reactbits/StaggeredText";
+import { movies as fallbackMovies, theaters } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
@@ -32,139 +32,74 @@ import {
   writeHomeSearchQuery,
 } from "@/shared/services/homeSearch";
 import { readPreferredCity, subscribePreferredCity } from "@/shared/services/cityPreference";
+
 const Route = createFileRoute("/")({
   loader: () => fetchMovies(),
   component: Home,
 });
-const testimonials = [
-  {
-    name: "Aarav S.",
-    text: "Booking was instant. Seat selection was simple, clear and quick.",
-    role: "Frequent moviegoer",
-  },
-  {
-    name: "Priya M.",
-    text: "Cleanest movie booking UI I've used. Cinematic, dark, beautiful - feels like Netflix for tickets.",
-    role: "Film student",
-  },
-  {
-    name: "Rahul K.",
-    text: "Loved the QR ticket. Walked in, scanned, popcorn. Done.",
-    role: "Casual viewer",
-  },
-];
-const promotions = [
+
+const featureCards = [
   {
     title: "ScreenCare",
-    desc: "Round up and support cinema workers",
-    c: "from-primary/30 to-primary/5",
-    icon: Gift,
-    to: "/dashboard",
+    text: "Hygienic theatres for your safe and comfortable experience.",
+    icon: ShieldCheck,
+    tone: "from-emerald-500/18 via-emerald-300/10 to-cyan-300/20",
   },
   {
     title: "Gift Passes",
-    desc: "Send cinema credits instantly",
-    c: "from-vip/30 to-vip/5",
-    icon: Ticket,
-    to: "/auth",
+    text: "Send movie magic to your loved ones.",
+    icon: Gift,
+    tone: "from-violet-500/18 via-fuchsia-300/10 to-amber-200/20",
   },
   {
     title: "Film Journal",
-    desc: "Reviews, stories and release guides",
-    c: "from-platinum/30 to-platinum/5",
-    icon: Clapperboard,
-    to: "/",
+    text: "Reviews, stories and exclusive guides for movie lovers.",
+    icon: BookOpen,
+    tone: "from-sky-500/18 via-blue-300/10 to-primary/15",
   },
 ];
 
-function trailerSearchUrl(title) {
-  return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} official trailer`)}`;
-}
+const testimonials = [
+  {
+    name: "Aarav S.",
+    role: "Frequent moviegoer",
+    text: "Booking was instant. Seat selection was simple, clear and quick.",
+  },
+  {
+    name: "Priya M.",
+    role: "Film student",
+    text: "Clearest movie booking UI I've used. Cinematic, dark, beautiful.",
+  },
+  {
+    name: "Rahul K.",
+    role: "Casual viewer",
+    text: "Loved the QR ticket. Walked in, scanned, popcorn. Done.",
+  },
+];
+
+const cinemaImages = [
+  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=600&q=80",
+];
 
 function Home() {
   const loadedMovies = Route.useLoaderData();
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
-  const featured = catalog[0] ?? fallbackMovies[0];
+  const featured = catalog.find((movie) => movie.id === "interstellar") ?? catalog[0];
   const [query, setQuery] = useState(readHomeSearchQuery);
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [activeLanguage, setActiveLanguage] = useState("All");
-  const [activeFormat, setActiveFormat] = useState("All");
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
+  const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
+  const [activeGenre, setActiveGenre] = useState("All");
+  const [sortBy, setSortBy] = useState("Popularity");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({});
-  const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
-  const filteredMovies = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return catalog.filter((movie) => {
-      const categoryMatch =
-        activeCategory === "All" || movie.genres.some((genre) => genre === activeCategory);
-      const languageMatch = activeLanguage === "All" || movie.language === activeLanguage;
-      const formatMatch =
-        activeFormat === "All" || (movie.format ?? []).some((format) => format === activeFormat);
-      const searchable = [
-        movie.title,
-        movie.language,
-        movie.duration,
-        movie.certificate,
-        movie.description,
-        ...movie.genres,
-        ...(movie.format ?? []),
-        ...(movie.cast ?? []).flatMap((member) => [member.name, member.role]),
-      ]
-        .join(" ")
-        .toLowerCase();
-      return (
-        categoryMatch && languageMatch && formatMatch && (!needle || searchable.includes(needle))
-      );
-    });
-  }, [activeCategory, activeFormat, activeLanguage, catalog, query]);
-  const availableCategories = useMemo(
-    () => ["All", ...Array.from(new Set(catalog.flatMap((movie) => movie.genres)))],
-    [catalog],
-  );
-  const availableLanguages = useMemo(
-    () => ["All", ...Array.from(new Set(catalog.map((movie) => movie.language).filter(Boolean)))],
-    [catalog],
-  );
-  const availableFormats = useMemo(
-    () => ["All", ...Array.from(new Set(catalog.flatMap((movie) => movie.format ?? [])))],
-    [catalog],
-  );
-  const hasActiveFilters =
-    activeCategory !== "All" || activeLanguage !== "All" || activeFormat !== "All";
-  const shelfMovies = hasActiveFilters ? filteredMovies : catalog;
-  const activeSearchQuery = query.trim();
-  const rotateShelf = (offset) => [...shelfMovies.slice(offset), ...shelfMovies.slice(0, offset)];
-  const trending = expandedSections.recommended ? shelfMovies : shelfMovies.slice(0, 6);
-  const recommended = hasActiveFilters
-    ? shelfMovies
-    : expandedSections.comingSoon
-      ? rotateShelf(2)
-      : shelfMovies.slice(2, 8);
-  const premieres = hasActiveFilters
-    ? shelfMovies
-    : expandedSections.premieres
-      ? rotateShelf(3)
-      : shelfMovies.slice(3, 7);
-  const cityCinemas = useMemo(
-    () => buildHomeCinemas(selectedCity, cinemaCatalog),
-    [cinemaCatalog, selectedCity],
-  );
-  const searchShowtimeResults = useMemo(
-    () =>
-      buildSearchShowtimeResults({
-        catalog,
-        theaterCatalog: cinemaCatalog,
-        query: activeSearchQuery,
-        selectedCity,
-      }),
-    [activeSearchQuery, catalog, cinemaCatalog, selectedCity],
-  );
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
+
   useEffect(() => {
     if (!HAS_CONFIGURED_API_URL) return undefined;
     let active = true;
@@ -174,7 +109,7 @@ function Home() {
         if (active && data.theaters?.length) setCinemaCatalog(data.theaters);
       })
       .catch(() => {
-        if (active) setCinemaCatalog([]);
+        if (active) setCinemaCatalog(theaters);
       });
 
     return () => {
@@ -182,12 +117,61 @@ function Home() {
     };
   }, []);
 
+  const genres = useMemo(
+    () => ["All", ...Array.from(new Set(catalog.flatMap((movie) => movie.genres ?? [])))],
+    [catalog],
+  );
+  const languages = useMemo(
+    () => Array.from(new Set(catalog.map((movie) => movie.language).filter(Boolean))),
+    [catalog],
+  );
+  const formats = useMemo(
+    () => Array.from(new Set(catalog.flatMap((movie) => movie.format ?? []))),
+    [catalog],
+  );
+  const visibleMovies = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const filtered = catalog.filter((movie) => {
+      const genreMatch = activeGenre === "All" || movie.genres?.includes(activeGenre);
+      const text = [
+        movie.title,
+        movie.language,
+        movie.duration,
+        movie.certificate,
+        movie.description,
+        ...(movie.genres ?? []),
+        ...(movie.format ?? []),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return genreMatch && (!needle || text.includes(needle));
+    });
+
+    return filtered.sort((left, right) => {
+      if (sortBy === "Rating") return Number(right.rating || 0) - Number(left.rating || 0);
+      if (sortBy === "A-Z") return left.title.localeCompare(right.title);
+      return (
+        Number(right.votesText || right.rating || 0) - Number(left.votesText || left.rating || 0)
+      );
+    });
+  }, [activeGenre, catalog, query, sortBy]);
+
+  const recommended = visibleMovies.slice(0, 6);
+  const premieres = rotateMovies(catalog, 3).slice(0, 4);
+  const comingSoon = rotateMovies(catalog, 2).slice(0, 3);
+  const comingSoonDates = useMemo(
+    () => buildComingSoonDates(comingSoon.length),
+    [comingSoon.length],
+  );
+  const topCinemas = buildTopCinemas(selectedCity, cinemaCatalog);
+  const showSearch = query.trim().length > 0;
+
   const subscribe = async (event) => {
     event.preventDefault();
     setNewsletterBusy(true);
     setNewsletterMessage("");
     if (!HAS_CONFIGURED_API_URL) {
-      setNewsletterMessage("Subscribed for demo alerts.");
+      setNewsletterMessage("Subscribed for launch alerts.");
       setNewsletterEmail("");
       setNewsletterBusy(false);
       return;
@@ -207,32 +191,18 @@ function Home() {
     }
   };
 
-  const toggleSection = (section) => {
-    setExpandedSections((current) => ({
-      ...current,
-      [section]: !current[section],
-    }));
-  };
-
-  const clearFilters = () => {
-    setActiveCategory("All");
-    setActiveLanguage("All");
-    setActiveFormat("All");
-  };
-
   if (!featured) return null;
-  if (activeSearchQuery) {
-    const totalSearchResults = filteredMovies.length + searchShowtimeResults.length;
 
+  if (showSearch) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-10">
-        <section className="rounded-lg border border-border/60 bg-card/40 p-5">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        <section className="rounded-lg border border-border/70 bg-card/85 p-5 shadow-sm">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Search results</h1>
-              <p className="text-sm text-muted-foreground">
-                {totalSearchResults} result{totalSearchResults === 1 ? "" : "s"} for "
-                {activeSearchQuery}"
+              <p className="mt-1 text-sm text-muted-foreground">
+                {visibleMovies.length} movie result{visibleMovies.length === 1 ? "" : "s"} for "
+                {query.trim()}"
               </p>
             </div>
             <Button
@@ -240,7 +210,6 @@ function Home() {
               variant="secondary"
               onClick={() => {
                 setQuery("");
-                clearFilters();
                 writeHomeSearchQuery("");
               }}
             >
@@ -248,562 +217,531 @@ function Home() {
             </Button>
           </div>
 
-          {filteredMovies.length > 0 ? (
-            <div className="mt-6">
-              <div className="mb-3 flex items-center gap-2">
-                <Clapperboard className="h-4 w-4 text-primary" />
-                <h2 className="text-sm font-semibold uppercase text-muted-foreground">Movies</h2>
-              </div>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                {filteredMovies.map((movie) => (
-                  <MovieCard key={movie.id} movie={movie} />
-                ))}
-              </div>
+          {visibleMovies.length ? (
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {visibleMovies.map((movie) => (
+                <CompactMovieCard key={movie.id} movie={movie} />
+              ))}
             </div>
-          ) : null}
-
-          {searchShowtimeResults.length > 0 ? (
-            <div className="mt-8">
-              <div className="mb-3 flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-primary" />
-                <h2 className="text-sm font-semibold uppercase text-muted-foreground">
-                  Cinemas and showtimes
-                </h2>
-              </div>
-              <div className="overflow-hidden rounded-lg border border-border/60 bg-background">
-                {searchShowtimeResults.map((item) => (
-                  <a
-                    key={item.id}
-                    href={`/movies/${item.movie.id}#showtimes`}
-                    className="grid gap-4 border-b border-border/60 p-4 transition-colors last:border-b-0 hover:bg-muted/50 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(260px,auto)] md:items-center"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-primary/15 text-xs font-bold text-primary">
-                          {item.logoText}
-                        </span>
-                        <div className="min-w-0">
-                          <h3 className="truncate font-semibold">{item.theater.name}</h3>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {item.theater.area}, {item.theater.city}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{item.movie.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {item.movie.language} - {item.movie.duration} -{" "}
-                        {(item.movie.format ?? []).join(", ")}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2 md:justify-end">
-                      {item.times.map((time) => (
-                        <span
-                          key={`${item.id}-${time}`}
-                          className="rounded-md border border-primary/40 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary"
-                        >
-                          {time}
-                        </span>
-                      ))}
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {totalSearchResults === 0 && (
-            <div className="mt-8 rounded-lg border border-border/60 bg-background/60 p-8 text-center">
+          ) : (
+            <div className="mt-8 rounded-lg border border-dashed border-border/70 p-10 text-center">
               <Search className="mx-auto h-8 w-8 text-primary" />
-              <h2 className="mt-4 text-xl font-bold">No results found</h2>
-              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                Try another movie title, cinema name, theater area, language, format, or city.
+              <h2 className="mt-4 text-lg font-semibold">No movies found</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Try another title, language, format, genre or cinema name.
               </p>
             </div>
           )}
         </section>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="pb-20">
-      {/* Hero */}
-      <section className="relative">
-        <div className="cinema-grid relative h-[460px] overflow-hidden md:h-[560px]">
-          <img
-            src={featured.backdrop}
-            alt={featured.title}
-            className="hero-kenburns absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="hero-sweep absolute inset-0" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-          <div className="relative mx-auto flex h-full max-w-7xl items-end gap-10 px-4 pb-12 md:items-center md:pb-0">
-            <div className="hero-content-enter max-w-xl">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-medium text-primary backdrop-blur">
-                <Sparkles className="h-3 w-3" /> Trending #1 this week
-              </span>
-              <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-6xl">
-                <StaggeredText text={featured.title} />
-              </h1>
-              <div className="mt-3 flex items-center gap-3 text-sm">
-                <span className="inline-flex items-center gap-1 rounded-md bg-card/70 px-2 py-1 backdrop-blur">
-                  <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-                  <span className="font-semibold">{featured.rating}</span>
-                  <span className="text-muted-foreground">/10</span>
-                </span>
-                <span className="text-muted-foreground">{featured.votes} votes</span>
-                <span className="hidden text-muted-foreground md:inline">
-                  - {featured.certificate}
-                </span>
-              </div>
-              <p className="mt-4 text-sm text-muted-foreground md:text-base">
-                {featured.description}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                {featured.genres.map((g) => (
-                  <span
-                    key={g}
-                    className="rounded-full border border-border/60 bg-background/40 px-2.5 py-1 backdrop-blur"
-                  >
-                    {g}
-                  </span>
-                ))}
-                <span className="rounded-full border border-border/60 bg-background/40 px-2.5 py-1 backdrop-blur">
-                  {featured.duration}
-                </span>
-              </div>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="gap-2 shadow-lg shadow-primary/30">
-                  <Link to="/movies/$id" params={{ id: featured.id }}>
-                    <Ticket className="h-4 w-4" /> Book tickets
-                  </Link>
-                </Button>
-                <Button size="lg" variant="secondary" className="gap-2 backdrop-blur" asChild>
-                  <a href={trailerSearchUrl(featured.title)} target="_blank" rel="noreferrer">
-                    <Play className="h-4 w-4" /> Watch trailer
-                  </a>
-                </Button>
-              </div>
-            </div>
+    <main className="bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_32%),linear-gradient(180deg,color-mix(in_oklch,var(--secondary)_55%,transparent),var(--background)_520px)] pb-12 dark:bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_30%),linear-gradient(180deg,color-mix(in_oklch,var(--card)_75%,transparent),var(--background)_560px)]">
+      <section className="relative isolate overflow-hidden border-b border-border/60">
+        <img
+          src={featured.backdrop}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-55 dark:opacity-28"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/65 to-background/10 dark:via-background/82 dark:to-background/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-            {/* Floating poster */}
-            <div className="hero-poster-float relative hidden md:block">
+        <div className="relative mx-auto grid min-h-[390px] max-w-7xl items-center gap-8 px-4 py-10 md:min-h-[430px] md:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5" />
+              Trending #1 This Week
+            </span>
+            <h1 className="mt-4 text-5xl font-extrabold tracking-tight text-foreground md:text-7xl">
+              {featured.title}
+            </h1>
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+              <span className="inline-flex items-center gap-1.5 font-semibold">
+                <Star className="h-5 w-5 fill-primary text-primary" />
+                {featured.rating}/10
+              </span>
+              <span className="text-muted-foreground">412.3K votes</span>
+              <span className="h-4 w-px bg-border" />
+              <span>{featured.certificate}</span>
+              <span className="h-4 w-px bg-border" />
+              <span>{featured.duration}</span>
+            </div>
+            <p className="mt-4 max-w-xl text-base leading-7 text-foreground/80 dark:text-muted-foreground">
+              {featured.description}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {featured.genres.slice(0, 3).map((genre) => (
+                <span
+                  key={genre}
+                  className="rounded-md border border-border/70 bg-card/70 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur"
+                >
+                  {genre}
+                </span>
+              ))}
+            </div>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Button size="lg" asChild className="h-11 gap-2 px-7 shadow-lg shadow-primary/20">
+                <Link to="/movies/$id" params={{ id: featured.id }}>
+                  <Ticket className="h-4 w-4" />
+                  Book Tickets
+                </Link>
+              </Button>
+              <Button size="lg" variant="secondary" asChild className="h-11 gap-2 px-7">
+                <a href={trailerSearchUrl(featured.title)} target="_blank" rel="noreferrer">
+                  <Play className="h-4 w-4" />
+                  Watch Trailer
+                </a>
+              </Button>
+            </div>
+          </div>
+
+          <div className="hidden justify-center md:flex">
+            <div className="relative w-56 rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8">
               <img
                 src={featured.poster}
                 alt={featured.title}
-                className="relative aspect-[2/3] w-64 rounded-2xl object-cover shadow-2xl ring-1 ring-white/10 transition-transform duration-500 hover:rotate-1 hover:scale-[1.03]"
+                className="aspect-[2/3] w-full rounded-md object-cover"
               />
+              <a
+                href={trailerSearchUrl(featured.title)}
+                target="_blank"
+                rel="noreferrer"
+                className="absolute inset-0 grid place-items-center"
+                aria-label={`Watch ${featured.title} trailer`}
+              >
+                <span className="grid h-16 w-16 place-items-center rounded-full border border-white/70 bg-black/45 text-white shadow-xl backdrop-blur transition-transform hover:scale-105">
+                  <Play className="ml-1 h-7 w-7 fill-white" />
+                </span>
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Movie filters */}
-      <section className="mx-auto mt-10 max-w-7xl px-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <Clapperboard className="h-4 w-4 shrink-0 text-primary" />
-            <h3 className="text-xs font-semibold uppercase text-muted-foreground">Movie filters</h3>
-            <div className="h-px flex-1 bg-border/60" />
-          </div>
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="shrink-0 text-xs font-medium text-primary hover:underline"
+      <section className="mx-auto -mt-5 max-w-7xl px-4">
+        <div className="grid gap-3 rounded-lg border border-border/70 bg-card/92 p-4 shadow-xl shadow-black/5 backdrop-blur dark:bg-card/88 md:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,2fr)]">
+          <FilterMetric
+            icon={Film}
+            title="Genres"
+            value={activeGenre}
+            detail={`+${genres.length - 1}`}
+          />
+          <FilterMetric
+            icon={Clapperboard}
+            title="Languages"
+            value="All"
+            detail={`+${languages.length}`}
+          />
+          <FilterMetric icon={Ticket} title="Format" value="All" detail={`+${formats.length}`} />
+          <label className="rounded-lg border border-border/60 bg-background/60 p-3">
+            <span className="flex items-center gap-2 text-xs font-semibold text-foreground">
+              <SlidersHorizontal className="h-4 w-4 text-primary" />
+              Sort by
+            </span>
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+              className="mt-1 w-full bg-transparent text-xs font-medium outline-none"
             >
-              Clear filters
-            </button>
-          )}
-        </div>
-
-        <div className="mt-4 grid gap-4">
-          <FilterChipRow
-            label="Category"
-            options={availableCategories}
-            activeValue={activeCategory}
-            onChange={setActiveCategory}
-          />
-          <FilterChipRow
-            label="Language"
-            options={availableLanguages}
-            activeValue={activeLanguage}
-            onChange={setActiveLanguage}
-          />
-          <FilterChipRow
-            label="Format"
-            options={availableFormats}
-            activeValue={activeFormat}
-            onChange={setActiveFormat}
-          />
+              <option>Popularity</option>
+              <option>Rating</option>
+              <option>A-Z</option>
+            </select>
+          </label>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-foreground">Quick Filters</p>
+            <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+              {genres.slice(0, 8).map((genre) => (
+                <button
+                  key={genre}
+                  type="button"
+                  onClick={() => setActiveGenre(genre)}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    activeGenre === genre
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border/70 bg-background/70 text-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {genre}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {hasActiveFilters && filteredMovies.length === 0 && (
-        <section className="mx-auto mt-8 max-w-7xl px-4">
-          <div className="rounded-lg border border-border/60 bg-card/40 p-8 text-center">
-            <Search className="mx-auto h-8 w-8 text-primary" />
-            <h2 className="mt-4 text-xl font-bold">No movies match these filters</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Try a different category, language, or format combination.
+      <HomeSection
+        id="movies"
+        title="Recommended for you"
+        subtitle="Curated picks based on what you love"
+        icon={Star}
+        actionHref="#movies"
+      >
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {recommended.map((movie) => (
+            <CompactMovieCard key={movie.id} movie={movie} />
+          ))}
+        </div>
+      </HomeSection>
+
+      <section className="mx-auto mt-7 max-w-7xl px-4">
+        <div className="grid gap-5 lg:grid-cols-3">
+          {featureCards.map((card) => (
+            <FeatureBanner key={card.title} card={card} />
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto mt-7 grid max-w-7xl gap-5 px-4 lg:grid-cols-[1.1fr_0.78fr_0.66fr]">
+        <PanelCard
+          id="events"
+          icon={Gift}
+          title="Premieres of the week"
+          subtitle="Brand new releases in theatres"
+          actionLabel="See all"
+        >
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {premieres.map((movie) => (
+              <MiniMovieTile key={movie.id} movie={movie} badge="PREMIERE" />
+            ))}
+          </div>
+        </PanelCard>
+
+        <PanelCard
+          icon={CalendarDays}
+          title="Coming soon"
+          subtitle="Exciting movies heading your way"
+        >
+          <div className="mt-4 grid gap-3">
+            {comingSoon.map((movie, index) => (
+              <Link
+                key={movie.id}
+                to="/movies/$id"
+                params={{ id: movie.id }}
+                className="grid grid-cols-[52px_1fr] gap-3 rounded-lg border border-border/60 bg-background/55 p-2 transition-colors hover:border-primary/40"
+              >
+                <div className="grid h-14 place-items-center rounded-md bg-primary/10 text-center text-primary">
+                  <span className="text-sm font-bold">{comingSoonDates[index]?.day}</span>
+                  <span className="text-[10px] font-semibold">{comingSoonDates[index]?.month}</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{movie.title}</p>
+                  <p className="mt-1 truncate text-xs text-muted-foreground">
+                    {movie.genres.slice(0, 3).join(" - ")}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </PanelCard>
+
+        <PanelCard id="offers" icon={Sparkles} title="Offers for you" subtitle="Limited-time deals">
+          <div className="mt-4 rounded-lg border border-rose-200/70 bg-gradient-to-br from-rose-50 to-orange-100 p-5 text-slate-950 shadow-sm dark:border-rose-400/20 dark:from-rose-500/15 dark:to-orange-500/10 dark:text-foreground">
+            <p className="text-lg font-bold">Flat 25% OFF</p>
+            <p className="mt-1 text-sm text-slate-700 dark:text-muted-foreground">
+              on your first booking
             </p>
-            <Button type="button" variant="secondary" className="mt-5" onClick={clearFilters}>
-              Clear filters
+            <div className="mt-4 inline-flex rounded-md border border-dashed border-rose-400 bg-white px-4 py-2 text-sm font-bold text-slate-900 dark:bg-background dark:text-foreground">
+              WELCOME25
+            </div>
+            <Button className="mt-5 w-full gap-2">
+              Grab Offer <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
-        </section>
-      )}
+        </PanelCard>
+      </section>
 
-      {/* Trending */}
-      <Section
-        title="Recommended movies"
-        subtitle="Most booked this week"
-        icon={<TrendingUp className="h-5 w-5 text-primary" />}
-        actionLabel={expandedSections.recommended ? "Show less" : "See all"}
-        onAction={() => toggleSection("recommended")}
-      >
-        <div className="movie-grid-animate grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {trending.map((m) => (
-            <MovieCard key={m.id} movie={m} />
-          ))}
-        </div>
-      </Section>
-
-      {/* Promotions */}
-      <section className="mx-auto mt-12 max-w-7xl px-4">
-        <div className="stagger-grid grid gap-4 md:grid-cols-3">
-          {promotions.map((p) => (
-            <Link key={p.title} to={p.to} className="group block">
-              <SpotlightCard
-                className={`rounded-lg bg-gradient-to-br ${p.c} p-6 transition-all hover:-translate-y-0.5 hover:border-foreground/20`}
+      <section className="mx-auto mt-5 grid max-w-7xl gap-5 px-4 lg:grid-cols-[1fr_1fr]">
+        <PanelCard
+          icon={Quote}
+          title="Loved by movie lovers"
+          subtitle="Real reviews from real users"
+        >
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {testimonials.map((item) => (
+              <article
+                key={item.name}
+                className="rounded-lg border border-border/60 bg-background/55 p-4"
               >
-                <p.icon className="h-8 w-8 text-foreground/90" />
-                <h3 className="mt-4 text-lg font-semibold">{p.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary">
-                  Explore
-                  <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </SpotlightCard>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Premiere of the week - wide cards */}
-      <Section
-        title="Premieres of the week"
-        subtitle="Brand new films, only in theatres"
-        icon={<Flame className="h-5 w-5 text-primary" />}
-        actionLabel={expandedSections.premieres ? "Show less" : "See all"}
-        onAction={() => toggleSection("premieres")}
-      >
-        <div className="stagger-grid grid gap-4 md:grid-cols-2">
-          {premieres.map((m) => (
-            <Link
-              key={m.id}
-              to="/movies/$id"
-              params={{ id: m.id }}
-              className="group relative h-44 overflow-hidden rounded-2xl border border-border/60"
-            >
-              <img
-                src={m.backdrop}
-                alt={m.title}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-              <div className="relative flex h-full items-center gap-4 p-5">
-                <img
-                  src={m.poster}
-                  alt={m.title}
-                  className="h-32 w-22 rounded-lg object-cover shadow-xl"
-                />
-                <div className="min-w-0">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                    <Flame className="h-3 w-3" /> Premiere
-                  </span>
-                  <h3 className="mt-2 truncate text-lg font-bold">{m.title}</h3>
-                  <p className="line-clamp-2 text-xs text-muted-foreground">{m.description}</p>
-                  <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <Star className="h-3 w-3 fill-primary text-primary" /> {m.rating} - {m.duration}{" "}
-                    - {m.certificate}
+                <Quote className="h-5 w-5 text-primary" />
+                <p className="mt-3 text-sm leading-relaxed">"{item.text}"</p>
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="grid h-9 w-9 place-items-center rounded-full bg-primary/15 text-sm font-bold text-primary">
+                    {item.name[0]}
                   </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </Section>
-
-      {/* Coming soon */}
-      <Section
-        title="Coming soon"
-        subtitle="Curated upcoming picks"
-        icon={<Calendar className="h-5 w-5 text-primary" />}
-        actionLabel={expandedSections.comingSoon ? "Show less" : "See all"}
-        onAction={() => toggleSection("comingSoon")}
-      >
-        <div className="movie-grid-animate grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {recommended.map((m) => (
-            <MovieCard key={m.id} movie={m} />
-          ))}
-        </div>
-      </Section>
-
-      {/* Cinema partners */}
-      <Section
-        title="Cinema partners"
-        subtitle={`Premium screens in ${selectedCity}`}
-        icon={<Building2 className="h-5 w-5 text-primary" />}
-        actionHref={`/movies/${featured.id}#showtimes`}
-      >
-        <div className="stagger-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {cityCinemas.map((c) => (
-            <a key={c.name} href={`/movies/${featured.id}#showtimes`} className="group block">
-              <SpotlightCard className="rounded-lg p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40">
-                <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold">{c.name}</h3>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {c.area}, {c.city}
-                    </p>
+                    <p className="text-sm font-semibold">{item.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{item.role}</p>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 px-2 py-1 text-xs font-semibold text-primary">
-                    <Star className="h-3 w-3 fill-primary text-primary" />
-                    {c.rating}
-                  </span>
                 </div>
-                <div className="mt-5 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{c.features}</span>
-                  <span className="inline-flex items-center gap-1 text-primary">
-                    Showtimes <ChevronRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </SpotlightCard>
-            </a>
-          ))}
-        </div>
-      </Section>
-
-      {/* Testimonials */}
-      <Section
-        title="Loved by movie lovers"
-        subtitle="What our users say"
-        icon={<Quote className="h-5 w-5 text-primary" />}
-      >
-        <div className="grid gap-4 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <SpotlightCard key={t.name} className="rounded-lg p-6">
-              <Quote className="h-6 w-6 text-primary/60" />
-              <p className="mt-3 text-sm leading-relaxed text-foreground/90">"{t.text}"</p>
-              <div className="mt-5 flex items-center gap-3 border-t border-border/60 pt-4">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-primary to-vip text-sm font-bold text-primary-foreground">
-                  {t.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">{t.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{t.role}</p>
-                </div>
-              </div>
-            </SpotlightCard>
-          ))}
-        </div>
-      </Section>
-
-      {/* App download CTA */}
-      <section className="mx-auto mt-16 max-w-7xl px-4">
-        <SpotlightCard className="rounded-lg bg-gradient-to-br from-primary/20 via-card to-accent/20 p-8 md:p-12">
-          <div className="relative grid items-center gap-8 md:grid-cols-2">
-            <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3 py-1 text-xs font-medium text-primary">
-                <Smartphone className="h-3 w-3" /> Mobile alerts
-              </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-                Never miss a seat.
-                <br />
-                Get launch alerts.
-              </h2>
-              <p className="mt-3 max-w-md text-sm text-muted-foreground">
-                Save your email once and receive new-release alerts, booking reminders and exclusive
-                early access updates from the notifications service.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button size="lg" className="gap-2" asChild>
-                  <a href="#newsletter">
-                    <BellRing className="h-4 w-4" /> Notify me
-                  </a>
-                </Button>
-                <Button size="lg" variant="secondary" className="gap-2" asChild>
-                  <Link to="/movies/$id" params={{ id: featured.id }}>
-                    <Ticket className="h-4 w-4" /> Book now
-                  </Link>
-                </Button>
-              </div>
-            </div>
-            <div className="hidden justify-end md:flex">
-              <div className="relative">
-                <div className="relative grid h-56 w-32 place-items-center rounded-[2rem] border-4 border-foreground/10 bg-background shadow-2xl">
-                  <Ticket className="h-12 w-12 text-primary" />
-                </div>
-              </div>
-            </div>
+              </article>
+            ))}
           </div>
-        </SpotlightCard>
+        </PanelCard>
+
+        <PanelCard
+          id="cinemas"
+          icon={Landmark}
+          title={`Top cinemas in ${selectedCity}`}
+          subtitle="Premium local screens"
+        >
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {topCinemas.map((cinema, index) => (
+              <CinemaCard
+                key={cinema.name}
+                cinema={cinema}
+                image={cinemaImages[index % cinemaImages.length]}
+              />
+            ))}
+          </div>
+        </PanelCard>
       </section>
 
-      {/* Newsletter */}
-      <section id="newsletter" className="mx-auto mt-12 max-w-3xl px-4 text-center">
-        <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Never miss a premiere</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Get weekly updates on new releases and exclusive member-only previews.
-        </p>
-        <form onSubmit={subscribe} className="mx-auto mt-5 flex max-w-md gap-2">
-          <Input
-            type="email"
-            value={newsletterEmail}
-            onChange={(event) => setNewsletterEmail(event.target.value)}
-            placeholder="you@example.com"
-            className="h-11 border-border/60 bg-card/60"
-          />
-          <Button size="lg" className="shrink-0 gap-2" disabled={newsletterBusy}>
-            {newsletterMessage ? (
-              <CheckCircle2 className="h-4 w-4" />
-            ) : (
-              <BellRing className="h-4 w-4" />
-            )}
-            {newsletterBusy ? "Saving..." : "Subscribe"}
-          </Button>
-        </form>
-        {newsletterMessage && <p className="mt-3 text-sm text-primary">{newsletterMessage}</p>}
+      <section className="mx-auto mt-7 max-w-7xl px-4">
+        <div className="grid items-center gap-5 overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/18 via-card to-amber-200/30 p-6 shadow-sm dark:from-primary/12 dark:via-card dark:to-amber-500/10 md:grid-cols-[auto_1fr_auto]">
+          <div className="grid h-20 w-20 place-items-center rounded-full bg-primary/15 text-primary">
+            <BellRing className="h-10 w-10" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Never miss a seat. Get launch alerts.
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Save your email and get notified about new releases, exclusive offers and early access
+              updates.
+            </p>
+          </div>
+          <form onSubmit={subscribe} className="grid min-w-0 gap-2 sm:grid-cols-[240px_auto]">
+            <Input
+              type="email"
+              required
+              value={newsletterEmail}
+              onChange={(event) => setNewsletterEmail(event.target.value)}
+              placeholder="you@example.com"
+              className="h-11 bg-background/90"
+            />
+            <Button disabled={newsletterBusy} className="h-11 gap-2">
+              {newsletterMessage ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <BellRing className="h-4 w-4" />
+              )}
+              {newsletterBusy ? "Saving..." : "Subscribe"}
+            </Button>
+          </form>
+        </div>
+        {newsletterMessage && (
+          <p className="mt-3 text-center text-sm text-primary">{newsletterMessage}</p>
+        )}
       </section>
-    </div>
+    </main>
   );
 }
 
-function FilterChipRow({ label, options, activeValue, onChange }) {
+function FilterMetric({ icon: Icon, title, value, detail }) {
   return (
-    <div>
+    <div className="rounded-lg border border-border/60 bg-background/60 p-3">
       <div className="flex items-center gap-3">
-        <p className="w-20 shrink-0 text-xs font-semibold uppercase text-muted-foreground">
-          {label}
-        </p>
-        <div className="h-px flex-1 bg-border/50" />
-      </div>
-      <div className="mt-2 flex gap-2 overflow-x-auto pb-2">
-        {options.map((option) => (
-          <button
-            key={`${label}-${option}`}
-            type="button"
-            aria-pressed={activeValue === option}
-            onClick={() => onChange(option)}
-            className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
-              activeValue === option
-                ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/30"
-                : "border-border/60 text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-            }`}
-          >
-            {option}
-          </button>
-        ))}
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-bold">{title}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {value} <span className="text-primary">{detail}</span>
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
-function buildSearchShowtimeResults({ catalog, theaterCatalog, query, selectedCity }) {
-  const needle = normalizeHomeText(query);
-  if (!needle) return [];
-
-  const selectedCityKey = normalizeHomeText(selectedCity);
-  const rows = [];
-
-  theaterCatalog.forEach((theater) => {
-    const theaterText = [
-      theater.name,
-      theater.city,
-      theater.area,
-      theater.address,
-      ...splitFeatureList(theater.amenities),
-    ].join(" ");
-    const theaterMatch = normalizeHomeText(theaterText).includes(needle);
-    const theaterCityKey = normalizeHomeText(theater.city);
-    const theaterMovieIds = Array.isArray(theater.movieIds) ? theater.movieIds : null;
-
-    catalog.forEach((movie) => {
-      if (theaterMovieIds && !theaterMovieIds.includes(movie.id)) return;
-
-      const movieMatch = movieMatchesSearch(movie, needle);
-      if (!theaterMatch && !movieMatch) return;
-      if (movieMatch && !theaterMatch && selectedCityKey && theaterCityKey !== selectedCityKey) {
-        return;
-      }
-
-      rows.push({
-        id: `${theater.id}-${movie.id}`,
-        cityPriority: theaterCityKey === selectedCityKey ? 0 : 1,
-        matchPriority: theaterMatch ? 0 : 1,
-        logoText: theater.logoText || initials(theater.name),
-        movie,
-        theater,
-        times: getTheaterTimes(theater),
-      });
-    });
-  });
-
-  return rows
-    .sort((left, right) => {
-      if (left.cityPriority !== right.cityPriority) return left.cityPriority - right.cityPriority;
-      if (left.matchPriority !== right.matchPriority) {
-        return left.matchPriority - right.matchPriority;
-      }
-      return left.theater.name.localeCompare(right.theater.name);
-    })
-    .slice(0, 12);
+function HomeSection({ id, title, subtitle, icon: Icon, actionHref, children }) {
+  return (
+    <section id={id} className="mx-auto mt-7 max-w-7xl px-4">
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <div className="flex items-start gap-2">
+          <Icon className="mt-1 h-5 w-5 text-primary" />
+          <div>
+            <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          </div>
+        </div>
+        {actionHref && (
+          <a
+            href={actionHref}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+          >
+            See all <ArrowRight className="h-4 w-4" />
+          </a>
+        )}
+      </div>
+      {children}
+    </section>
+  );
 }
 
-function movieMatchesSearch(movie, needle) {
-  return normalizeHomeText(
-    [
-      movie.title,
-      movie.language,
-      movie.duration,
-      movie.certificate,
-      movie.description,
-      ...movie.genres,
-      ...(movie.format ?? []),
-      ...(movie.cast ?? []).flatMap((member) => [member.name, member.role]),
-    ].join(" "),
-  ).includes(needle);
+function CompactMovieCard({ movie }) {
+  return (
+    <Link
+      to="/movies/$id"
+      params={{ id: movie.id }}
+      className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
+    >
+      <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+        <img
+          src={movie.poster}
+          alt={movie.title}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-xs font-semibold text-white backdrop-blur">
+          <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+          {movie.rating}
+        </span>
+      </div>
+      <div className="p-3">
+        <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-5">{movie.title}</h3>
+        <p className="mt-1 truncate text-xs text-muted-foreground">
+          {movie.genres.slice(0, 3).join(" - ")}
+        </p>
+      </div>
+    </Link>
+  );
 }
 
-function getTheaterTimes(theater) {
-  const plans = theater.showPlan ?? showTimes.map((time) => ({ time }));
-  return plans
-    .map((plan) => (typeof plan === "string" ? plan : plan.time))
-    .filter(Boolean)
-    .slice(0, 4);
+function FeatureBanner({ card }) {
+  const Icon = card.icon;
+  const id = card.title.toLowerCase().replace(/\s+/g, "-");
+  return (
+    <a
+      id={id}
+      href={`#${id}`}
+      className={`group block rounded-lg border border-border/60 bg-gradient-to-br ${card.tone} p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35`}
+    >
+      <div className="flex min-h-24 items-center gap-4">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-background/70 text-primary shadow-sm">
+          <Icon className="h-7 w-7" />
+        </div>
+        <div>
+          <h3 className="text-xl font-bold tracking-tight">{card.title}</h3>
+          <p className="mt-1 max-w-xs text-sm text-muted-foreground">{card.text}</p>
+          <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+            Explore{" "}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </div>
+      </div>
+    </a>
+  );
 }
 
-function buildHomeCinemas(selectedCity, theaterCatalog) {
+function PanelCard({ id, icon: Icon, title, subtitle, actionLabel = "See all", children }) {
+  return (
+    <section
+      id={id}
+      className="rounded-lg border border-border/60 bg-card/88 p-4 shadow-sm backdrop-blur"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-2">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/12 text-primary">
+            <Icon className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold tracking-tight">{title}</h2>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          </div>
+        </div>
+        <a href={id ? `#${id}` : "#movies"} className="shrink-0 text-xs font-semibold text-primary">
+          {actionLabel} <ChevronRight className="inline h-3.5 w-3.5" />
+        </a>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function MiniMovieTile({ movie, badge }) {
+  return (
+    <Link to="/movies/$id" params={{ id: movie.id }} className="group block">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-muted">
+        <img
+          src={movie.backdrop || movie.poster}
+          alt={movie.title}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        <span className="absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-[10px] font-bold text-primary-foreground">
+          {badge}
+        </span>
+      </div>
+      <p className="mt-2 line-clamp-2 text-xs font-bold leading-4">{movie.title}</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        {movie.rating} - {movie.duration} - {movie.certificate}
+      </p>
+    </Link>
+  );
+}
+
+function CinemaCard({ cinema, image }) {
+  return (
+    <a href={`/movies/interstellar#showtimes`} className="group block">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+        <img
+          src={image}
+          alt={cinema.name}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white">
+          <Heart className="h-3.5 w-3.5 fill-white" />
+        </span>
+        <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-1 text-[11px] font-semibold text-white">
+          {cinema.rating}
+        </span>
+      </div>
+      <p className="mt-2 truncate text-sm font-bold">{cinema.name}</p>
+      <p className="truncate text-[11px] text-muted-foreground">{cinema.features}</p>
+    </a>
+  );
+}
+
+function buildTopCinemas(selectedCity, cinemaCatalog) {
   const cityKey = normalizeHomeText(selectedCity);
-  const localCinemas = theaterCatalog
+  const local = cinemaCatalog
     .filter((theater) => normalizeHomeText(theater.city) === cityKey)
     .slice(0, 4);
-  const source = localCinemas.length > 0 ? localCinemas : theaterCatalog.slice(0, 4);
+  const source = local.length ? local : cinemaCatalog.slice(0, 4);
 
   return source.map((theater, index) => ({
     name: theater.name,
-    city: theater.city,
     area: theater.area,
-    features: splitFeatureList(theater.amenities).slice(0, 2).join(", ") || "Digital projection",
+    city: theater.city,
+    features: splitList(theater.amenities).slice(0, 2).join(", ") || "M-Ticket, Snacks",
     rating: (4.5 + (index % 3) * 0.1).toFixed(1),
   }));
 }
 
-function splitFeatureList(value) {
+function rotateMovies(list, offset) {
+  if (!list.length) return [];
+  const normalizedOffset = offset % list.length;
+  return [...list.slice(normalizedOffset), ...list.slice(0, normalizedOffset)];
+}
+
+function buildComingSoonDates(count) {
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() + 24 + index * 7);
+    return {
+      day: String(date.getDate()).padStart(2, "0"),
+      month: date.toLocaleDateString("en-IN", { month: "short" }).toUpperCase(),
+    };
+  });
+}
+
+function splitList(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
   return String(value ?? "")
     .split(",")
@@ -817,65 +755,8 @@ function normalizeHomeText(value) {
     .toLowerCase();
 }
 
-function initials(value) {
-  return String(value ?? "")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
+function trailerSearchUrl(title) {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} official trailer`)}`;
 }
 
-function Section({
-  title,
-  subtitle,
-  icon,
-  children,
-  actionTo,
-  actionHref,
-  actionLabel = "See all",
-  onAction,
-}) {
-  return (
-    <section className="mx-auto mt-14 max-w-7xl px-4">
-      <div className="mb-5 flex items-end justify-between">
-        <div className="flex items-center gap-3">
-          {icon && (
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15">{icon}</div>
-          )}
-          <div>
-            <h2 className="text-xl font-bold tracking-tight md:text-2xl">{title}</h2>
-            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
-          </div>
-        </div>
-        {onAction && (
-          <button
-            type="button"
-            onClick={onAction}
-            className="inline-flex shrink-0 items-center gap-1 text-sm text-primary hover:underline"
-          >
-            {actionLabel} <ChevronRight className="h-4 w-4" />
-          </button>
-        )}
-        {!onAction && actionTo && (
-          <Link
-            to={actionTo}
-            className="inline-flex shrink-0 items-center gap-1 text-sm text-primary hover:underline"
-          >
-            {actionLabel} <ChevronRight className="h-4 w-4" />
-          </Link>
-        )}
-        {!onAction && actionHref && (
-          <a
-            href={actionHref}
-            className="inline-flex shrink-0 items-center gap-1 text-sm text-primary hover:underline"
-          >
-            {actionLabel} <ChevronRight className="h-4 w-4" />
-          </a>
-        )}
-      </div>
-      {children}
-    </section>
-  );
-}
 export { Route };
