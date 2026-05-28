@@ -8,17 +8,24 @@
 
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as OwnerRouteImport } from "./routes/owner";
+import { Route as MoviesRouteImport } from "./routes/movies";
 import { Route as DashboardRouteImport } from "./routes/dashboard";
 import { Route as ConfirmationRouteImport } from "./routes/confirmation";
 import { Route as AuthRouteImport } from "./routes/auth";
 import { Route as AdminRouteImport } from "./routes/admin";
 import { Route as IndexRouteImport } from "./routes/index";
+import { Route as MoviesIndexRouteImport } from "./routes/movies.index";
 import { Route as MoviesIdRouteImport } from "./routes/movies.$id";
 import { Route as BookShowIdRouteImport } from "./routes/book.$showId";
 
 const OwnerRoute = OwnerRouteImport.update({
   id: "/owner",
   path: "/owner",
+  getParentRoute: () => rootRouteImport,
+});
+const MoviesRoute = MoviesRouteImport.update({
+  id: "/movies",
+  path: "/movies",
   getParentRoute: () => rootRouteImport,
 });
 const DashboardRoute = DashboardRouteImport.update({
@@ -46,10 +53,15 @@ const IndexRoute = IndexRouteImport.update({
   path: "/",
   getParentRoute: () => rootRouteImport,
 });
+const MoviesIndexRoute = MoviesIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => MoviesRoute,
+});
 const MoviesIdRoute = MoviesIdRouteImport.update({
-  id: "/movies/$id",
-  path: "/movies/$id",
-  getParentRoute: () => rootRouteImport,
+  id: "/$id",
+  path: "/$id",
+  getParentRoute: () => MoviesRoute,
 });
 const BookShowIdRoute = BookShowIdRouteImport.update({
   id: "/book/$showId",
@@ -57,14 +69,22 @@ const BookShowIdRoute = BookShowIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 });
 
+const MoviesRouteChildren = {
+  MoviesIdRoute: MoviesIdRoute,
+  MoviesIndexRoute: MoviesIndexRoute,
+};
+
+const MoviesRouteWithChildren =
+  MoviesRoute._addFileChildren(MoviesRouteChildren);
+
 const rootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   ConfirmationRoute: ConfirmationRoute,
   DashboardRoute: DashboardRoute,
+  MoviesRoute: MoviesRouteWithChildren,
   OwnerRoute: OwnerRoute,
   BookShowIdRoute: BookShowIdRoute,
-  MoviesIdRoute: MoviesIdRoute,
 };
 export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren);

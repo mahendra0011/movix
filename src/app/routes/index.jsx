@@ -128,7 +128,6 @@ function Home() {
   const [activeLanguage, setActiveLanguage] = useState(allFilterValue);
   const [activeFormat, setActiveFormat] = useState(allFilterValue);
   const [sortBy, setSortBy] = useState("Popularity");
-  const [showAllMovies, setShowAllMovies] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
@@ -217,11 +216,13 @@ function Home() {
   const recommended = hasActiveFilters
     ? visibleMovies.slice(0, 6)
     : buildRecommendedMovies(visibleMovies);
-  const displayedMovies = showAllMovies ? visibleMovies : recommended;
-  const movieSectionTitle = showAllMovies ? `Movies in ${selectedCity}` : "Recommended for you";
-  const movieSectionSubtitle = showAllMovies
-    ? `${visibleMovies.length} of ${cityListedMovies.length} listed movies match your filters`
-    : `Curated picks from ${cityListedMovies.length} movies listed in ${selectedCity}`;
+  const moviesPageSearch = buildMoviesPageSearch({
+    city: selectedCity,
+    genre: activeGenre,
+    language: activeLanguage,
+    format: activeFormat,
+    sort: sortBy,
+  });
   const premieres = rotateMovies(catalog, 3).slice(0, 4);
   const comingSoon = rotateMovies(catalog, 2).slice(0, 3);
   const comingSoonDates = useMemo(
@@ -230,19 +231,6 @@ function Home() {
   );
   const topCinemas = buildTopCinemas(selectedCity, cinemaCatalog);
   const showSearch = query.trim().length > 0;
-
-  const toggleAllMovies = () => {
-    const nextValue = !showAllMovies;
-    setShowAllMovies(nextValue);
-    if (nextValue && typeof window !== "undefined") {
-      window.setTimeout(() => {
-        document.getElementById("movie-filters")?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }, 0);
-    }
-  };
 
   const subscribe = async (event) => {
     event.preventDefault();
@@ -461,20 +449,17 @@ function Home() {
 
       <HomeSection
         id="movies"
-        title={movieSectionTitle}
-        subtitle={movieSectionSubtitle}
+        title="Recommended for you"
+        subtitle={`Curated picks from ${cityListedMovies.length} movies listed in ${selectedCity}`}
         icon={Star}
-        actionLabel={showAllMovies ? "Show less" : "See all"}
-        onAction={toggleAllMovies}
+        actionLabel="See all"
+        actionTo="/movies/"
+        actionSearch={moviesPageSearch}
       >
-        {displayedMovies.length ? (
-          <div
-            className={`grid grid-cols-2 gap-4 sm:grid-cols-3 ${
-              showAllMovies ? "md:grid-cols-4 lg:grid-cols-6" : "lg:grid-cols-6"
-            }`}
-          >
-            {displayedMovies.map((movie) => (
-              <CompactMovieCard key={movie.id} movie={movie} prominent={!showAllMovies} />
+        {recommended.length ? (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {recommended.map((movie) => (
+              <CompactMovieCard key={movie.id} movie={movie} prominent />
             ))}
           </div>
         ) : (
@@ -730,6 +715,8 @@ function HomeSection({
   title,
   subtitle,
   icon: Icon,
+  actionTo,
+  actionSearch,
   actionHref,
   actionLabel = "See all",
   onAction,
@@ -753,6 +740,14 @@ function HomeSection({
           >
             {actionLabel} <ArrowRight className="h-4 w-4" />
           </button>
+        ) : actionTo ? (
+          <Link
+            to={actionTo}
+            search={actionSearch}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+          >
+            {actionLabel} <ArrowRight className="h-4 w-4" />
+          </Link>
         ) : actionHref ? (
           <a
             href={actionHref}
@@ -1039,6 +1034,15 @@ function buildRecommendedMovies(list) {
   const preferred = recommendedOrder.map((id) => byId.get(id)).filter(Boolean);
   const rest = list.filter((movie) => !recommendedOrder.includes(movie.id));
   return [...preferred, ...rest].slice(0, 6);
+}
+
+function buildMoviesPageSearch({ city, genre, language, format, sort }) {
+  const search = { city };
+  if (genre && genre !== allFilterValue) search.genre = genre;
+  if (language && language !== allFilterValue) search.language = language;
+  if (format && format !== allFilterValue) search.format = format;
+  if (sort && sort !== "Popularity") search.sort = sort;
+  return search;
 }
 
 function buildTopMovies(list) {
