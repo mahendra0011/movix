@@ -26,6 +26,7 @@ import { fetchMovie } from "@/features/movies/api/moviesApi";
 import { theaters, showTimes } from "@/features/movies/data/movieCatalog";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
+import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
 import {
   readPreferredCity,
   subscribePreferredCity,
@@ -133,6 +134,7 @@ function MoviePage() {
   const [preferredTime, setPreferredTime] = useState("Any time");
   const [sortBy, setSortBy] = useState("Recommended");
   const [ownerWorkspaces, setOwnerWorkspaces] = useState([]);
+  const [remoteShows, setRemoteShows] = useState([]);
   const [bookingMode, setBookingMode] = useState(
     () => typeof window !== "undefined" && window.location.hash === "#showtimes",
   );
@@ -159,10 +161,30 @@ function MoviePage() {
 
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
 
+  useEffect(() => {
+    if (!HAS_CONFIGURED_API_URL) return undefined;
+    let active = true;
+
+    requestJson(
+      `/api/shows/${encodeURIComponent(movie.id)}?city=${encodeURIComponent(selectedCity)}`,
+      { timeoutMs: 2500 },
+    )
+      .then((data) => {
+        if (active) setRemoteShows(data.shows ?? []);
+      })
+      .catch(() => {
+        if (active) setRemoteShows([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [movie.id, selectedCity]);
+
   const selectedDateLabel = useMemo(() => getDateLabel(activeDate), [activeDate]);
   const cinemaListings = useMemo(
-    () => buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces }),
-    [activeDate, movie, ownerWorkspaces, selectedCity],
+    () => buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces, remoteShows }),
+    [activeDate, movie, ownerWorkspaces, remoteShows, selectedCity],
   );
   const formatOptions = useMemo(
     () =>
@@ -918,7 +940,7 @@ function FilterSelect({ value, onChange, options, label }) {
   );
 }
 
-function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces }) {
+function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces, remoteShows }) {
   const city = selectedCity || "Bengaluru";
   const staticListings = theaters
     .filter((theater) => sameCity(theater.city, city) && theaterHasMovie(theater, movie.id))
@@ -939,6 +961,7 @@ function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces 
         shows: plans.map((plan, index) => buildStaticShow(movie, theater, plan, index)),
       };
     });
+  const remoteListings = groupRemoteShows(remoteShows, movie);
 
   const ownerListings = ownerWorkspaces
     .map((workspace) => {
@@ -973,7 +996,53 @@ function buildCinemaListings({ movie, selectedCity, activeDate, ownerWorkspaces 
     })
     .filter(Boolean);
 
-  return [...ownerListings, ...staticListings].filter((cinema) => cinema.shows.length > 0);
+  const catalogListings = HAS_CONFIGURED_API_URL ? remoteListings : staticListings;
+  return [...ownerListings, ...catalogListings].filter((cinema) => cinema.shows.length > 0);
+}
+
+function groupRemoteShows(remoteShows, movie) {
+  const groups = new Map();
+  (remoteShows ?? []).forEach((show) => {
+    const key = show.theaterId || show.theater || show.id;
+    if (!groups.has(key)) {
+      groups.set(key, {
+        id: show.theaterId || key,
+        name: show.theater || "Cinema",
+        city: show.city,
+        area: show.area,
+        address: show.address,
+        amenities: splitAmenities(show.amenities),
+        logoText: show.logoText || initials(show.theater),
+        isOwner: false,
+        shows: [],
+      });
+    }
+
+    groups.get(key).shows.push(formatRemoteShow(show, movie));
+  });
+
+  return Array.from(groups.values());
+}
+
+function formatRemoteShow(show, movie) {
+  const gold = Number(show.price?.gold || 250);
+  const platinum = Number(show.price?.platinum || 180);
+  const vip = Number(show.price?.vip || 400);
+  return {
+    id: show.id,
+    label: show.startTime || show.time || "Showtime",
+    screen: show.screen || "Screen 1",
+    status: normalizeShowStatus(show.status),
+    format: show.format || movie.format?.[0] || "2D",
+    language: show.language || movie.language || "English",
+    cancellable: show.cancellable !== false,
+    price: {
+      platinum,
+      silver: Number(show.price?.silver || gold),
+      gold,
+      vip,
+    },
+  };
 }
 
 function filterCinemaListings({ listings, query, activeFormat, preferredTime, sortBy }) {

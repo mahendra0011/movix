@@ -1,8 +1,11 @@
 import { Router } from "express";
 import { Theater } from "../models/Theater.js";
-import { theaters, showTimes } from "../seed.js";
 import { isMongoReady } from "../services/database.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import {
+  showTimes,
+  theaters as catalogTheaters,
+} from "../../src/features/movies/data/movieCatalog.js";
 
 const router = Router();
 
@@ -22,12 +25,19 @@ const screens = [
 ];
 
 function enrichTheater(theater, index = 0) {
+  const sourceScreens =
+    Array.isArray(theater.screens) && theater.screens.length
+      ? theater.screens
+      : screens.map((screen) => ({ ...screen, id: `${theater.id}-${screen.id}` }));
+
   return {
     ...theater,
     city: theater.city || "Bengaluru",
     address: theater.address || `${theater.area}, ${theater.city || "Bengaluru"}`,
-    approved: true,
-    screens: screens.map((screen) => ({ ...screen, id: `${theater.id}-${screen.id}` })),
+    amenities: Array.isArray(theater.amenities) ? theater.amenities : splitList(theater.amenities),
+    approved: theater.approved !== false,
+    screens: sourceScreens,
+    showPlan: Array.isArray(theater.showPlan) ? theater.showPlan : [],
     rating: 4.5 + (index % 4) / 10,
   };
 }
@@ -38,18 +48,21 @@ router.get(
     const city = String(request.query.city ?? "")
       .trim()
       .toLowerCase();
-    let list = theaters
+    const source = isMongoReady()
+      ? await Theater.find({ approved: true }).sort({ city: 1, name: 1 }).lean()
+      : catalogTheaters;
+    const list = source
       .map(enrichTheater)
       .filter((theater) => !city || theater.city.toLowerCase() === city);
-    if (isMongoReady()) {
-      const ownerTheaters = await Theater.find({ approved: true }).lean();
-      const enrichedOwnerTheaters = ownerTheaters
-        .map((theater, index) => enrichTheater(theater, index + list.length))
-        .filter((theater) => !city || theater.city.toLowerCase() === city);
-      list = [...enrichedOwnerTheaters, ...list];
-    }
     response.json({ theaters: list, showTimes });
   }),
 );
+
+function splitList(value) {
+  return String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 export { enrichTheater, router as theaterRoutes };

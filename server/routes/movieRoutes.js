@@ -2,8 +2,8 @@ import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { Movie } from "../models/Movie.js";
-import { movies } from "../seed.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
+import { movies } from "../../src/features/movies/data/movieCatalog.js";
 
 const router = Router();
 

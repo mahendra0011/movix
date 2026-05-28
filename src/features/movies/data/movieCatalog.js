@@ -1,4 +1,4 @@
-import { SEARCHABLE_CITY_OPTIONS } from "@/shared/services/cityPreference";
+import { SEARCHABLE_CITY_OPTIONS } from "../../../shared/services/cityPreference.js";
 
 const tmdb = (path, size = "w780") => `https://image.tmdb.org/t/p/${size}${path}`;
 const realImages = {

@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { Booking } from "../models/Booking.js";
 import { Movie } from "../models/Movie.js";
+import { Show } from "../models/Show.js";
 import { Theater } from "../models/Theater.js";
 import { User } from "../models/User.js";
-import { theaters } from "../seed.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
@@ -11,6 +11,7 @@ import { getMemoryUsers, updateMemoryUserOwnerStatus } from "./authRoutes.js";
 import { getMemoryBookings } from "../services/bookingStore.js";
 import { isMongoReady } from "../services/database.js";
 import { publishNotification } from "../services/notificationHub.js";
+import { theaters as catalogTheaters } from "../../src/features/movies/data/movieCatalog.js";
 
 const router = Router();
 const SCREEN_CAPACITY = 140;
@@ -43,13 +44,15 @@ router.get(
     let bookings = getMemoryBookings();
     let userCount = 0;
     let movieCount = 8;
-    let theaterCount = theaters.length;
+    let theaterRows = catalogTheaters;
+    let theaterCount = theaterRows.length;
 
     if (isMongoReady()) {
       bookings = await Booking.find({}).lean();
       userCount = await User.countDocuments();
       movieCount = await Movie.countDocuments();
-      theaterCount = Math.max(await Theater.countDocuments(), theaters.length);
+      theaterRows = await Theater.find({ approved: true }).sort({ city: 1, name: 1 }).lean();
+      theaterCount = theaterRows.length;
     } else {
       userCount = new Set(bookings.map((booking) => booking.email).filter(Boolean)).size + 1;
     }
@@ -102,7 +105,7 @@ router.get(
     const popularMovies = Object.values(byMovie)
       .sort((a, b) => b.value - a.value)
       .slice(0, 5);
-    const theaterPerformance = theaters.map((theater) => {
+    const theaterPerformance = theaterRows.map((theater) => {
       const data = byTheater[theater.name] ?? {
         theater: theater.name,
         revenue: 0,
@@ -122,6 +125,8 @@ router.get(
       .slice(0, 6)
       .map((booking) => ({
         ref: booking.ref,
+        customer: booking.customer || booking.user || emailName(booking.email),
+        email: booking.email || "",
         movie: booking.movie,
         theater: booking.theater,
         seats: booking.seats,
@@ -143,9 +148,10 @@ router.get(
         users: userCount,
         movies: movieCount,
         theaters: theaterCount,
-        occupancy: seatsSold
-          ? Math.min(98, Math.round((seatsSold / (theaterCount * SCREEN_CAPACITY)) * 100))
-          : 0,
+        occupancy:
+          seatsSold && theaterCount
+            ? Math.min(98, Math.round((seatsSold / (theaterCount * SCREEN_CAPACITY)) * 100))
+            : 0,
         averageOrderValue: confirmedBookings.length
           ? Math.round(revenue / confirmedBookings.length)
           : 0,
@@ -172,10 +178,81 @@ router.get(
   "/theater-applications",
   asyncHandler(async (_request, response) => {
     const owners = isMongoReady()
-      ? await User.find({ role: "theater-owner" }).sort({ updatedAt: -1 }).lean()
-      : getMemoryUsers().filter((user) => user.role === "theater-owner");
+      ? await User.find({ role: "theater-owner", ownerStatus: { $ne: "Rejected" } })
+          .sort({ updatedAt: -1 })
+          .lean()
+      : getMemoryUsers().filter(
+          (user) => user.role === "theater-owner" && user.ownerStatus !== "Rejected",
+        );
 
     response.json({ theaters: owners.map(mapOwnerApplication) });
+  }),
+);
+
+router.get(
+  "/users",
+  asyncHandler(async (_request, response) => {
+    const users = isMongoReady()
+      ? await User.find({}).sort({ createdAt: -1 }).lean()
+      : getMemoryUsers();
+
+    response.json({ users: users.map(mapAdminUser) });
+  }),
+);
+
+router.patch(
+  "/users/:id",
+  asyncHandler(async (request, response) => {
+    const blocked = Boolean(request.body.blocked);
+
+    if (!isMongoReady()) {
+      response.status(503).json({ error: "MongoDB is required to update users." });
+      return;
+    }
+
+    const user = await User.findById(request.params.id);
+    if (!user) {
+      response.status(404).json({ error: "User not found." });
+      return;
+    }
+    if (user.role === "admin") {
+      response.status(400).json({ error: "Admin accounts cannot be blocked here." });
+      return;
+    }
+
+    user.blocked = blocked;
+    user.status = blocked ? "Blocked" : "Active";
+    await user.save();
+    response.json({ user: mapAdminUser(user) });
+  }),
+);
+
+router.delete(
+  "/users/:id",
+  asyncHandler(async (request, response) => {
+    if (!isMongoReady()) {
+      response.status(503).json({ error: "MongoDB is required to delete users." });
+      return;
+    }
+
+    const user = await User.findById(request.params.id).lean();
+    if (!user) {
+      response.status(404).json({ error: "User not found." });
+      return;
+    }
+    if (user.role === "admin") {
+      response.status(400).json({ error: "Admin accounts cannot be deleted here." });
+      return;
+    }
+
+    await User.deleteOne({ _id: user._id });
+    if (user.role === "theater-owner") {
+      const ownerTheaterIds = await Theater.find({ ownerId: user._id }).distinct("id");
+      await Theater.deleteMany({ ownerId: user._id });
+      await Show.deleteMany({ theaterId: { $in: ownerTheaterIds } });
+    }
+
+    response.json({ ok: true, user: mapAdminUser(user) });
   }),
 );
 
@@ -224,6 +301,57 @@ router.patch(
   }),
 );
 
+router.delete(
+  "/theater-applications/:id",
+  asyncHandler(async (request, response) => {
+    if (isMongoReady()) {
+      const user = await User.findOneAndDelete({
+        _id: request.params.id,
+        role: "theater-owner",
+      }).lean();
+      if (!user) {
+        response.status(404).json({ error: "Owner application not found." });
+        return;
+      }
+
+      await Theater.deleteMany({ ownerId: user._id });
+      await Show.deleteMany({ theaterId: ownerTheaterId(user) });
+      response.json({ theater: mapOwnerApplication({ ...user, ownerStatus: "Rejected" }) });
+      return;
+    }
+
+    const user = updateMemoryUserOwnerStatus(
+      request.params.id,
+      "Rejected",
+      request.user?.email || request.auth?.email || "Admin",
+    );
+    if (!user) {
+      response.status(404).json({ error: "Owner application not found." });
+      return;
+    }
+    response.json({ theater: mapOwnerApplication(user) });
+  }),
+);
+
+router.delete(
+  "/theaters/:id",
+  asyncHandler(async (request, response) => {
+    if (!isMongoReady()) {
+      response.status(503).json({ error: "MongoDB is required to delete theaters." });
+      return;
+    }
+
+    const theater = await Theater.findOneAndDelete({ id: request.params.id }).lean();
+    if (!theater) {
+      response.status(404).json({ error: "Theater not found." });
+      return;
+    }
+
+    await Show.deleteMany({ theaterId: request.params.id });
+    response.json({ ok: true, theater });
+  }),
+);
+
 function publishOwnerStatusNotification(user, status) {
   const application = user.ownerApplication ?? {};
   publishNotification({
@@ -260,6 +388,28 @@ function mapOwnerApplication(user) {
   };
 }
 
+function mapAdminUser(user) {
+  const userId = String(user._id ?? user.id ?? "");
+  const blocked = Boolean(user.blocked || user.status === "Blocked");
+  return {
+    id: userId,
+    name: user.name || "Unnamed user",
+    email: user.email || "",
+    role: user.role || "user",
+    verified: Boolean(user.verified),
+    blocked,
+    status:
+      blocked || user.status === "Blocked"
+        ? "Blocked"
+        : user.role === "theater-owner" && user.ownerStatus === "Pending"
+          ? "Pending"
+          : "Active",
+    ownerStatus: user.ownerStatus,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+}
+
 async function syncApprovedTheater(user, status) {
   if (!isMongoReady()) return;
   const application = user.ownerApplication ?? {};
@@ -267,7 +417,13 @@ async function syncApprovedTheater(user, status) {
   const city = application.city || "";
   if (!name || !city) return;
 
-  const theaterId = slugify(`${name}-${city}`);
+  const theaterId = ownerTheaterId(user);
+  if (status !== "Approved") {
+    await Theater.deleteMany({ $or: [{ id: theaterId }, { ownerId: user._id }] });
+    await Show.deleteMany({ theaterId });
+    return;
+  }
+
   await Theater.updateOne(
     { id: theaterId },
     {
@@ -278,11 +434,15 @@ async function syncApprovedTheater(user, status) {
         area: application.area || "",
         address: application.address || `${application.area || city}, ${city}`,
         ownerId: user._id,
-        approved: status === "Approved",
+        approved: true,
+        amenities: ["M-Ticket", "Food & Beverage"],
+        logoText: initials(name),
+        movieIds: [],
+        showPlan: [],
         screens: buildScreens(application.screens),
       },
     },
-    { upsert: status === "Approved" },
+    { upsert: true },
   );
 }
 
@@ -303,6 +463,25 @@ function normalizeOwnerStatus(status) {
   if (value === "approved") return "Approved";
   if (value === "rejected") return "Rejected";
   return "Pending";
+}
+
+function ownerTheaterId(user) {
+  const application = user.ownerApplication ?? {};
+  return slugify(`${application.theaterName || user.name || "cinema"}-${application.city || ""}`);
+}
+
+function initials(value) {
+  return String(value || "BM")
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
+}
+
+function emailName(email) {
+  const [name] = String(email || "").split("@");
+  return name || "Customer";
 }
 
 function slugify(value) {

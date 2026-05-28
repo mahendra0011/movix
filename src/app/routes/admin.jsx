@@ -22,13 +22,17 @@ import {
   XCircle,
 } from "lucide-react";
 import {
+  deleteAdminUser,
+  deleteAdminTheater,
   deleteTheaterApplication,
+  fetchAdminTheaters,
   fetchAdminSummary,
+  fetchAdminUsers,
   fetchTheaterApplications,
+  updateAdminUser,
   updateTheaterApplicationStatus,
 } from "@/features/admin/api/adminApi";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
-import { theaters as theaterCatalog } from "@/features/movies/data/movieCatalog";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 import { TrendAreaChart, VerticalBars } from "@/shared/components/ui/lightweight-chart";
@@ -65,33 +69,6 @@ const fallback = {
   recentBookings: [],
 };
 
-const pendingTheatersSeed = [
-  {
-    id: "sterling-imax",
-    name: "Sterling IMAX",
-    owner: "Aarav Cinemas LLP",
-    screens: 6,
-    status: "Pending",
-    documents: "GST, FSSAI, Fire NOC",
-  },
-  {
-    id: "galaxy-premium",
-    name: "Galaxy Premium Screens",
-    owner: "Galaxy Motion Pvt Ltd",
-    screens: 4,
-    status: "Pending",
-    documents: "GST, Fire NOC",
-  },
-  {
-    id: "liberty-dolby",
-    name: "Liberty Dolby Cinema",
-    owner: "Liberty Entertainment",
-    screens: 3,
-    status: "Pending",
-    documents: "GST, Lease, Safety",
-  },
-];
-
 const adminTabs = [
   { id: "analytics", label: "Control room", icon: BarChart3 },
   { id: "theaters", label: "Theaters", icon: Building2 },
@@ -100,45 +77,6 @@ const adminTabs = [
   { id: "finance", label: "Revenue", icon: ReceiptText },
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "bookings", label: "Bookings", icon: Ticket },
-];
-
-const cancelledTicketRows = [
-  {
-    ref: "BMS-CNL-1042",
-    user: "Aditi Sharma",
-    email: "aditi.sharma@example.com",
-    movie: "Dune: Part Two",
-    theater: "PVR INOX: Orion Mall",
-    seats: ["F7", "F8"],
-    amount: 960,
-    reason: "User cancelled ticket",
-    status: "Pending refund",
-    cancelledAt: "Today, 3:20 PM",
-  },
-  {
-    ref: "BMS-CNL-1038",
-    user: "Kabir Khan",
-    email: "kabir.khan@example.com",
-    movie: "Avengers: Endgame",
-    theater: "Movie Magic (SAM)",
-    seats: ["D11"],
-    amount: 420,
-    reason: "Show cancelled by cinema",
-    status: "Manual review",
-    cancelledAt: "Today, 1:05 PM",
-  },
-  {
-    ref: "BMS-CNL-1029",
-    user: "Meera Joshi",
-    email: "meera.joshi@example.com",
-    movie: "Interstellar",
-    theater: "Samdareeya Era Cinema",
-    seats: ["C4", "C5"],
-    amount: 780,
-    reason: "Payment captured after cancellation",
-    status: "Refund initiated",
-    cancelledAt: "Yesterday, 8:42 PM",
-  },
 ];
 
 const paymentRows = [
@@ -150,17 +88,6 @@ const paymentRows = [
 
 const adminSelectClass =
   "h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring";
-const LOCAL_USERS_KEY = "bms-local-auth-users";
-const DELETED_THEATERS_KEY = "bms-admin-deleted-theaters";
-const DEMO_THEATER_STATUSES_KEY = "bms-admin-demo-theater-statuses";
-const STATIC_ADMIN_USER = {
-  id: "local-admin",
-  name: "Mahendra Admin",
-  email: "mahendrapra0077@gmail.com",
-  role: "admin",
-  verified: true,
-  status: "Active",
-};
 
 const Route = createFileRoute("/admin")({
   component: AdminDashboard,
@@ -173,12 +100,12 @@ function AdminDashboard() {
   const [data, setData] = useState(fallback);
   const [loadState, setLoadState] = useState("idle");
   const [activeTab, setActiveTab] = useState("analytics");
-  const [adminUsers, setAdminUsers] = useState(readAdminUsers);
+  const [adminUsers, setAdminUsers] = useState([]);
   const [userQuery, setUserQuery] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState("All");
   const [userStatusFilter, setUserStatusFilter] = useState("All");
-  const [theaterApprovals, setTheaterApprovals] = useState(pendingTheatersSeed);
-  const [deletedTheaterIds, setDeletedTheaterIds] = useState(readDeletedTheaterIds);
+  const [theaterApprovals, setTheaterApprovals] = useState([]);
+  const [managedTheaters, setManagedTheaters] = useState([]);
   const [selectedTheaterCity, setSelectedTheaterCity] = useState("Jabalpur");
   const [approvalBusy, setApprovalBusy] = useState("");
   const [notice, setNotice] = useState("");
@@ -225,21 +152,36 @@ function AdminDashboard() {
     fetchTheaterApplications()
       .then((result) => {
         if (!active) return;
-        const applications = (result.theaters ?? []).filter(
-          (theater) => theater.status !== "Rejected",
-        );
         setTheaterApprovals(
-          applications.length ? applications : buildFallbackTheaterApprovals(deletedTheaterIds),
+          (result.theaters ?? []).filter((theater) => theater.status !== "Rejected"),
         );
       })
       .catch(() => {
-        if (active) setTheaterApprovals(buildFallbackTheaterApprovals(deletedTheaterIds));
+        if (active) setTheaterApprovals([]);
       });
 
     return () => {
       active = false;
     };
-  }, [auth.hydrated, auth.user?.role, deletedTheaterIds]);
+  }, [auth.hydrated, auth.user?.role]);
+
+  useEffect(() => {
+    if (!auth.hydrated || auth.user?.role !== "admin") return undefined;
+    let active = true;
+
+    fetchAdminTheaters()
+      .then((result) => {
+        if (!active) return;
+        setManagedTheaters((result.theaters ?? []).map(formatManagedTheater));
+      })
+      .catch(() => {
+        if (active) setManagedTheaters([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [auth.hydrated, auth.user?.role]);
 
   const summary = data.summary ?? fallback.summary;
   const charts = data.charts ?? fallback.charts;
@@ -253,13 +195,6 @@ function AdminDashboard() {
     [theaterApprovals],
   );
   const pendingCount = approvalQueue.length;
-  const managedTheaters = useMemo(
-    () =>
-      buildManagedTheaters(theaterCatalog, theaterApprovals).filter(
-        (theater) => !deletedTheaterIds.includes(theater.id),
-      ),
-    [deletedTheaterIds, theaterApprovals],
-  );
   const theaterCityOptions = useMemo(
     () => buildTheaterCityOptions(managedTheaters),
     [managedTheaters],
@@ -276,7 +211,20 @@ function AdminDashboard() {
   }, [selectedTheaterCity, theaterCityOptions]);
 
   useEffect(() => {
-    if (auth.hydrated && auth.user?.role === "admin") setAdminUsers(readAdminUsers());
+    if (!auth.hydrated || auth.user?.role !== "admin") return undefined;
+    let active = true;
+
+    fetchAdminUsers()
+      .then((result) => {
+        if (active) setAdminUsers((result.users ?? []).map(normalizeAdminUser));
+      })
+      .catch(() => {
+        if (active) setAdminUsers([]);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [auth.hydrated, auth.user?.role]);
 
   const filteredUsers = useMemo(
@@ -324,19 +272,23 @@ function AdminDashboard() {
     [pendingCount, summary],
   );
 
+  const refreshManagedTheaters = async () => {
+    const result = await fetchAdminTheaters();
+    setManagedTheaters((result.theaters ?? []).map(formatManagedTheater));
+  };
+
   const updateApproval = async (id, status) => {
     const theater = theaterApprovals.find((item) => item.id === id);
-    const isFallbackTheater = pendingTheatersSeed.some((item) => item.id === id);
     setApprovalBusy(id);
     try {
       const result = await updateTheaterApplicationStatus(id, status);
-      if (isFallbackTheater && !result.theater) writeDemoTheaterStatus(id, status);
       setTheaterApprovals((current) => {
-        if (status === "Rejected") return current.filter((item) => item.id !== id);
+        if (status !== "Pending") return current.filter((item) => item.id !== id);
         return current.map((item) =>
           item.id === id ? { ...item, ...(result.theater ?? {}), status } : item,
         );
       });
+      if (status === "Approved") await refreshManagedTheaters();
       setNotice(`${theater?.name ?? "Theater"} marked as ${status.toLowerCase()}.`);
     } catch (error) {
       setNotice(error.response?.data?.error ?? `Could not update ${theater?.name ?? "theater"}.`);
@@ -348,15 +300,15 @@ function AdminDashboard() {
   const deleteTheater = async (theater) => {
     setApprovalBusy(theater.id);
     try {
-      if (theaterApprovals.some((item) => item.id === theater.id)) {
+      const isApplication = theaterApprovals.some((item) => item.id === theater.id);
+      if (isApplication) {
         await deleteTheaterApplication(theater.id);
         setTheaterApprovals((current) => current.filter((item) => item.id !== theater.id));
+      } else {
+        await deleteAdminTheater(theater.id);
+        setManagedTheaters((current) => current.filter((item) => item.id !== theater.id));
       }
-      const nextDeletedIds = [...new Set([...deletedTheaterIds, theater.id])];
-      setDeletedTheaterIds(nextDeletedIds);
-      writeDeletedTheaterIds(nextDeletedIds);
-      removeDemoTheaterStatus(theater.id);
-      setNotice(`${theater.name ?? "Theater"} deleted from admin theater list.`);
+      setNotice(`${theater.name ?? "Theater"} deleted.`);
     } catch (error) {
       setNotice(error.response?.data?.error ?? `Could not delete ${theater.name ?? "theater"}.`);
     } finally {
@@ -364,30 +316,31 @@ function AdminDashboard() {
     }
   };
 
-  const toggleUserBlock = (email) => {
-    const nextUsers = adminUsers.map((user) => {
-      if (normalizeAdminEmail(user.email) !== normalizeAdminEmail(email) || user.role === "admin") {
-        return user;
-      }
-      const blocked = isUserBlocked(user);
-      return { ...user, blocked: !blocked, status: blocked ? "Active" : "Blocked" };
-    });
-    setAdminUsers(nextUsers);
-    writeAdminUsers(nextUsers);
-    setNotice("User status updated.");
+  const toggleUserBlock = async (user) => {
+    if (!user || user.role === "admin") return;
+    try {
+      const blocked = !isUserBlocked(user);
+      const result = await updateAdminUser(user.id, { blocked });
+      setAdminUsers((current) =>
+        current.map((item) =>
+          item.id === user.id ? normalizeAdminUser(result.user ?? { ...item, blocked }) : item,
+        ),
+      );
+      setNotice(`${user.name || user.email} ${blocked ? "blocked" : "unblocked"}.`);
+    } catch (error) {
+      setNotice(error.response?.data?.error ?? `Could not update ${user.email}.`);
+    }
   };
 
-  const deleteUser = (email) => {
-    const user = adminUsers.find(
-      (item) => normalizeAdminEmail(item.email) === normalizeAdminEmail(email),
-    );
+  const deleteUser = async (user) => {
     if (!user || user.role === "admin") return;
-    const nextUsers = adminUsers.filter(
-      (item) => normalizeAdminEmail(item.email) !== normalizeAdminEmail(email),
-    );
-    setAdminUsers(nextUsers);
-    writeAdminUsers(nextUsers);
-    setNotice(`${user.name || user.email} deleted.`);
+    try {
+      await deleteAdminUser(user.id);
+      setAdminUsers((current) => current.filter((item) => item.id !== user.id));
+      setNotice(`${user.name || user.email} deleted.`);
+    } catch (error) {
+      setNotice(error.response?.data?.error ?? `Could not delete ${user.email}.`);
+    }
   };
 
   if (!auth.hydrated) {
@@ -873,7 +826,7 @@ function UserManagementTab({
                           <Button
                             size="sm"
                             variant="secondary"
-                            onClick={() => onToggleBlock(user.email)}
+                            onClick={() => onToggleBlock(user)}
                             disabled={isAdmin}
                           >
                             {blocked ? "Unblock" : "Block"}
@@ -881,7 +834,7 @@ function UserManagementTab({
                           <Button
                             size="sm"
                             variant="secondary"
-                            onClick={() => onDelete(user.email)}
+                            onClick={() => onDelete(user)}
                             disabled={isAdmin}
                             className="gap-2"
                           >
@@ -928,7 +881,7 @@ function RefundsTab({ recentBookings }) {
       status: booking.refundStatus || "Pending refund",
       cancelledAt: booking.cancelledAt || "Recent cancellation",
     }));
-  const refundRows = cancelledFromBookings.length ? cancelledFromBookings : cancelledTicketRows;
+  const refundRows = cancelledFromBookings;
 
   return (
     <section className="mt-6 grid gap-4">
@@ -984,6 +937,13 @@ function RefundsTab({ recentBookings }) {
                     </td>
                   </tr>
                 ))}
+                {!refundRows.length && (
+                  <tr className="bg-card/20">
+                    <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                      No cancelled tickets are waiting for refund review.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -1271,76 +1231,29 @@ function StatusPill({ status }) {
   );
 }
 
-function buildManagedTheaters(catalog, applications) {
-  const approvalRows = (applications ?? [])
-    .filter((theater) => theater.status !== "Rejected")
-    .map((theater, index) => ({
-      id: theater.id || `application-${index}`,
-      name: theater.name || theater.theaterName || "Unnamed theater",
-      owner: theater.owner || theater.ownerName || "Owner details pending",
-      city: theater.city || "Pending city",
-      area: theater.area || "Area not set",
-      address: theater.address || "Address not set",
-      screens: Number(theater.screens || 1),
-      showCount: Number(theater.showCount || 0),
-      amenities: theater.amenities || theater.documents || "Partner onboarding",
-      status: theater.status || "Pending",
-    }));
-  const approvalKeys = new Set(approvalRows.map((theater) => normalizeAdminKey(theater.name)));
-  const catalogRows = (catalog ?? [])
-    .filter((theater) => !approvalKeys.has(normalizeAdminKey(theater.name)))
-    .map((theater) => ({
-      id: theater.id,
-      name: theater.name,
-      owner: "Catalog cinema",
-      city: theater.city || "City not set",
-      area: theater.area || "Area not set",
-      address: theater.address || "Address not set",
-      screens: Math.max(1, new Set((theater.showPlan ?? []).map((show) => show.screen)).size || 1),
-      showCount: theater.showPlan?.length ?? 0,
-      amenities: Array.isArray(theater.amenities)
-        ? theater.amenities.join(", ")
-        : theater.amenities || "Amenities not listed",
-      status: "Approved",
-    }));
-
-  return [...catalogRows, ...approvalRows];
-}
-
-function buildFallbackTheaterApprovals(deletedIds = []) {
-  const statuses = readDemoTheaterStatuses();
-  return pendingTheatersSeed
-    .map((theater) => ({
-      ...theater,
-      status: statuses[theater.id] || theater.status,
-    }))
-    .filter((theater) => theater.status !== "Rejected" && !deletedIds.includes(theater.id));
+function formatManagedTheater(theater, index) {
+  const screens = Array.isArray(theater.screens) ? theater.screens : [];
+  const showPlan = Array.isArray(theater.showPlan) ? theater.showPlan : [];
+  return {
+    id: theater.id || `theater-${index}`,
+    name: theater.name || "Unnamed theater",
+    owner: theater.owner || theater.ownerName || "Cinema partner",
+    city: theater.city || "City not set",
+    area: theater.area || "Area not set",
+    address: theater.address || "Address not set",
+    screens: Math.max(1, screens.length || Number(theater.screens || 1)),
+    showCount: showPlan.length || Number(theater.showCount || 0),
+    amenities: Array.isArray(theater.amenities)
+      ? theater.amenities.join(", ")
+      : theater.amenities || "Amenities not listed",
+    status: theater.status || (theater.approved === false ? "Pending" : "Approved"),
+  };
 }
 
 function buildTheaterCityOptions(theaters) {
   return [...new Set(theaters.map((theater) => theater.city).filter(Boolean))].sort((left, right) =>
     left.localeCompare(right),
   );
-}
-
-function readAdminUsers() {
-  const users = readAdminJson(LOCAL_USERS_KEY, []);
-  const hasAdmin = users.some(
-    (user) => normalizeAdminEmail(user.email) === STATIC_ADMIN_USER.email,
-  );
-  const normalizedUsers = users.map(normalizeAdminUser);
-  return hasAdmin ? normalizedUsers : [STATIC_ADMIN_USER, ...normalizedUsers];
-}
-
-function writeAdminUsers(users) {
-  const writableUsers = users
-    .filter((user) => normalizeAdminEmail(user.email) !== STATIC_ADMIN_USER.email)
-    .map((user) => ({
-      ...user,
-      status: getUserStatus(user),
-      blocked: isUserBlocked(user),
-    }));
-  writeAdminJson(LOCAL_USERS_KEY, writableUsers);
 }
 
 function filterAdminUsers({ users, query, role, status }) {
@@ -1361,6 +1274,7 @@ function filterAdminUsers({ users, query, role, status }) {
 function normalizeAdminUser(user) {
   return {
     ...user,
+    id: user.id || user.email,
     name: user.name || "Unnamed user",
     email: normalizeAdminEmail(user.email),
     role: user.role || "user",
@@ -1382,29 +1296,6 @@ function formatUserRole(role) {
   if (role === "admin") return "Admin";
   if (role === "theater-owner") return "Theater owner";
   return "User";
-}
-
-function readDeletedTheaterIds() {
-  return readAdminJson(DELETED_THEATERS_KEY, []);
-}
-
-function writeDeletedTheaterIds(ids) {
-  writeAdminJson(DELETED_THEATERS_KEY, ids);
-}
-
-function readDemoTheaterStatuses() {
-  return readAdminJson(DEMO_THEATER_STATUSES_KEY, {});
-}
-
-function writeDemoTheaterStatus(id, status) {
-  const statuses = readDemoTheaterStatuses();
-  writeAdminJson(DEMO_THEATER_STATUSES_KEY, { ...statuses, [id]: status });
-}
-
-function removeDemoTheaterStatus(id) {
-  const statuses = readDemoTheaterStatuses();
-  delete statuses[id];
-  writeAdminJson(DEMO_THEATER_STATUSES_KEY, statuses);
 }
 
 function buildFinanceChartData(revenueTrend, summary, days) {
@@ -1443,27 +1334,6 @@ function expandTrend(trend, days) {
     };
   });
   return [...filler, ...trend].slice(-days);
-}
-
-function readAdminJson(key, fallback) {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeAdminJson(key, value) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(key, JSON.stringify(value));
-}
-
-function normalizeAdminKey(value) {
-  return String(value ?? "")
-    .trim()
-    .toLowerCase();
 }
 
 function normalizeAdminEmail(value) {

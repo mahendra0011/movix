@@ -94,6 +94,7 @@ function Home() {
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
   const [expandedSections, setExpandedSections] = useState({});
+  const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
   const filteredMovies = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return catalog.filter((movie) => {
@@ -147,19 +148,39 @@ function Home() {
     : expandedSections.premieres
       ? rotateShelf(3)
       : shelfMovies.slice(3, 7);
-  const cityCinemas = useMemo(() => buildHomeCinemas(selectedCity), [selectedCity]);
+  const cityCinemas = useMemo(
+    () => buildHomeCinemas(selectedCity, cinemaCatalog),
+    [cinemaCatalog, selectedCity],
+  );
   const searchShowtimeResults = useMemo(
     () =>
       buildSearchShowtimeResults({
         catalog,
+        theaterCatalog: cinemaCatalog,
         query: activeSearchQuery,
         selectedCity,
       }),
-    [activeSearchQuery, catalog, selectedCity],
+    [activeSearchQuery, catalog, cinemaCatalog, selectedCity],
   );
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
+  useEffect(() => {
+    if (!HAS_CONFIGURED_API_URL) return undefined;
+    let active = true;
+
+    requestJson("/api/theaters", { timeoutMs: 2500 })
+      .then((data) => {
+        if (active && data.theaters?.length) setCinemaCatalog(data.theaters);
+      })
+      .catch(() => {
+        if (active) setCinemaCatalog([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const subscribe = async (event) => {
     event.preventDefault();
@@ -692,14 +713,14 @@ function FilterChipRow({ label, options, activeValue, onChange }) {
   );
 }
 
-function buildSearchShowtimeResults({ catalog, query, selectedCity }) {
+function buildSearchShowtimeResults({ catalog, theaterCatalog, query, selectedCity }) {
   const needle = normalizeHomeText(query);
   if (!needle) return [];
 
   const selectedCityKey = normalizeHomeText(selectedCity);
   const rows = [];
 
-  theaters.forEach((theater) => {
+  theaterCatalog.forEach((theater) => {
     const theaterText = [
       theater.name,
       theater.city,
@@ -766,12 +787,12 @@ function getTheaterTimes(theater) {
     .slice(0, 4);
 }
 
-function buildHomeCinemas(selectedCity) {
+function buildHomeCinemas(selectedCity, theaterCatalog) {
   const cityKey = normalizeHomeText(selectedCity);
-  const localCinemas = theaters
+  const localCinemas = theaterCatalog
     .filter((theater) => normalizeHomeText(theater.city) === cityKey)
     .slice(0, 4);
-  const source = localCinemas.length > 0 ? localCinemas : theaters.slice(0, 4);
+  const source = localCinemas.length > 0 ? localCinemas : theaterCatalog.slice(0, 4);
 
   return source.map((theater, index) => ({
     name: theater.name,

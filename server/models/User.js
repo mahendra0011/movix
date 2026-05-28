@@ -14,6 +14,8 @@ const userSchema = new mongoose.Schema(
     otpHash: { type: String, default: "" },
     otpExpiresAt: { type: Date },
     verified: { type: Boolean, default: false },
+    blocked: { type: Boolean, default: false, index: true },
+    status: { type: String, default: "Active" },
     ownerStatus: {
       type: String,
       enum: ["Pending", "Approved", "Rejected"],

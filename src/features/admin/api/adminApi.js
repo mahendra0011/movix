@@ -63,6 +63,16 @@ async function fetchTheaterApplications() {
   return requestJson("/api/admin/theater-applications");
 }
 
+async function fetchAdminTheaters() {
+  if (shouldUseLocalAdminFallback()) return { theaters: [] };
+  return requestJson("/api/theaters");
+}
+
+async function fetchAdminUsers() {
+  if (shouldUseLocalAdminFallback()) return { users: readLocalUsers() };
+  return requestJson("/api/admin/users");
+}
+
 async function updateTheaterApplicationStatus(id, status) {
   if (shouldUseLocalAdminFallback()) {
     const updated = updateOwnerApplicationStatus(id, status);
@@ -85,6 +95,45 @@ async function deleteTheaterApplication(id) {
   });
 }
 
+async function deleteAdminTheater(id) {
+  if (shouldUseLocalAdminFallback()) return { theater: null };
+
+  return requestJson(`/api/admin/theaters/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+async function updateAdminUser(id, input) {
+  if (shouldUseLocalAdminFallback()) {
+    const users = readLocalUsers();
+    const nextUsers = users.map((user) =>
+      String(user.id || user.email) === String(id)
+        ? { ...user, ...input, status: input.blocked ? "Blocked" : "Active" }
+        : user,
+    );
+    writeJson(LOCAL_USERS_KEY, nextUsers);
+    return { user: nextUsers.find((user) => String(user.id || user.email) === String(id)) };
+  }
+
+  return requestJson(`/api/admin/users/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+async function deleteAdminUser(id) {
+  if (shouldUseLocalAdminFallback()) {
+    const users = readLocalUsers();
+    const nextUsers = users.filter((user) => String(user.id || user.email) !== String(id));
+    writeJson(LOCAL_USERS_KEY, nextUsers);
+    return { ok: true };
+  }
+
+  return requestJson(`/api/admin/users/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
 function shouldUseLocalAdminFallback() {
   return !HAS_CONFIGURED_API_URL;
 }
@@ -99,6 +148,24 @@ function readLocalBookings() {
 
 function readLocalUsersCount() {
   return readJson(LOCAL_USERS_KEY, []).length + 1;
+}
+
+function readLocalUsers() {
+  return [
+    {
+      id: "local-admin",
+      name: "Mahendra Admin",
+      email: "mahendrapra0077@gmail.com",
+      role: "admin",
+      verified: true,
+      status: "Active",
+    },
+    ...readJson(LOCAL_USERS_KEY, []),
+  ].map((user) => ({
+    ...user,
+    id: user.id || user.email,
+    status: user.blocked ? "Blocked" : user.status || "Active",
+  }));
 }
 
 function buildRevenueTrend(bookings) {
@@ -146,9 +213,19 @@ function readJson(key, fallback) {
   }
 }
 
+function writeJson(key, value) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(key, JSON.stringify(value));
+}
+
 export {
+  deleteAdminUser,
+  deleteAdminTheater,
   deleteTheaterApplication,
+  fetchAdminTheaters,
   fetchAdminSummary,
+  fetchAdminUsers,
   fetchTheaterApplications,
+  updateAdminUser,
   updateTheaterApplicationStatus,
 };

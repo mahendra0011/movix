@@ -242,6 +242,11 @@ router.post(
       return;
     }
 
+    if (user.blocked || user.status === "Blocked") {
+      response.status(403).json({ error: "This account is blocked by admin." });
+      return;
+    }
+
     response.json(await issueOtp(user, "login"));
   }),
 );

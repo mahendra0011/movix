@@ -1,15 +1,22 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 import { env } from "../config/env.js";
 import { Booking } from "../models/Booking.js";
-import { movies } from "../seed.js";
 import { Movie } from "../models/Movie.js";
 import { Show } from "../models/Show.js";
 import { Subscriber } from "../models/Subscriber.js";
 import { Theater } from "../models/Theater.js";
 import { User } from "../models/User.js";
+import { getMemoryBookings } from "./bookingStore.js";
+import {
+  movies as catalogMovies,
+  showTimes as catalogShowTimes,
+  theaters as catalogTheaters,
+} from "../../src/features/movies/data/movieCatalog.js";
 
 let mongoReady = false;
 const collectionModels = [Booking, Movie, Show, Subscriber, Theater, User];
+const SHOW_WRITE_BATCH_SIZE = 500;
 
 function cleanDocument(document) {
   const value = document?.toObject ? document.toObject() : document;
@@ -21,11 +28,99 @@ function cleanDocument(document) {
   };
 }
 
-async function seedMovies() {
+async function seedMovies({ force = false } = {}) {
   const count = await Movie.estimatedDocumentCount();
-  if (count > 0) return;
-  await Movie.insertMany(movies);
-  console.log(`Seeded ${movies.length} movies into MongoDB.`);
+  if (count > 0 && !force) return;
+
+  await Movie.bulkWrite(
+    catalogMovies.map((movie, index) => {
+      const payload = normalizeMovieSeed(movie, index);
+      return {
+        updateOne: {
+          filter: { id: movie.id },
+          update: force ? { $set: payload } : { $setOnInsert: payload },
+          upsert: true,
+        },
+      };
+    }),
+  );
+  console.log(`MongoDB movie catalog ready with ${catalogMovies.length} movies.`);
+}
+
+async function seedTheaters({ force = false } = {}) {
+  const count = await Theater.estimatedDocumentCount();
+  if (count > 0 && !force) return;
+
+  await Theater.bulkWrite(
+    catalogTheaters.map((theater, index) => {
+      const payload = normalizeTheaterSeed(theater, index);
+      return {
+        updateOne: {
+          filter: { id: theater.id },
+          update: force ? { $set: payload } : { $setOnInsert: payload },
+          upsert: true,
+        },
+      };
+    }),
+  );
+  console.log(`MongoDB theater catalog ready with ${catalogTheaters.length} theaters.`);
+}
+
+async function seedShows({ force = false } = {}) {
+  const count = await Show.estimatedDocumentCount();
+  if (count > 0 && !force) return;
+
+  const operations = buildShowSeedOperations(force);
+  for (let index = 0; index < operations.length; index += SHOW_WRITE_BATCH_SIZE) {
+    await Show.bulkWrite(operations.slice(index, index + SHOW_WRITE_BATCH_SIZE));
+  }
+  console.log(`MongoDB show catalog ready with ${operations.length} shows.`);
+}
+
+async function seedBookings({ force = false } = {}) {
+  const count = await Booking.estimatedDocumentCount();
+  if (count > 0 && !force) return;
+
+  const bookings = getMemoryBookings();
+  await Booking.bulkWrite(
+    bookings.map((booking) => ({
+      updateOne: {
+        filter: { ref: booking.ref },
+        update: { $setOnInsert: booking },
+        upsert: true,
+        timestamps: false,
+      },
+    })),
+  );
+  console.log(`MongoDB booking history ready with ${bookings.length} bookings.`);
+}
+
+async function seedCatalog(options = {}) {
+  await seedMovies(options);
+  await seedTheaters(options);
+  await seedShows(options);
+  await seedBookings(options);
+}
+
+async function ensureDefaultAdminUser() {
+  if (!env.adminEmail || !env.adminPassword) return;
+
+  const passwordHash = await bcrypt.hash(env.adminPassword, 10);
+  await User.updateOne(
+    { email: env.adminEmail },
+    {
+      $set: {
+        name: "Mahendra Admin",
+        email: env.adminEmail,
+        passwordHash,
+        role: "admin",
+        verified: true,
+        blocked: false,
+        status: "Active",
+      },
+    },
+    { upsert: true },
+  );
 }
 
 async function ensureCollections() {
@@ -65,7 +160,8 @@ async function connectDatabase() {
     });
     mongoReady = true;
     await ensureCollections();
-    await seedMovies();
+    await ensureDefaultAdminUser();
+    await seedCatalog();
     console.log(`MongoDB connected to database "${mongoose.connection.name}".`);
     return true;
   } catch (error) {
@@ -80,4 +176,165 @@ function isMongoReady() {
   return mongoReady;
 }
 
-export { cleanDocument, connectDatabase, isMongoReady };
+function normalizeMovieSeed(movie, index) {
+  return {
+    ...movie,
+    sortOrder: Number(movie.sortOrder || index + 1),
+    cast: (movie.cast ?? []).map((member) => ({
+      name: member.name || "Cast member",
+      role: member.role || "Actor",
+      avatar: member.avatar || movie.poster || movie.backdrop,
+    })),
+  };
+}
+
+function normalizeTheaterSeed(theater, index) {
+  return {
+    id: theater.id,
+    name: theater.name,
+    city: theater.city || "Jabalpur",
+    area: theater.area || "",
+    address: theater.address || `${theater.area || theater.city}, ${theater.city}`,
+    distance: theater.distance || "",
+    amenities: Array.isArray(theater.amenities) ? theater.amenities : splitList(theater.amenities),
+    logoText: theater.logoText || initials(theater.name),
+    movieIds: Array.isArray(theater.movieIds)
+      ? theater.movieIds
+      : catalogMovies.map((movie) => movie.id),
+    showPlan: normalizeShowPlan(theater.showPlan),
+    approved: true,
+    screens: buildScreensForTheater(theater, index),
+  };
+}
+
+function buildShowSeedOperations(force = false) {
+  return catalogTheaters.flatMap((theater, theaterIndex) => {
+    const plans = normalizeShowPlan(theater.showPlan);
+    const effectivePlans = plans.length ? plans : fallbackShowPlan();
+    const movieIds =
+      Array.isArray(theater.movieIds) && theater.movieIds.length
+        ? theater.movieIds
+        : catalogMovies.map((movie) => movie.id);
+
+    return movieIds.flatMap((movieId) => {
+      const movie = catalogMovies.find((item) => item.id === movieId) ?? catalogMovies[0];
+      return effectivePlans.map((plan, showIndex) => {
+        const screen = plan.screen || "Screen 1";
+        const id = `${movie.id}-${theater.id}-${showIndex}`;
+        const payload = {
+          id,
+          movieId: movie.id,
+          theaterId: theater.id,
+          screenId: `${theater.id}-${slugify(screen) || `screen-${showIndex + 1}`}`,
+          screen,
+          startTime: plan.time || catalogShowTimes[showIndex % catalogShowTimes.length],
+          endTime: "Auto calculated",
+          price: showPrice(showIndex, theaterIndex),
+          language: movie.language || "English",
+          format: plan.format || movie.format?.[0] || "2D",
+          status: plan.status || inferShowStatus(showIndex),
+          cancellable: plan.cancellable !== false,
+        };
+
+        return {
+          updateOne: {
+            filter: { id },
+            update: force ? { $set: payload } : { $setOnInsert: payload },
+            upsert: true,
+          },
+        };
+      });
+    });
+  });
+}
+
+function normalizeShowPlan(showPlan) {
+  if (!Array.isArray(showPlan)) return [];
+  return showPlan
+    .map((plan, index) => {
+      if (typeof plan === "string") return { time: plan, screen: "Screen 1" };
+      return {
+        time: plan.time || catalogShowTimes[index % catalogShowTimes.length],
+        format: plan.format || "2D",
+        status: plan.status || inferShowStatus(index),
+        cancellable: plan.cancellable !== false,
+        screen: plan.screen || "Screen 1",
+      };
+    })
+    .filter((plan) => plan.time);
+}
+
+function fallbackShowPlan() {
+  return catalogShowTimes.map((time, index) => ({
+    time,
+    format: index % 2 === 0 ? "2D" : "IMAX",
+    status: inferShowStatus(index),
+    cancellable: index % 2 === 1,
+    screen: "Screen 1",
+  }));
+}
+
+function buildScreensForTheater(theater, index) {
+  const screenNames = [
+    ...new Set(
+      normalizeShowPlan(theater.showPlan)
+        .map((plan) => plan.screen)
+        .filter(Boolean),
+    ),
+  ];
+  const names = screenNames.length
+    ? screenNames
+    : ["Screen 1", index % 2 === 0 ? "Screen 2" : "Audi 1"];
+
+  return names.map((name, screenIndex) => ({
+    id: `${theater.id}-${slugify(name) || `screen-${screenIndex + 1}`}`,
+    name,
+    totalSeats: screenIndex === 0 ? 140 : 120,
+    seatLayout: {
+      rows: ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K"],
+      cols: screenIndex === 0 ? 14 : 12,
+    },
+  }));
+}
+
+function showPrice(showIndex, theaterIndex) {
+  const offset = (theaterIndex % 5) * 10;
+  return {
+    platinum: 180 + offset + showIndex * 10,
+    silver: 220 + offset + showIndex * 12,
+    gold: 250 + offset + showIndex * 15,
+    vip: 400 + offset + showIndex * 20,
+  };
+}
+
+function inferShowStatus(index) {
+  if (index === 4) return "sold";
+  if (index === 3) return "fast";
+  return "ok";
+}
+
+function splitList(value) {
+  return String(value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function initials(value) {
+  return String(value || "BM")
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
+}
+
+function slugify(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export { cleanDocument, connectDatabase, isMongoReady, seedCatalog };
