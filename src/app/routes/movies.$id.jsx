@@ -53,14 +53,6 @@ const detailCast = [
   "Tigmanshu Dhulia",
 ];
 
-const detailCrew = [
-  { name: "Mudassar Aziz", role: "Director" },
-  { name: "Bhushan Kumar", role: "Producer" },
-  { name: "Renu Ravi Chopra", role: "Producer" },
-  { name: "T-Series", role: "Presenter" },
-  { name: "B.R. Chopra", role: "Presenter" },
-];
-
 const reviewTags = [
   ["#GreatActing", 2881],
   ["#Wellmade", 2313],
@@ -419,19 +411,6 @@ function MovieDetailsContent({ movie }) {
         <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
           {detailCast.map((name) => (
             <ProfileBubble key={name} name={name} role="Actor" />
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <SectionHeader icon={Award} eyebrow="Behind the camera" title="Crew" />
-        <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-5">
-          {detailCrew.map((person) => (
-            <ProfileBubble
-              key={`${person.name}-${person.role}`}
-              name={person.name}
-              role={person.role}
-            />
           ))}
         </div>
       </section>
