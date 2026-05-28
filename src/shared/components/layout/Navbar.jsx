@@ -1,5 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Bell, Building2, Film, LayoutDashboard, Moon, Search, Sun, User } from "lucide-react";
+import {
+  Bell,
+  Building2,
+  Film,
+  LayoutDashboard,
+  Moon,
+  Search,
+  Sun,
+  Trophy,
+  User,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hydrateAuth, readStoredAuth } from "@/features/auth/authSlice";
@@ -17,8 +27,8 @@ import { writeHomeSearchQuery } from "@/shared/services/homeSearch";
 import { clearSearchBox, readSearchBoxValue } from "@/shared/services/searchBox";
 
 const navItems = [
-  { label: "Movies", to: "/" },
-  { label: "Sports", to: "/sports" },
+  { label: "Movies", to: "/", icon: Film },
+  { label: "Sports", to: "/sports", icon: Trophy },
 ];
 const THEME_STORAGE_KEY = "bms-theme";
 const MAX_NAV_NOTIFICATIONS = 8;
@@ -52,6 +62,15 @@ function Navbar() {
   const isOwner = auth.user?.role === "theater-owner";
   const accountPath = !auth.user ? "/auth" : isAdmin ? "/admin" : isOwner ? "/owner" : "/dashboard";
   const accountLabel = !auth.user ? "Sign in" : isAdmin ? "Admin" : isOwner ? "Owner" : "Dashboard";
+  const panelNavItems = useMemo(
+    () => [
+      ...navItems,
+      ...(isAdmin ? [{ label: "Admin Panel", to: "/admin", icon: LayoutDashboard }] : []),
+      ...(isOwner ? [{ label: "Theatre Owner", to: "/owner", icon: Building2 }] : []),
+      { label: accountLabel, to: accountPath, icon: User },
+    ],
+    [accountLabel, accountPath, isAdmin, isOwner],
+  );
 
   useEffect(() => {
     if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
@@ -149,7 +168,7 @@ function Navbar() {
             <Film className="h-4 w-4 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold tracking-tight">
-            movie<span className="text-primary">x</span>
+            book<span className="text-primary">my</span>screen
           </span>
         </Link>
 
@@ -295,12 +314,24 @@ function Navbar() {
       </div>
 
       <nav className="border-t border-border/60">
-        <div className="mx-auto flex max-w-7xl gap-6 overflow-x-auto px-4 py-2 text-sm text-muted-foreground">
-          {navItems.map((item) => (
-            <Link key={item.to} to={item.to} className="whitespace-nowrap hover:text-foreground">
-              {item.label}
-            </Link>
-          ))}
+        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-2">
+          {panelNavItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={`${item.to}-${item.label}`}
+                size="sm"
+                variant="secondary"
+                asChild
+                className="shrink-0 border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
+              >
+                <Link to={item.to}>
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              </Button>
+            );
+          })}
         </div>
       </nav>
     </header>

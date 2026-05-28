@@ -3,17 +3,34 @@ import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   BadgeIndianRupee,
+  BadgePercent,
+  BarChart3,
+  BellRing,
   Building2,
+  CalendarDays,
   CheckCircle2,
+  CircleDollarSign,
   ClipboardCheck,
+  CreditCard,
   Film,
   Gauge,
+  Image,
   LockKeyhole,
   LogIn,
+  Mail,
+  Megaphone,
+  MonitorCog,
+  Percent,
   Plus,
+  ReceiptText,
+  RefreshCcw,
+  Send,
   ShieldCheck,
+  Smartphone,
   Ticket,
   Trash2,
+  UserCog,
+  WalletCards,
   XCircle,
 } from "lucide-react";
 import {
@@ -88,12 +105,184 @@ const pendingTheatersSeed = [
   },
 ];
 
+const adminTabs = [
+  { id: "analytics", label: "Control room", icon: BarChart3 },
+  { id: "movies", label: "Movies", icon: Film },
+  { id: "theaters", label: "Theaters", icon: Building2 },
+  { id: "shows", label: "Shows", icon: CalendarDays },
+  { id: "users", label: "Users", icon: UserCog },
+  { id: "finance", label: "Revenue", icon: ReceiptText },
+  { id: "marketing", label: "Offers & CMS", icon: Megaphone },
+  { id: "payments", label: "Payments", icon: CreditCard },
+  { id: "bookings", label: "Bookings", icon: Ticket },
+];
+
+const adminControlModules = [
+  {
+    title: "Movie Management",
+    value: "Catalog",
+    text: "Add, edit, delete, posters, trailers, language, formats and censor rating.",
+    icon: Film,
+  },
+  {
+    title: "Theater Management",
+    value: "Partners",
+    text: "Approve cinemas, review documents, screens, seat layouts and service readiness.",
+    icon: Building2,
+  },
+  {
+    title: "Show Management",
+    value: "Scheduling",
+    text: "Show timings, screen allocation, dynamic pricing and special event programming.",
+    icon: CalendarDays,
+  },
+  {
+    title: "User Management",
+    value: "Trust",
+    text: "Block or unblock users, complaints, refund requests and customer support queues.",
+    icon: UserCog,
+  },
+  {
+    title: "Revenue & Commission",
+    value: "Finance",
+    text: "Platform earnings, theatre payouts, commission rules, GST and tax reporting.",
+    icon: ReceiptText,
+  },
+  {
+    title: "Offers & Coupons",
+    value: "Growth",
+    text: "Promo codes, cashback, bank offers, audience targeting and redemption limits.",
+    icon: BadgePercent,
+  },
+  {
+    title: "Notifications",
+    value: "Campaigns",
+    text: "Push alerts, email campaigns and SMS updates for bookings and promotions.",
+    icon: BellRing,
+  },
+  {
+    title: "Content CMS",
+    value: "Homepage",
+    text: "Homepage banners, trending movies, ad slots and editorial collections.",
+    icon: Image,
+  },
+  {
+    title: "Payment Management",
+    value: "Gateway",
+    text: "Razorpay, Stripe, failed payments, settlement status and refund tracking.",
+    icon: CreditCard,
+  },
+];
+
+const theaterManagementTools = [
+  {
+    title: "Screen management",
+    value: "Layouts",
+    text: "Audit screens, capacities, VIP rows, wheelchair blocks and seat-map readiness.",
+    icon: MonitorCog,
+  },
+  {
+    title: "Partner compliance",
+    value: "Docs",
+    text: "GST, FSSAI, Fire NOC, lease documents and owner contact verification.",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Payout readiness",
+    value: "Finance",
+    text: "Settlement account, commission slab and monthly tax report status.",
+    icon: WalletCards,
+  },
+];
+
+const adminShowRows = [
+  {
+    title: "Weekend dynamic pricing",
+    value: "+18%",
+    text: "Applies after 65% occupancy for Friday evening to Sunday prime shows.",
+  },
+  {
+    title: "Special events",
+    value: "12 live",
+    text: "Fan premieres, celebrity visits, sports screenings and festival slots.",
+  },
+  {
+    title: "Timing conflicts",
+    value: "2 checks",
+    text: "Screen cleaning gaps and overlap validations before publishing.",
+  },
+];
+
+const userOpsRows = [
+  {
+    name: "Aditi Sharma",
+    status: "Active",
+    issue: "Refund requested for duplicate payment",
+    action: "Review refund",
+  },
+  {
+    name: "Rohan Mehta",
+    status: "Watchlist",
+    issue: "3 payment failures in 24 hours",
+    action: "Block check",
+  },
+  {
+    name: "Neha Kapoor",
+    status: "Active",
+    issue: "Complaint: food order not delivered",
+    action: "Assign support",
+  },
+];
+
+const financeRows = [
+  { label: "Platform commission", value: "10%", text: "Default slab for standard cinema partners" },
+  { label: "GST report", value: "Ready", text: "Monthly taxable booking and convenience fees" },
+  {
+    label: "Theatre payouts",
+    value: "T+2",
+    text: "Auto settlement after successful reconciliation",
+  },
+];
+
+const offerRows = [
+  { title: "FIRSTSHOW", value: "20% off", text: "New users, max Rs 120, valid on weekdays" },
+  {
+    title: "HDFC weekend",
+    value: "Bank offer",
+    text: "Card BIN based offer with limited redemptions",
+  },
+  { title: "Cashback wallet", value: "Rs 75", text: "Post-booking cashback for selected cities" },
+];
+
+const notificationRows = [
+  { channel: "Push", icon: BellRing, value: "42k queued", text: "Tonight's occupancy booster" },
+  { channel: "Email", icon: Mail, value: "18k ready", text: "New release campaign" },
+  { channel: "SMS", icon: Smartphone, value: "9k alerts", text: "Booking and refund updates" },
+];
+
+const cmsRows = [
+  { label: "Homepage banner", value: "Premiere Week", text: "Top carousel with city targeting" },
+  { label: "Trending movies", value: "8 titles", text: "Auto-ranked by bookings and searches" },
+  { label: "Ad inventory", value: "4 slots", text: "Brand takeovers and cinema promotions" },
+];
+
+const paymentRows = [
+  { label: "Razorpay", value: "Live", text: "UPI, cards, netbanking and wallet checkout" },
+  { label: "Stripe", value: "Ready", text: "International card payments and reconciliation" },
+  { label: "Failed payments", value: "7", text: "Retry queue with user notification hooks" },
+  { label: "Refund tracking", value: "T+1", text: "Gateway refund status and support visibility" },
+];
+
 const blankMovie = {
   title: "",
   language: "English",
   duration: "2h 10m",
   genres: "Action, Drama",
   certificate: "UA",
+  format: "2D",
+  releaseDate: "Coming soon",
+  poster: "",
+  trailerUrl: "",
 };
 
 const Route = createFileRoute("/admin")({
@@ -242,19 +431,24 @@ function AdminDashboard() {
         .map((genre) => genre.trim())
         .filter(Boolean),
       certificate: movieForm.certificate.trim() || "UA",
+      releaseDate: movieForm.releaseDate.trim() || "Coming soon",
       rating: 8.1,
       votes: "New",
-      poster: catalogMovies[0].poster,
+      poster: movieForm.poster.trim() || catalogMovies[0].poster,
       backdrop: catalogMovies[0].backdrop,
-      description: `${title} is ready for publishing after poster, cast and show scheduling review.`,
+      description: `${title} is ready for publishing after poster, trailer, cast and show scheduling review.`,
       cast: [],
-      format: ["2D"],
+      format: movieForm.format
+        .split(",")
+        .map((format) => format.trim())
+        .filter(Boolean),
+      trailerUrl: movieForm.trailerUrl.trim(),
     };
 
     setMovieBusy("add");
     try {
       const savedMovie = await createMovie(nextMovie);
-      setManagedMovies((current) => [savedMovie, ...current]);
+      setManagedMovies((current) => [{ ...nextMovie, ...savedMovie }, ...current]);
       setMovieForm(blankMovie);
       setNotice(`${title} added to the movie catalog.`);
     } catch (error) {
@@ -347,6 +541,28 @@ function AdminDashboard() {
               Manage movies, approve cinema partners, watch booking statistics and track occupancy
               without leaving the admin workspace.
             </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button onClick={() => setActiveTab("movies")} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add movie
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setActiveTab("theaters")}
+                className="gap-2"
+              >
+                <Building2 className="h-4 w-4" />
+                Review theaters
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setActiveTab("marketing")}
+                className="gap-2"
+              >
+                <Megaphone className="h-4 w-4" />
+                Offers & CMS
+              </Button>
+            </div>
           </div>
 
           <SpotlightCard className="rounded-lg p-5">
@@ -375,22 +591,18 @@ function AdminDashboard() {
       </section>
 
       <div className="mt-6 flex gap-2 overflow-x-auto rounded-lg border border-border/60 bg-card/50 p-1">
-        {[
-          ["analytics", "Analytics"],
-          ["movies", "Movies"],
-          ["theaters", "Theater approvals"],
-          ["bookings", "Booking statistics"],
-        ].map(([id, label]) => (
+        {adminTabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             type="button"
             onClick={() => setActiveTab(id)}
-            className={`shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === id
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
+            <Icon className="h-4 w-4" />
             {label}
           </button>
         ))}
@@ -431,6 +643,18 @@ function AdminDashboard() {
         />
       )}
 
+      {activeTab === "shows" && (
+        <AdminShowsTab theaterPerformance={theaterPerformance} summary={summary} />
+      )}
+
+      {activeTab === "users" && <UserManagementTab />}
+
+      {activeTab === "finance" && <FinanceTab summary={summary} />}
+
+      {activeTab === "marketing" && <MarketingTab />}
+
+      {activeTab === "payments" && <PaymentsTab />}
+
       {activeTab === "bookings" && (
         <BookingStatisticsTab recentBookings={recentBookings} revenueTrend={revenueTrend} />
       )}
@@ -446,48 +670,85 @@ function AnalyticsTab({
   summary,
 }) {
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[1.35fr_0.85fr]">
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={BadgeIndianRupee}
-          title="Revenue analytics"
-          subtitle="Confirmed payments across the last 7 days"
-          action={`${summary.occupancy}% occupancy`}
-        />
-        <div className="mt-5 h-80">
-          {hasRevenueData ? (
-            <TrendAreaChart data={revenueTrend} valueKey="revenue" formatValue={formatCurrency} />
-          ) : (
-            <EmptyState icon={BadgeIndianRupee} title="No revenue yet" text="Sales appear here." />
-          )}
-        </div>
-      </SpotlightCard>
+    <section className="mt-6 grid gap-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {adminControlModules.map((item) => (
+          <ControlModuleCard key={item.title} {...item} />
+        ))}
+      </div>
 
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={Film} title="Popular movies" subtitle="Revenue by title" />
-        <div className="mt-5 h-80">
-          <VerticalBars
-            data={popularMovies}
-            labelKey="movie"
-            valueKey="value"
-            formatValue={formatCurrency}
+      <div className="grid gap-4 xl:grid-cols-[1.35fr_0.85fr]">
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader
+            icon={BadgeIndianRupee}
+            title="Revenue analytics"
+            subtitle="Confirmed payments across the last 7 days"
+            action={`${summary.occupancy}% occupancy`}
           />
-        </div>
-      </SpotlightCard>
+          <div className="mt-5 h-80">
+            {hasRevenueData ? (
+              <TrendAreaChart data={revenueTrend} valueKey="revenue" formatValue={formatCurrency} />
+            ) : (
+              <EmptyState
+                icon={BadgeIndianRupee}
+                title="No revenue yet"
+                text="Sales appear here."
+              />
+            )}
+          </div>
+        </SpotlightCard>
 
-      <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
-        <PanelHeader
-          icon={Gauge}
-          title="Occupancy rates"
-          subtitle="Cinema occupancy based on confirmed seats sold"
-        />
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {theaterPerformance.map((theater) => (
-            <TheaterRow key={theater.theater} theater={theater} />
-          ))}
-        </div>
-      </SpotlightCard>
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader icon={Film} title="Popular movies" subtitle="Revenue by title" />
+          <div className="mt-5 h-80">
+            <VerticalBars
+              data={popularMovies}
+              labelKey="movie"
+              valueKey="value"
+              formatValue={formatCurrency}
+            />
+          </div>
+        </SpotlightCard>
+
+        <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
+          <PanelHeader
+            icon={Gauge}
+            title="Occupancy rates"
+            subtitle="Cinema occupancy based on confirmed seats sold"
+          />
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {theaterPerformance.length ? (
+              theaterPerformance.map((theater) => (
+                <TheaterRow key={theater.theater} theater={theater} />
+              ))
+            ) : (
+              <EmptyState
+                icon={Gauge}
+                title="No occupancy data"
+                text="Cinema occupancy appears after confirmed bookings."
+              />
+            )}
+          </div>
+        </SpotlightCard>
+      </div>
     </section>
+  );
+}
+
+function ControlModuleCard({ icon: Icon, title, value, text }) {
+  return (
+    <SpotlightCard className="rounded-lg p-4 transition-transform hover:-translate-y-0.5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+          <Icon className="h-5 w-5" />
+        </div>
+        <span className="rounded-md bg-muted/60 px-2 py-1 text-[11px] font-medium text-muted-foreground">
+          {value}
+        </span>
+      </div>
+      <h3 className="mt-4 font-semibold">{title}</h3>
+      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{text}</p>
+    </SpotlightCard>
   );
 }
 
@@ -505,7 +766,11 @@ function MoviesTab({
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
       <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={Plus} title="Add movie" subtitle="Create a catalog draft" />
+        <PanelHeader
+          icon={Plus}
+          title="Add movie"
+          subtitle="Poster, trailer, language and censor details"
+        />
         <form onSubmit={onAddMovie} className="mt-5 grid gap-3">
           <Input value={movieForm.title} onChange={update("title")} placeholder="Movie title" />
           <Input value={movieForm.language} onChange={update("language")} placeholder="Language" />
@@ -515,11 +780,34 @@ function MoviesTab({
             onChange={update("genres")}
             placeholder="Genres, comma separated"
           />
+          <Input value={movieForm.format} onChange={update("format")} placeholder="Formats" />
           <Input
             value={movieForm.certificate}
             onChange={update("certificate")}
-            placeholder="Certificate"
+            placeholder="Censor rating"
           />
+          <Input
+            value={movieForm.releaseDate}
+            onChange={update("releaseDate")}
+            placeholder="Release date"
+          />
+          <Input
+            value={movieForm.poster}
+            onChange={update("poster")}
+            placeholder="Poster image URL"
+          />
+          <Input
+            value={movieForm.trailerUrl}
+            onChange={update("trailerUrl")}
+            placeholder="Trailer URL"
+          />
+          <div className="rounded-lg border border-border/60 bg-background/40 p-3 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">Publishing checklist</p>
+            <p className="mt-1">
+              Language, censor rating, poster, trailer and format metadata are captured before shows
+              go live.
+            </p>
+          </div>
           <Button className="gap-2" disabled={movieBusy === "add"}>
             <Plus className="h-4 w-4" />
             {movieBusy === "add" ? "Adding..." : "Add movie"}
@@ -541,6 +829,7 @@ function MoviesTab({
                 <tr>
                   <th className="px-4 py-3 font-medium">Movie</th>
                   <th className="px-4 py-3 font-medium">Language</th>
+                  <th className="px-4 py-3 font-medium">Rating</th>
                   <th className="px-4 py-3 font-medium">Genres</th>
                   <th className="px-4 py-3 font-medium">Runtime</th>
                   <th className="px-4 py-3 font-medium">Action</th>
@@ -551,6 +840,7 @@ function MoviesTab({
                   <tr key={movie.id} className="bg-card/20">
                     <td className="px-4 py-3 font-medium">{movie.title}</td>
                     <td className="px-4 py-3 text-muted-foreground">{movie.language}</td>
+                    <td className="px-4 py-3">{movie.certificate}</td>
                     <td className="px-4 py-3 text-muted-foreground">{movie.genres.join(", ")}</td>
                     <td className="px-4 py-3">{movie.duration}</td>
                     <td className="px-4 py-3">
@@ -578,7 +868,27 @@ function MoviesTab({
 
 function TheaterApprovalsTab({ theaters, onUpdate, approvalBusy }) {
   return (
-    <section className="mt-6">
+    <section className="mt-6 grid gap-4">
+      <div className="grid gap-3 md:grid-cols-3">
+        {theaterManagementTools.map((item) => {
+          const Icon = item.icon;
+          return (
+            <SpotlightCard key={item.title} className="rounded-lg p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/15 text-primary">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <span className="rounded-md bg-muted/60 px-2 py-1 text-[11px] font-medium text-muted-foreground">
+                  {item.value}
+                </span>
+              </div>
+              <h3 className="mt-4 font-semibold">{item.title}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
+            </SpotlightCard>
+          );
+        })}
+      </div>
+
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader
           icon={Building2}
@@ -642,6 +952,279 @@ function TheaterApprovalsTab({ theaters, onUpdate, approvalBusy }) {
           />
         )}
       </SpotlightCard>
+    </section>
+  );
+}
+
+function AdminShowsTab({ theaterPerformance, summary }) {
+  const performance =
+    theaterPerformance.length > 0
+      ? theaterPerformance
+      : [
+          { theater: "PVR INOX: Orion Mall", bookings: 0, revenue: 0, occupancy: 0 },
+          { theater: "Galaxy Premium Screens", bookings: 0, revenue: 0, occupancy: 0 },
+        ];
+
+  return (
+    <section className="mt-6 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={CalendarDays}
+          title="Show management"
+          subtitle="Timings, pricing and special events"
+          action={`${summary.movies.toLocaleString()} movies`}
+        />
+        <div className="mt-5 grid gap-3">
+          {adminShowRows.map((row) => (
+            <div
+              key={row.title}
+              className="rounded-lg border border-border/60 bg-background/40 p-4"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-semibold">{row.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{row.text}</p>
+                </div>
+                <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+                  {row.value}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={Percent}
+          title="Dynamic pricing rules"
+          subtitle="Admin controlled pricing guardrails"
+        />
+        <div className="mt-5 grid gap-3">
+          <SnapshotRow label="Morning shows" value="-12% base price" />
+          <SnapshotRow label="Prime evening" value="+15% after 6 PM" />
+          <SnapshotRow label="High occupancy" value="+18% above 65%" />
+          <SnapshotRow label="Special events" value="Manual override" />
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
+        <PanelHeader
+          icon={MonitorCog}
+          title="Screen allocation"
+          subtitle="Cinema performance, capacity and timing checks"
+        />
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {performance.map((theater) => (
+            <TheaterRow key={theater.theater} theater={theater} />
+          ))}
+        </div>
+      </SpotlightCard>
+    </section>
+  );
+}
+
+function UserManagementTab() {
+  return (
+    <section className="mt-6 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={UserCog}
+          title="User management"
+          subtitle="Block, unblock, refund and complaint workflows"
+        />
+        <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-muted/40 text-xs text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-medium">User</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Issue</th>
+                  <th className="px-4 py-3 font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {userOpsRows.map((user) => (
+                  <tr key={user.name} className="bg-card/20">
+                    <td className="px-4 py-3 font-medium">{user.name}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill status={user.status === "Active" ? "Approved" : "Pending"} />
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{user.issue}</td>
+                    <td className="px-4 py-3">
+                      <Button size="sm" variant="secondary">
+                        {user.action}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </SpotlightCard>
+
+      <div className="grid gap-4">
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader icon={RefreshCcw} title="Refund queue" subtitle="Customer refund handling" />
+          <div className="mt-5 grid gap-3">
+            <SnapshotRow label="Pending refunds" value="14" />
+            <SnapshotRow label="Auto approved" value="8" />
+            <SnapshotRow label="Manual review" value="6" />
+          </div>
+        </SpotlightCard>
+        <SpotlightCard className="rounded-lg p-5">
+          <PanelHeader
+            icon={ClipboardCheck}
+            title="Complaints"
+            subtitle="Support triage by severity"
+          />
+          <div className="mt-5 grid gap-3">
+            <SnapshotRow label="Payment complaints" value="5 open" />
+            <SnapshotRow label="Cinema complaints" value="3 open" />
+            <SnapshotRow label="F&B complaints" value="2 open" />
+          </div>
+        </SpotlightCard>
+      </div>
+    </section>
+  );
+}
+
+function FinanceTab({ summary }) {
+  const commission = summary.revenue * 0.1;
+  const payout = Math.max(0, summary.revenue - commission);
+
+  return (
+    <section className="mt-6 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={CircleDollarSign}
+          title="Revenue & commission"
+          subtitle="Platform earnings and theatre payouts"
+        />
+        <div className="mt-5 grid gap-3">
+          <SnapshotRow label="Gross booking revenue" value={formatCurrency(summary.revenue)} />
+          <SnapshotRow label="Platform commission" value={formatCurrency(commission)} />
+          <SnapshotRow label="Theatre payout" value={formatCurrency(payout)} />
+          <SnapshotRow label="Average order" value={formatCurrency(summary.averageOrderValue)} />
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={ReceiptText}
+          title="Finance controls"
+          subtitle="GST, tax and payout ops"
+        />
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          {financeRows.map((row) => (
+            <div
+              key={row.label}
+              className="rounded-lg border border-border/60 bg-background/40 p-4"
+            >
+              <p className="text-xs uppercase text-muted-foreground">{row.label}</p>
+              <p className="mt-2 text-2xl font-bold tracking-tight">{row.value}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{row.text}</p>
+            </div>
+          ))}
+        </div>
+      </SpotlightCard>
+    </section>
+  );
+}
+
+function MarketingTab() {
+  return (
+    <section className="mt-6 grid gap-4 xl:grid-cols-[1fr_1fr]">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={BadgePercent}
+          title="Offers & coupons"
+          subtitle="Promo and bank offers"
+        />
+        <div className="mt-5 grid gap-3">
+          {offerRows.map((offer) => (
+            <div
+              key={offer.title}
+              className="rounded-lg border border-border/60 bg-background/40 p-4"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-semibold">{offer.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{offer.text}</p>
+                </div>
+                <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+                  {offer.value}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader icon={Send} title="Notifications" subtitle="Push, email and SMS campaigns" />
+        <div className="mt-5 grid gap-3">
+          {notificationRows.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.channel}
+                className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-4"
+              >
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-semibold">
+                    {item.channel} - {item.value}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{item.text}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
+        <PanelHeader icon={Image} title="Content CMS" subtitle="Homepage, trending and ads" />
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          {cmsRows.map((row) => (
+            <div
+              key={row.label}
+              className="rounded-lg border border-border/60 bg-background/40 p-4"
+            >
+              <p className="text-xs uppercase text-muted-foreground">{row.label}</p>
+              <p className="mt-2 text-xl font-bold tracking-tight">{row.value}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{row.text}</p>
+            </div>
+          ))}
+        </div>
+      </SpotlightCard>
+    </section>
+  );
+}
+
+function PaymentsTab() {
+  return (
+    <section className="mt-6 grid gap-4 md:grid-cols-2">
+      {paymentRows.map((row) => (
+        <SpotlightCard key={row.label} className="rounded-lg p-5">
+          <PanelHeader
+            icon={row.label === "Refund tracking" ? RefreshCcw : CreditCard}
+            title={row.label}
+            subtitle={row.text}
+            action={row.value}
+          />
+          <div className="mt-5 grid gap-3">
+            <SnapshotRow label="Owner visibility" value="Enabled" />
+            <SnapshotRow label="Admin audit trail" value="Synced" />
+            <SnapshotRow label="Customer alerts" value="Push + email" />
+          </div>
+        </SpotlightCard>
+      ))}
     </section>
   );
 }

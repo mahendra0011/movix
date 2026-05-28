@@ -69,17 +69,17 @@ const Route = createRootRouteWithContext()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "moviex" },
+      { title: "BookMyScreen" },
       { name: "description", content: "Book movie tickets, pick seats, and confirm e-tickets." },
-      { name: "author", content: "moviex" },
-      { property: "og:title", content: "moviex" },
+      { name: "author", content: "BookMyScreen" },
+      { property: "og:title", content: "BookMyScreen" },
       {
         property: "og:description",
         content: "Book movie tickets, pick seats, and confirm e-tickets.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@moviex" },
+      { name: "twitter:site", content: "@bookmyscreen" },
     ],
     links: [
       {
@@ -171,7 +171,7 @@ function RootComponent() {
               ))}
             </div>
             <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground">
-              (c) 2026 moviex. All rights reserved.
+              (c) 2026 BookMyScreen. All rights reserved.
             </div>
           </footer>
         </div>

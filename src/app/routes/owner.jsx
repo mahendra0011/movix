@@ -7,6 +7,8 @@ import {
   CalendarClock,
   CheckCircle2,
   Clapperboard,
+  Clock3,
+  CreditCard,
   Film,
   Gauge,
   LockKeyhole,
@@ -15,10 +17,16 @@ import {
   MapPin,
   Monitor,
   Plus,
+  QrCode,
+  RefreshCcw,
   Save,
+  ScanLine,
   ShieldCheck,
+  ShieldAlert,
   Ticket,
   Trash2,
+  UserCog,
+  Utensils,
   Users,
 } from "lucide-react";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
@@ -125,49 +133,92 @@ const ownerOperationModules = [
     value: "Onboarding",
     text: "Cinema profile, address, amenities, screen count and approval status.",
     icon: Building2,
+    target: "cinema",
   },
   {
     title: "Screen management",
     value: "Screens",
     text: "Screen type, capacity, cleaning gap, maintenance windows and seat layout.",
     icon: Monitor,
+    target: "screens",
   },
   {
     title: "Show scheduling",
     value: "Shows",
     text: "Movie, date, time, language, format, draft/live and coming soon listings.",
     icon: Clapperboard,
+    target: "shows",
   },
   {
     title: "Pricing",
     value: "Dynamic",
     text: "Gold, Platinum, VIP, weekend, holiday, morning and occupancy pricing.",
     icon: BadgeIndianRupee,
+    target: "shows",
   },
   {
     title: "F&B menu",
     value: "Add-ons",
     text: "Popcorn, beverages, combos, stock and pre-order availability.",
-    icon: Ticket,
+    icon: Utensils,
+    target: "services",
   },
   {
     title: "Reports",
     value: "Analytics",
     text: "Occupancy, peak hours, movie performance and downloadable settlements.",
     icon: Gauge,
+    target: "overview",
   },
   {
     title: "Staff access",
     value: "Roles",
     text: "Counter staff, manager access, shifts and QR scanner permissions.",
-    icon: Users,
+    icon: UserCog,
+    target: "services",
   },
   {
-    title: "Feedback",
-    value: "Reviews",
-    text: "Customer complaints, rating summary and support response workflow.",
-    icon: CheckCircle2,
+    title: "Refund & entry desk",
+    value: "Gate",
+    text: "Approve refunds, cancel shows, verify QR tickets and monitor entry scans.",
+    icon: QrCode,
+    target: "services",
   },
+];
+
+const ownerPanelTabs = [
+  { id: "overview", label: "Overview", icon: Gauge },
+  { id: "cinema", label: "Cinema", icon: Building2 },
+  { id: "movies", label: "My movies", icon: Film },
+  { id: "operations", label: "Operations", icon: ShieldCheck },
+  { id: "screens", label: "Screens", icon: Monitor },
+  { id: "shows", label: "Shows", icon: Clapperboard },
+  { id: "services", label: "F&B / Staff", icon: Utensils },
+  { id: "bookings", label: "Bookings", icon: Ticket },
+];
+
+const foodMenuRows = [
+  { item: "Classic popcorn combo", stock: "86 packs", price: 349, status: "Live" },
+  { item: "Nachos and cola", stock: "42 packs", price: 299, status: "Live" },
+  { item: "Family interval box", stock: "18 packs", price: 699, status: "Low stock" },
+];
+
+const staffRows = [
+  { name: "Counter desk", role: "Counter staff", shift: "10 AM - 6 PM", access: "Bookings" },
+  { name: "Floor manager", role: "Manager", shift: "2 PM - 11 PM", access: "Refunds" },
+  { name: "Gate scanner", role: "Entry staff", shift: "5 PM - 12 AM", access: "QR scan" },
+];
+
+const refundRows = [
+  { ref: "BMS-RF-1024", reason: "Show cancelled", amount: 960, status: "Approve" },
+  { ref: "BMS-RF-1025", reason: "Payment duplicate", amount: 540, status: "Review" },
+  { ref: "BMS-RF-1026", reason: "Seat issue", amount: 780, status: "Review" },
+];
+
+const scanRows = [
+  { gate: "Gate A", value: "124 scanned", text: "Peak entry window 7:10 PM" },
+  { gate: "Gate B", value: "86 scanned", text: "No duplicate QR attempts" },
+  { gate: "Exceptions", value: "3 checks", text: "Manual ticket verification needed" },
 ];
 
 const selectClass =
@@ -537,25 +588,18 @@ function OwnerDashboard() {
       </section>
 
       <div className="mt-6 flex gap-2 overflow-x-auto rounded-lg border border-border/60 bg-card/50 p-1">
-        {[
-          ["overview", "Overview"],
-          ["cinema", "Cinema"],
-          ["movies", "My movies"],
-          ["operations", "Operations"],
-          ["screens", "Screens"],
-          ["shows", "Shows"],
-          ["bookings", "Bookings"],
-        ].map(([id, label]) => (
+        {ownerPanelTabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             type="button"
             onClick={() => setActiveTab(id)}
-            className={`shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === id
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
+            <Icon className="h-4 w-4" />
             {label}
           </button>
         ))}
@@ -598,7 +642,10 @@ function OwnerDashboard() {
           totals={totals}
           listedMovies={listedMovies}
           screens={ownerScreens}
-          onOpen={(title) => setNotice(`${title} workspace ready for ${auth.user.name}.`)}
+          onOpen={(target, title) => {
+            if (target) setActiveTab(target);
+            setNotice(`${title} workspace ready for ${auth.user.name}.`);
+          }}
         />
       )}
 
@@ -622,6 +669,8 @@ function OwnerDashboard() {
           onRemoveShow={removeShow}
         />
       )}
+
+      {activeTab === "services" && <OwnerServicesTab bookings={ownerBookings} totals={totals} />}
 
       {activeTab === "bookings" && <BookingsTab bookings={ownerBookings} totals={totals} />}
     </div>
@@ -795,7 +844,7 @@ function OwnerOperationsTab({ totals, listedMovies, screens, onOpen }) {
               <button
                 key={item.title}
                 type="button"
-                onClick={() => onOpen(item.title)}
+                onClick={() => onOpen(item.target, item.title)}
                 className="group rounded-lg border border-border/60 bg-background/35 p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/50"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -1559,6 +1608,146 @@ function buildPreviewShow(showForm, selectedMovie) {
     bookingOpensAt: showForm.bookingOpensAt,
     notes: showForm.notes.trim(),
   };
+}
+
+function OwnerServicesTab({ bookings, totals }) {
+  const foodOrders = Math.max(0, Math.round(totals.bookings * 0.42));
+
+  return (
+    <section className="mt-6 grid gap-4 xl:grid-cols-[1fr_1fr]">
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={Utensils}
+          title="Food & beverage"
+          subtitle="Combo menu, stock and pre-order dashboard"
+          action={`${foodOrders} orders`}
+        />
+        <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[620px] text-left text-sm">
+              <thead className="bg-muted/40 text-xs text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Item</th>
+                  <th className="px-4 py-3 font-medium">Stock</th>
+                  <th className="px-4 py-3 font-medium">Price</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {foodMenuRows.map((row) => (
+                  <tr key={row.item} className="bg-card/20">
+                    <td className="px-4 py-3 font-medium">{row.item}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{row.stock}</td>
+                    <td className="px-4 py-3">{formatCurrency(row.price)}</td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                        {row.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <SnapshotRow label="Pre-orders" value={foodOrders.toLocaleString()} />
+          <SnapshotRow label="F&B revenue" value={formatCurrency(foodOrders * 285)} />
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={UserCog}
+          title="Staff management"
+          subtitle="Counter staff, manager permissions and shifts"
+        />
+        <div className="mt-5 grid gap-3">
+          {staffRows.map((staff) => (
+            <div
+              key={staff.name}
+              className="rounded-lg border border-border/60 bg-background/40 p-4"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-semibold">{staff.name}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{staff.role}</p>
+                </div>
+                <span className="rounded-md bg-muted/60 px-2 py-1 text-xs text-muted-foreground">
+                  {staff.access}
+                </span>
+              </div>
+              <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <Clock3 className="h-4 w-4" />
+                {staff.shift}
+              </div>
+            </div>
+          ))}
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={RefreshCcw}
+          title="Refund handling"
+          subtitle="Approve refunds and cancel show impact"
+        />
+        <div className="mt-5 grid gap-3">
+          {refundRows.map((refund) => (
+            <div
+              key={refund.ref}
+              className="rounded-lg border border-border/60 bg-background/40 p-4"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-mono text-xs text-primary">{refund.ref}</p>
+                  <p className="mt-1 font-semibold">{refund.reason}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Amount {formatCurrency(refund.amount)}
+                  </p>
+                </div>
+                <Button size="sm" variant="secondary" className="gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  {refund.status}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SpotlightCard>
+
+      <SpotlightCard className="rounded-lg p-5">
+        <PanelHeader
+          icon={QrCode}
+          title="QR / ticket scanning"
+          subtitle="Entry verification and duplicate ticket checks"
+          action={`${bookings.length} tickets`}
+        />
+        <div className="mt-5 grid gap-3">
+          {scanRows.map((scan) => (
+            <div
+              key={scan.gate}
+              className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-4"
+            >
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+                {scan.gate === "Exceptions" ? (
+                  <ShieldAlert className="h-5 w-5" />
+                ) : (
+                  <ScanLine className="h-5 w-5" />
+                )}
+              </div>
+              <div>
+                <p className="font-semibold">
+                  {scan.gate} - {scan.value}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">{scan.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </SpotlightCard>
+    </section>
+  );
 }
 
 function BookingsTab({ bookings, totals }) {
