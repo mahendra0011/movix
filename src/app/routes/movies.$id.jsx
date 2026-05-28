@@ -2,7 +2,6 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
-  Award,
   BadgePercent,
   Calendar,
   ChevronDown,
@@ -111,6 +110,8 @@ const topReviews = [
     likes: 188,
   },
 ];
+
+const MAX_VISIBLE_REVIEWS = 3;
 
 const Route = createFileRoute("/movies/$id")({
   component: MoviePage,
@@ -442,7 +443,6 @@ function MoviePage() {
 
 function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataChange }) {
   const reviewSummary = getReviewDisplaySummary(movie, reviewData);
-  const reviewTagsList = getReviewTags(reviewData);
   const reviews = getVisibleReviews(reviewData);
 
   return (
@@ -468,47 +468,28 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[300px_1fr]">
-        <div className="space-y-4">
+      <section>
+        <SectionTitleBar title="Audience reviews" />
+        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <div className="grid gap-3">
+            {reviews.length ? (
+              reviews.map((review) => <ReviewCard key={review.id || review.name} review={review} />)
+            ) : (
+              <article className="rounded-lg border border-dashed border-border/70 bg-card p-6 text-center">
+                <MessageCircle className="mx-auto h-8 w-8 text-primary" />
+                <h3 className="mt-3 font-semibold">No audience reviews yet</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  First review publish karte hi yaha live show hoga.
+                </p>
+              </article>
+            )}
+          </div>
+
           <ReviewComposer
             movie={movie}
             userReview={reviewData?.userReview}
             onReviewDataChange={onReviewDataChange}
           />
-
-          <div>
-            <SectionTitleBar title="Top reviews" />
-            <p className="mt-1 text-sm text-muted-foreground">
-              {reviewSummary.countLabel} with {formatRatingScore(reviewSummary.average)}/10 average
-              rating
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
-            {reviewTagsList.slice(0, 6).map(({ tag, count }) => (
-              <div
-                key={tag}
-                className="flex items-center justify-between rounded-md border border-border/60 bg-card px-3 py-2 text-xs shadow-sm"
-              >
-                <span className="font-medium">{tag}</span>
-                <span className="text-muted-foreground">{count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid gap-3">
-          {reviews.length ? (
-            reviews.map((review) => <ReviewCard key={review.id || review.name} review={review} />)
-          ) : (
-            <article className="rounded-lg border border-dashed border-border/70 bg-card p-6 text-center">
-              <MessageCircle className="mx-auto h-8 w-8 text-primary" />
-              <h3 className="mt-3 font-semibold">No audience reviews yet</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                First review publish karte hi yaha live show hoga.
-              </p>
-            </article>
-          )}
         </div>
       </section>
 
@@ -584,7 +565,7 @@ function DetailsStatsPanel({ movie, summary }) {
       value: `${formatRatingScore(summary.average || movie.rating)}/10`,
     },
     { icon: MessageCircle, label: "Review volume", value: summary.countLabel },
-    { icon: Users, label: "Top reaction", value: summary.topTag || "#GreatActing" },
+    { icon: Users, label: "Popular with", value: "Couples & groups" },
   ];
 
   return (
@@ -848,7 +829,6 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
 }
 
 function ReviewCard({ review }) {
-  const tags = Array.isArray(review.tags) ? review.tags.join(" ") : review.tags || "";
   const ratingLabel =
     review.ratingLabel || `${formatRatingScore(Number.parseFloat(review.rating) || 0)}/10`;
   const helpfulCount = review.helpfulCount ?? review.likes ?? 0;
@@ -858,7 +838,6 @@ function ReviewCard({ review }) {
     <article className="rounded-lg border border-border/60 bg-card p-4 shadow-sm transition-colors hover:border-primary/40">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          {tags && <p className="mb-2 break-words text-xs font-medium text-primary">{tags}</p>}
           <p className="font-semibold">{reviewerName}</p>
           <p className="text-xs text-muted-foreground">
             {review.verifiedBooking === false ? "Reviewed" : "Booked on"}
@@ -966,14 +945,16 @@ function buildDetailHighlights(summary) {
       icon: Star,
     },
     { label: "Review volume", value: summary.countLabel, icon: MessageCircle },
-    { label: "Top tag", value: summary.topTag || "#GreatActing", icon: Award },
+    { label: "Offers live", value: "5 cards", icon: BadgePercent },
   ];
 }
 
 function buildFallbackReviewData(movie) {
   return {
     source: "fallback",
-    reviews: topReviews.map((review, index) => normalizeReview(review, index, movie.id)),
+    reviews: topReviews
+      .slice(0, MAX_VISIBLE_REVIEWS)
+      .map((review, index) => normalizeReview(review, index, movie.id)),
     topTags: reviewTags.map(([tag, count]) => ({ tag, count })),
     summary: {
       average: Number(movie.rating || 0),
@@ -1035,9 +1016,10 @@ function getReviewTags(reviewData) {
 }
 
 function getVisibleReviews(reviewData) {
-  return (reviewData?.reviews ?? []).map((review, index) =>
-    normalizeReview(review, index, review.movieId),
-  );
+  return (reviewData?.reviews ?? [])
+    .map((review, index) => normalizeReview(review, index, review.movieId))
+    .filter((review) => review.text)
+    .slice(0, MAX_VISIBLE_REVIEWS);
 }
 
 function normalizeReview(review, index = 0, movieId = "") {
