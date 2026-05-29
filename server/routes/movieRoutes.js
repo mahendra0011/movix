@@ -10,6 +10,10 @@ import { getMemoryBookings } from "../services/bookingStore.js";
 import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
 import { notifyMovieRelease } from "../services/notificationEvents.js";
 import { movies } from "../../src/features/movies/data/movieCatalog.js";
+import {
+  castAvatarFallback,
+  movieImageFallback,
+} from "../../src/features/movies/services/movieMedia.js";
 
 const router = Router();
 const memoryReviews = buildSeedReviews(movies.map((movie) => movie.id)).map((review, index) => ({
@@ -18,6 +22,8 @@ const memoryReviews = buildSeedReviews(movies.map((movie) => movie.id)).map((rev
   createdAt: new Date(Date.now() - (index + 1) * 36 * 60 * 60 * 1000).toISOString(),
   updatedAt: new Date(Date.now() - (index + 1) * 36 * 60 * 60 * 1000).toISOString(),
 }));
+const catalogMovieIds = movies.map((movie) => movie.id);
+const catalogMovieIdSet = new Set(catalogMovieIds);
 
 function slugify(value) {
   return String(value ?? "")
@@ -52,8 +58,9 @@ function normalizeMovie(input) {
   return {
     id,
     title,
-    poster: input.poster || baseMovie.poster,
-    backdrop: input.backdrop || baseMovie.backdrop,
+    poster: input.poster || baseMovie.poster || movieImageFallback(title, "poster"),
+    backdrop:
+      input.backdrop || input.poster || baseMovie.backdrop || movieImageFallback(title, "backdrop"),
     genres: toList(input.genres, ["Drama"]),
     language: String(input.language ?? "English").trim() || "English",
     duration: String(input.duration ?? "2h 10m").trim() || "2h 10m",
@@ -63,11 +70,27 @@ function normalizeMovie(input) {
     description:
       String(input.description ?? "").trim() ||
       `${title} is ready for publishing after poster, cast and show scheduling review.`,
-    cast: Array.isArray(input.cast) ? input.cast : [],
+    cast: normalizeCastInput(input.cast),
     format: toList(input.format, ["2D"]),
     certificate: String(input.certificate ?? "UA").trim() || "UA",
     sortOrder: Number(input.sortOrder) || Date.now(),
   };
+}
+
+function normalizeCastInput(cast = []) {
+  if (!Array.isArray(cast)) return [];
+  return cast
+    .map((member) => {
+      const name = String(member?.name ?? "").trim();
+      if (!name) return null;
+      return {
+        name,
+        role: String(member?.role ?? "Actor").trim() || "Actor",
+        avatar: String(member?.avatar ?? "").trim() || castAvatarFallback(name),
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 16);
 }
 
 function getMemoryMovies(query = "") {
@@ -80,6 +103,7 @@ function getMemoryMovies(query = "") {
 }
 
 async function findMovieById(id) {
+  if (!catalogMovieIdSet.has(id)) return null;
   return isMongoReady()
     ? cleanDocument(await Movie.findOne({ id }).lean())
     : movies.find((item) => item.id === id);
@@ -269,7 +293,7 @@ router.get(
     if (!isMongoReady()) {
       list = getMemoryMovies(query);
     } else {
-      const filter = {};
+      const filter = { id: { $in: catalogMovieIds } };
       if (query) {
         filter.$or = [
           { $text: { $search: query } },
@@ -478,9 +502,7 @@ router.delete(
 router.get(
   "/:id/ai-summary",
   asyncHandler(async (request, response) => {
-    const movie = isMongoReady()
-      ? cleanDocument(await Movie.findOne({ id: request.params.id }).lean())
-      : movies.find((item) => item.id === request.params.id);
+    const movie = await findMovieById(request.params.id);
 
     if (!movie) {
       response.status(404).json({ error: "Movie not found" });

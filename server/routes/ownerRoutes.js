@@ -8,6 +8,7 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { isMongoReady } from "../services/database.js";
 import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
 import { notifyOwnerShowChanges } from "../services/notificationEvents.js";
+import { castAvatarFallback } from "../../src/features/movies/services/movieMedia.js";
 
 const router = Router();
 
@@ -416,7 +417,7 @@ function normalizeCast(input = []) {
     .map((member) => ({
       name: cleanText(member?.name),
       role: cleanText(member?.role) || "Actor",
-      avatar: cleanText(member?.avatar),
+      avatar: cleanText(member?.avatar) || castAvatarFallback(member?.name),
     }))
     .filter((member) => member.name);
 }

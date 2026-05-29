@@ -29,6 +29,7 @@ import {
   fetchMovies,
 } from "@/features/movies/api/moviesApi";
 import { movies as catalogMovies, theaters, showTimes } from "@/features/movies/data/movieCatalog";
+import { castAvatarFallback, movieImageFallback } from "@/features/movies/services/movieMedia";
 import { buildCatalogTheaterListings } from "@/features/movies/services/showSchedule";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
@@ -268,10 +269,13 @@ function MoviePage() {
     <div className="pb-20">
       <section className="relative overflow-hidden border-b border-border/60 bg-background">
         <img
-          src={movie.backdrop}
+          src={movie.backdrop || movieImageFallback(movie.title, "backdrop")}
           alt=""
           aria-hidden="true"
           className="absolute inset-y-0 right-0 h-full w-full object-cover opacity-20 md:w-[72%] md:opacity-25"
+          onError={(event) => {
+            event.currentTarget.src = movieImageFallback(movie.title, "backdrop");
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/60" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
@@ -280,9 +284,12 @@ function MoviePage() {
           <div className="grid gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)_280px] lg:items-center">
             <div className="mx-auto w-full max-w-[220px] overflow-hidden rounded-lg border border-border/70 bg-card shadow-lg shadow-black/10 md:mx-0 md:max-w-none">
               <img
-                src={movie.poster}
+                src={movie.poster || movieImageFallback(movie.title, "poster")}
                 alt={movie.title}
                 className="aspect-[2/3] w-full object-cover"
+                onError={(event) => {
+                  event.currentTarget.src = movieImageFallback(movie.title, "poster");
+                }}
               />
               <a
                 href={trailerSearchUrl(movie.title)}
@@ -893,9 +900,12 @@ function SuggestionCard({ movie }) {
       <div className="relative aspect-[2/3] bg-muted">
         {movie.poster ? (
           <img
-            src={movie.poster}
+            src={movie.poster || movieImageFallback(movie.title, "poster")}
             alt={movie.title}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            onError={(event) => {
+              event.currentTarget.src = movieImageFallback(movie.title, "poster");
+            }}
           />
         ) : (
           <div className="grid h-full place-items-center">
@@ -972,12 +982,6 @@ function getMovieCast(movie) {
     .slice(0, 6);
 
   return cast.length ? cast : detailCast.map((name) => ({ name, role: "Actor", avatar: "" }));
-}
-
-function castAvatarFallback(name) {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    name || "Cast",
-  )}&background=0f766e&color=fff&size=256&format=png&bold=true`;
 }
 
 function buildDetailHighlights(summary) {

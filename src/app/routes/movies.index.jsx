@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
 import { movies as fallbackMovies, theaters } from "@/features/movies/data/movieCatalog";
+import { movieImageFallback } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { requestJson } from "@/shared/services/httpClient";
@@ -193,13 +194,16 @@ function MoviesListing() {
           {bannerMovies.map((movie, index) => (
             <img
               key={movie.id}
-              src={movie.backdrop || movie.poster}
+              src={movie.backdrop || movie.poster || movieImageFallback(movie.title, "backdrop")}
               alt=""
               className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${
                 index === activeSlide % bannerMovies.length
                   ? "scale-100 opacity-55 dark:opacity-30"
                   : "scale-105 opacity-0"
               }`}
+              onError={(event) => {
+                event.currentTarget.src = movieImageFallback(movie.title, "backdrop");
+              }}
             />
           ))}
         </div>
@@ -245,9 +249,12 @@ function MoviesListing() {
           >
             <div className="relative">
               <img
-                src={featured.poster}
+                src={featured.poster || movieImageFallback(featured.title, "poster")}
                 alt={featured.title}
                 className="aspect-[2/3] w-full rounded-md object-cover"
+                onError={(event) => {
+                  event.currentTarget.src = movieImageFallback(featured.title, "poster");
+                }}
               />
               <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-md bg-black/70 px-2.5 py-1.5 text-sm font-bold text-white backdrop-blur">
                 <Star className="h-4 w-4 fill-primary text-primary" />
@@ -491,10 +498,13 @@ function MovieListingCard({ movie }) {
     >
       <div className="relative aspect-[2/3] overflow-hidden bg-muted">
         <img
-          src={movie.poster}
+          src={movie.poster || movieImageFallback(movie.title, "poster")}
           alt={movie.title}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          onError={(event) => {
+            event.currentTarget.src = movieImageFallback(movie.title, "poster");
+          }}
         />
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-3 text-white">
           <span className="inline-flex items-center gap-1 rounded-md bg-black/55 px-2 py-1 text-xs font-bold backdrop-blur">

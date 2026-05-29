@@ -29,6 +29,7 @@ import {
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { buildSeatLayout, normalizeSeatLayoutConfig } from "@/features/booking/data/seatLayout";
 import { movies } from "@/features/movies/data/movieCatalog";
+import { castAvatarFallback, movieImageFallback } from "@/features/movies/services/movieMedia";
 import { fetchOwnerWorkspace, saveOwnerWorkspace } from "@/features/owner/api/ownerApi";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
@@ -1942,24 +1943,15 @@ function ImageUploadField({ label, value, placeholder, onChange, onUpload }) {
 }
 
 function MoviePosterFrame({ src, title, className = "" }) {
-  if (src) {
-    return (
-      <img
-        src={src}
-        alt={title || "Movie"}
-        className={`overflow-hidden object-cover ${className}`}
-      />
-    );
-  }
-
   return (
-    <div
-      className={`grid place-items-center overflow-hidden bg-gradient-to-br from-primary/20 via-background to-secondary text-primary ${className}`}
-    >
-      <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/15">
-        <span className="text-xs font-bold">{initials(title || "Movie")}</span>
-      </div>
-    </div>
+    <img
+      src={src || movieImageFallback(title, "poster")}
+      alt={title || "Movie"}
+      className={`overflow-hidden object-cover ${className}`}
+      onError={(event) => {
+        event.currentTarget.src = movieImageFallback(title, "poster");
+      }}
+    />
   );
 }
 
@@ -1969,13 +1961,14 @@ function CastPhotoControl({ member, index, onUpload, onAvatarChange }) {
       <span className="text-xs font-medium uppercase text-muted-foreground">Photo</span>
       <div className="mt-2 grid gap-2">
         <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-primary/10 ring-1 ring-primary/20">
-          {member.avatar ? (
-            <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
-          ) : (
-            <span className="text-sm font-bold text-primary">
-              {initials(member.name || "Cast")}
-            </span>
-          )}
+          <img
+            src={member.avatar || castAvatarFallback(member.name)}
+            alt={member.name || "Cast"}
+            className="h-full w-full object-cover"
+            onError={(event) => {
+              event.currentTarget.src = castAvatarFallback(member.name);
+            }}
+          />
         </div>
         <label className="inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-2 text-xs font-medium shadow-sm hover:bg-accent">
           Upload
@@ -2006,11 +1999,14 @@ function CastAvatarStack({ cast }) {
           className="flex items-center gap-2 rounded-full border border-border/60 bg-background/60 py-1 pl-1 pr-3"
         >
           <div className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-primary/10">
-            {member.avatar ? (
-              <img src={member.avatar} alt={member.name} className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-[10px] font-bold text-primary">{initials(member.name)}</span>
-            )}
+            <img
+              src={member.avatar || castAvatarFallback(member.name)}
+              alt={member.name || "Cast"}
+              className="h-full w-full object-cover"
+              onError={(event) => {
+                event.currentTarget.src = castAvatarFallback(member.name);
+              }}
+            />
           </div>
           <div>
             <p className="text-xs font-medium leading-tight">{member.name}</p>

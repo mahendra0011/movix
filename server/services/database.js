@@ -19,6 +19,10 @@ import {
 let mongoReady = false;
 const collectionModels = [Booking, Movie, Review, Show, Subscriber, Theater, User];
 const SHOW_WRITE_BATCH_SIZE = 500;
+const SHOW_SEED_MOVIES_PER_THEATER = 12;
+const catalogMovieIds = catalogMovies.map((movie) => movie.id);
+const catalogMovieIdSet = new Set(catalogMovieIds);
+const catalogTheaterIds = catalogTheaters.map((theater) => theater.id);
 
 if (String(env.mongoUri || "").startsWith("mongodb+srv://")) {
   dns.setServers(["8.8.8.8", "1.1.1.1"]);
@@ -34,36 +38,35 @@ function cleanDocument(document) {
   };
 }
 
-async function seedMovies({ force = false } = {}) {
-  const count = await Movie.estimatedDocumentCount();
-  if (count > 0 && !force) return;
-
+async function seedMovies() {
   await Movie.bulkWrite(
     catalogMovies.map((movie, index) => {
       const payload = normalizeMovieSeed(movie, index);
       return {
         updateOne: {
           filter: { id: movie.id },
-          update: force ? { $set: payload } : { $setOnInsert: payload },
+          update: { $set: payload },
           upsert: true,
         },
       };
     }),
   );
-  console.log(`MongoDB movie catalog ready with ${catalogMovies.length} movies.`);
+  const removed = await Movie.deleteMany({ id: { $nin: catalogMovieIds } });
+  console.log(
+    `MongoDB movie catalog synced with ${catalogMovies.length} movies${
+      removed.deletedCount ? `; removed ${removed.deletedCount} non-catalog movies` : ""
+    }.`,
+  );
 }
 
-async function seedTheaters({ force = false } = {}) {
-  const count = await Theater.estimatedDocumentCount();
-  if (count > 0 && !force) return;
-
+async function seedTheaters() {
   await Theater.bulkWrite(
     catalogTheaters.map((theater, index) => {
       const payload = normalizeTheaterSeed(theater, index);
       return {
         updateOne: {
           filter: { id: theater.id },
-          update: force ? { $set: payload } : { $setOnInsert: payload },
+          update: { $set: payload },
           upsert: true,
         },
       };
@@ -72,15 +75,27 @@ async function seedTheaters({ force = false } = {}) {
   console.log(`MongoDB theater catalog ready with ${catalogTheaters.length} theaters.`);
 }
 
-async function seedShows({ force = false } = {}) {
-  const count = await Show.estimatedDocumentCount();
-  if (count > 0 && !force) return;
+async function seedShows() {
+  const operations = buildShowSeedOperations(true);
+  const seedShowIds = operations.map((operation) => operation.updateOne.filter.id);
+  const [removedNonCatalog, removedStaleCatalog] = await Promise.all([
+    Show.deleteMany({ movieId: { $nin: catalogMovieIds } }),
+    Show.deleteMany({
+      id: { $nin: seedShowIds },
+      movieId: { $in: catalogMovieIds },
+      theaterId: { $in: catalogTheaterIds },
+    }),
+  ]);
 
-  const operations = buildShowSeedOperations(force);
   for (let index = 0; index < operations.length; index += SHOW_WRITE_BATCH_SIZE) {
     await Show.bulkWrite(operations.slice(index, index + SHOW_WRITE_BATCH_SIZE));
   }
-  console.log(`MongoDB show catalog ready with ${operations.length} shows.`);
+  const removedCount = removedNonCatalog.deletedCount + removedStaleCatalog.deletedCount;
+  console.log(
+    `MongoDB show catalog synced with ${operations.length} shows${
+      removedCount ? `; removed ${removedCount} stale/non-catalog shows` : ""
+    }.`,
+  );
 }
 
 async function seedBookings() {
@@ -88,8 +103,7 @@ async function seedBookings() {
 }
 
 async function seedReviews({ force = false } = {}) {
-  const count = await Review.estimatedDocumentCount();
-  if (count > 0 && !force) return;
+  const removed = await Review.deleteMany({ movieId: { $nin: catalogMovieIds } });
 
   const reviews = buildSeedReviews(catalogMovies.map((movie) => movie.id));
   await Review.bulkWrite(
@@ -101,7 +115,11 @@ async function seedReviews({ force = false } = {}) {
       },
     })),
   );
-  console.log(`MongoDB review catalog ready with ${reviews.length} reviews.`);
+  console.log(
+    `MongoDB review catalog synced with ${reviews.length} reviews${
+      removed.deletedCount ? `; removed ${removed.deletedCount} non-catalog reviews` : ""
+    }.`,
+  );
 }
 
 async function seedCatalog(options = {}) {
@@ -227,10 +245,7 @@ function buildShowSeedOperations(force = false) {
   return catalogTheaters.flatMap((theater, theaterIndex) => {
     const plans = normalizeShowPlan(theater.showPlan);
     const effectivePlans = plans.length ? plans : fallbackShowPlan();
-    const movieIds =
-      Array.isArray(theater.movieIds) && theater.movieIds.length
-        ? theater.movieIds
-        : catalogMovies.map((movie) => movie.id);
+    const movieIds = getSeedMovieIdsForTheater(theater, theaterIndex);
 
     return movieIds.flatMap((movieId) => {
       const movie = catalogMovies.find((item) => item.id === movieId) ?? catalogMovies[0];
@@ -262,6 +277,20 @@ function buildShowSeedOperations(force = false) {
       });
     });
   });
+}
+
+function getSeedMovieIdsForTheater(theater, theaterIndex) {
+  const listedMovieIds = Array.isArray(theater.movieIds)
+    ? theater.movieIds.filter((movieId) => catalogMovieIdSet.has(movieId))
+    : [];
+  const source = listedMovieIds.length ? listedMovieIds : catalogMovieIds;
+  if (source.length <= SHOW_SEED_MOVIES_PER_THEATER) return source;
+
+  const offset = (theaterIndex * 7) % source.length;
+  return Array.from(
+    { length: SHOW_SEED_MOVIES_PER_THEATER },
+    (_, index) => source[(offset + index) % source.length],
+  );
 }
 
 function normalizeShowPlan(showPlan) {

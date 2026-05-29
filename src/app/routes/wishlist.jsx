@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarDays, Film, Heart, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { movies as fallbackMovies } from "@/features/movies/data/movieCatalog";
+import { movieImageFallback } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 
 const SHORTLIST_STORAGE_KEY = "movix-shortlist";
@@ -101,10 +102,13 @@ function WishlistPage() {
               className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
             >
               <img
-                src={movie.poster}
+                src={movie.poster || movieImageFallback(movie.title, "poster")}
                 alt={movie.title}
                 loading="lazy"
                 className="aspect-[2/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={(event) => {
+                  event.currentTarget.src = movieImageFallback(movie.title, "poster");
+                }}
               />
               <div className="p-3">
                 <h3 className="line-clamp-2 min-h-10 text-sm font-bold">{movie.title}</h3>

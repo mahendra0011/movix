@@ -3,11 +3,14 @@ import { Theater } from "../models/Theater.js";
 import { isMongoReady } from "../services/database.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import {
+  movies as catalogMovies,
   showTimes,
   theaters as catalogTheaters,
 } from "../../src/features/movies/data/movieCatalog.js";
 
 const router = Router();
+const catalogMovieIds = catalogMovies.map((movie) => movie.id);
+const catalogMovieIdSet = new Set(catalogMovieIds);
 
 const screens = [
   {
@@ -38,8 +41,14 @@ function enrichTheater(theater, index = 0) {
     approved: theater.approved !== false,
     screens: sourceScreens,
     showPlan: Array.isArray(theater.showPlan) ? theater.showPlan : [],
+    movieIds: sanitizeMovieIds(theater.movieIds),
     rating: 4.5 + (index % 4) / 10,
   };
+}
+
+function sanitizeMovieIds(value) {
+  const movieIds = splitList(value).filter((movieId) => catalogMovieIdSet.has(movieId));
+  return movieIds.length ? movieIds : catalogMovieIds;
 }
 
 router.get(

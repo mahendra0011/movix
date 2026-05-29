@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
 import { movies as fallbackMovies, showTimes, theaters } from "@/features/movies/data/movieCatalog";
+import { movieImageFallback } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { buildCatalogCinemaSchedule } from "@/features/movies/services/showSchedule";
@@ -335,10 +336,13 @@ function CinemaMovieRow({ item, cinema, activeDateLabel }) {
     <article className="grid gap-5 border-b border-border/60 p-5 last:border-b-0 lg:grid-cols-[92px_1fr]">
       <Link to="/movies/$id" params={{ id: item.movie.id }} className="group hidden lg:block">
         <img
-          src={item.movie.poster}
+          src={item.movie.poster || movieImageFallback(item.movie.title, "poster")}
           alt={item.movie.title}
           loading="lazy"
           className="aspect-[2/3] w-full rounded-lg object-cover shadow-sm transition-transform group-hover:scale-[1.02]"
+          onError={(event) => {
+            event.currentTarget.src = movieImageFallback(item.movie.title, "poster");
+          }}
         />
       </Link>
       <div className="min-w-0">
@@ -462,7 +466,10 @@ function SeatPriceTooltip({ price }) {
 }
 
 function buildCinemaSchedule(cinema, catalog, activeDate, remoteShows) {
-  if (remoteShows.length) return buildRemoteCinemaSchedule(remoteShows, catalog);
+  if (remoteShows.length) {
+    const remoteSchedule = buildRemoteCinemaSchedule(remoteShows, catalog);
+    if (remoteSchedule.length) return remoteSchedule;
+  }
   return buildCatalogCinemaSchedule({ cinema, catalog, activeDate, showTimes });
 }
 
@@ -471,6 +478,7 @@ function buildRemoteCinemaSchedule(remoteShows, catalog) {
 
   remoteShows.forEach((show) => {
     const movie = resolveRemoteMovie(show, catalog);
+    if (!movie) return;
     if (!groups.has(movie.id)) groups.set(movie.id, { movie, shows: [] });
     groups.get(movie.id).shows.push(formatRemoteShow(show, movie));
   });
@@ -480,20 +488,7 @@ function buildRemoteCinemaSchedule(remoteShows, catalog) {
 
 function resolveRemoteMovie(show, catalog) {
   const movieId = show.movieId || show.movie || show.id;
-  return (
-    catalog.find((movie) => movie.id === movieId) ?? {
-      id: movieId,
-      title: show.movie || movieId || "Movie",
-      poster: show.poster || "",
-      duration: show.duration || "",
-      certificate: show.certificate || "UA",
-      genres: splitList(show.genres),
-      rating: Number(show.rating || 4.6),
-      format: [show.format || "2D"],
-      language: show.language || "English",
-      description: show.description || "",
-    }
-  );
+  return catalog.find((movie) => movie.id === movieId) ?? null;
 }
 
 function formatRemoteShow(show, movie) {
