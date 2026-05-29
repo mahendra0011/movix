@@ -4,6 +4,7 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { Booking } from "../models/Booking.js";
 import { Movie } from "../models/Movie.js";
 import { Review } from "../models/Review.js";
+import { Show } from "../models/Show.js";
 import { buildSeedReviews, REVIEW_TAGS } from "../data/reviewSeeds.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
 import { getMemoryBookings } from "../services/bookingStore.js";
@@ -52,7 +53,7 @@ function normalizeMovie(input) {
     throw error;
   }
 
-  const baseMovie = movies[0];
+  const baseMovie = movies[0] ?? {};
   const id = slugify(input.id || title);
 
   return {
@@ -103,10 +104,82 @@ function getMemoryMovies(query = "") {
 }
 
 async function findMovieById(id) {
-  if (!catalogMovieIdSet.has(id)) return null;
-  return isMongoReady()
-    ? cleanDocument(await Movie.findOne({ id }).lean())
-    : movies.find((item) => item.id === id);
+  if (!isMongoReady()) return movies.find((item) => item.id === id) ?? null;
+
+  if (catalogMovieIdSet.has(id)) {
+    const movie = cleanDocument(await Movie.findOne({ id }).lean());
+    if (movie) return movie;
+  }
+
+  const shows = await Show.find({
+    movieId: id,
+    ownerId: { $exists: true, $ne: null },
+    listingType: { $ne: "coming-soon" },
+  }).lean();
+  const show = shows.find(isPublicLiveShow);
+  return show ? mapShowMovie(show) : null;
+}
+
+async function getLiveShowMovies() {
+  const shows = await Show.find({
+    ownerId: { $exists: true, $ne: null },
+    listingType: { $ne: "coming-soon" },
+  })
+    .limit(1000)
+    .lean();
+  return mergeMovieLists(shows.filter(isPublicLiveShow).map(mapShowMovie));
+}
+
+function isPublicLiveShow(show) {
+  if (!show) return false;
+  const status = String(show.status || "")
+    .trim()
+    .toLowerCase();
+  return show.listingType !== "coming-soon" && status !== "draft" && status !== "coming soon";
+}
+
+function mapShowMovie(show) {
+  const title = show.movie || show.movieId || "Movie";
+  return {
+    id: show.movieId || slugify(title),
+    title,
+    poster: show.poster || movieImageFallback(title, "poster"),
+    backdrop: show.backdrop || show.poster || movieImageFallback(title, "backdrop"),
+    genres: toList(show.genres, ["Drama"]),
+    language: show.language || "English",
+    duration: show.duration || "2h 10m",
+    rating: Number(show.rating || 8.1),
+    votes: show.votes || "New",
+    releaseDate: show.releaseDate || "Now showing",
+    description:
+      show.description ||
+      `${title} is now showing at selected movix cinemas with live booking slots.`,
+    cast: normalizeCastInput(show.cast),
+    format: toList(show.format, ["2D"]),
+    certificate: show.certificate || "UA",
+    listingType: "live",
+    releaseStatus: "released",
+    sortOrder: Number(show.sortOrder || Date.now()),
+  };
+}
+
+function mergeMovieLists(...lists) {
+  const byId = new Map();
+  lists.flat().forEach((movie) => {
+    if (!movie?.id || movie.listingType === "coming-soon") return;
+    byId.set(movie.id, { ...(byId.get(movie.id) ?? {}), ...movie });
+  });
+  return [...byId.values()];
+}
+
+function filterMovieList(list, { query = "", genre = "", language = "" } = {}) {
+  const needle = query.trim().toLowerCase();
+  return list.filter((movie) => {
+    const genreMatch = !genre || genre === "All" || toList(movie.genres).includes(genre);
+    const languageMatch = !language || language === "All" || movie.language === language;
+    const haystack = [movie.title, movie.language, ...(movie.genres ?? [])].join(" ").toLowerCase();
+    return genreMatch && languageMatch && (!needle || haystack.includes(needle));
+  });
 }
 
 function normalizeReviewInput(input = {}) {
@@ -293,7 +366,7 @@ router.get(
     if (!isMongoReady()) {
       list = getMemoryMovies(query);
     } else {
-      const filter = { id: { $in: catalogMovieIds } };
+      const filter = catalogMovieIds.length ? { id: { $in: catalogMovieIds } } : { id: "__none" };
       if (query) {
         filter.$or = [
           { $text: { $search: query } },
@@ -304,8 +377,14 @@ router.get(
       }
       if (genre && genre !== "All") filter.genres = genre;
       if (language && language !== "All") filter.language = language;
-      list = (await Movie.find(filter).sort({ sortOrder: 1 }).lean()).map(cleanDocument);
+      const catalogList = (await Movie.find(filter).sort({ sortOrder: 1 }).lean()).map(
+        cleanDocument,
+      );
+      const showMovies = await getLiveShowMovies();
+      list = mergeMovieLists(catalogList, showMovies);
     }
+
+    list = filterMovieList(list, { query, genre, language });
 
     const payload = { movies: list };
     response.json(payload);

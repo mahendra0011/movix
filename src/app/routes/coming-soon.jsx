@@ -17,9 +17,12 @@ import {
   Ticket,
   X,
 } from "lucide-react";
-import { fetchMovies } from "@/features/movies/api/moviesApi";
-import { movies as fallbackMovies } from "@/features/movies/data/movieCatalog";
-import { movieImageFallback, normalizeMovieMedia } from "@/features/movies/services/movieMedia";
+import { comingSoonMovies as fallbackMovies } from "@/features/movies/data/movieCatalog";
+import {
+  castAvatarFallback,
+  movieImageFallback,
+  normalizeMovieMedia,
+} from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { requestJson } from "@/shared/services/httpClient";
@@ -88,7 +91,6 @@ function ComingSoonPage() {
       ),
     [comingSoonMovies, selectedCity],
   );
-
   const genres = useMemo(
     () => [allFilterValue, ...unique(cityVisibleMovies.flatMap((movie) => getMovieGenres(movie)))],
     [cityVisibleMovies],
@@ -273,11 +275,7 @@ function ComingSoonPage() {
             </div>
           </div>
 
-          <Link
-            to="/movies/$id"
-            params={{ id: featured.movieId || featured.id }}
-            className="group hidden overflow-hidden rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur transition-transform hover:-translate-y-1 dark:border-white/15 dark:bg-white/8 lg:block"
-          >
+          <div className="hidden overflow-hidden rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8 lg:block">
             <div className="relative">
               <img
                 src={featured.poster || movieImageFallback(featured.title, "poster")}
@@ -296,7 +294,7 @@ function ComingSoonPage() {
               <p className="line-clamp-1 text-sm font-extrabold">{featured.title}</p>
               <p className="mt-1 truncate text-xs text-muted-foreground">{featured.category}</p>
             </div>
-          </Link>
+          </div>
 
           <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 gap-2">
             {bannerMovies.map((movie, index) => (
@@ -514,10 +512,11 @@ function ComingSoonFilter({ icon: Icon, title, value, detail, options = [], onCh
 function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
   const genres = getMovieGenres(movie);
   const formats = getMovieFormats(movie);
+  const cast = (movie.cast ?? []).slice(0, 3);
 
   return (
     <article className="group overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
-      <Link to="/movies/$id" params={{ id: movie.movieId || movie.id }} className="block">
+      <div className="block">
         <div className="relative aspect-[2/3] overflow-hidden bg-muted">
           <img
             src={movie.poster || movieImageFallback(movie.title, "poster")}
@@ -544,17 +543,36 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
             </span>
           </div>
         </div>
-      </Link>
+      </div>
 
       <div className="p-3.5">
-        <Link to="/movies/$id" params={{ id: movie.movieId || movie.id }}>
-          <h3 className="line-clamp-2 min-h-11 text-[15px] font-extrabold leading-[22px] transition-colors group-hover:text-primary">
-            {movie.title}
-          </h3>
-        </Link>
+        <h3 className="line-clamp-2 min-h-11 text-[15px] font-extrabold leading-[22px]">
+          {movie.title}
+        </h3>
         <p className="mt-1.5 truncate text-xs text-muted-foreground">
           {genres.slice(0, 3).join(" - ")}
         </p>
+        {cast.length ? (
+          <div className="mt-3 flex items-center gap-2">
+            <div className="flex -space-x-2">
+              {cast.map((member) => (
+                <img
+                  key={`${movie.id}-${member.name}`}
+                  src={member.avatar || castAvatarFallback(member.name)}
+                  alt={member.name}
+                  loading="lazy"
+                  className="h-7 w-7 rounded-full border-2 border-card object-cover"
+                  onError={(event) => {
+                    event.currentTarget.src = castAvatarFallback(member.name);
+                  }}
+                />
+              ))}
+            </div>
+            <p className="min-w-0 truncate text-[11px] font-semibold text-muted-foreground">
+              {cast.map((member) => member.name).join(", ")}
+            </p>
+          </div>
+        ) : null}
         <div className="mt-3 flex items-center justify-between gap-2 text-[11px] font-bold text-muted-foreground">
           <span className="inline-flex min-w-0 items-center gap-1">
             <Star className="h-3.5 w-3.5 shrink-0 fill-primary text-primary" />
@@ -587,10 +605,7 @@ async function fetchComingSoonMovies(city = "") {
     // Local static builds fall back to the bundled movie catalog.
   }
 
-  const catalog = await fetchMovies().catch(() => fallbackMovies);
-  return buildFallbackComingSoon(catalog.length ? catalog : fallbackMovies, city).map(
-    normalizeComingSoonMovie,
-  );
+  return buildFallbackComingSoon(fallbackMovies, city).map(normalizeComingSoonMovie);
 }
 
 function buildFallbackComingSoon(catalog, city) {

@@ -1,5 +1,7 @@
 import { SEARCHABLE_CITY_OPTIONS } from "../../../shared/services/cityPreference.js";
-import { upcomingMovies as movies } from "./upcomingMovieCatalog.js";
+import { upcomingMovies as comingSoonMovies } from "./upcomingMovieCatalog.js";
+
+const movies = [];
 
 const curatedTheaters = [
   {
@@ -226,6 +228,6 @@ function slugify(value) {
 }
 
 function getMovie(id) {
-  return movies.find((m) => m.id === id);
+  return movies.find((m) => m.id === id) ?? comingSoonMovies.find((m) => m.id === id);
 }
-export { getMovie, movies, showTimes, theaters };
+export { comingSoonMovies, getMovie, movies, showTimes, theaters };

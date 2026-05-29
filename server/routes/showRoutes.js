@@ -4,6 +4,7 @@ import { Theater } from "../models/Theater.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { isMongoReady } from "../services/database.js";
 import {
+  comingSoonMovies,
   movies as catalogMovies,
   showTimes,
   theaters as catalogTheaters,
@@ -14,11 +15,13 @@ import {
   splitCatalogList,
   theaterHasMovie,
 } from "../../src/features/movies/services/showSchedule.js";
+import { castAvatarFallback } from "../../src/features/movies/services/movieMedia.js";
 
 const router = Router();
 const catalogMovieIds = catalogMovies.map((movie) => movie.id);
 const catalogMovieIdSet = new Set(catalogMovieIds);
 const catalogMovieById = new Map(catalogMovies.map((movie) => [movie.id, movie]));
+const comingSoonMovieById = new Map(comingSoonMovies.map((movie) => [movie.id, movie]));
 
 function generatedShows(movieId, city = "", activeDate = "") {
   if (!catalogMovieIdSet.has(movieId)) return [];
@@ -107,10 +110,13 @@ router.get(
       return;
     }
 
-    const showFilter = { movieId: { $in: catalogMovieIds } };
+    const showFilter = ownerScopedShowFilter({ listingType: { $ne: "coming-soon" } });
+    if (catalogMovieIds.length) {
+      showFilter.$or.push({ movieId: { $in: catalogMovieIds } });
+    }
     if (theaterId) showFilter.theaterId = theaterId;
 
-    const shows = await Show.find(showFilter).sort({ movie: 1, startTime: 1 }).lean();
+    const shows = await Show.find(showFilter).limit(1500).lean();
     const visibleShows = shows.filter((show) => isPublicShow(show) && matchesShowDate(show, date));
     const theaterIds = [...new Set(visibleShows.map((show) => show.theaterId).filter(Boolean))];
     const theaterFilter = { id: { $in: theaterIds }, approved: true };
@@ -136,9 +142,7 @@ router.get(
       return;
     }
 
-    const shows = await Show.find({ listingType: "coming-soon", movieId: { $in: catalogMovieIds } })
-      .sort({ date: 1, movie: 1 })
-      .lean();
+    const shows = await Show.find(ownerScopedShowFilter({ listingType: "coming-soon" })).lean();
     const theaterIds = [...new Set(shows.map((show) => show.theaterId).filter(Boolean))];
     const theaterFilter = { id: { $in: theaterIds }, approved: true };
     if (city) theaterFilter.city = new RegExp(`^${escapeRegExp(city)}$`, "i");
@@ -146,18 +150,18 @@ router.get(
     const theaters = await Theater.find(theaterFilter).lean();
     const theaterById = new Map(theaters.map((theater) => [theater.id, theater]));
 
-    response.json({ movies: groupComingSoonShows(shows, theaterById) });
+    response.json({
+      movies: mergeComingSoonMovies(
+        generatedComingSoonMovies(city),
+        groupComingSoonShows(shows, theaterById),
+      ),
+    });
   }),
 );
 
 router.get(
   "/:movieId",
   asyncHandler(async (request, response) => {
-    if (!catalogMovieIdSet.has(request.params.movieId)) {
-      response.json({ shows: [] });
-      return;
-    }
-
     if (!isMongoReady()) {
       response.json({
         shows: generatedShows(request.params.movieId, request.query.city, request.query.date),
@@ -167,9 +171,10 @@ router.get(
 
     const city = String(request.query.city ?? "").trim();
     const date = String(request.query.date ?? "").trim();
-    const shows = await Show.find({ movieId: request.params.movieId })
-      .sort({ startTime: 1 })
-      .lean();
+    const showFilter = catalogMovieIdSet.has(request.params.movieId)
+      ? { movieId: request.params.movieId }
+      : ownerScopedShowFilter({ movieId: request.params.movieId });
+    const shows = await Show.find(showFilter).sort({ startTime: 1 }).lean();
     const visibleShows = shows.filter((show) => isPublicShow(show) && matchesShowDate(show, date));
     const theaterIds = [...new Set(visibleShows.map((show) => show.theaterId).filter(Boolean))];
     const theaterFilter = { id: { $in: theaterIds }, approved: true };
@@ -195,7 +200,7 @@ function generatedComingSoonMovies(city = "") {
   const theaters = matchingTheaters.length ? matchingTheaters : catalogTheaters.slice(0, 8);
   const cityNames = uniqueList(theaters.map((theater) => theater.city).filter(Boolean));
 
-  return catalogMovies.map((movie, index) => {
+  return comingSoonMovies.map((movie, index) => {
     const releaseAt = futureIsoDate(10 + index * 6);
     const visibleTheaters = rotateList(theaters, index).slice(0, 3);
     return {
@@ -213,6 +218,7 @@ function generatedComingSoonMovies(city = "") {
       certificate: movie.certificate || "UA",
       rating: movie.rating,
       votes: movie.votes || `${120 + index * 37}K`,
+      cast: normalizeCastList(movie.cast),
       releaseAt,
       releaseDate: formatReleaseDate(releaseAt),
       monthBucket: formatReleaseMonth(releaseAt),
@@ -233,8 +239,8 @@ function groupComingSoonShows(shows, theaterById) {
     if (!theater) return;
 
     const key = show.movieId || slugify(show.movie);
-    if (!key || !catalogMovieIdSet.has(key)) return;
-    const catalogMovie = catalogMovieById.get(key);
+    if (!key) return;
+    const catalogMovie = comingSoonMovieById.get(key) ?? catalogMovieById.get(key);
 
     if (!groups.has(key)) {
       const releaseAt = normalizeDateInput(show.date || show.releaseDate);
@@ -255,6 +261,7 @@ function groupComingSoonShows(shows, theaterById) {
         certificate: show.certificate || catalogMovie?.certificate || "UA",
         rating: catalogMovie?.rating,
         votes: catalogMovie?.votes || "New",
+        cast: normalizeCastList(show.cast?.length ? show.cast : catalogMovie?.cast),
         releaseAt,
         releaseDate: show.releaseDate || formatReleaseDate(releaseAt),
         monthBucket: formatReleaseMonth(releaseAt),
@@ -303,6 +310,32 @@ function groupComingSoonShows(shows, theaterById) {
   });
 }
 
+function mergeComingSoonMovies(...lists) {
+  const byId = new Map();
+  lists.flat().forEach((movie) => {
+    const key = movie.movieId || movie.id;
+    if (!key) return;
+    byId.set(key, { ...(byId.get(key) ?? {}), ...movie, id: movie.id || `coming-soon-${key}` });
+  });
+  return [...byId.values()];
+}
+
+function normalizeCastList(cast = []) {
+  if (!Array.isArray(cast)) return [];
+  return cast
+    .map((member) => {
+      const name = String(member?.name ?? member ?? "").trim();
+      if (!name) return null;
+      return {
+        name,
+        role: String(member?.role ?? "Actor").trim() || "Actor",
+        avatar: String(member?.avatar ?? "").trim() || castAvatarFallback(name),
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 16);
+}
+
 function formatMongoShow(show, theater, index, activeDate = "") {
   if (!theater) return null;
   const screen = theater.screens?.find((item) => item.id === show.screenId);
@@ -348,6 +381,13 @@ function scopedShowId(id, showDate, resolvedDate) {
 function isPublicShow(show) {
   const status = String(show.status || "").toLowerCase();
   return show.listingType !== "coming-soon" && status !== "draft" && status !== "coming soon";
+}
+
+function ownerScopedShowFilter(extra = {}) {
+  return {
+    ...extra,
+    $or: [{ ownerId: { $exists: true, $ne: null } }],
+  };
 }
 
 function matchesShowDate(show, date) {

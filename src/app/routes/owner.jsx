@@ -149,6 +149,10 @@ function createBlankShow(screens = screenSeeds) {
 const languageOptions = ["English", "Hindi", "Tamil", "Telugu", "Kannada"];
 const formatOptions = ["2D", "3D", "IMAX", "4DX", "Dolby Atmos"];
 const certificateOptions = ["U", "UA", "A"];
+const listingTypeOptions = [
+  { value: "coming-soon", label: "Coming soon" },
+  { value: "live", label: "Released / booking ready" },
+];
 const showStatusOptions = ["Open", "Selling fast", "Sold out", "Draft"];
 const MAX_IMAGE_UPLOAD_BYTES = 2.5 * 1024 * 1024;
 const ownerPanelTabs = [
@@ -446,10 +450,11 @@ function OwnerDashboard() {
       screen: current.screen,
       totalSeats: current.totalSeats,
     }));
-    await persistWorkspace(
-      workspacePayload({ shows: nextShows }),
-      `${nextListing.movie} movie details saved. Add day and timing separately.`,
-    );
+    const message =
+      nextListing.listingType === "coming-soon"
+        ? `${nextListing.movie} coming soon me ${nextListing.city} ke liye listed hai.`
+        : `${nextListing.movie} released movie master saved. Timings add karne ke baad Movies page me dikhegi.`;
+    await persistWorkspace(workspacePayload({ shows: nextShows }), message);
   };
 
   const addTiming = async (event) => {
@@ -475,6 +480,7 @@ function OwnerDashboard() {
     const listedMovie = listedMovies.find((item) => item.movieId === showForm.movieId);
     const movie = listedMovie ?? movies.find((item) => item.id === showForm.movieId);
     const isMovieOnly = mode === "movie";
+    const isComingSoonListing = isMovieOnly && showForm.listingType === "coming-soon";
     const sourceMovie = isMovieOnly ? null : movie;
     const customTitle = showForm.customTitle.trim();
     const title = isMovieOnly ? customTitle : customTitle || sourceMovie?.title;
@@ -484,12 +490,13 @@ function OwnerDashboard() {
     const silverPrice = Number(showForm.silverPrice) || goldPrice;
     const platinumPrice = Number(showForm.platinumPrice) || goldPrice;
     const vipPrice = Number(showForm.vipPrice) || platinumPrice;
-    const date = isMovieOnly ? showForm.comingSoonDate : showForm.showDate;
+    const date = isComingSoonListing ? showForm.comingSoonDate : showForm.showDate;
     const selectedScreen = ownerScreens.find((screen) => screen.name === showForm.screen);
     const seatLayout = normalizeSeatLayoutConfig(selectedScreen?.seatLayout);
     const seatCount = selectedScreen?.seats ?? buildSeatLayout(seatLayout).totalSeats;
-    const poster = showForm.poster || sourceMovie?.poster || "";
-    const backdrop = showForm.backdrop || sourceMovie?.backdrop || poster;
+    const poster = showForm.poster || sourceMovie?.poster || movieImageFallback(title, "poster");
+    const backdrop =
+      showForm.backdrop || sourceMovie?.backdrop || poster || movieImageFallback(title, "backdrop");
     const genres = splitAmenities(showForm.genres).length
       ? splitAmenities(showForm.genres)
       : sourceMovie?.genres || [];
@@ -505,7 +512,7 @@ function OwnerDashboard() {
       address: cinemaProfile.address,
       distance: cinemaProfile.distance,
       amenities: cinemaProfile.amenities,
-      listingType: isMovieOnly ? "coming-soon" : "live",
+      listingType: isComingSoonListing ? "coming-soon" : "live",
       movieId: isMovieOnly
         ? slugify(title)
         : sourceMovie?.movieId || sourceMovie?.id || slugify(title),
@@ -532,7 +539,7 @@ function OwnerDashboard() {
         : { gold: goldPrice, silver: silverPrice, platinum: platinumPrice, vip: vipPrice },
       seats: isMovieOnly ? 0 : seatCount,
       seatLayout: isMovieOnly ? null : seatLayout,
-      status: isMovieOnly ? "Listed" : showForm.status,
+      status: isComingSoonListing ? "Coming soon" : isMovieOnly ? "Draft" : showForm.status,
       bookingOpensAt: showForm.bookingOpensAt,
       trailerUrl: showForm.trailerUrl.trim(),
       notes: showForm.notes.trim(),
@@ -910,6 +917,19 @@ function OwnerMoviesTab({
 
         <form onSubmit={onAddMovie} className="mt-5 space-y-5">
           <FormSection title="Movie information">
+            <FormField label="Listing type">
+              <select
+                value={showForm.listingType}
+                onChange={update("listingType")}
+                className={selectClass}
+              >
+                {listingTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </FormField>
             <FormField label="Movie name">
               <Input
                 value={showForm.customTitle}
@@ -1151,7 +1171,7 @@ function OwnerMoviesTab({
                           - {movie.certificate}
                         </p>
                       </div>
-                      <StatusPill status={movie.comingSoonCount ? "Listed" : "Open"} />
+                      <StatusPill status={movie.liveCount ? "Open" : "Coming soon"} />
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {splitAmenities(movie.genres)

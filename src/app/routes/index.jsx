@@ -97,25 +97,6 @@ const cinemaImages = [
   "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=600&q=80",
 ];
 
-const recommendedOrder = [
-  "interstellar",
-  "dune-part-two",
-  "oppenheimer",
-  "spider-verse",
-  "inception",
-  "the-batman",
-];
-
-const ratingOverrides = {
-  "spider-verse": "8.6",
-  oppenheimer: "9.3",
-};
-
-const premiereRatingOverrides = {
-  "spider-verse": "8.6",
-  "the-batman": "7.2",
-};
-
 const allFilterValue = "All";
 const recommendedPageSize = 6;
 const sortOptions = ["Popularity", "Rating", "A-Z"];
@@ -123,7 +104,6 @@ const sortOptions = ["Popularity", "Rating", "A-Z"];
 function Home() {
   const loadedMovies = Route.useLoaderData();
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
-  const featured = catalog.find((movie) => movie.id === "interstellar") ?? catalog[0];
   const [query, setQuery] = useState(readHomeSearchQuery);
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
   const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
@@ -159,6 +139,14 @@ function Home() {
     () => buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog),
     [catalog, cinemaCatalog, selectedCity],
   );
+  const featured = cityListedMovies[0] ?? null;
+  const heroTitle = featured?.title ?? `Movies in ${selectedCity}`;
+  const heroDescription =
+    featured?.description ??
+    "Released movies will appear here after theater owners publish live show timings.";
+  const heroBackdrop = featured
+    ? featured.backdrop || movieImageFallback(featured.title, "backdrop")
+    : movieImageFallback(`movix ${selectedCity} movies`, "backdrop");
   const topMovies = useMemo(() => buildTopMovies(cityListedMovies), [cityListedMovies]);
   const genres = useMemo(
     () => [
@@ -241,12 +229,7 @@ function Home() {
     format: activeFormat,
     sort: sortBy,
   });
-  const premieres = rotateMovies(catalog, 3).slice(0, 4);
-  const comingSoon = rotateMovies(catalog, 2).slice(0, 3);
-  const comingSoonDates = useMemo(
-    () => buildComingSoonDates(comingSoon.length),
-    [comingSoon.length],
-  );
+  const premieres = rotateMovies(cityListedMovies, 3).slice(0, 4);
   const topCinemas = buildTopCinemas(selectedCity, cinemaCatalog);
   const showSearch = query.trim().length > 0;
   const matchingCinemas = useMemo(
@@ -282,8 +265,6 @@ function Home() {
       setNewsletterBusy(false);
     }
   };
-
-  if (!featured) return null;
 
   if (showSearch) {
     return (
@@ -361,11 +342,11 @@ function Home() {
     <main className="bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_32%),linear-gradient(180deg,color-mix(in_oklch,var(--secondary)_55%,transparent),var(--background)_520px)] pb-12 dark:bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_30%),linear-gradient(180deg,color-mix(in_oklch,var(--card)_75%,transparent),var(--background)_560px)]">
       <section className="relative isolate overflow-hidden border-b border-border/60">
         <img
-          src={featured.backdrop || movieImageFallback(featured.title, "backdrop")}
+          src={heroBackdrop}
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-55 dark:opacity-28"
           onError={(event) => {
-            event.currentTarget.src = movieImageFallback(featured.title, "backdrop");
+            event.currentTarget.src = movieImageFallback(heroTitle, "backdrop");
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/65 to-background/10 dark:via-background/82 dark:to-background/35" />
@@ -375,72 +356,108 @@ function Home() {
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" />
-              Trending #1 This Week
+              {featured ? "Trending #1 This Week" : "Released movies"}
             </span>
             <h1 className="mt-4 text-5xl font-extrabold leading-none tracking-tight text-foreground md:text-[64px]">
-              {featured.title}
+              {heroTitle}
             </h1>
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-              <span className="inline-flex items-center gap-1.5 font-semibold">
-                <Star className="h-5 w-5 fill-primary text-primary" />
-                {featured.rating}/10
-              </span>
-              <span className="text-muted-foreground">412.3K votes</span>
-              <span className="h-4 w-px bg-border" />
-              <span>{featured.certificate}</span>
-              <span className="h-4 w-px bg-border" />
-              <span>{featured.duration}</span>
-            </div>
-            <p className="mt-4 max-w-xl text-base leading-7 text-foreground/80 dark:text-muted-foreground">
-              {featured.description}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {featured.genres.slice(0, 3).map((genre) => (
-                <span
-                  key={genre}
-                  className="rounded-md border border-border/70 bg-card/70 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur"
-                >
-                  {genre}
+            {featured ? (
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+                <span className="inline-flex items-center gap-1.5 font-semibold">
+                  <Star className="h-5 w-5 fill-primary text-primary" />
+                  {featured.rating}/10
                 </span>
-              ))}
-            </div>
+                <span className="text-muted-foreground">{featured.votes ?? "New"} votes</span>
+                <span className="h-4 w-px bg-border" />
+                <span>{featured.certificate}</span>
+                <span className="h-4 w-px bg-border" />
+                <span>{featured.duration}</span>
+              </div>
+            ) : null}
+            <p className="mt-4 max-w-xl text-base leading-7 text-foreground/80 dark:text-muted-foreground">
+              {heroDescription}
+            </p>
+            {featured ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {getMovieGenres(featured)
+                  .slice(0, 3)
+                  .map((genre) => (
+                    <span
+                      key={genre}
+                      className="rounded-md border border-border/70 bg-card/70 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+              </div>
+            ) : null}
             <div className="mt-5 flex flex-wrap gap-3">
               <Button size="lg" asChild className="h-11 gap-2 px-7 shadow-lg shadow-primary/20">
-                <Link to="/movies/$id" params={{ id: featured.id }}>
-                  <Ticket className="h-4 w-4" />
-                  Book Tickets
-                </Link>
+                {featured ? (
+                  <Link to="/movies/$id" params={{ id: featured.id }}>
+                    <Ticket className="h-4 w-4" />
+                    Book Tickets
+                  </Link>
+                ) : (
+                  <Link to="/movies/" search={moviesPageSearch}>
+                    <Ticket className="h-4 w-4" />
+                    View Released Movies
+                  </Link>
+                )}
               </Button>
-              <Button size="lg" variant="secondary" asChild className="h-11 gap-2 px-7">
-                <a href={trailerSearchUrl(featured.title)} target="_blank" rel="noreferrer">
-                  <Play className="h-4 w-4" />
-                  Watch Trailer
-                </a>
-              </Button>
+              {featured ? (
+                <Button size="lg" variant="secondary" asChild className="h-11 gap-2 px-7">
+                  <a href={trailerSearchUrl(featured.title)} target="_blank" rel="noreferrer">
+                    <Play className="h-4 w-4" />
+                    Watch Trailer
+                  </a>
+                </Button>
+              ) : (
+                <Button size="lg" variant="secondary" asChild className="h-11 gap-2 px-7">
+                  <Link to="/coming-soon">
+                    <CalendarDays className="h-4 w-4" />
+                    Coming Soon
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
 
           <div className="hidden justify-start md:flex">
             <div className="relative w-56 rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8 xl:w-64">
-              <img
-                src={featured.poster || movieImageFallback(featured.title, "poster")}
-                alt={featured.title}
-                className="aspect-[2/3] w-full rounded-md object-cover"
-                onError={(event) => {
-                  event.currentTarget.src = movieImageFallback(featured.title, "poster");
-                }}
-              />
-              <a
-                href={trailerSearchUrl(featured.title)}
-                target="_blank"
-                rel="noreferrer"
-                className="absolute inset-0 grid place-items-center"
-                aria-label={`Watch ${featured.title} trailer`}
-              >
-                <span className="grid h-16 w-16 place-items-center rounded-full border border-white/70 bg-black/45 text-white shadow-xl backdrop-blur transition-transform hover:scale-105">
-                  <Play className="ml-1 h-7 w-7 fill-white" />
-                </span>
-              </a>
+              {featured ? (
+                <>
+                  <img
+                    src={featured.poster || movieImageFallback(featured.title, "poster")}
+                    alt={featured.title}
+                    className="aspect-[2/3] w-full rounded-md object-cover"
+                    onError={(event) => {
+                      event.currentTarget.src = movieImageFallback(featured.title, "poster");
+                    }}
+                  />
+                  <a
+                    href={trailerSearchUrl(featured.title)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="absolute inset-0 grid place-items-center"
+                    aria-label={`Watch ${featured.title} trailer`}
+                  >
+                    <span className="grid h-16 w-16 place-items-center rounded-full border border-white/70 bg-black/45 text-white shadow-xl backdrop-blur transition-transform hover:scale-105">
+                      <Play className="ml-1 h-7 w-7 fill-white" />
+                    </span>
+                  </a>
+                </>
+              ) : (
+                <div className="grid aspect-[2/3] place-items-center rounded-md bg-background/75 p-5 text-center">
+                  <div>
+                    <Film className="mx-auto h-12 w-12 text-primary" />
+                    <p className="mt-4 text-sm font-bold text-foreground">No live shows yet</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Theater owners can publish released movies from their panel.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -596,9 +613,11 @@ function Home() {
           actionLabel="See all"
         >
           <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-            {topMovies.map((movie) => (
-              <MiniMovieTile key={movie.id} movie={movie} badge="TOP" />
-            ))}
+            {topMovies.length ? (
+              topMovies.map((movie) => <MiniMovieTile key={movie.id} movie={movie} badge="TOP" />)
+            ) : (
+              <PanelEmptyState message="Top movies appear after released movies get live timings." />
+            )}
           </div>
         </PanelCard>
 
@@ -608,26 +627,17 @@ function Home() {
           subtitle="Exciting movies heading your way"
           actionTo="/coming-soon"
         >
-          <div className="mt-4 grid gap-2">
-            {comingSoon.map((movie, index) => (
-              <Link
-                key={movie.id}
-                to="/movies/$id"
-                params={{ id: movie.id }}
-                className="grid grid-cols-[44px_1fr] gap-2 rounded-lg border border-border/60 bg-background/55 p-1.5 transition-colors hover:border-primary/40"
-              >
-                <div className="grid h-11 place-items-center rounded-md bg-primary/10 text-center text-primary">
-                  <span className="text-sm font-bold">{comingSoonDates[index]?.day}</span>
-                  <span className="text-[10px] font-semibold">{comingSoonDates[index]?.month}</span>
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold leading-5">{movie.title}</p>
-                  <p className="truncate text-[11px] text-muted-foreground">
-                    {movie.genres.slice(0, 3).join(" - ")}
-                  </p>
-                </div>
+          <div className="mt-4 rounded-lg border border-dashed border-primary/25 bg-primary/7 p-4">
+            <BellRing className="h-6 w-6 text-primary" />
+            <p className="mt-3 text-sm font-semibold">Upcoming movies are kept on one page.</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              Browse city-wise upcoming releases and set reminders from Coming Soon.
+            </p>
+            <Button asChild variant="secondary" className="mt-4 h-9 rounded-full">
+              <Link to="/coming-soon">
+                Open Coming Soon <ArrowRight className="h-4 w-4" />
               </Link>
-            ))}
+            </Button>
           </div>
         </PanelCard>
 
@@ -653,7 +663,7 @@ function Home() {
         </PanelCard>
       </section>
 
-      <PremiereSpotlightSection movies={premieres} />
+      {premieres.length ? <PremiereSpotlightSection movies={premieres} /> : null}
 
       <section className="mx-auto mt-5 grid max-w-[1560px] gap-5 px-4 sm:px-5 lg:grid-cols-[0.95fr_1.05fr] lg:px-6">
         <PanelCard
@@ -1066,6 +1076,14 @@ function PanelCard({
   );
 }
 
+function PanelEmptyState({ message }) {
+  return (
+    <div className="col-span-full rounded-lg border border-dashed border-border/70 bg-background/60 p-5 text-center text-sm text-muted-foreground">
+      {message}
+    </div>
+  );
+}
+
 function PremiereSpotlightSection({ movies }) {
   return (
     <section id="events" className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
@@ -1181,10 +1199,13 @@ function MiniMovieTile({ movie, badge }) {
 }
 
 function buildRecommendedMovies(list) {
-  const byId = new Map(list.map((movie) => [movie.id, movie]));
-  const preferred = recommendedOrder.map((id) => byId.get(id)).filter(Boolean);
-  const rest = list.filter((movie) => !recommendedOrder.includes(movie.id));
-  return [...preferred, ...rest];
+  return [...list].sort((left, right) => {
+    const ratingDelta = Number(right.rating || 0) - Number(left.rating || 0);
+    if (ratingDelta) return ratingDelta;
+    return (
+      parseVoteCount(right.votes ?? right.votesText) - parseVoteCount(left.votes ?? left.votesText)
+    );
+  });
 }
 
 function getCarouselPageItems(list, page, pageSize) {
@@ -1237,11 +1258,8 @@ function parseVoteCount(value) {
   return amount;
 }
 
-function displayMovieRating(movie, variant = "card") {
-  if (variant === "premiere" && premiereRatingOverrides[movie.id]) {
-    return premiereRatingOverrides[movie.id];
-  }
-  return ratingOverrides[movie.id] ?? movie.rating;
+function displayMovieRating(movie) {
+  return movie.rating;
 }
 
 function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
@@ -1367,17 +1385,6 @@ function rotateMovies(list, offset) {
   if (!list.length) return [];
   const normalizedOffset = offset % list.length;
   return [...list.slice(normalizedOffset), ...list.slice(0, normalizedOffset)];
-}
-
-function buildComingSoonDates(count) {
-  return Array.from({ length: count }, (_, index) => {
-    const date = new Date();
-    date.setDate(date.getDate() + 24 + index * 7);
-    return {
-      day: String(date.getDate()).padStart(2, "0"),
-      month: date.toLocaleDateString("en-IN", { month: "short" }).toUpperCase(),
-    };
-  });
 }
 
 function splitList(value) {

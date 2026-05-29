@@ -1419,17 +1419,19 @@ function FilterSelect({ value, onChange, options, label }) {
 
 function buildCinemaListings({ movie, selectedCity, remoteShows, activeDate }) {
   const city = selectedCity || "Bengaluru";
-  const staticListings = buildCatalogTheaterListings({
+  const remoteListings = groupRemoteShows(remoteShows, movie);
+  if (remoteListings.length) return remoteListings.filter((cinema) => cinema.shows.length > 0);
+
+  const hasStaticMovie = catalogMovies.some((catalogMovie) => catalogMovie.id === movie.id);
+  if (!hasStaticMovie) return [];
+
+  return buildCatalogTheaterListings({
     movie,
     theaters,
     selectedCity: city,
     activeDate,
     showTimes,
-  });
-  const remoteListings = groupRemoteShows(remoteShows, movie);
-
-  const catalogListings = remoteListings.length ? remoteListings : staticListings;
-  return catalogListings.filter((cinema) => cinema.shows.length > 0);
+  }).filter((cinema) => cinema.shows.length > 0);
 }
 
 function groupRemoteShows(remoteShows, movie) {

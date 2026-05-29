@@ -768,6 +768,8 @@ function buildMovie(seed, index) {
     rating: Number((8.1 + (index % 14) * 0.09).toFixed(1)),
     votes: `${85 + ((index * 17) % 780)}K`,
     releaseDate: seed.releaseDate,
+    listingType: "coming-soon",
+    releaseStatus: "coming-soon",
     description: `${seed.title} is part of the 2026+ movix upcoming lineup, positioned as a ${seed.industry} release with ${seed.genres.slice(0, 2).join(" and ").toLowerCase()} appeal.`,
     cast: seed.cast.map((name, castIndex) => ({
       name,

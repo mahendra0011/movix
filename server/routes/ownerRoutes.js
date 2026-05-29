@@ -8,7 +8,10 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { isMongoReady } from "../services/database.js";
 import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
 import { notifyOwnerShowChanges } from "../services/notificationEvents.js";
-import { castAvatarFallback } from "../../src/features/movies/services/movieMedia.js";
+import {
+  castAvatarFallback,
+  movieImageFallback,
+} from "../../src/features/movies/services/movieMedia.js";
 
 const router = Router();
 
@@ -63,7 +66,12 @@ router.put(
           cancellationPolicy: profile.cancellationPolicy,
           amenities: splitList(profile.amenities),
           logoText: initials(profile.name),
-          movieIds: unique(shows.map((show) => show.movieId).filter(Boolean)),
+          movieIds: unique(
+            shows
+              .filter(isLiveListedShow)
+              .map((show) => show.movieId)
+              .filter(Boolean),
+          ),
           showPlan: shows
             .filter(
               (show) =>
@@ -359,6 +367,11 @@ function normalizeShows(input = [], context) {
     const vip = Number(show.pricing?.vip || platinum);
     const movieTitle = cleanText(show.movie) || cleanText(show.customTitle) || "Untitled show";
     const id = cleanText(show.id) || `${slugify(movieTitle)}-${Date.now()}-${index}`;
+    const poster = cleanText(show.poster) || movieImageFallback(movieTitle, "poster");
+    const backdrop =
+      cleanText(show.backdrop) ||
+      cleanText(show.poster) ||
+      movieImageFallback(movieTitle, "backdrop");
 
     return {
       id,
@@ -367,8 +380,8 @@ function normalizeShows(input = [], context) {
       theater: context.profile.name,
       movieId: cleanText(show.movieId) || slugify(movieTitle),
       movie: movieTitle,
-      poster: cleanText(show.poster),
-      backdrop: cleanText(show.backdrop),
+      poster,
+      backdrop,
       duration: cleanText(show.duration),
       genres: splitList(show.genres),
       releaseDate: cleanText(show.releaseDate),
@@ -399,6 +412,11 @@ function normalizeShows(input = [], context) {
       notes: cleanText(show.notes),
     };
   });
+}
+
+function isLiveListedShow(show) {
+  const status = String(show.status || "").toLowerCase();
+  return show.listingType !== "coming-soon" && status !== "draft" && status !== "coming soon";
 }
 
 function normalizeServices(input = {}) {

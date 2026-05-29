@@ -7,34 +7,25 @@ import { normalizeMovieMedia } from "@/features/movies/services/movieMedia";
 
 const PUBLIC_MOVIE_TIMEOUT_MS = 8000;
 const SHOULD_FETCH_PUBLIC_MOVIES = true;
-const allowedMovieIds = new Set(fallbackMovies.map((movie) => movie.id));
 let moviesCache = null;
 let moviesRequest = null;
 
-function scopeMoviesToCatalog(remoteMovies = []) {
-  const remoteById = new Map(
-    remoteMovies
-      .map(normalizeMovieMedia)
-      .filter((movie) => movie?.id && allowedMovieIds.has(movie.id))
-      .map((movie) => [movie.id, movie]),
-  );
-
-  return fallbackMovies.map((fallbackMovie) =>
-    normalizeMovieMedia({
-      ...fallbackMovie,
-      ...(remoteById.get(fallbackMovie.id) ?? {}),
-    }),
-  );
+function normalizePublicMovies(remoteMovies = []) {
+  const byId = new Map();
+  [...fallbackMovies, ...remoteMovies].map(normalizeMovieMedia).forEach((movie) => {
+    if (!movie?.id || movie.listingType === "coming-soon") return;
+    byId.set(movie.id, movie);
+  });
+  return [...byId.values()];
 }
 
-function scopeMovieToCatalog(remoteMovie, id) {
+function normalizePublicMovie(remoteMovie, id) {
   const fallbackMovie = getFallbackMovie(id);
-  if (!fallbackMovie) return null;
   const normalizedRemote = normalizeMovieMedia(remoteMovie);
-  if (!normalizedRemote?.id || !allowedMovieIds.has(normalizedRemote.id)) {
-    return normalizeMovieMedia(fallbackMovie);
-  }
-  return normalizeMovieMedia({ ...fallbackMovie, ...normalizedRemote });
+  if (normalizedRemote?.id && normalizedRemote.listingType !== "coming-soon")
+    return normalizedRemote;
+  if (fallbackMovie?.listingType !== "coming-soon") return normalizeMovieMedia(fallbackMovie);
+  return null;
 }
 
 async function fetchMovies(options = {}) {
@@ -48,7 +39,7 @@ async function fetchMovies(options = {}) {
   const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
   moviesRequest = requestJson("/api/movies", { timeoutMs })
     .then((data) => {
-      moviesCache = data.movies?.length > 0 ? scopeMoviesToCatalog(data.movies) : fallbackMovies;
+      moviesCache = normalizePublicMovies(data.movies ?? []);
       return moviesCache;
     })
     .catch(() => {
@@ -65,15 +56,14 @@ async function fetchMovies(options = {}) {
 async function fetchMovie(id, options = {}) {
   const cachedMovie = moviesCache?.find((movie) => movie.id === id);
   if (cachedMovie) return cachedMovie;
-  if (!allowedMovieIds.has(id)) return null;
   if (!SHOULD_FETCH_PUBLIC_MOVIES && !options.force) return getFallbackMovie(id);
 
   const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
   try {
     const data = await requestJson(`/api/movies/${encodeURIComponent(id)}`, { timeoutMs });
-    return scopeMovieToCatalog(data.movie, id);
+    return normalizePublicMovie(data.movie, id);
   } catch {
-    return getFallbackMovie(id);
+    return normalizePublicMovie(null, id);
   }
 }
 

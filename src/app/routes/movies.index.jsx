@@ -39,31 +39,39 @@ const categoryOrder = [
   "New releases",
 ];
 
-const Route = createFileRoute("/movies/")({
-  loader: () => fetchMovies(),
-  validateSearch: (search) => ({
+function validateMoviesSearch(search) {
+  return {
     city: typeof search.city === "string" ? search.city : "",
-    category: typeof search.category === "string" ? search.category : allFilterValue,
     genre: typeof search.genre === "string" ? search.genre : allFilterValue,
     language: typeof search.language === "string" ? search.language : allFilterValue,
     format: typeof search.format === "string" ? search.format : allFilterValue,
+    category: typeof search.category === "string" ? search.category : allFilterValue,
     sort: typeof search.sort === "string" ? search.sort : "Popularity",
     q: typeof search.q === "string" ? search.q : "",
-  }),
+  };
+}
+
+const Route = createFileRoute("/movies/")({
+  loader: () => fetchMovies(),
+  validateSearch: validateMoviesSearch,
   component: MoviesListing,
 });
 
 function MoviesListing() {
   const loadedMovies = Route.useLoaderData();
   const initialSearch = Route.useSearch();
-  const { city, category, genre, language, format, sort, q } = initialSearch;
+  return <MoviesListingView loadedMovies={loadedMovies} initialSearch={initialSearch} />;
+}
+
+function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
+  const { city, genre, language, format, category, sort, q } = initialSearch;
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
   const [selectedCity, setSelectedCity] = useState(city || readPreferredCity());
   const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
-  const [activeCategory, setActiveCategory] = useState(category || allFilterValue);
   const [activeGenre, setActiveGenre] = useState(genre || allFilterValue);
   const [activeLanguage, setActiveLanguage] = useState(language || allFilterValue);
   const [activeFormat, setActiveFormat] = useState(format || allFilterValue);
+  const [activeCategory, setActiveCategory] = useState(category || allFilterValue);
   const [sortBy, setSortBy] = useState(sort || "Popularity");
   const [searchTerm, setSearchTerm] = useState(q || "");
   const [activeSlide, setActiveSlide] = useState(0);
@@ -73,10 +81,10 @@ function MoviesListing() {
       setSelectedCity(city);
       writePreferredCity(city);
     }
-    setActiveCategory(category || allFilterValue);
     setActiveGenre(genre || allFilterValue);
     setActiveLanguage(language || allFilterValue);
     setActiveFormat(format || allFilterValue);
+    setActiveCategory(category || allFilterValue);
     setSortBy(sortOptions.includes(sort) ? sort : "Popularity");
     setSearchTerm(q || "");
   }, [category, city, format, genre, language, q, sort]);
@@ -139,7 +147,8 @@ function MoviesListing() {
       const movieGenres = getMovieGenres(movie);
       const movieLanguages = getMovieLanguages(movie);
       const movieFormats = getMovieFormats(movie);
-      const categoryMatch = activeCategory === allFilterValue || categorizeMovie(movie) === activeCategory;
+      const movieCategory = categorizeMovie(movie);
+      const categoryMatch = activeCategory === allFilterValue || movieCategory === activeCategory;
       const genreMatch = activeGenre === allFilterValue || movieGenres.includes(activeGenre);
       const languageMatch =
         activeLanguage === allFilterValue || movieLanguages.includes(activeLanguage);
@@ -150,6 +159,7 @@ function MoviesListing() {
         movie.duration,
         movie.certificate,
         movie.language,
+        movieCategory,
         ...movieGenres,
         ...movieLanguages,
         ...movieFormats,
@@ -157,7 +167,11 @@ function MoviesListing() {
         .join(" ")
         .toLowerCase();
       return (
-        categoryMatch && genreMatch && languageMatch && formatMatch && (!needle || searchableText.includes(needle))
+        categoryMatch &&
+        genreMatch &&
+        languageMatch &&
+        formatMatch &&
+        (!needle || searchableText.includes(needle))
       );
     });
 
@@ -169,15 +183,23 @@ function MoviesListing() {
         parseVoteCount(left.votes ?? left.votesText)
       );
     });
-  }, [activeCategory, activeFormat, activeGenre, activeLanguage, cityListedMovies, searchTerm, sortBy]);
+  }, [
+    activeCategory,
+    activeFormat,
+    activeGenre,
+    activeLanguage,
+    cityListedMovies,
+    searchTerm,
+    sortBy,
+  ]);
   const bannerMovies = useMemo(() => buildBannerMovies(cityListedMovies), [cityListedMovies]);
   const featured =
     bannerMovies[activeSlide % Math.max(bannerMovies.length, 1)] ?? cityListedMovies[0];
   const activeFilterCount = [
-    activeCategory !== allFilterValue,
     activeGenre !== allFilterValue,
     activeLanguage !== allFilterValue,
     activeFormat !== allFilterValue,
+    activeCategory !== allFilterValue,
     sortBy !== "Popularity",
     searchTerm.trim().length > 0,
   ].filter(Boolean).length;
@@ -195,15 +217,13 @@ function MoviesListing() {
   }, [bannerMovies.length]);
 
   const clearFilters = () => {
-    setActiveCategory(allFilterValue);
     setActiveGenre(allFilterValue);
     setActiveLanguage(allFilterValue);
     setActiveFormat(allFilterValue);
+    setActiveCategory(allFilterValue);
     setSortBy("Popularity");
     setSearchTerm("");
   };
-
-  if (!featured) return null;
 
   return (
     <main className="bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_11%,transparent),transparent_30%),linear-gradient(180deg,color-mix(in_oklch,var(--secondary)_48%,transparent),var(--background)_460px)] pb-12 dark:bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_32%),linear-gradient(180deg,color-mix(in_oklch,var(--card)_78%,transparent),var(--background)_540px)]">
@@ -260,48 +280,56 @@ function MoviesListing() {
             </div>
           </div>
 
-          <Link
-            to="/movies/$id"
-            params={{ id: featured.id }}
-            className="group hidden overflow-hidden rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur transition-transform hover:-translate-y-1 dark:border-white/15 dark:bg-white/8 lg:block"
-          >
-            <div className="relative">
-              <img
-                src={featured.poster || movieImageFallback(featured.title, "poster")}
-                alt={featured.title}
-                className="aspect-[2/3] w-full rounded-md object-cover"
-                onError={(event) => {
-                  event.currentTarget.src = movieImageFallback(featured.title, "poster");
-                }}
-              />
-              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-md bg-black/70 px-2.5 py-1.5 text-sm font-bold text-white backdrop-blur">
-                <Star className="h-4 w-4 fill-primary text-primary" />
-                {featured.rating}/10
-              </span>
+          {featured ? (
+            <Link
+              to="/movies/$id"
+              params={{ id: featured.id }}
+              className="group hidden overflow-hidden rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur transition-transform hover:-translate-y-1 dark:border-white/15 dark:bg-white/8 lg:block"
+            >
+              <div className="relative">
+                <img
+                  src={featured.poster || movieImageFallback(featured.title, "poster")}
+                  alt={featured.title}
+                  className="aspect-[2/3] w-full rounded-md object-cover"
+                  onError={(event) => {
+                    event.currentTarget.src = movieImageFallback(featured.title, "poster");
+                  }}
+                />
+                <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-md bg-black/70 px-2.5 py-1.5 text-sm font-bold text-white backdrop-blur">
+                  <Star className="h-4 w-4 fill-primary text-primary" />
+                  {featured.rating}/10
+                </span>
+              </div>
+              <div className="p-2">
+                <p className="line-clamp-1 text-sm font-extrabold">{featured.title}</p>
+                <p className="mt-1 truncate text-xs text-muted-foreground">
+                  {getMovieGenres(featured).slice(0, 2).join(" - ")}
+                </p>
+              </div>
+            </Link>
+          ) : (
+            <div className="hidden rounded-lg border border-dashed border-primary/25 bg-card/70 p-5 text-sm text-muted-foreground shadow-xl backdrop-blur lg:block">
+              Released movies will appear here once a theater owner adds live timings.
             </div>
-            <div className="p-2">
-              <p className="line-clamp-1 text-sm font-extrabold">{featured.title}</p>
-              <p className="mt-1 truncate text-xs text-muted-foreground">
-                {getMovieGenres(featured).slice(0, 2).join(" - ")}
-              </p>
-            </div>
-          </Link>
+          )}
 
-          <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 gap-2">
-            {bannerMovies.map((movie, index) => (
-              <button
-                key={movie.id}
-                type="button"
-                aria-label={`Show ${movie.title}`}
-                onClick={() => setActiveSlide(index)}
-                className={`h-2 rounded-full transition-all ${
-                  index === activeSlide % bannerMovies.length
-                    ? "w-8 bg-primary"
-                    : "w-2 bg-foreground/30 hover:bg-primary/60"
-                }`}
-              />
-            ))}
-          </div>
+          {bannerMovies.length > 1 ? (
+            <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 gap-2">
+              {bannerMovies.map((movie, index) => (
+                <button
+                  key={movie.id}
+                  type="button"
+                  aria-label={`Show ${movie.title}`}
+                  onClick={() => setActiveSlide(index)}
+                  className={`h-2 rounded-full transition-all ${
+                    index === activeSlide % bannerMovies.length
+                      ? "w-8 bg-primary"
+                      : "w-2 bg-foreground/30 hover:bg-primary/60"
+                  }`}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -433,13 +461,21 @@ function MoviesListing() {
         ) : (
           <div className="rounded-xl border border-dashed border-border/70 bg-card/70 p-10 text-center">
             <Search className="mx-auto h-8 w-8 text-primary" />
-            <h3 className="mt-4 text-lg font-bold">No city movies match these filters</h3>
+            <h3 className="mt-4 text-lg font-bold">
+              {cityListedMovies.length
+                ? "No city movies match these filters"
+                : `No released movies in ${selectedCity}`}
+            </h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Clear filters or search another movie title.
+              {cityListedMovies.length
+                ? "Clear filters or search another movie title."
+                : "Released movies appear here after a theater owner adds live timings."}
             </p>
-            <Button type="button" onClick={clearFilters} className="mt-5 rounded-full">
-              Clear filters
-            </Button>
+            {cityListedMovies.length ? (
+              <Button type="button" onClick={clearFilters} className="mt-5 rounded-full">
+                Clear filters
+              </Button>
+            ) : null}
           </div>
         )}
       </section>
@@ -579,20 +615,20 @@ function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
 function categorizeMovie(movie) {
   const genres = getMovieGenres(movie).map(normalizeText);
   const formats = getMovieFormats(movie).map(normalizeText);
-
   if (formats.some((format) => ["imax", "4dx", "laser"].includes(format))) {
     return "Premium formats";
   }
-  if (genres.some((genre) => ["animation", "family"].includes(genre))) {
+  if (genres.some((genre) => ["animation", "comedy", "family", "fantasy"].includes(genre))) {
     return "Family";
   }
-  if (genres.some((genre) => ["action", "adventure", "sci-fi", "fantasy"].includes(genre))) {
-    return "Blockbusters";
-  }
-  if (genres.some((genre) => ["drama", "biography", "history"].includes(genre))) {
+  if (genres.some((genre) => ["biography", "drama", "history"].includes(genre))) {
     return "Critics' picks";
   }
-
+  if (
+    genres.some((genre) => ["action", "adventure", "sci-fi", "thriller", "crime"].includes(genre))
+  ) {
+    return "Blockbusters";
+  }
   return "New releases";
 }
 
@@ -639,4 +675,5 @@ function normalizeText(value) {
     .toLowerCase();
 }
 
-export { Route };
+// eslint-disable-next-line react-refresh/only-export-components
+export { MoviesListingView, Route, validateMoviesSearch };

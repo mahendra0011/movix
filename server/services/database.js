@@ -39,6 +39,11 @@ function cleanDocument(document) {
 }
 
 async function seedMovies() {
+  if (!catalogMovies.length) {
+    console.log("MongoDB released movie catalog is empty; owner/admin live movies stay untouched.");
+    return;
+  }
+
   await Movie.bulkWrite(
     catalogMovies.map((movie, index) => {
       const payload = normalizeMovieSeed(movie, index);
@@ -76,6 +81,11 @@ async function seedTheaters() {
 }
 
 async function seedShows() {
+  if (!catalogMovies.length) {
+    console.log("MongoDB released show seed is empty; owner live shows stay untouched.");
+    return;
+  }
+
   const operations = buildShowSeedOperations(true);
   const seedShowIds = operations.map((operation) => operation.updateOne.filter.id);
   const [removedNonCatalog, removedStaleCatalog] = await Promise.all([
@@ -103,6 +113,11 @@ async function seedBookings() {
 }
 
 async function seedReviews({ force = false } = {}) {
+  if (!catalogMovies.length) {
+    console.log("MongoDB released review seed is empty; existing reviews stay untouched.");
+    return;
+  }
+
   const removed = await Review.deleteMany({ movieId: { $nin: catalogMovieIds } });
 
   const reviews = buildSeedReviews(catalogMovies.map((movie) => movie.id));

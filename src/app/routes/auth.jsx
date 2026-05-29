@@ -26,7 +26,7 @@ import {
   verifyOtp,
 } from "@/features/auth/api/authApi";
 import { hydrateAuth, logout, readStoredAuth, setCredentials } from "@/features/auth/authSlice";
-import { movies } from "@/features/movies/data/movieCatalog";
+import { comingSoonMovies, movies } from "@/features/movies/data/movieCatalog";
 import { movieImageFallback } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -41,7 +41,7 @@ const accessCards = [
   { label: "Owner", value: "Manage cinema", icon: Building2 },
 ];
 
-const authMovie = movies.find((movie) => movie.id === "dune-part-two") ?? movies[0];
+const authMovie = movies[0] ?? comingSoonMovies[0];
 const accountTypes = [
   { id: "user", label: "Customer" },
   { id: "theater-owner", label: "Theater owner" },
