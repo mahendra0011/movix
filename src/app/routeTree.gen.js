@@ -12,6 +12,7 @@ import { Route as OwnerRouteImport } from "./routes/owner";
 import { Route as MoviesRouteImport } from "./routes/movies";
 import { Route as DashboardRouteImport } from "./routes/dashboard";
 import { Route as ConfirmationRouteImport } from "./routes/confirmation";
+import { Route as ComingSoonRouteImport } from "./routes/coming-soon";
 import { Route as AuthRouteImport } from "./routes/auth";
 import { Route as AdminRouteImport } from "./routes/admin";
 import { Route as IndexRouteImport } from "./routes/index";
@@ -43,6 +44,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const ConfirmationRoute = ConfirmationRouteImport.update({
   id: "/confirmation",
   path: "/confirmation",
+  getParentRoute: () => rootRouteImport,
+});
+const ComingSoonRoute = ComingSoonRouteImport.update({
+  id: "/coming-soon",
+  path: "/coming-soon",
   getParentRoute: () => rootRouteImport,
 });
 const AuthRoute = AuthRouteImport.update({
@@ -93,6 +99,7 @@ const rootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  ComingSoonRoute: ComingSoonRoute,
   ConfirmationRoute: ConfirmationRoute,
   DashboardRoute: DashboardRoute,
   MoviesRoute: MoviesRouteWithChildren,

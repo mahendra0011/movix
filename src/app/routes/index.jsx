@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
 import { movies as fallbackMovies, theaters } from "@/features/movies/data/movieCatalog";
+import { movieImageFallback } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
@@ -360,9 +361,12 @@ function Home() {
     <main className="bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_32%),linear-gradient(180deg,color-mix(in_oklch,var(--secondary)_55%,transparent),var(--background)_520px)] pb-12 dark:bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_30%),linear-gradient(180deg,color-mix(in_oklch,var(--card)_75%,transparent),var(--background)_560px)]">
       <section className="relative isolate overflow-hidden border-b border-border/60">
         <img
-          src={featured.backdrop}
+          src={featured.backdrop || movieImageFallback(featured.title, "backdrop")}
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-55 dark:opacity-28"
+          onError={(event) => {
+            event.currentTarget.src = movieImageFallback(featured.title, "backdrop");
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/65 to-background/10 dark:via-background/82 dark:to-background/35" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
@@ -419,9 +423,12 @@ function Home() {
           <div className="hidden justify-start md:flex">
             <div className="relative w-56 rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8 xl:w-64">
               <img
-                src={featured.poster}
+                src={featured.poster || movieImageFallback(featured.title, "poster")}
                 alt={featured.title}
                 className="aspect-[2/3] w-full rounded-md object-cover"
+                onError={(event) => {
+                  event.currentTarget.src = movieImageFallback(featured.title, "poster");
+                }}
               />
               <a
                 href={trailerSearchUrl(featured.title)}
@@ -599,6 +606,7 @@ function Home() {
           icon={CalendarDays}
           title="Coming soon"
           subtitle="Exciting movies heading your way"
+          actionTo="/coming-soon"
         >
           <div className="mt-4 grid gap-2">
             {comingSoon.map((movie, index) => (
@@ -884,10 +892,13 @@ function CompactMovieCard({ movie, prominent = false }) {
         }`}
       >
         <img
-          src={movie.poster}
+          src={movie.poster || movieImageFallback(movie.title, "poster")}
           alt={movie.title}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          onError={(event) => {
+            event.currentTarget.src = movieImageFallback(movie.title, "poster");
+          }}
         />
         <span
           className={`absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-black/70 font-semibold text-white backdrop-blur ${
@@ -1013,7 +1024,15 @@ function FeatureArtwork({ type }) {
   );
 }
 
-function PanelCard({ id, icon: Icon, title, subtitle, actionLabel = "See all", children }) {
+function PanelCard({
+  id,
+  icon: Icon,
+  title,
+  subtitle,
+  actionLabel = "See all",
+  actionTo,
+  children,
+}) {
   return (
     <section
       id={id}
@@ -1029,9 +1048,18 @@ function PanelCard({ id, icon: Icon, title, subtitle, actionLabel = "See all", c
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           </div>
         </div>
-        <a href={id ? `#${id}` : "#movies"} className="shrink-0 text-xs font-semibold text-primary">
-          {actionLabel} <ChevronRight className="inline h-3.5 w-3.5" />
-        </a>
+        {actionTo ? (
+          <Link to={actionTo} className="shrink-0 text-xs font-semibold text-primary">
+            {actionLabel} <ChevronRight className="inline h-3.5 w-3.5" />
+          </Link>
+        ) : (
+          <a
+            href={id ? `#${id}` : "#movies"}
+            className="shrink-0 text-xs font-semibold text-primary"
+          >
+            {actionLabel} <ChevronRight className="inline h-3.5 w-3.5" />
+          </a>
+        )}
       </div>
       {children}
     </section>
@@ -1127,22 +1155,18 @@ function PremiereSpotlightCard({ movie }) {
   );
 }
 
-function movieImageFallback(title, type = "poster") {
-  const size = type === "backdrop" ? "1280x720" : "780x1170";
-  return `https://placehold.co/${size}/0f172a/ffffff/png?text=${encodeURIComponent(
-    title || "Movie",
-  )}`;
-}
-
 function MiniMovieTile({ movie, badge }) {
   return (
     <Link to="/movies/$id" params={{ id: movie.id }} className="group block">
       <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-muted">
         <img
-          src={movie.backdrop || movie.poster}
+          src={movie.backdrop || movie.poster || movieImageFallback(movie.title, "backdrop")}
           alt={movie.title}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          onError={(event) => {
+            event.currentTarget.src = movieImageFallback(movie.title, "backdrop");
+          }}
         />
         <span className="absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-[10px] font-bold text-primary-foreground">
           {badge}

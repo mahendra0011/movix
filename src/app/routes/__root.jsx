@@ -113,7 +113,7 @@ const footerColumns = [
     title: "Movies",
     links: [
       { label: "Now showing", to: "/" },
-      { label: "Coming soon", to: "/" },
+      { label: "Coming soon", to: "/coming-soon" },
       { label: "Cinemas", to: "/" },
       { label: "Offers", to: "/" },
     ],

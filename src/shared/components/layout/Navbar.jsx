@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
   Building2,
+  CalendarDays,
   Film,
   Heart,
   Home,
@@ -32,6 +33,7 @@ import { clearSearchBox, readSearchBoxValue } from "@/shared/services/searchBox"
 const navItems = [
   { label: "Home", to: "/", icon: Home, exact: true },
   { label: "Movies", to: "/movies/", icon: Film },
+  { label: "Coming Soon", to: "/coming-soon", icon: CalendarDays },
   { label: "Wishlist", to: "/wishlist", icon: Heart },
 ];
 
