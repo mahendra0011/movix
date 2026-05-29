@@ -17,6 +17,230 @@ const mongoUri = cleanEnv(process.env.MONGODB_URI);
 const mongoDb = cleanEnv(process.env.MONGODB_DB) || "moviex";
 const WRITE_BATCH_SIZE = 750;
 
+const movieArtwork = {
+  jawan: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/3/39/Jawan_film_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/3/39/Jawan_film_poster.jpg",
+  },
+  pathaan: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/c/c3/Pathaan_film_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/c/c3/Pathaan_film_poster.jpg",
+  },
+  animal: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/9/90/Animal_%282023_film%29_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/9/90/Animal_%282023_film%29_poster.jpg",
+  },
+  fighter: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/d/df/Fighter_film_teaser.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/d/df/Fighter_film_teaser.jpg",
+  },
+  "stree-2": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/a/a1/Stree_2.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/a/a1/Stree_2.jpg",
+  },
+  "12th-fail": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/f/f2/12th_Fail_poster.jpeg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/f/f2/12th_Fail_poster.jpeg",
+  },
+  "drishyam-2": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/3/3f/Drishyam_2.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/3/3f/Drishyam_2.jpg",
+  },
+  brahmastra: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/e/ea/Brahmastra_Part_One_Shiva.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/e/ea/Brahmastra_Part_One_Shiva.jpg",
+  },
+  tumbbad: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/4/41/Tumbbad_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/4/41/Tumbbad_poster.jpg",
+  },
+  andhadhun: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/4/47/Andhadhun_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/4/47/Andhadhun_poster.jpg",
+  },
+  rrr: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/d/d7/RRR_Poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/d/d7/RRR_Poster.jpg",
+  },
+  "kgf-chapter-2": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/d/d0/K.G.F_Chapter_2.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/d/d0/K.G.F_Chapter_2.jpg",
+  },
+  kantara: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/8/84/Kantara_poster.jpeg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/8/84/Kantara_poster.jpeg",
+  },
+  pushpa: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/7/75/Pushpa_-_The_Rise_%282021_film%29.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/7/75/Pushpa_-_The_Rise_%282021_film%29.jpg",
+  },
+  "kalki-2898-ad": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/4/4c/Kalki_2898_AD.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/4/4c/Kalki_2898_AD.jpg",
+  },
+  vikram: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/9/93/Vikram_2022_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/9/93/Vikram_2022_poster.jpg",
+  },
+  leo: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/7/75/Leo_%282023_Indian_film%29.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/7/75/Leo_%282023_Indian_film%29.jpg",
+  },
+  maharaja: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/8/82/Maharaja_2024_film_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/8/82/Maharaja_2024_film_poster.jpg",
+  },
+  "manjummel-boys": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/9/99/Manjummel_Boys_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/9/99/Manjummel_Boys_poster.jpg",
+  },
+  aavesham: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/d/d1/Aavesham.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/d/d1/Aavesham.jpg",
+  },
+  premalu: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/c/c5/Premalu_film_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/c/c5/Premalu_film_poster.jpg",
+  },
+  chhaava: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/7/75/Chhaava_film_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/7/75/Chhaava_film_poster.jpg",
+  },
+  "sitaare-zameen-par": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/4/44/Sitaare_Zameen_Par_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/4/44/Sitaare_Zameen_Par_poster.jpg",
+  },
+  "war-2": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/f/f5/War_2_official_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/f/f5/War_2_official_poster.jpg",
+  },
+  "avatar-the-way-of-water": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/5/54/Avatar_The_Way_of_Water_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/5/54/Avatar_The_Way_of_Water_poster.jpg",
+  },
+  "top-gun-maverick": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/1/13/Top_Gun_Maverick_Poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/1/13/Top_Gun_Maverick_Poster.jpg",
+  },
+  "mission-impossible-dead-reckoning": {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/e/ed/Mission-_Impossible_%E2%80%93_Dead_Reckoning_Part_One_poster.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/e/ed/Mission-_Impossible_%E2%80%93_Dead_Reckoning_Part_One_poster.jpg",
+  },
+  "john-wick-4": {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/d/d0/John_Wick_-_Chapter_4_promotional_poster.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/d/d0/John_Wick_-_Chapter_4_promotional_poster.jpg",
+  },
+  "godzilla-x-kong": {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/b/be/Godzilla_x_kong_the_new_empire_poster.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/b/be/Godzilla_x_kong_the_new_empire_poster.jpg",
+  },
+  "inside-out-2": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
+  },
+  "deadpool-wolverine": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
+  },
+  "guardians-vol-3": {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/7/74/Guardians_of_the_Galaxy_Vol._3_poster.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/7/74/Guardians_of_the_Galaxy_Vol._3_poster.jpg",
+  },
+  "the-flash": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/e/ed/The_Flash_%28film%29_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/e/ed/The_Flash_%28film%29_poster.jpg",
+  },
+  wonka: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/9/90/Wonka_2023_film_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/9/90/Wonka_2023_film_poster.jpg",
+  },
+  "the-marvels": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/7/7a/The_Marvels_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/7/7a/The_Marvels_poster.jpg",
+  },
+  napoleon: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/2/2e/Napoleon_Film_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/2/2e/Napoleon_Film_poster.jpg",
+  },
+  "poor-things": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/f/f3/Poor_Things_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/f/f3/Poor_Things_poster.jpg",
+  },
+  "killers-of-the-flower-moon": {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/8/88/Killers_of_the_Flower_Moon_film_poster.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/8/88/Killers_of_the_Flower_Moon_film_poster.jpg",
+  },
+  "civil-war": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/0/0d/Civil_War_2024_film_poster.jpeg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/0/0d/Civil_War_2024_film_poster.jpeg",
+  },
+  furiosa: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/3/34/Furiosa_A_Mad_Max_Saga.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/3/34/Furiosa_A_Mad_Max_Saga.jpg",
+  },
+  "a-quiet-place-day-one": {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/e/e7/A_Quiet_Place_Day_One_%282024%29_poster.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/e/e7/A_Quiet_Place_Day_One_%282024%29_poster.jpg",
+  },
+  twisters: {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/2/24/Twisters_Official_US_Theatrical_Poster.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/2/24/Twisters_Official_US_Theatrical_Poster.jpg",
+  },
+  "despicable-me-4": {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/e/ed/Despicable_Me_4_Theatrical_Release_Poster.jpeg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/e/ed/Despicable_Me_4_Theatrical_Release_Poster.jpeg",
+  },
+  "kingdom-of-the-planet-of-the-apes": {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/c/cf/Kingdom_of_the_Planet_of_the_Apes_poster.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/c/cf/Kingdom_of_the_Planet_of_the_Apes_poster.jpg",
+  },
+  "bad-boys-ride-or-die": {
+    poster:
+      "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg",
+    backdrop:
+      "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg",
+  },
+  "alien-romulus": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/c/cb/Alien_Romulus_2024_%28poster%29.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/c/cb/Alien_Romulus_2024_%28poster%29.jpg",
+  },
+  "joker-folie-a-deux": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/e/e8/Joker_-_Folie_%C3%A0_Deux_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/e/e8/Joker_-_Folie_%C3%A0_Deux_poster.jpg",
+  },
+  "gladiator-2": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/0/04/Gladiator_II_%282024%29_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/0/04/Gladiator_II_%282024%29_poster.jpg",
+  },
+  "moana-2": {
+    poster: "https://upload.wikimedia.org/wikipedia/en/7/73/Moana_2_poster.jpg",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/7/73/Moana_2_poster.jpg",
+  },
+  wicked: {
+    poster: "https://upload.wikimedia.org/wikipedia/en/3/3c/Wicked_%282024_film%29_poster.png",
+    backdrop: "https://upload.wikimedia.org/wikipedia/en/3/3c/Wicked_%282024_film%29_poster.png",
+  },
+};
+
 const extraMovies = [
   movieSeed(
     "jawan",
@@ -757,11 +981,16 @@ function movieSeed(
   description,
   format,
 ) {
+  const artwork = movieArtwork[id];
+  if (!artwork) {
+    throw new Error(`Missing poster/backdrop artwork for ${title} (${id}).`);
+  }
+
   return {
     id,
     title,
-    poster: `https://picsum.photos/seed/bookmyscreen-${id}-poster/600/900`,
-    backdrop: `https://picsum.photos/seed/bookmyscreen-${id}-backdrop/1400/800`,
+    poster: artwork.poster,
+    backdrop: artwork.backdrop,
     genres,
     language,
     duration,
@@ -786,7 +1015,7 @@ function buildCast(title, id) {
 }
 
 function avatarFor(id, index) {
-  return `https://picsum.photos/seed/bookmyscreen-${id}-cast-${index}/240/240`;
+  return "";
 }
 
 function mergeMovies(baseMovies, generatedMovies) {
@@ -814,7 +1043,7 @@ function normalizeMovie(movie) {
       ? movie.cast.map((member, index) => ({
           name: member.name || `Cast ${index + 1}`,
           role: member.role || "Actor",
-          avatar: member.avatar || movie.poster,
+          avatar: member.avatar || "",
         }))
       : buildCast(movie.title, movie.id),
     format: toList(movie.format, ["2D"]),
