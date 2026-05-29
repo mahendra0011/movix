@@ -4,7 +4,7 @@ import { env } from "../config/env.js";
 const DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpe?g|webp);base64,/i;
 const HTTP_IMAGE_PATTERN = /^https?:\/\//i;
 const CLOUDINARY_HOST_PATTERN = /(^|\.)res\.cloudinary\.com$/i;
-const MAX_REMOTE_IMAGE_BYTES = 8 * 1024 * 1024;
+const CLOUDINARY_UPLOAD_TIMEOUT_MS = 45000;
 
 function isCloudinaryConfigured() {
   const config = getCloudinaryConfig();
@@ -55,20 +55,27 @@ async function uploadImageToCloudinary(file, options = {}) {
   if (publicId) params.public_id = publicId;
   if (options.tags?.length) params.tags = options.tags.join(",");
 
-  const uploadFile = HTTP_IMAGE_PATTERN.test(image) ? await fetchImageAsDataUri(image) : image;
   const body = new FormData();
-  body.append("file", uploadFile);
+  body.append("file", image);
   body.append("api_key", config.apiKey);
   for (const [key, value] of Object.entries(params)) {
     body.append(key, value);
   }
   body.append("signature", signCloudinaryParams(params, config.apiSecret));
 
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${config.cloudName}/image/upload`, {
-    method: "POST",
-    body,
-  });
-  const payload = await response.json().catch(() => ({}));
+  const response = await fetchWithTimeout(
+    `https://api.cloudinary.com/v1_1/${config.cloudName}/image/upload`,
+    {
+      method: "POST",
+      body,
+    },
+    CLOUDINARY_UPLOAD_TIMEOUT_MS,
+  );
+  const payload = await withTimeout(
+    response.json().catch(() => ({})),
+    CLOUDINARY_UPLOAD_TIMEOUT_MS,
+    "Cloudinary upload response timed out.",
+  );
 
   if (!response.ok) {
     const error = new Error(payload.error?.message || "Cloudinary upload failed.");
@@ -91,54 +98,24 @@ function isUploadableImageValue(value) {
   return DATA_IMAGE_PATTERN.test(value) || HTTP_IMAGE_PATTERN.test(value);
 }
 
-async function fetchImageAsDataUri(url) {
-  const response = await fetchWithRetry(url, {
-    headers: {
-      Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-      "User-Agent": "BookMyScreenImageMigration/1.0",
-    },
-  });
-  const contentType = response.headers.get("content-type")?.split(";")[0]?.trim() || "";
-  if (!contentType.startsWith("image/")) {
-    const error = new Error("Remote URL is not an image.");
-    error.status = 400;
-    throw error;
+async function fetchWithTimeout(url, init, timeoutMs) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const contentLength = Number(response.headers.get("content-length") || 0);
-  if (contentLength > MAX_REMOTE_IMAGE_BYTES) {
-    const error = new Error("Remote image is too large.");
-    error.status = 400;
-    throw error;
-  }
-
-  const bytes = Buffer.from(await response.arrayBuffer());
-  if (bytes.byteLength > MAX_REMOTE_IMAGE_BYTES) {
-    const error = new Error("Remote image is too large.");
-    error.status = 400;
-    throw error;
-  }
-
-  return `data:${contentType};base64,${bytes.toString("base64")}`;
 }
 
-async function fetchWithRetry(url, init) {
-  const delays = [0, 1500, 4000, 8000];
-  let lastResponse;
-  for (const delayMs of delays) {
-    if (delayMs) await wait(delayMs);
-    lastResponse = await fetch(url, init).catch((error) => {
-      const wrapped = new Error(`Image fetch failed: ${error.message}`);
-      wrapped.status = 502;
-      throw wrapped;
-    });
-    if (lastResponse.ok) return lastResponse;
-    if (![408, 425, 429, 500, 502, 503, 504].includes(lastResponse.status)) break;
-  }
-
-  const error = new Error(`Image fetch failed with ${lastResponse?.status || "unknown"} status.`);
-  error.status = lastResponse?.status === 429 ? 429 : 400;
-  throw error;
+function withTimeout(promise, timeoutMs, message) {
+  let timeout;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+    }),
+  ]).finally(() => clearTimeout(timeout));
 }
 
 function getCloudinaryConfig() {
@@ -196,12 +173,6 @@ function sanitizePublicId(value) {
     .replace(/[^a-z0-9/_-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 140);
-}
-
-function wait(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
 }
 
 export {

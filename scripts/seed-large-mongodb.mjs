@@ -928,7 +928,6 @@ const enrichedTheaters = catalogTheaters.map((theater, index) =>
 );
 const showOperations = buildShowOperations(enrichedTheaters, allMovies);
 const userOperations = buildUserOperations();
-const bookingOperations = buildBookingOperations(enrichedTheaters, allMovies);
 
 await upsertInBatches(
   Movie,
@@ -957,7 +956,10 @@ await upsertInBatches(
 await upsertInBatches(Show, showOperations, "shows");
 await upsertInBatches(Review, buildReviewOperations(allMovies), "reviews");
 await upsertInBatches(User, userOperations, "users");
-await upsertInBatches(Booking, bookingOperations, "bookings");
+const deletedBookings = await Booking.deleteMany({});
+console.log(
+  `Deleted ${deletedBookings.deletedCount} bookings. Booking collection will stay empty.`,
+);
 await upsertInBatches(Subscriber, buildSubscriberOperations(), "subscribers");
 
 const counts = {
@@ -1272,44 +1274,6 @@ function buildUserOperations() {
   }));
 }
 
-function buildBookingOperations(theaters, movies) {
-  return Array.from({ length: 260 }, (_, index) => {
-    const movie = movies[index % movies.length];
-    const theater = theaters[index % theaters.length];
-    const plan = theater.showPlan[index % theater.showPlan.length];
-    const seats = [`${rowFor(index)}${(index % 10) + 1}`, `${rowFor(index)}${(index % 10) + 2}`];
-    const cancelled = index % 9 === 0;
-    const total = 420 + (index % 8) * 90;
-    const payload = {
-      ref: `BMSDEMO${String(index + 1).padStart(5, "0")}`,
-      email: `customer${String((index % 80) + 1).padStart(2, "0")}@bookmyscreen.local`,
-      showId: `${movie.id}-${theater.id}-${index % theater.showPlan.length}`,
-      movieId: movie.id,
-      movie: movie.title,
-      theaterId: theater.id,
-      theater: theater.name,
-      screen: plan.screen,
-      time: `${relativeDateLabel(index)} ${plan.time}`,
-      seats,
-      total,
-      totalAmount: total,
-      paymentId: `seed-pay-${String(index + 1).padStart(5, "0")}`,
-      paymentProvider: "local",
-      paymentStatus: cancelled ? "refunded" : "paid",
-      status: cancelled ? "cancelled" : "confirmed",
-      createdAt: new Date(Date.now() - (index % 30) * 86400000),
-      updatedAt: new Date(Date.now() - (index % 14) * 86400000),
-    };
-    return {
-      updateOne: {
-        filter: { ref: payload.ref },
-        update: { $set: payload },
-        upsert: true,
-      },
-    };
-  });
-}
-
 function buildSubscriberOperations() {
   return Array.from({ length: 60 }, (_, index) => ({
     updateOne: {
@@ -1499,20 +1463,10 @@ function buildRows(count) {
   return "ABCDEFGHJKLMNPQRSTUVWXYZ".slice(0, count).split("");
 }
 
-function rowFor(index) {
-  return buildRows(10)[index % 10];
-}
-
 function inferShowStatus(index) {
   if (index === 4) return "sold";
   if (index === 3) return "fast";
   return "ok";
-}
-
-function relativeDateLabel(index) {
-  if (index % 3 === 0) return "Today";
-  if (index % 3 === 1) return "Tomorrow";
-  return "This week";
 }
 
 function initials(value) {
