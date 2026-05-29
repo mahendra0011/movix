@@ -1068,30 +1068,43 @@ function PremiereSpotlightSection({ movies }) {
 }
 
 function PremiereSpotlightCard({ movie }) {
+  const poster = movie.poster || movieImageFallback(movie.title, "poster");
+  const backdrop = movie.backdrop || poster;
+
   return (
     <Link
       to="/movies/$id"
       params={{ id: movie.id }}
-      className="group relative grid min-h-[176px] overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg sm:grid-cols-[108px_1fr]"
+      className="group relative grid min-h-[176px] grid-cols-[92px_1fr] overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg sm:grid-cols-[118px_1fr]"
     >
       <img
-        src={movie.backdrop || movie.poster}
+        src={backdrop}
         alt=""
         loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover opacity-85 transition-transform duration-500 group-hover:scale-105"
+        className="absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105"
+        onError={(event) => {
+          if (event.currentTarget.src !== poster) {
+            event.currentTarget.src = poster;
+            return;
+          }
+          event.currentTarget.src = movieImageFallback(movie.title, "backdrop");
+        }}
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/86 to-background/20 dark:from-card dark:via-card/82 dark:to-card/25" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background/45 via-transparent to-transparent dark:from-background/80" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background/92 via-background/76 to-background/12 dark:from-card/94 dark:via-card/72 dark:to-card/18" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-transparent dark:from-background/55" />
 
-      <div className="relative z-10 hidden items-center p-5 sm:flex">
+      <div className="relative z-10 flex items-center p-3 sm:p-5">
         <img
-          src={movie.poster}
+          src={poster}
           alt={movie.title}
           loading="lazy"
-          className="h-28 w-20 rounded-md object-cover shadow-xl shadow-black/25"
+          className="h-28 w-20 rounded-md object-cover shadow-xl shadow-black/25 ring-1 ring-white/25 sm:h-32 sm:w-24"
+          onError={(event) => {
+            event.currentTarget.src = movieImageFallback(movie.title, "poster");
+          }}
         />
       </div>
-      <div className="relative z-10 flex min-w-0 flex-col justify-center p-5 sm:pl-0">
+      <div className="relative z-10 flex min-w-0 flex-col justify-center py-4 pl-0 pr-4 sm:p-5 sm:pl-0">
         <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-primary/18 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
           <Flame className="h-3.5 w-3.5" />
           Premiere
@@ -1112,6 +1125,13 @@ function PremiereSpotlightCard({ movie }) {
       </div>
     </Link>
   );
+}
+
+function movieImageFallback(title, type = "poster") {
+  const size = type === "backdrop" ? "1280x720" : "780x1170";
+  return `https://placehold.co/${size}/0f172a/ffffff/png?text=${encodeURIComponent(
+    title || "Movie",
+  )}`;
 }
 
 function MiniMovieTile({ movie, badge }) {
