@@ -666,21 +666,26 @@ function OfferCard({ offer }) {
 }
 
 function ProfileBubble({ name, role, avatar }) {
+  const imageSrc = avatar || castAvatarFallback(name);
+  const fallbackSrc = castAvatarFallback(name);
+
   return (
     <div className="rounded-lg border border-border/60 bg-card p-4 text-center shadow-sm transition-transform hover:-translate-y-0.5">
       <div className="relative mx-auto grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-primary/15 ring-1 ring-primary/20">
         <span className="text-sm font-bold text-foreground">{initials(name)}</span>
-        {avatar ? (
-          <img
-            src={avatar}
-            alt={name}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
-            onError={(event) => {
-              event.currentTarget.style.display = "none";
-            }}
-          />
-        ) : null}
+        <img
+          src={imageSrc}
+          alt={name}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={(event) => {
+            if (event.currentTarget.src !== fallbackSrc) {
+              event.currentTarget.src = fallbackSrc;
+              return;
+            }
+            event.currentTarget.style.display = "none";
+          }}
+        />
       </div>
       <p className="mt-2 text-sm font-medium">{name}</p>
       <p className="text-xs text-muted-foreground">{role}</p>
@@ -967,6 +972,12 @@ function getMovieCast(movie) {
     .slice(0, 6);
 
   return cast.length ? cast : detailCast.map((name) => ({ name, role: "Actor", avatar: "" }));
+}
+
+function castAvatarFallback(name) {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    name || "Cast",
+  )}&background=0f766e&color=fff&size=256&format=png&bold=true`;
 }
 
 function buildDetailHighlights(summary) {
