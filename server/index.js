@@ -12,6 +12,7 @@ import { ownerRoutes } from "./routes/ownerRoutes.js";
 import { paymentRoutes } from "./routes/paymentRoutes.js";
 import { showRoutes } from "./routes/showRoutes.js";
 import { theaterRoutes } from "./routes/theaterRoutes.js";
+import { uploadRoutes } from "./routes/uploadRoutes.js";
 import { connectDatabase, isMongoReady } from "./services/database.js";
 import { registerNotificationSockets } from "./sockets/notificationSocket.js";
 import { registerSeatSockets } from "./sockets/seatSocket.js";
@@ -53,6 +54,7 @@ app.get("/api/health", (_request, response) => {
       env.paymentProvider === "razorpay" && env.razorpayKeyId && env.razorpayKeySecret
         ? "Razorpay connected"
         : "Local test checkout",
+    uploads: env.cloudinaryUrl || env.cloudinaryCloudName ? "Cloudinary configured" : "Disabled",
   });
 });
 
@@ -64,6 +66,7 @@ app.use("/api/theaters", theaterRoutes);
 app.use("/api/shows", showRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/uploads", uploadRoutes);
 app.use("/api", bookingRoutes);
 
 app.use((error, _request, response, _next) => {

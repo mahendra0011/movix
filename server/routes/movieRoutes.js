@@ -7,6 +7,7 @@ import { Review } from "../models/Review.js";
 import { buildSeedReviews, REVIEW_TAGS } from "../data/reviewSeeds.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
 import { getMemoryBookings } from "../services/bookingStore.js";
+import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
 import { movies } from "../../src/features/movies/data/movieCatalog.js";
 
 const router = Router();
@@ -292,6 +293,7 @@ router.post(
   requireRole("admin"),
   asyncHandler(async (request, response) => {
     const payload = normalizeMovie(request.body);
+    await ensureMovieUsesCloudinary(payload);
 
     if (isMongoReady()) {
       const exists = await Movie.findOne({ id: payload.id }).lean();
@@ -314,6 +316,27 @@ router.post(
     response.status(201).json({ movie: payload });
   }),
 );
+
+async function ensureMovieUsesCloudinary(movie) {
+  const folder = `bookmyscreen/admin/movies/${slugify(movie.id || movie.title)}`;
+  movie.poster = await ensureCloudinaryImageUrl(movie.poster, {
+    folder,
+    publicId: `${movie.id}-poster`,
+  });
+  movie.backdrop = await ensureCloudinaryImageUrl(movie.backdrop, {
+    folder,
+    publicId: `${movie.id}-backdrop`,
+  });
+  movie.cast = await Promise.all(
+    (movie.cast || []).map(async (member, index) => ({
+      ...member,
+      avatar: await ensureCloudinaryImageUrl(member.avatar, {
+        folder: `${folder}/cast`,
+        publicId: `${movie.id}-cast-${index + 1}`,
+      }),
+    })),
+  );
+}
 
 router.get(
   "/:id/reviews",

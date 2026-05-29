@@ -6,6 +6,7 @@ import { User } from "../models/User.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { isMongoReady } from "../services/database.js";
+import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
 
 const router = Router();
 
@@ -38,6 +39,7 @@ router.put(
       profile,
       screens,
     });
+    await ensureShowsUseCloudinary(shows, owner);
     const services = normalizeServices(request.body.services);
 
     await Theater.updateOne(
@@ -405,6 +407,50 @@ function normalizeCast(input = []) {
       avatar: cleanText(member?.avatar),
     }))
     .filter((member) => member.name);
+}
+
+async function ensureShowsUseCloudinary(shows, owner) {
+  const cache = new Map();
+
+  for (const show of shows) {
+    const folder = `bookmyscreen/owners/${slugify(owner.email || owner._id)}/movies/${slugify(
+      show.movieId || show.movie,
+    )}`;
+    show.poster = await ensureCachedCloudinaryImage(show.poster, {
+      cache,
+      folder,
+      publicId: `${show.movieId || show.id}-poster`,
+    });
+    show.backdrop = await ensureCachedCloudinaryImage(show.backdrop, {
+      cache,
+      folder,
+      publicId: `${show.movieId || show.id}-backdrop`,
+    });
+
+    show.cast = await Promise.all(
+      (show.cast || []).map(async (member, index) => ({
+        ...member,
+        avatar: await ensureCachedCloudinaryImage(member.avatar, {
+          cache,
+          folder: `${folder}/cast`,
+          publicId: `${show.movieId || show.id}-cast-${index + 1}`,
+        }),
+      })),
+    );
+  }
+}
+
+async function ensureCachedCloudinaryImage(value, options) {
+  const image = cleanText(value);
+  if (!image) return "";
+  if (options.cache.has(image)) return options.cache.get(image);
+
+  const uploaded = await ensureCloudinaryImageUrl(image, {
+    folder: options.folder,
+    publicId: options.publicId,
+  });
+  options.cache.set(image, uploaded);
+  return uploaded;
 }
 
 function toTheaterScreen(screen) {

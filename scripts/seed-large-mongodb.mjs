@@ -8,6 +8,10 @@ import { Subscriber } from "../server/models/Subscriber.js";
 import { Theater } from "../server/models/Theater.js";
 import { User } from "../server/models/User.js";
 import {
+  ensureCloudinaryImageUrl,
+  isCloudinaryConfigured,
+} from "../server/services/cloudinaryService.js";
+import {
   movies as catalogMovies,
   showTimes,
   theaters as catalogTheaters,
@@ -917,7 +921,7 @@ console.log(`Connected to MongoDB database "${mongoose.connection.name}".`);
 
 await ensureMovieTextIndex();
 
-const allMovies = mergeMovies(catalogMovies, extraMovies);
+const allMovies = await ensureMoviesUseCloudinary(mergeMovies(catalogMovies, extraMovies));
 const allMovieIds = allMovies.map((movie) => movie.id);
 const enrichedTheaters = catalogTheaters.map((theater, index) =>
   enrichTheater(theater, index, allMovieIds),
@@ -1406,6 +1410,55 @@ async function upsertInBatches(model, operations, label) {
     await model.bulkWrite(operations.slice(index, index + WRITE_BATCH_SIZE), { ordered: false });
   }
   console.log(`Upserted ${operations.length} ${label}.`);
+}
+
+async function ensureMoviesUseCloudinary(movies) {
+  if (!isCloudinaryConfigured()) return movies;
+
+  const cache = new Map();
+  const uploadedMovies = [];
+  for (const movie of movies) {
+    const folder = `bookmyscreen/seed/movies/${movie.id}`;
+    const poster = await uploadCachedImage(movie.poster, {
+      cache,
+      folder,
+      publicId: `${movie.id}-poster`,
+    });
+    const backdrop = await uploadCachedImage(movie.backdrop, {
+      cache,
+      folder,
+      publicId: `${movie.id}-backdrop`,
+    });
+    const cast = [];
+    for (const [index, member] of (movie.cast || []).entries()) {
+      cast.push({
+        ...member,
+        avatar: await uploadCachedImage(member.avatar, {
+          cache,
+          folder: `${folder}/cast`,
+          publicId: `${movie.id}-cast-${index + 1}`,
+        }),
+      });
+    }
+
+    uploadedMovies.push({ ...movie, poster, backdrop, cast });
+  }
+
+  console.log(`Cloudinary artwork ready for ${uploadedMovies.length} movies.`);
+  return uploadedMovies;
+}
+
+async function uploadCachedImage(value, options) {
+  const image = String(value || "").trim();
+  if (!image) return "";
+  if (options.cache.has(image)) return options.cache.get(image);
+
+  const uploaded = await ensureCloudinaryImageUrl(image, {
+    folder: options.folder,
+    publicId: options.publicId,
+  });
+  options.cache.set(image, uploaded);
+  return uploaded;
 }
 
 async function ensureMovieTextIndex() {

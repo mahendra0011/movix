@@ -17,6 +17,7 @@
     "api": "node server/index.js",
     "start:api": "node server/index.js",
     "preview": "vite preview",
+    "migrate:cloudinary": "node scripts/migrate-images-cloudinary.mjs",
     "seed:large": "node scripts/seed-large-mongodb.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."

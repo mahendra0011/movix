@@ -42,6 +42,10 @@ const env = {
   paymentProvider: readEnv("PAYMENT_PROVIDER") ?? "local",
   razorpayKeyId: readEnv("RAZORPAY_KEY_ID"),
   razorpayKeySecret: readEnv("RAZORPAY_KEY_SECRET"),
+  cloudinaryUrl: readEnv("CLOUDINARY_URL"),
+  cloudinaryCloudName: readEnv("CLOUDINARY_CLOUD_NAME"),
+  cloudinaryApiKey: readEnv("CLOUDINARY_API_KEY"),
+  cloudinaryApiSecret: readEnv("CLOUDINARY_API_SECRET"),
   adminEmail: (readEnv("ADMIN_EMAIL") ?? "mahendrapra0077@gmail.com").toLowerCase(),
   adminPassword: readEnv("ADMIN_PASSWORD") ?? "mahendra@123",
 };

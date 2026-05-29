@@ -34,6 +34,7 @@ import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { TrendAreaChart, VerticalBars } from "@/shared/components/ui/lightweight-chart";
+import { requestJson } from "@/shared/services/httpClient";
 
 const Route = createFileRoute("/owner")({
   component: OwnerDashboard,
@@ -837,9 +838,12 @@ function OwnerMoviesTab({
     const file = event.target.files?.[0];
     if (!file) return;
     try {
-      const dataUrl = await readImageFile(file);
-      onFormChange((current) => ({ ...current, [field]: dataUrl }));
-      setUploadNotice(`${file.name} uploaded for preview and saving.`);
+      setUploadNotice(`${file.name} Cloudinary par upload ho raha hai...`);
+      const imageUrl = await uploadImageFile(file, {
+        folder: `bookmyscreen/owner/movies/${field}`,
+      });
+      onFormChange((current) => ({ ...current, [field]: imageUrl }));
+      setUploadNotice(`${file.name} Cloudinary par upload ho gaya.`);
     } catch (error) {
       setUploadNotice(error.message || "Image upload failed.");
     } finally {
@@ -861,14 +865,17 @@ function OwnerMoviesTab({
     const file = event.target.files?.[0];
     if (!file) return;
     try {
-      const dataUrl = await readImageFile(file);
+      setUploadNotice(`${file.name} Cloudinary par upload ho raha hai...`);
+      const imageUrl = await uploadImageFile(file, {
+        folder: "bookmyscreen/owner/cast",
+      });
       onFormChange((current) => ({
         ...current,
         cast: normalizeCastRows(current.cast).map((member, memberIndex) =>
-          memberIndex === index ? { ...member, avatar: dataUrl } : member,
+          memberIndex === index ? { ...member, avatar: imageUrl } : member,
         ),
       }));
-      setUploadNotice(`${file.name} uploaded for cast photo.`);
+      setUploadNotice(`${file.name} Cloudinary par cast photo ke liye upload ho gaya.`);
     } catch (error) {
       setUploadNotice(error.message || "Cast photo upload failed.");
     } finally {
@@ -2663,6 +2670,20 @@ function normalizeCastRows(input = [], fallback = []) {
     role: String(member?.role || "Actor"),
     avatar: String(member?.avatar ?? ""),
   }));
+}
+
+async function uploadImageFile(file, options = {}) {
+  const dataUrl = await readImageFile(file);
+  const result = await requestJson("/api/uploads/image", {
+    method: "POST",
+    timeoutMs: 30000,
+    body: JSON.stringify({
+      file: dataUrl,
+      folder: options.folder,
+    }),
+  });
+
+  return result.image?.secureUrl || result.image?.url || "";
 }
 
 function readImageFile(file) {
