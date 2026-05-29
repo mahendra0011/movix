@@ -10,7 +10,6 @@ import { Subscriber } from "../models/Subscriber.js";
 import { Theater } from "../models/Theater.js";
 import { User } from "../models/User.js";
 import { buildSeedReviews } from "../data/reviewSeeds.js";
-import { getMemoryBookings } from "./bookingStore.js";
 import {
   movies as catalogMovies,
   showTimes as catalogShowTimes,
@@ -21,12 +20,8 @@ let mongoReady = false;
 const collectionModels = [Booking, Movie, Review, Show, Subscriber, Theater, User];
 const SHOW_WRITE_BATCH_SIZE = 500;
 
-if (env.mongodbDnsServers !== "system") {
-  const dnsServers = String(env.mongodbDnsServers || "")
-    .split(",")
-    .map((server) => server.trim())
-    .filter(Boolean);
-  if (dnsServers.length) dns.setServers(dnsServers);
+if (String(env.mongoUri || "").startsWith("mongodb+srv://")) {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
 }
 
 function cleanDocument(document) {
@@ -88,23 +83,8 @@ async function seedShows({ force = false } = {}) {
   console.log(`MongoDB show catalog ready with ${operations.length} shows.`);
 }
 
-async function seedBookings({ force = false } = {}) {
-  if (!env.seedDemoBookings) return;
-  const count = await Booking.estimatedDocumentCount();
-  if (count > 0 && !force) return;
-
-  const bookings = getMemoryBookings();
-  await Booking.bulkWrite(
-    bookings.map((booking) => ({
-      updateOne: {
-        filter: { ref: booking.ref },
-        update: { $setOnInsert: booking },
-        upsert: true,
-        timestamps: false,
-      },
-    })),
-  );
-  console.log(`MongoDB booking history ready with ${bookings.length} bookings.`);
+async function seedBookings() {
+  // Booking history must come from real user actions, not demo seed data.
 }
 
 async function seedReviews({ force = false } = {}) {
@@ -167,7 +147,7 @@ async function ensureCollections() {
       await database.createCollection(collectionName);
       existingCollections.add(collectionName);
     }
-    if (model !== Show || env.createShowIndexes) await model.createIndexes();
+    if (model !== Show) await model.createIndexes();
   }
 
   console.log(

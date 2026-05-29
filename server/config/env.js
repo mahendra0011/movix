@@ -46,9 +46,6 @@ const env = {
   cloudinaryCloudName: readEnv("CLOUDINARY_CLOUD_NAME"),
   cloudinaryApiKey: readEnv("CLOUDINARY_API_KEY"),
   cloudinaryApiSecret: readEnv("CLOUDINARY_API_SECRET"),
-  mongodbDnsServers: readEnv("MONGODB_DNS_SERVERS") ?? "8.8.8.8,1.1.1.1",
-  createShowIndexes: readEnv("CREATE_SHOW_INDEXES") === "true",
-  seedDemoBookings: readEnv("SEED_DEMO_BOOKINGS") === "true",
   adminEmail: (readEnv("ADMIN_EMAIL") ?? "mahendrapra0077@gmail.com").toLowerCase(),
   adminPassword: readEnv("ADMIN_PASSWORD") ?? "mahendra@123",
 };

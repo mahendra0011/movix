@@ -37,7 +37,7 @@ const WIKIDATA_SPARQL = "https://query.wikidata.org/sparql";
 const HTTP_IMAGE_PATTERN = /^https?:\/\//i;
 const uploadCache = new Map();
 
-if (process.env.MONGODB_DNS_SERVERS !== "system") {
+if (mongoUri.startsWith("mongodb+srv://")) {
   dns.setServers(["8.8.8.8", "1.1.1.1"]);
 }
 
