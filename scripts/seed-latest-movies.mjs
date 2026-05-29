@@ -32,6 +32,7 @@ const idCounts = new Map();
 const wikiSearchCache = new Map();
 const wikiSummaryCache = new Map();
 const personImageCache = new Map();
+const USE_WIKI_POSTERS = process.env.LATEST_USE_WIKI_POSTERS === "true";
 
 const latestMovieSeeds = [
   seed(1, "Project Hail Mary", "Hollywood", "English", ["Sci-Fi", "Adventure"], "Mar 2026", [
@@ -460,25 +461,55 @@ function seed(number, title, industry, language, genres, releaseDate, cast, opti
 
 async function buildMoviePayload(seedItem, index) {
   const id = uniqueMovieId(seedItem);
+  const existing = await Movie.findOne({ id }).select("poster backdrop description cast").lean();
+  if (USE_WIKI_POSTERS && existing?.poster && existing?.backdrop && existing?.cast?.length) {
+    return {
+      id,
+      title: seedItem.title,
+      poster: existing.poster,
+      backdrop: existing.backdrop,
+      genres: seedItem.genres,
+      language: seedItem.language,
+      duration: durationFor(seedItem, index),
+      rating: ratingFor(seedItem, index),
+      votes: votesFor(seedItem.releaseDate, index),
+      releaseDate: seedItem.releaseDate,
+      description: existing.description || descriptionFor(seedItem),
+      cast: existing.cast,
+      format: formatFor(seedItem.genres),
+      certificate: certificateFor(seedItem.genres),
+      sortOrder: -8000 + seedItem.number,
+    };
+  }
+
   const folder = `movix/latest-movies/${id}`;
-  const wiki = seedItem.skipWikiPoster ? null : await findMovieWiki(seedItem);
-  const posterSource = wiki?.image || posterPlaceholder(seedItem.title);
-  const backdropSource = wiki?.originalImage || wiki?.image || backdropPlaceholder(seedItem.title);
+  const wiki = USE_WIKI_POSTERS && !seedItem.skipWikiPoster ? await findMovieWiki(seedItem) : null;
+  const posterSource =
+    USE_WIKI_POSTERS && wiki?.image ? wiki.image : posterPlaceholder(seedItem.title);
+  const backdropSource =
+    USE_WIKI_POSTERS && (wiki?.originalImage || wiki?.image)
+      ? wiki.originalImage || wiki.image
+      : backdropPlaceholder(seedItem.title);
   const poster = await cacheCloudinaryImage(posterSource, folder, `${id}-poster`);
   const backdrop = await cacheCloudinaryImage(backdropSource, folder, `${id}-backdrop`);
   const castNames = seedItem.cast.length ? seedItem.cast : ["Official Cast"];
-  const cast = await mapLimit(castNames.slice(0, MAX_CAST), 2, async (name, castIndex) => {
-    const image = name === "Official Cast" ? "" : await findPersonImage(name);
-    return {
-      name,
-      role: name === "Official Cast" ? "Cast" : "Actor",
-      avatar: await cacheCloudinaryImage(
-        image || avatarPlaceholder(name === "Official Cast" ? seedItem.title : name),
-        `${folder}/cast`,
-        `${id}-cast-${castIndex + 1}`,
-      ),
-    };
-  });
+  const existingCast = Array.isArray(existing?.cast)
+    ? existing.cast.filter((member) => member.avatar)
+    : [];
+  const cast = existingCast.length
+    ? existingCast
+    : await mapLimit(castNames.slice(0, MAX_CAST), 2, async (name, castIndex) => {
+        const image = name === "Official Cast" ? "" : await findPersonImage(name);
+        return {
+          name,
+          role: name === "Official Cast" ? "Cast" : "Actor",
+          avatar: await cacheCloudinaryImage(
+            image || avatarPlaceholder(name === "Official Cast" ? seedItem.title : name),
+            `${folder}/cast`,
+            `${id}-cast-${castIndex + 1}`,
+          ),
+        };
+      });
 
   return {
     id,
