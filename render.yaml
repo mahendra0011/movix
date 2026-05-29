@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: moviex-api
+    name: movix-api
     runtime: node
     buildCommand: npm ci
     startCommand: npm run api
@@ -15,7 +15,7 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: MONGODB_DB
-        value: moviex
+        value: movix
       - key: JWT_SECRET
         generateValue: true
       - key: PAYMENT_PROVIDER
@@ -37,14 +37,14 @@ services:
       - key: BRAVO_FROM_EMAIL
         sync: false
       - key: BRAVO_FROM_NAME
-        value: moviex
+        value: movix
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
 
   - type: web
-    name: moviex-web
+    name: movix-web
     runtime: static
     buildCommand: npm ci --include=dev && npm run build
     staticPublishPath: ./dist

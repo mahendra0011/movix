@@ -18,7 +18,7 @@ import {
 } from "../src/features/movies/data/movieCatalog.js";
 
 const mongoUri = cleanEnv(process.env.MONGODB_URI);
-const mongoDb = cleanEnv(process.env.MONGODB_DB) || "moviex";
+const mongoDb = cleanEnv(process.env.MONGODB_DB) || "movix";
 const WRITE_BATCH_SIZE = 750;
 
 const movieArtwork = {
@@ -1205,7 +1205,7 @@ function buildReviewOperations(movies) {
       const review = {
         movieId: movie.id,
         userId: `large-seed-${movie.id}-${slugify(name)}`,
-        userEmail: `${slugify(name)}.${movie.id}@demo.bookmyscreen.local`,
+        userEmail: `${slugify(name)}.${movie.id}@demo.movix.local`,
         userName: name,
         rating,
         text,
@@ -1231,7 +1231,7 @@ function buildUserOperations() {
     const serial = String(index + 1).padStart(2, "0");
     return {
       name: `Demo Customer ${serial}`,
-      email: `customer${serial}@bookmyscreen.local`,
+      email: `customer${serial}@movix.local`,
       role: "user",
       verified: true,
       blocked: index % 17 === 0,
@@ -1241,7 +1241,7 @@ function buildUserOperations() {
   });
   const owners = catalogTheaters.slice(0, 24).map((theater, index) => ({
     name: `${theater.name} Owner`,
-    email: `owner${String(index + 1).padStart(2, "0")}@bookmyscreen.local`,
+    email: `owner${String(index + 1).padStart(2, "0")}@movix.local`,
     role: "theater-owner",
     verified: true,
     blocked: false,
@@ -1256,7 +1256,7 @@ function buildUserOperations() {
       address: theater.address,
       contact: `+91 9${String(700000000 + index * 219).slice(0, 9)}`,
       screens: 3,
-      gstNumber: `GST${String(index + 1).padStart(4, "0")}BMS`,
+      gstNumber: `GST${String(index + 1).padStart(4, "0")}MVX`,
       documents: "GST, PAN, theatre license",
       message: "Approved seed cinema partner",
       submittedAt: new Date(Date.now() - (index + 12) * 86400000),
@@ -1277,10 +1277,10 @@ function buildUserOperations() {
 function buildSubscriberOperations() {
   return Array.from({ length: 60 }, (_, index) => ({
     updateOne: {
-      filter: { email: `subscriber${String(index + 1).padStart(2, "0")}@bookmyscreen.local` },
+      filter: { email: `subscriber${String(index + 1).padStart(2, "0")}@movix.local` },
       update: {
         $set: {
-          email: `subscriber${String(index + 1).padStart(2, "0")}@bookmyscreen.local`,
+          email: `subscriber${String(index + 1).padStart(2, "0")}@movix.local`,
           source: index % 2 === 0 ? "homepage" : "launch-alerts",
         },
       },
@@ -1339,7 +1339,7 @@ function buildRefundCases(theater, index) {
     {
       ref: `RF${theater.id.slice(0, 5).toUpperCase()}${index}`,
       customer: "Demo Customer",
-      email: `customer${String((index % 80) + 1).padStart(2, "0")}@bookmyscreen.local`,
+      email: `customer${String((index % 80) + 1).padStart(2, "0")}@movix.local`,
       movie: "Cancelled ticket",
       screen: "Screen 1",
       time: "08:40 PM",
@@ -1382,7 +1382,7 @@ async function ensureMoviesUseCloudinary(movies) {
   const cache = new Map();
   const uploadedMovies = [];
   for (const movie of movies) {
-    const folder = `bookmyscreen/seed/movies/${movie.id}`;
+    const folder = `movix/seed/movies/${movie.id}`;
     const poster = await uploadCachedImage(movie.poster, {
       cache,
       folder,

@@ -9,7 +9,7 @@ import {
 } from "../server/services/cloudinaryService.js";
 
 const mongoUri = cleanEnv(process.env.MONGODB_URI);
-const mongoDb = cleanEnv(process.env.MONGODB_DB) || "moviex";
+const mongoDb = cleanEnv(process.env.MONGODB_DB) || "movix";
 
 if (!mongoUri) {
   console.error("MONGODB_URI is missing.");
@@ -32,7 +32,7 @@ let showUpdates = 0;
 
 const movies = await Movie.find({}).sort({ sortOrder: 1 }).lean();
 for (const movie of movies) {
-  const folder = `bookmyscreen/movies/${movie.id}`;
+  const folder = `movix/movies/${movie.id}`;
   const poster = await uploadCached(movie.poster, {
     folder,
     publicId: `${movie.id}-poster`,

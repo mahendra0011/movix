@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { movies as fallbackMovies } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
 
-const SHORTLIST_STORAGE_KEY = "bms-shortlist";
+const SHORTLIST_STORAGE_KEY = "movix-shortlist";
 
 const Route = createFileRoute("/wishlist")({
   component: WishlistPage,

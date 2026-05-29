@@ -333,7 +333,7 @@ function UserDashboard() {
                       </button>
                     </div>
                     <p className="mt-2 truncate text-xs text-muted-foreground">
-                      {item.venue || "moviex"}
+                      {item.venue || "movix"}
                     </p>
                     {item.date && <p className="mt-1 text-xs text-primary">{item.date}</p>}
                   </div>
@@ -444,7 +444,7 @@ function formatCurrency(value) {
 function readShortlist() {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(window.localStorage.getItem("bms-shortlist") || "[]");
+    return JSON.parse(window.localStorage.getItem("movix-shortlist") || "[]");
   } catch {
     return [];
   }
@@ -452,7 +452,7 @@ function readShortlist() {
 
 function writeShortlist(items) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem("bms-shortlist", JSON.stringify(items));
+  window.localStorage.setItem("movix-shortlist", JSON.stringify(items));
 }
 
 export { Route };

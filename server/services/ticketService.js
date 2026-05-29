@@ -30,7 +30,7 @@ async function generateTicketPdf(booking, { invoice = false } = {}) {
     doc.on("end", () => resolve(Buffer.concat(chunks)));
     doc.on("error", reject);
 
-    doc.fontSize(22).text(invoice ? "moviex Invoice" : "moviex E-Ticket");
+    doc.fontSize(22).text(invoice ? "movix Invoice" : "movix E-Ticket");
     doc.moveDown();
     doc.fontSize(11).fillColor("#555").text(`Reference: ${booking.ref}`);
     doc.moveDown();
@@ -52,7 +52,7 @@ async function generateTicketPdf(booking, { invoice = false } = {}) {
     }
 
     doc.moveDown(3);
-    doc.fontSize(9).fillColor("#777").text("Issued by moviex.");
+    doc.fontSize(9).fillColor("#777").text("Issued by movix.");
     doc.end();
   });
 }

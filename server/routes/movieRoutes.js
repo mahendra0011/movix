@@ -321,7 +321,7 @@ router.post(
 );
 
 async function ensureMovieUsesCloudinary(movie) {
-  const folder = `bookmyscreen/admin/movies/${slugify(movie.id || movie.title)}`;
+  const folder = `movix/admin/movies/${slugify(movie.id || movie.title)}`;
   movie.poster = await ensureCloudinaryImageUrl(movie.poster, {
     folder,
     publicId: `${movie.id}-poster`,

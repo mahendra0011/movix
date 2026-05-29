@@ -1,5 +1,5 @@
-const HOME_SEARCH_STORAGE_KEY = "bms-home-search";
-const HOME_SEARCH_CHANGE_EVENT = "bms-home-search-change";
+const HOME_SEARCH_STORAGE_KEY = "movix-home-search";
+const HOME_SEARCH_CHANGE_EVENT = "movix-home-search-change";
 
 function readHomeSearchQuery() {
   if (typeof window === "undefined") return "";

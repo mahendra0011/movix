@@ -2,7 +2,7 @@ import { API_BASE_URL } from "@/shared/services/httpClient";
 
 function readAuthToken() {
   if (typeof window === "undefined") return "";
-  return window.localStorage.getItem("bms-auth-token") || "";
+  return window.localStorage.getItem("movix-auth-token") || "";
 }
 
 async function createAppSocket() {

@@ -36,7 +36,7 @@ async function createRazorpayOrder(amount) {
     body: JSON.stringify({
       amount: amountMinor,
       currency: "INR",
-      receipt: `bms_${Date.now().toString(36)}`,
+      receipt: `movix_${Date.now().toString(36)}`,
       payment_capture: 1,
     }),
   });

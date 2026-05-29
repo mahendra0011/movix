@@ -1,8 +1,8 @@
 import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
 import { createOwnerApplication } from "@/shared/services/ownerApplications";
 
-const LOCAL_USERS_KEY = "bms-local-auth-users";
-const LOCAL_OTPS_KEY = "bms-local-auth-otps";
+const LOCAL_USERS_KEY = "movix-local-auth-users";
+const LOCAL_OTPS_KEY = "movix-local-auth-otps";
 const STATIC_DEMO_OTP = "123456";
 const STATIC_ADMIN = {
   id: "local-admin",

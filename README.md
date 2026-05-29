@@ -1,4 +1,4 @@
-# moviex
+# movix
 
 Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO booked-seat and notification updates, Razorpay-ready payments, and Brevo HTTP API email hooks.
 
@@ -67,9 +67,9 @@ Create one Render Web Service for the API and one Render Static Site for the Rea
 - Health Check Path: `/api/health`
 - Required environment variables:
   - `MONGODB_URI`: MongoDB Atlas connection string
-  - `MONGODB_DB`: `moviex`
+  - `MONGODB_DB`: `movix`
   - `JWT_SECRET`: strong generated secret
-  - `CLIENT_ORIGIN`: deployed frontend URL, for example `https://moviex-web.onrender.com`
+  - `CLIENT_ORIGIN`: deployed frontend URL, for example `https://movix-web.onrender.com`
   - `ADMIN_EMAIL`: first admin email
   - `ADMIN_PASSWORD`: strong first admin password
 - Optional production integrations:
@@ -87,7 +87,7 @@ Create one Render Web Service for the API and one Render Static Site for the Rea
 - Publish Directory: `dist`
 - Redirects/Rewrites rule: source `/*`, destination `/index.html`, action `Rewrite`
 - Required environment variables:
-  - `VITE_API_URL`: deployed API URL, for example `https://moviex-api.onrender.com`
+  - `VITE_API_URL`: deployed API URL, for example `https://movix-api.onrender.com`
 
 Socket.IO uses `VITE_API_URL`, so no separate frontend socket URL is required.
 

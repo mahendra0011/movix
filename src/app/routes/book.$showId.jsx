@@ -220,7 +220,7 @@ function BookingPage() {
         key: payment.keyId,
         amount: payment.amountMinor,
         currency: payment.currency,
-        name: "moviex",
+        name: "movix",
         description: `${search.movie || "Movie"} tickets`,
         order_id: payment.orderId,
         prefill: { email },

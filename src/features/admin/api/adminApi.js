@@ -6,8 +6,8 @@ import {
   updateOwnerApplicationStatus,
 } from "@/shared/services/ownerApplications";
 
-const LOCAL_BOOKINGS_KEY = "bms-local-bookings";
-const LOCAL_USERS_KEY = "bms-local-auth-users";
+const LOCAL_BOOKINGS_KEY = "movix-local-bookings";
+const LOCAL_USERS_KEY = "movix-local-auth-users";
 
 async function fetchAdminSummary() {
   if (shouldUseLocalAdminFallback()) {

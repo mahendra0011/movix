@@ -21,7 +21,7 @@ import {
 import { SEARCHABLE_CITY_OPTIONS } from "../src/shared/services/cityPreference.js";
 
 const mongoUri = cleanEnv(process.env.MONGODB_URI);
-const mongoDb = cleanEnv(process.env.MONGODB_DB) || "moviex";
+const mongoDb = cleanEnv(process.env.MONGODB_DB) || "movix";
 const TARGET_MOVIES = Number(process.env.MASSIVE_MOVIE_TARGET || 330);
 const TARGET_THEATERS = Number(process.env.MASSIVE_THEATER_TARGET || 4800);
 const TARGET_SHOWS = Number(process.env.MASSIVE_SHOW_TARGET || 1_500_000);
@@ -31,7 +31,7 @@ const SHOWS_ONLY = process.env.MASSIVE_SHOWS_ONLY === "true";
 const MOVIE_BATCH_SIZE = 20;
 const WRITE_BATCH_SIZE = 1000;
 const SHOW_BATCH_SIZE = 10000;
-const USER_AGENT = "BookMyScreenMassiveSeed/1.0 (local data seed)";
+const USER_AGENT = "movixMassiveSeed/1.0 (local data seed)";
 const WIKIPEDIA_API = "https://en.wikipedia.org/w/api.php";
 const WIKIDATA_SPARQL = "https://query.wikidata.org/sparql";
 const HTTP_IMAGE_PATTERN = /^https?:\/\//i;
@@ -350,11 +350,15 @@ async function runShowsOnly() {
     .limit(TARGET_THEATERS)
     .lean();
   if (movies.length < 1 || theaters.length < 1) {
-    throw new Error("Movies/theaters are missing. Run the full massive seed before shows-only mode.");
+    throw new Error(
+      "Movies/theaters are missing. Run the full massive seed before shows-only mode.",
+    );
   }
 
   const deletedBookings = await Booking.deleteMany({});
-  console.log(`Deleted ${deletedBookings.deletedCount} bookings. Booking collection will stay empty.`);
+  console.log(
+    `Deleted ${deletedBookings.deletedCount} bookings. Booking collection will stay empty.`,
+  );
   await rebuildMassiveShows(theaters, movies);
   const counts = {
     movies: await Movie.countDocuments(),
@@ -416,16 +420,12 @@ async function buildMovieInventory() {
   console.log(`Uploading ${selected.length} movie posters and cast images to Cloudinary...`);
   selected = await mapLimit(selected, 1, async (movie, index) => {
     console.log(`Cloudinary movie media start ${index + 1}/${selected.length}: ${movie.id}`);
-    const poster = await uploadStable(movie.poster, "bookmyscreen/movies/posters", movie.id);
+    const poster = await uploadStable(movie.poster, "movix/movies/posters", movie.id);
     const backdropSource = movie.backdrop || movie.poster;
     const backdrop =
       backdropSource === movie.poster
         ? poster
-        : await uploadStable(
-            backdropSource,
-            "bookmyscreen/movies/backdrops",
-            `${movie.id}-backdrop`,
-          );
+        : await uploadStable(backdropSource, "movix/movies/backdrops", `${movie.id}-backdrop`);
     const cast = await mapLimit(movie.cast.slice(0, 4), 1, async (member, castIndex) => ({
       ...member,
       avatar: await uploadAvatarWithFallback(member, actorFallback, movie.id, castIndex),
@@ -863,7 +863,7 @@ function buildSyntheticUsers(theaters) {
     const blocked = index % 47 === 0;
     const user = {
       name: `${first} ${last}`,
-      email: `${slugify(first)}.${slugify(last)}.${serial}@bookmyscreen.local`,
+      email: `${slugify(first)}.${slugify(last)}.${serial}@movix.local`,
       role: "user",
       verified: true,
       blocked,
@@ -882,7 +882,7 @@ function buildSyntheticUsers(theaters) {
     operations.push(
       userOperation({
         name: `${first} ${last}`,
-        email: `partner.${slugify(theater.city)}.${serial}@bookmyscreen.local`,
+        email: `partner.${slugify(theater.city)}.${serial}@movix.local`,
         role: "theater-owner",
         verified: true,
         blocked: false,
@@ -897,7 +897,7 @@ function buildSyntheticUsers(theaters) {
           address: theater.address,
           contact: theater.contact,
           screens: theater.screens.length || 2,
-          gstNumber: `GST${String(index + 1).padStart(6, "0")}BMS`,
+          gstNumber: `GST${String(index + 1).padStart(6, "0")}MVX`,
           documents: "GST, PAN, fire NOC, theatre license",
           message: "Approved synthetic cinema partner account for seed data.",
           submittedAt: new Date(Date.now() - (index + 15) * 86400000),
@@ -918,7 +918,7 @@ function buildReviewOperations(movies) {
       const review = {
         movieId: movie.id,
         userId: `mass-review-${movie.id}-${index + 1}`,
-        userEmail: `${slugify(first)}.${slugify(last)}.${movie.id}@bookmyscreen.local`,
+        userEmail: `${slugify(first)}.${slugify(last)}.${movie.id}@movix.local`,
         userName: `${first} ${last}`,
         rating,
         text,
@@ -943,7 +943,7 @@ function buildSubscriberOperations() {
   return Array.from({ length: TARGET_SUBSCRIBERS }, (_, index) => {
     const first = firstNames[index % firstNames.length];
     const last = lastNames[Math.floor(index / firstNames.length) % lastNames.length];
-    const email = `subscriber.${slugify(first)}.${slugify(last)}.${String(index + 1).padStart(4, "0")}@bookmyscreen.local`;
+    const email = `subscriber.${slugify(first)}.${slugify(last)}.${String(index + 1).padStart(4, "0")}@movix.local`;
     return {
       updateOne: {
         filter: { email },
@@ -1024,7 +1024,7 @@ async function uploadStable(url, folder, publicId, options = {}) {
 async function uploadAvatarWithFallback(member, fallbackActors, movieId, castIndex) {
   const primaryId = `${movieId}-${slugify(member.name) || castIndex + 1}`;
   try {
-    return await uploadStable(member.avatar, "bookmyscreen/cast", primaryId, { maxAttempts: 2 });
+    return await uploadStable(member.avatar, "movix/cast", primaryId, { maxAttempts: 2 });
   } catch (error) {
     console.warn(`Using fallback avatar for ${primaryId}: ${error.message}`);
   }
@@ -1035,7 +1035,7 @@ async function uploadAvatarWithFallback(member, fallbackActors, movieId, castInd
     try {
       return await uploadStable(
         fallback.avatar,
-        "bookmyscreen/cast",
+        "movix/cast",
         `${primaryId}-fallback-${slugify(fallback.name)}`,
         { maxAttempts: 2 },
       );
@@ -1044,7 +1044,7 @@ async function uploadAvatarWithFallback(member, fallbackActors, movieId, castInd
     }
   }
 
-  return uploadStable(tinyPngDataUri(), "bookmyscreen/cast", `${primaryId}-fallback`, {
+  return uploadStable(tinyPngDataUri(), "movix/cast", `${primaryId}-fallback`, {
     maxAttempts: 1,
   });
 }

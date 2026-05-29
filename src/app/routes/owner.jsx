@@ -840,7 +840,7 @@ function OwnerMoviesTab({
     try {
       setUploadNotice(`${file.name} Cloudinary par upload ho raha hai...`);
       const imageUrl = await uploadImageFile(file, {
-        folder: `bookmyscreen/owner/movies/${field}`,
+        folder: `movix/owner/movies/${field}`,
       });
       onFormChange((current) => ({ ...current, [field]: imageUrl }));
       setUploadNotice(`${file.name} Cloudinary par upload ho gaya.`);
@@ -867,7 +867,7 @@ function OwnerMoviesTab({
     try {
       setUploadNotice(`${file.name} Cloudinary par upload ho raha hai...`);
       const imageUrl = await uploadImageFile(file, {
-        folder: "bookmyscreen/owner/cast",
+        folder: "movix/owner/cast",
       });
       onFormChange((current) => ({
         ...current,

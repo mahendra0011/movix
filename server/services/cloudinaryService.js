@@ -46,7 +46,7 @@ async function uploadImageToCloudinary(file, options = {}) {
 
   const timestamp = Math.floor(Date.now() / 1000);
   const params = {
-    folder: sanitizeFolder(options.folder || "bookmyscreen/uploads"),
+    folder: sanitizeFolder(options.folder || "movix/uploads"),
     overwrite: "true",
     timestamp: String(timestamp),
   };
@@ -157,7 +157,7 @@ function signCloudinaryParams(params, apiSecret) {
 }
 
 function sanitizeFolder(value) {
-  return String(value || "bookmyscreen/uploads")
+  return String(value || "movix/uploads")
     .trim()
     .replace(/\\/g, "/")
     .split("/")

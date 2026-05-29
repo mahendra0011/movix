@@ -29,9 +29,10 @@ import {
   fetchMovies,
 } from "@/features/movies/api/moviesApi";
 import { movies as catalogMovies, theaters, showTimes } from "@/features/movies/data/movieCatalog";
+import { buildCatalogTheaterListings } from "@/features/movies/services/showSchedule";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
-import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
+import { requestJson } from "@/shared/services/httpClient";
 import {
   readPreferredCity,
   subscribePreferredCity,
@@ -192,12 +193,13 @@ function MoviePage() {
   }, [movie]);
 
   useEffect(() => {
-    if (!HAS_CONFIGURED_API_URL) return undefined;
     let active = true;
 
     requestJson(
-      `/api/shows/${encodeURIComponent(movie.id)}?city=${encodeURIComponent(selectedCity)}`,
-      { timeoutMs: 2500 },
+      `/api/shows/${encodeURIComponent(movie.id)}?city=${encodeURIComponent(
+        selectedCity,
+      )}&date=${encodeURIComponent(activeDate)}`,
+      { timeoutMs: 8000 },
     )
       .then((data) => {
         if (active) setRemoteShows(data.shows ?? []);
@@ -209,12 +211,12 @@ function MoviePage() {
     return () => {
       active = false;
     };
-  }, [movie.id, selectedCity]);
+  }, [activeDate, movie.id, selectedCity]);
 
   const selectedDateLabel = useMemo(() => getDateLabel(activeDate), [activeDate]);
   const cinemaListings = useMemo(
-    () => buildCinemaListings({ movie, selectedCity, remoteShows }),
-    [movie, remoteShows, selectedCity],
+    () => buildCinemaListings({ movie, selectedCity, remoteShows, activeDate }),
+    [activeDate, movie, remoteShows, selectedCity],
   );
   const formatOptions = useMemo(
     () =>
@@ -444,6 +446,7 @@ function MoviePage() {
 function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataChange }) {
   const reviewSummary = getReviewDisplaySummary(movie, reviewData);
   const reviews = getVisibleReviews(reviewData);
+  const castMembers = getMovieCast(movie);
 
   return (
     <div className="mx-auto mt-10 grid max-w-[1560px] gap-10 px-4 sm:px-5 lg:px-6">
@@ -451,7 +454,7 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
         <div>
           <SectionHeader icon={Info} eyebrow="Story" title="About the movie" />
           <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
-            {detailAboutText}
+            {movie.description || detailAboutText}
           </p>
         </div>
         <DetailsStatsPanel movie={movie} summary={reviewSummary} />
@@ -462,8 +465,13 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
       <section>
         <SectionTitleBar title="Cast" actionLabel="View all" />
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-          {detailCast.map((name) => (
-            <ProfileBubble key={name} name={name} role="Actor" />
+          {castMembers.map((member) => (
+            <ProfileBubble
+              key={`${member.name}-${member.role}`}
+              name={member.name}
+              role={member.role}
+              avatar={member.avatar}
+            />
           ))}
         </div>
       </section>
@@ -657,11 +665,22 @@ function OfferCard({ offer }) {
   );
 }
 
-function ProfileBubble({ name, role }) {
+function ProfileBubble({ name, role, avatar }) {
   return (
     <div className="rounded-lg border border-border/60 bg-card p-4 text-center shadow-sm transition-transform hover:-translate-y-0.5">
-      <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary/15 ring-1 ring-primary/20">
+      <div className="relative mx-auto grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-primary/15 ring-1 ring-primary/20">
         <span className="text-sm font-bold text-foreground">{initials(name)}</span>
+        {avatar ? (
+          <img
+            src={avatar}
+            alt={name}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+          />
+        ) : null}
       </div>
       <p className="mt-2 text-sm font-medium">{name}</p>
       <p className="text-xs text-muted-foreground">{role}</p>
@@ -935,6 +954,19 @@ function uniqueMovies(list) {
     seen.add(movie.id);
     return true;
   });
+}
+
+function getMovieCast(movie) {
+  const cast = (movie.cast ?? [])
+    .map((member) => ({
+      name: String(member?.name ?? "").trim(),
+      role: String(member?.role ?? "Actor").trim() || "Actor",
+      avatar: String(member?.avatar ?? "").trim(),
+    }))
+    .filter((member) => member.name)
+    .slice(0, 6);
+
+  return cast.length ? cast : detailCast.map((name) => ({ name, role: "Actor", avatar: "" }));
 }
 
 function buildDetailHighlights(summary) {
@@ -1370,30 +1402,18 @@ function FilterSelect({ value, onChange, options, label }) {
   );
 }
 
-function buildCinemaListings({ movie, selectedCity, remoteShows }) {
+function buildCinemaListings({ movie, selectedCity, remoteShows, activeDate }) {
   const city = selectedCity || "Bengaluru";
-  const staticListings = theaters
-    .filter((theater) => sameCity(theater.city, city) && theaterHasMovie(theater, movie.id))
-    .map((theater) => {
-      const plans =
-        theater.showPlan ??
-        showTimes.map((time, index) => ({ time, status: inferShowStatus(index) }));
-      return {
-        id: theater.id,
-        name: theater.name,
-        city: theater.city,
-        area: theater.area,
-        address: theater.address,
-        distance: theater.distance,
-        amenities: splitAmenities(theater.amenities),
-        logoText: theater.logoText,
-        isOwner: false,
-        shows: plans.map((plan, index) => buildStaticShow(movie, theater, plan, index)),
-      };
-    });
+  const staticListings = buildCatalogTheaterListings({
+    movie,
+    theaters,
+    selectedCity: city,
+    activeDate,
+    showTimes,
+  });
   const remoteListings = groupRemoteShows(remoteShows, movie);
 
-  const catalogListings = HAS_CONFIGURED_API_URL ? remoteListings : staticListings;
+  const catalogListings = remoteListings.length ? remoteListings : staticListings;
   return catalogListings.filter((cinema) => cinema.shows.length > 0);
 }
 
@@ -1422,9 +1442,9 @@ function groupRemoteShows(remoteShows, movie) {
 }
 
 function formatRemoteShow(show, movie) {
-  const gold = Number(show.price?.gold || 250);
+  const gold = Number(show.price?.gold || 260);
   const platinum = Number(show.price?.platinum || 180);
-  const vip = Number(show.price?.vip || 400);
+  const vip = Number(show.price?.vip || 420);
   return {
     id: show.id,
     label: show.startTime || show.time || "Showtime",
@@ -1439,7 +1459,23 @@ function formatRemoteShow(show, movie) {
       gold,
       vip,
     },
-    seatLayout: show.seatLayout,
+    seatLayout: normalizeRemoteSeatLayout(show.seatLayout),
+  };
+}
+
+function normalizeRemoteSeatLayout(layout = {}) {
+  const rowCount = Number(
+    layout.rowCount || (Array.isArray(layout.rows) ? layout.rows.length : 0) || 10,
+  );
+  const seatsPerRow = Number(layout.seatsPerRow || layout.cols || 14);
+  return {
+    rowCount,
+    seatsPerRow,
+    platinumRows: Number(layout.platinumRows || 2),
+    silverRows: Number(layout.silverRows || 2),
+    vipRows: Number(layout.vipRows || 2),
+    aisleAfter: Number(layout.aisleAfter || Math.max(0, Math.floor(seatsPerRow / 2))),
+    blockedSeats: splitAmenities(layout.blockedSeats),
   };
 }
 
@@ -1488,34 +1524,6 @@ function sortFormatOptions(formats) {
   return ["All", ...values];
 }
 
-function buildStaticShow(movie, theater, plan, index) {
-  const time = typeof plan === "string" ? plan : plan.time;
-  const format = typeof plan === "string" ? undefined : plan.format;
-  const status =
-    typeof plan === "string" ? inferShowStatus(index) : plan.status || inferShowStatus(index);
-  return {
-    id: `${movie.id}-${theater.id}-${index}`,
-    label: time,
-    screen: typeof plan === "string" ? "Screen 3" : plan.screen || "Screen 3",
-    status,
-    format: format || (index % 2 === 0 ? movie.format[0] || "2D" : "2D"),
-    language: movie.language,
-    cancellable: typeof plan === "string" ? index % 2 === 1 : Boolean(plan.cancellable),
-    price: {
-      platinum: 180 + index * 10,
-      silver: 220 + index * 12,
-      gold: 250 + index * 15,
-      vip: 400 + index * 20,
-    },
-  };
-}
-
-function inferShowStatus(index) {
-  if (index === 4) return "sold";
-  if (index === 3) return "fast";
-  return "ok";
-}
-
 function timeBucket(label) {
   const hour = parseShowHour(label);
   if (hour < 12) return "morning";
@@ -1558,10 +1566,6 @@ function buildMovieCitySuggestions(remoteShows = []) {
   });
 
   return cities;
-}
-
-function theaterHasMovie(theater, movieId) {
-  return !Array.isArray(theater.movieIds) || theater.movieIds.includes(movieId);
 }
 
 function buildDateOptions() {
@@ -1637,7 +1641,7 @@ function trailerSearchUrl(title) {
 
 function saveShortlistItem(item) {
   if (typeof window === "undefined") return;
-  const key = "bms-shortlist";
+  const key = "movix-shortlist";
   let existing = [];
   try {
     existing = JSON.parse(window.localStorage.getItem(key) || "[]");

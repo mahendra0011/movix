@@ -139,10 +139,9 @@ function Home() {
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
 
   useEffect(() => {
-    if (!HAS_CONFIGURED_API_URL) return undefined;
     let active = true;
 
-    requestJson("/api/theaters", { timeoutMs: 2500 })
+    requestJson("/api/theaters", { timeoutMs: 8000 })
       .then((data) => {
         if (active && data.theaters?.length) setCinemaCatalog(data.theaters);
       })
@@ -1214,7 +1213,11 @@ function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
 
   const listedMovieIds = new Set(theaterMovieIds.flat());
   if (!listedMovieIds.size) return catalog;
-  return catalog.filter((movie) => listedMovieIds.has(movie.id));
+  const listedMovies = catalog.filter((movie) => listedMovieIds.has(movie.id));
+  if (catalog.length > 50 && listedMovies.length < Math.min(24, Math.ceil(catalog.length * 0.12))) {
+    return catalog;
+  }
+  return listedMovies;
 }
 
 function CinemaCard({ cinema, image }) {

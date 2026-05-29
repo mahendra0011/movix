@@ -1,8 +1,8 @@
 import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
 
-const LOCAL_BOOKINGS_KEY = "bms-local-bookings";
-const LOCAL_SEAT_STATE_KEY = "bms-local-seat-state";
-const LOCAL_TICKET_OTPS_KEY = "bms-local-ticket-otps";
+const LOCAL_BOOKINGS_KEY = "movix-local-bookings";
+const LOCAL_SEAT_STATE_KEY = "movix-local-seat-state";
+const LOCAL_TICKET_OTPS_KEY = "movix-local-ticket-otps";
 const DEMO_TICKET_OTP = "123456";
 const ACTION_TIMEOUT_MS = 2500;
 
@@ -175,7 +175,7 @@ function localCreateBooking(input) {
 
   const booking = {
     id: `booking-${Date.now().toString(36)}`,
-    ref: `BMS${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+    ref: `MVX${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
     showId,
     movieId: input?.movieId,
     movie: input?.movie || "Movie",

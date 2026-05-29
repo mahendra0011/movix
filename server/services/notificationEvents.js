@@ -14,7 +14,7 @@ function clientHref(path = "/") {
 async function notifySubscriptionCreated(email) {
   await sendNotificationEmail({
     to: email,
-    subject: "You are subscribed to moviex alerts",
+    subject: "You are subscribed to movix alerts",
     eyebrow: "Launch alerts",
     title: "You are on the movie alerts list",
     message:
@@ -22,7 +22,7 @@ async function notifySubscriptionCreated(email) {
     actionHref: clientHref("/"),
     actionLabel: "Explore movies",
     footer:
-      "You subscribed from moviex. New release and trailer emails are sent only for important catalog updates.",
+      "You subscribed from movix. New release and trailer emails are sent only for important catalog updates.",
   }).catch((error) => console.warn("Subscriber welcome email failed:", error.message));
 }
 
@@ -32,7 +32,7 @@ async function notifyMovieRelease(movie, options = {}) {
   const trailerText = movie.trailerUrl || options.trailerUrl ? " Trailer is available too." : "";
   const href =
     movie.id || movie.movieId ? `/movies/${encodeURIComponent(movie.id || movie.movieId)}` : "/";
-  const message = `${title}${theater} is now listed on moviex.${trailerText}`;
+  const message = `${title}${theater} is now listed on movix.${trailerText}`;
 
   publishNotification({
     audience: "public",
@@ -56,14 +56,14 @@ async function notifyMovieRelease(movie, options = {}) {
     emails.map((email) =>
       sendNotificationEmail({
         to: email,
-        subject: `${title} is now listed on moviex`,
+        subject: `${title} is now listed on movix`,
         eyebrow: "New release",
         title: `${title} is live`,
         message,
         actionHref: clientHref(href),
         actionLabel: movie.trailerUrl || options.trailerUrl ? "Watch trailer" : "View movie",
         footer:
-          "You are receiving this because you subscribed to moviex launch alerts from the home page.",
+          "You are receiving this because you subscribed to movix launch alerts from the home page.",
       }),
     ),
   );

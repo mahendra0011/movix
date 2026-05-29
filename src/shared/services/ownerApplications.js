@@ -1,6 +1,6 @@
-const OWNER_APPLICATIONS_KEY = "bms-owner-applications";
-const LOCAL_USERS_KEY = "bms-local-auth-users";
-const AUTH_USER_KEY = "bms-auth-user";
+const OWNER_APPLICATIONS_KEY = "movix-owner-applications";
+const LOCAL_USERS_KEY = "movix-local-auth-users";
+const AUTH_USER_KEY = "movix-auth-user";
 
 const ownerStatuses = {
   pending: "Pending",

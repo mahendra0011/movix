@@ -425,7 +425,7 @@ async function ensureShowsUseCloudinary(shows, owner) {
   const cache = new Map();
 
   for (const show of shows) {
-    const folder = `bookmyscreen/owners/${slugify(owner.email || owner._id)}/movies/${slugify(
+    const folder = `movix/owners/${slugify(owner.email || owner._id)}/movies/${slugify(
       show.movieId || show.movie,
     )}`;
     show.poster = await ensureCachedCloudinaryImage(show.poster, {

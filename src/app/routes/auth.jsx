@@ -323,7 +323,7 @@ function AuthPage() {
         <section className="rounded-lg border border-border/60 bg-card/90 p-5 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-primary">BookMyScreen account</p>
+              <p className="text-sm font-medium text-primary">movix account</p>
               <h2 className="mt-2 text-2xl font-bold tracking-tight">{copy.title}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{copy.text}</p>
             </div>
@@ -845,7 +845,7 @@ function AuthLoading() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Checking session</p>
-            <h1 className="text-2xl font-bold">BookMyScreen account</h1>
+            <h1 className="text-2xl font-bold">movix account</h1>
           </div>
         </div>
       </div>

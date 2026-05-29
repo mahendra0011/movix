@@ -24,7 +24,7 @@ router.post(
     const image = await uploadImageToCloudinary(file, {
       folder: request.body.folder,
       publicId: request.body.publicId,
-      tags: ["bookmyscreen", request.user?.role || request.auth?.role].filter(Boolean),
+      tags: ["movix", request.user?.role || request.auth?.role].filter(Boolean),
     });
 
     response.status(201).json({ image });

@@ -2,12 +2,12 @@ import { createSlice } from "@reduxjs/toolkit";
 
 function readStoredAuth() {
   if (typeof window === "undefined") return { user: null, token: null };
-  const token = window.localStorage.getItem("bms-auth-token");
-  const user = window.localStorage.getItem("bms-auth-user");
+  const token = window.localStorage.getItem("movix-auth-token");
+  const user = window.localStorage.getItem("movix-auth-user");
   try {
     if (!token || !user) {
-      window.localStorage.removeItem("bms-auth-token");
-      window.localStorage.removeItem("bms-auth-user");
+      window.localStorage.removeItem("movix-auth-token");
+      window.localStorage.removeItem("movix-auth-user");
       return { user: null, token: null };
     }
 
@@ -16,8 +16,8 @@ function readStoredAuth() {
       user: JSON.parse(user),
     };
   } catch {
-    window.localStorage.removeItem("bms-auth-token");
-    window.localStorage.removeItem("bms-auth-user");
+    window.localStorage.removeItem("movix-auth-token");
+    window.localStorage.removeItem("movix-auth-user");
     return { user: null, token: null };
   }
 }
@@ -40,8 +40,8 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.hydrated = true;
       if (typeof window !== "undefined") {
-        window.localStorage.setItem("bms-auth-token", action.payload.token);
-        window.localStorage.setItem("bms-auth-user", JSON.stringify(action.payload.user));
+        window.localStorage.setItem("movix-auth-token", action.payload.token);
+        window.localStorage.setItem("movix-auth-user", JSON.stringify(action.payload.user));
       }
     },
     logout(state) {
@@ -49,8 +49,8 @@ const authSlice = createSlice({
       state.token = null;
       state.hydrated = true;
       if (typeof window !== "undefined") {
-        window.localStorage.removeItem("bms-auth-token");
-        window.localStorage.removeItem("bms-auth-user");
+        window.localStorage.removeItem("movix-auth-token");
+        window.localStorage.removeItem("movix-auth-user");
       }
     },
   },

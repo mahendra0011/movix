@@ -71,17 +71,17 @@ const Route = createRootRouteWithContext()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BookMyScreen" },
+      { title: "movix" },
       { name: "description", content: "Book movie tickets, pick seats, and confirm e-tickets." },
-      { name: "author", content: "BookMyScreen" },
-      { property: "og:title", content: "BookMyScreen" },
+      { name: "author", content: "movix" },
+      { property: "og:title", content: "movix" },
       {
         property: "og:description",
         content: "Book movie tickets, pick seats, and confirm e-tickets.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@bookmyscreen" },
+      { name: "twitter:site", content: "@movix" },
     ],
     links: [
       {
@@ -161,7 +161,7 @@ function RootComponent() {
                     <Film className="h-4 w-4" />
                   </span>
                   <span className="text-lg font-bold tracking-tight">
-                    book<span className="text-primary">my</span>screen
+                    mov<span className="text-primary">i</span>x
                   </span>
                 </Link>
                 <p className="mt-3 max-w-56 text-sm leading-5 text-muted-foreground">
@@ -229,7 +229,7 @@ function RootComponent() {
             </div>
             <div className="border-t border-border/60">
               <div className="mx-auto flex max-w-[1560px] flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs text-muted-foreground sm:px-5 lg:px-6">
-                <span>(c) 2024 BookMyScreen. All rights reserved.</span>
+                <span>(c) 2024 movix. All rights reserved.</span>
                 <span className="flex gap-5">
                   <a href="#" className="hover:text-foreground">
                     Privacy Policy

@@ -4,16 +4,28 @@ import { Theater } from "../models/Theater.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { isMongoReady } from "../services/database.js";
 import {
+  movies as catalogMovies,
   showTimes,
   theaters as catalogTheaters,
 } from "../../src/features/movies/data/movieCatalog.js";
+import {
+  buildCatalogShow,
+  getCatalogTheaterPlans,
+  splitCatalogList,
+  theaterHasMovie,
+} from "../../src/features/movies/services/showSchedule.js";
 
 const router = Router();
 
-function generatedShows(movieId, city = "") {
+function generatedShows(movieId, city = "", activeDate = "") {
   const cityFilter = String(city ?? "")
     .trim()
     .toLowerCase();
+  const movie = catalogMovies.find((item) => item.id === movieId) ?? {
+    id: movieId,
+    format: ["2D"],
+    language: "English",
+  };
   return catalogTheaters
     .filter(
       (theater) =>
@@ -21,45 +33,115 @@ function generatedShows(movieId, city = "") {
         theaterHasMovie(theater, movieId),
     )
     .flatMap((theater) =>
-      getTheaterPlans(theater).map((plan, index) => ({
-        id: `${movieId}-${theater.id}-${index}`,
-        movieId,
-        theaterId: theater.id,
-        theater: theater.name,
-        city: theater.city || "Bengaluru",
-        area: theater.area,
-        address: theater.address,
-        screenId: `${theater.id}-${slugify(plan.screen || "screen-1")}`,
-        screen: plan.screen || "Screen 1",
-        startTime: plan.time,
-        endTime: "Auto calculated",
-        format: plan.format || (index % 2 === 0 ? "IMAX" : "2D"),
-        language: "English",
-        price: {
-          platinum: 180 + index * 10,
-          silver: 220 + index * 12,
-          gold: 250 + index * 15,
-          vip: 400 + index * 20,
-        },
-        status: plan.status || (index === 4 ? "sold" : index === 3 ? "fast" : "ok"),
-        cancellable: plan.cancellable !== false,
-      })),
+      getCatalogTheaterPlans(theater, showTimes).map((plan, index) =>
+        formatGeneratedShow({ movie, theater, plan, index, activeDate }),
+      ),
     );
 }
+
+function generatedTheaterShows({ theaterId = "", city = "", activeDate = "" } = {}) {
+  const cityFilter = String(city ?? "")
+    .trim()
+    .toLowerCase();
+  const theaterFilter = String(theaterId ?? "").trim();
+  return catalogTheaters
+    .filter(
+      (theater) =>
+        (!theaterFilter || theater.id === theaterFilter) &&
+        (!cityFilter || theater.city?.toLowerCase() === cityFilter),
+    )
+    .flatMap((theater) => {
+      const listedMovieIds = splitCatalogList(theater.movieIds);
+      const movieIds = listedMovieIds.length
+        ? listedMovieIds
+        : catalogMovies.map((movie) => movie.id);
+      return movieIds.flatMap((movieId) => {
+        const movie = catalogMovies.find((item) => item.id === movieId);
+        if (!movie) return [];
+        return getCatalogTheaterPlans(theater, showTimes).map((plan, index) =>
+          formatGeneratedShow({ movie, theater, plan, index, activeDate }),
+        );
+      });
+    });
+}
+
+function formatGeneratedShow({ movie, theater, plan, index, activeDate }) {
+  const show = buildCatalogShow({ movie, theater, plan, index, activeDate, showTimes });
+  return {
+    id: show.id,
+    movieId: movie.id,
+    movie: movie.title || movie.id,
+    poster: movie.poster || "",
+    duration: movie.duration || "",
+    genres: movie.genres ?? [],
+    certificate: movie.certificate || "UA",
+    theaterId: theater.id,
+    theater: theater.name,
+    city: theater.city || "Bengaluru",
+    area: theater.area,
+    address: theater.address,
+    amenities: theater.amenities ?? [],
+    logoText: theater.logoText,
+    screenId: `${theater.id}-${slugify(show.screen || "screen-1")}`,
+    screen: show.screen,
+    startTime: show.label,
+    endTime: "Auto calculated",
+    format: show.format,
+    language: show.language,
+    price: show.price,
+    seatLayout: show.seatLayout,
+    status: show.status,
+    cancellable: show.cancellable,
+  };
+}
+
+router.get(
+  "/",
+  asyncHandler(async (request, response) => {
+    const theaterId = String(request.query.theaterId ?? "").trim();
+    const city = String(request.query.city ?? "").trim();
+    const date = String(request.query.date ?? "").trim();
+
+    if (!isMongoReady()) {
+      response.json({ shows: generatedTheaterShows({ theaterId, city, activeDate: date }) });
+      return;
+    }
+
+    const showFilter = {};
+    if (theaterId) showFilter.theaterId = theaterId;
+
+    const shows = await Show.find(showFilter).sort({ movie: 1, startTime: 1 }).lean();
+    const visibleShows = shows.filter((show) => isPublicShow(show) && matchesShowDate(show, date));
+    const theaterIds = [...new Set(visibleShows.map((show) => show.theaterId).filter(Boolean))];
+    const theaterFilter = { id: { $in: theaterIds }, approved: true };
+    if (city) theaterFilter.city = new RegExp(`^${escapeRegExp(city)}$`, "i");
+
+    const theaters = await Theater.find(theaterFilter).lean();
+    const theaterById = new Map(theaters.map((theater) => [theater.id, theater]));
+    const rows = visibleShows
+      .map((show, index) => formatMongoShow(show, theaterById.get(show.theaterId), index))
+      .filter(Boolean);
+
+    response.json({ shows: rows });
+  }),
+);
 
 router.get(
   "/:movieId",
   asyncHandler(async (request, response) => {
     if (!isMongoReady()) {
-      response.json({ shows: generatedShows(request.params.movieId, request.query.city) });
+      response.json({
+        shows: generatedShows(request.params.movieId, request.query.city, request.query.date),
+      });
       return;
     }
 
     const city = String(request.query.city ?? "").trim();
+    const date = String(request.query.date ?? "").trim();
     const shows = await Show.find({ movieId: request.params.movieId })
       .sort({ startTime: 1 })
       .lean();
-    const visibleShows = shows.filter(isPublicShow);
+    const visibleShows = shows.filter((show) => isPublicShow(show) && matchesShowDate(show, date));
     const theaterIds = [...new Set(visibleShows.map((show) => show.theaterId).filter(Boolean))];
     const theaterFilter = { id: { $in: theaterIds }, approved: true };
     if (city) theaterFilter.city = new RegExp(`^${escapeRegExp(city)}$`, "i");
@@ -112,23 +194,10 @@ function isPublicShow(show) {
   return show.listingType !== "coming-soon" && status !== "draft" && status !== "coming soon";
 }
 
-function getTheaterPlans(theater) {
-  if (Array.isArray(theater.showPlan) && theater.showPlan.length) return theater.showPlan;
-  return showTimes.map((time, index) => ({
-    time,
-    screen: "Screen 1",
-    format: index % 2 === 0 ? "2D" : "IMAX",
-    status: index === 4 ? "sold" : index === 3 ? "fast" : "ok",
-    cancellable: index % 2 === 1,
-  }));
-}
-
-function theaterHasMovie(theater, movieId) {
-  return (
-    !Array.isArray(theater.movieIds) ||
-    theater.movieIds.length === 0 ||
-    theater.movieIds.includes(movieId)
-  );
+function matchesShowDate(show, date) {
+  if (!date) return true;
+  const value = String(show.date || "").trim();
+  return !value || value === date;
 }
 
 function escapeRegExp(value) {
@@ -142,4 +211,4 @@ function slugify(value) {
     .replace(/^-|-$/g, "");
 }
 
-export { generatedShows, router as showRoutes };
+export { generatedShows, generatedTheaterShows, router as showRoutes };

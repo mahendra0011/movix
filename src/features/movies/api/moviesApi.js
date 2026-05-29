@@ -1,11 +1,11 @@
-import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
+import { requestJson } from "@/shared/services/httpClient";
 import {
   getMovie as getFallbackMovie,
   movies as fallbackMovies,
 } from "@/features/movies/data/movieCatalog";
 
-const PUBLIC_MOVIE_TIMEOUT_MS = 1800;
-const SHOULD_FETCH_PUBLIC_MOVIES = HAS_CONFIGURED_API_URL;
+const PUBLIC_MOVIE_TIMEOUT_MS = 8000;
+const SHOULD_FETCH_PUBLIC_MOVIES = true;
 let moviesCache = null;
 let moviesRequest = null;
 

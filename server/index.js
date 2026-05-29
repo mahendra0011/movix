@@ -43,7 +43,7 @@ registerNotificationSockets(io);
 app.get("/api/health", (_request, response) => {
   response.json({
     ok: true,
-    service: "moviex API",
+    service: "movix API",
     database: isMongoReady() ? "MongoDB connected" : "Local memory store",
     socket: "enabled",
     seats: "Booked-seat sync",
@@ -77,5 +77,5 @@ app.use((error, _request, response, _next) => {
 });
 
 httpServer.listen(env.apiPort, () => {
-  console.log(`moviex API + Socket.IO running on http://localhost:${env.apiPort}`);
+  console.log(`movix API + Socket.IO running on http://localhost:${env.apiPort}`);
 });

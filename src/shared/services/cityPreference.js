@@ -1,5 +1,5 @@
-const CITY_STORAGE_KEY = "bms-selected-city";
-const CITY_CHANGE_EVENT = "bms-city-change";
+const CITY_STORAGE_KEY = "movix-selected-city";
+const CITY_CHANGE_EVENT = "movix-city-change";
 const DEFAULT_CITY = "Jabalpur";
 const INDIA_CITY_OPTIONS = [
   "Jabalpur",

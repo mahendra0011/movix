@@ -16,6 +16,7 @@ import { fetchMovies } from "@/features/movies/api/moviesApi";
 import { movies as fallbackMovies, showTimes, theaters } from "@/features/movies/data/movieCatalog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
+import { buildCatalogCinemaSchedule } from "@/features/movies/services/showSchedule";
 import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
 
 const dateOptions = buildDateOptions();
@@ -33,6 +34,7 @@ function CinemaDetailPage() {
   const { id } = Route.useParams();
   const movieCatalog = catalog.length ? catalog : fallbackMovies;
   const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
+  const [remoteShows, setRemoteShows] = useState([]);
   const [activeDate, setActiveDate] = useState(dateOptions[0]?.key ?? "");
   const [movieSearch, setMovieSearch] = useState("");
   const [activeFormat, setActiveFormat] = useState(allFilterValue);
@@ -56,10 +58,29 @@ function CinemaDetailPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+
+    requestJson(
+      `/api/shows?theaterId=${encodeURIComponent(id)}&date=${encodeURIComponent(activeDate)}`,
+      { timeoutMs: 8000 },
+    )
+      .then((data) => {
+        if (active) setRemoteShows(data.shows ?? []);
+      })
+      .catch(() => {
+        if (active) setRemoteShows([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeDate, id]);
+
   const cinema = useMemo(() => cinemaCatalog.find((item) => item.id === id), [cinemaCatalog, id]);
   const schedule = useMemo(
-    () => (cinema ? buildCinemaSchedule(cinema, movieCatalog, activeDate) : []),
-    [activeDate, cinema, movieCatalog],
+    () => (cinema ? buildCinemaSchedule(cinema, movieCatalog, activeDate, remoteShows) : []),
+    [activeDate, cinema, movieCatalog, remoteShows],
   );
   const formatOptions = useMemo(
     () => [
@@ -440,69 +461,74 @@ function SeatPriceTooltip({ price }) {
   );
 }
 
-function buildCinemaSchedule(cinema, catalog, activeDate) {
-  const movieIds = splitList(cinema.movieIds);
-  const movies = movieIds.length
-    ? movieIds.map((movieId) => catalog.find((movie) => movie.id === movieId)).filter(Boolean)
-    : catalog;
-  const plans = getCinemaPlans(cinema);
-
-  return movies.map((movie) => ({
-    movie,
-    shows: plans.map((plan, index) => buildCinemaShow(movie, cinema, plan, index, activeDate)),
-  }));
+function buildCinemaSchedule(cinema, catalog, activeDate, remoteShows) {
+  if (remoteShows.length) return buildRemoteCinemaSchedule(remoteShows, catalog);
+  return buildCatalogCinemaSchedule({ cinema, catalog, activeDate, showTimes });
 }
 
-function buildCinemaShow(movie, cinema, plan, index, activeDate) {
-  const time = typeof plan === "string" ? plan : plan.time || showTimes[index % showTimes.length];
-  const screen = typeof plan === "string" ? "Screen 1" : plan.screen || "Screen 1";
-  const screenLayout = getScreenLayout(cinema, screen);
-  const baseOffset = index * 12 + (String(cinema.id).length % 5) * 10;
+function buildRemoteCinemaSchedule(remoteShows, catalog) {
+  const groups = new Map();
+
+  remoteShows.forEach((show) => {
+    const movie = resolveRemoteMovie(show, catalog);
+    if (!groups.has(movie.id)) groups.set(movie.id, { movie, shows: [] });
+    groups.get(movie.id).shows.push(formatRemoteShow(show, movie));
+  });
+
+  return Array.from(groups.values());
+}
+
+function resolveRemoteMovie(show, catalog) {
+  const movieId = show.movieId || show.movie || show.id;
+  return (
+    catalog.find((movie) => movie.id === movieId) ?? {
+      id: movieId,
+      title: show.movie || movieId || "Movie",
+      poster: show.poster || "",
+      duration: show.duration || "",
+      certificate: show.certificate || "UA",
+      genres: splitList(show.genres),
+      rating: Number(show.rating || 4.6),
+      format: [show.format || "2D"],
+      language: show.language || "English",
+      description: show.description || "",
+    }
+  );
+}
+
+function formatRemoteShow(show, movie) {
+  const gold = Number(show.price?.gold || 260);
   return {
-    id: `${movie.id}-${cinema.id}-${index}-${String(activeDate).replace(/-/g, "")}`,
-    label: time,
-    screen,
-    status:
-      typeof plan === "string" ? inferShowStatus(index) : plan.status || inferShowStatus(index),
-    format:
-      (typeof plan === "string" ? "" : plan.format) ||
-      splitList(movie.format ?? movie.formats)[
-        index % Math.max(splitList(movie.format ?? movie.formats).length, 1)
-      ] ||
-      "2D",
+    id: show.id,
+    label: show.startTime || show.time || "Showtime",
+    screen: show.screen || "Screen 1",
+    status: normalizeShowStatus(show.status),
+    format: show.format || movie.format?.[0] || "2D",
+    language: show.language || movie.language || "English",
+    cancellable: show.cancellable !== false,
     price: {
-      platinum: 180 + baseOffset,
-      silver: 220 + baseOffset,
-      gold: 260 + baseOffset,
-      vip: 420 + baseOffset,
+      platinum: Number(show.price?.platinum || 180),
+      silver: Number(show.price?.silver || 220),
+      gold,
+      vip: Number(show.price?.vip || 420),
     },
-    seatLayout: screenLayout,
+    seatLayout: normalizeRemoteSeatLayout(show.seatLayout),
   };
 }
 
-function getCinemaPlans(cinema) {
-  if (Array.isArray(cinema.showPlan) && cinema.showPlan.length) return cinema.showPlan;
-  return showTimes.map((time, index) => ({
-    time,
-    format: index % 2 === 0 ? "2D" : "IMAX",
-    status: inferShowStatus(index),
-    screen: "Screen 1",
-  }));
-}
-
-function getScreenLayout(cinema, screenName) {
-  const screen =
-    splitList(cinema.screens).find((item) => item.name === screenName) || cinema.screens?.[0];
-  const rowCount = Array.isArray(screen?.seatLayout?.rows) ? screen.seatLayout.rows.length : 10;
-  const seatsPerRow = Number(screen?.seatLayout?.cols || screen?.seatLayout?.seatsPerRow || 14);
+function normalizeRemoteSeatLayout(layout = {}) {
+  const rowCount = Number(
+    layout.rowCount || (Array.isArray(layout.rows) ? layout.rows.length : 0) || 10,
+  );
+  const seatsPerRow = Number(layout.seatsPerRow || layout.cols || 14);
   return {
     rowCount,
     seatsPerRow,
-    platinumRows: 2,
-    silverRows: 2,
-    vipRows: 2,
-    aisleAfter: Math.max(0, Math.floor(seatsPerRow / 2)),
-    blockedSeats: [],
+    platinumRows: Number(layout.platinumRows || 2),
+    silverRows: Number(layout.silverRows || 2),
+    vipRows: Number(layout.vipRows || 2),
+    aisleAfter: Number(layout.aisleAfter || Math.max(0, Math.floor(seatsPerRow / 2))),
+    blockedSeats: splitList(layout.blockedSeats),
   };
 }
 
@@ -546,9 +572,10 @@ function showTimeClass(status) {
   return "border-emerald-500/70 bg-background text-foreground hover:bg-emerald-500/10";
 }
 
-function inferShowStatus(index) {
-  if (index === 4) return "sold";
-  if (index === 3) return "fast";
+function normalizeShowStatus(status) {
+  const value = String(status ?? "").toLowerCase();
+  if (value.includes("sold")) return "sold";
+  if (value.includes("fast")) return "fast";
   return "ok";
 }
 

@@ -64,7 +64,7 @@ function buildSeedReviews(movieIds = []) {
       return {
         movieId,
         userId: `seed-${movieId}-${userKey}`,
-        userEmail: `${userKey}@demo.bookmyscreen.local`,
+        userEmail: `${userKey}@demo.movix.local`,
         userName: template.name,
         rating: template.rating,
         tags: template.tags,
