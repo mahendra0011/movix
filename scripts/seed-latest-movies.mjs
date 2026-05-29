@@ -627,7 +627,7 @@ async function seedLatestReviews(movies) {
 
 async function linkMoviesToTheaters(movies) {
   const movieIds = movies.map((movie) => movie.id);
-  const targetTheaters = await getTargetTheatersByCity(3);
+  const targetTheaters = await getTargetTheatersByCity(3, FOCUS_CITIES);
   if (!targetTheaters.length) return;
   await Theater.updateMany(
     { id: { $in: targetTheaters.map((theater) => theater.id) } },
@@ -637,7 +637,8 @@ async function linkMoviesToTheaters(movies) {
 }
 
 async function seedLatestShows(movies) {
-  const theatersByCity = groupByCity(await getTargetTheatersByCity(2));
+  await Show.deleteMany({ id: /^latest-/ });
+  const theatersByCity = groupByCity(await getTargetTheatersByCity(1, FOCUS_CITIES));
   const theaters = Array.from(theatersByCity.values()).flat();
   if (!theaters.length) return;
 
@@ -654,16 +655,7 @@ async function seedLatestShows(movies) {
               $set: {
                 id: `latest-${movie.id}-${theater.id}-${slotIndex}`,
                 movieId: movie.id,
-                movie: movie.title,
-                poster: movie.poster,
-                backdrop: movie.backdrop,
-                duration: movie.duration,
-                genres: movie.genres,
-                releaseDate: movie.releaseDate,
-                description: movie.description,
-                cast: movie.cast,
                 theaterId: theater.id,
-                theater: theater.name,
                 screenId: screen?.id || `${theater.id}-screen-1`,
                 screen: screen?.name || "Screen 1",
                 date,
@@ -677,8 +669,6 @@ async function seedLatestShows(movies) {
                 status: slotIndex === 2 ? "fast" : "ok",
                 cancellable: slotIndex !== 2,
                 listingType: "live",
-                seats: screen?.totalSeats || 140,
-                seatLayout: screen?.seatLayout || {},
                 bookingOpensAt: "Now",
                 trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${movie.title} official trailer`)}`,
                 notes: "Latest movie seed",
@@ -699,14 +689,15 @@ async function seedLatestShows(movies) {
   }
 }
 
-async function getTargetTheatersByCity(limitPerCity) {
+async function getTargetTheatersByCity(limitPerCity, cityNames = []) {
+  const citySet = new Set(cityNames.map(normalizeText));
   const theaters = await Theater.find({ approved: true })
     .sort({ city: 1, name: 1 })
     .select("id name city screens")
     .lean();
-  return Array.from(groupByCity(theaters).values()).flatMap((items) =>
-    items.slice(0, limitPerCity),
-  );
+  return Array.from(groupByCity(theaters).entries())
+    .filter(([city]) => !citySet.size || citySet.has(normalizeText(city)))
+    .flatMap(([, items]) => items.slice(0, limitPerCity));
 }
 
 function groupByCity(theaters) {
@@ -843,4 +834,10 @@ function slugify(value) {
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function normalizeText(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
 }
