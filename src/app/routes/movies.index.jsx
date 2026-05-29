@@ -30,12 +30,20 @@ import {
 
 const allFilterValue = "All";
 const sortOptions = ["Popularity", "Rating", "A-Z"];
-const quickGenres = ["All", "Sci-Fi", "Adventure", "Drama", "Action", "Biography", "Thriller"];
+const categoryOrder = [
+  "All",
+  "Blockbusters",
+  "Family",
+  "Critics' picks",
+  "Premium formats",
+  "New releases",
+];
 
 const Route = createFileRoute("/movies/")({
   loader: () => fetchMovies(),
   validateSearch: (search) => ({
     city: typeof search.city === "string" ? search.city : "",
+    category: typeof search.category === "string" ? search.category : allFilterValue,
     genre: typeof search.genre === "string" ? search.genre : allFilterValue,
     language: typeof search.language === "string" ? search.language : allFilterValue,
     format: typeof search.format === "string" ? search.format : allFilterValue,
@@ -48,10 +56,11 @@ const Route = createFileRoute("/movies/")({
 function MoviesListing() {
   const loadedMovies = Route.useLoaderData();
   const initialSearch = Route.useSearch();
-  const { city, genre, language, format, sort, q } = initialSearch;
+  const { city, category, genre, language, format, sort, q } = initialSearch;
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
   const [selectedCity, setSelectedCity] = useState(city || readPreferredCity());
   const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
+  const [activeCategory, setActiveCategory] = useState(category || allFilterValue);
   const [activeGenre, setActiveGenre] = useState(genre || allFilterValue);
   const [activeLanguage, setActiveLanguage] = useState(language || allFilterValue);
   const [activeFormat, setActiveFormat] = useState(format || allFilterValue);
@@ -64,12 +73,13 @@ function MoviesListing() {
       setSelectedCity(city);
       writePreferredCity(city);
     }
+    setActiveCategory(category || allFilterValue);
     setActiveGenre(genre || allFilterValue);
     setActiveLanguage(language || allFilterValue);
     setActiveFormat(format || allFilterValue);
     setSortBy(sortOptions.includes(sort) ? sort : "Popularity");
     setSearchTerm(q || "");
-  }, [city, format, genre, language, q, sort]);
+  }, [category, city, format, genre, language, q, sort]);
 
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
 
@@ -114,9 +124,14 @@ function MoviesListing() {
     ],
     [cityListedMovies],
   );
-  const visibleQuickGenres = useMemo(
-    () => quickGenres.filter((genre) => genre === allFilterValue || genres.includes(genre)),
-    [genres],
+  const visibleCategories = useMemo(
+    () =>
+      categoryOrder.filter(
+        (category) =>
+          category === allFilterValue ||
+          cityListedMovies.some((movie) => categorizeMovie(movie) === category),
+      ),
+    [cityListedMovies],
   );
   const filteredMovies = useMemo(() => {
     const needle = searchTerm.trim().toLowerCase();
@@ -124,6 +139,7 @@ function MoviesListing() {
       const movieGenres = getMovieGenres(movie);
       const movieLanguages = getMovieLanguages(movie);
       const movieFormats = getMovieFormats(movie);
+      const categoryMatch = activeCategory === allFilterValue || categorizeMovie(movie) === activeCategory;
       const genreMatch = activeGenre === allFilterValue || movieGenres.includes(activeGenre);
       const languageMatch =
         activeLanguage === allFilterValue || movieLanguages.includes(activeLanguage);
@@ -141,7 +157,7 @@ function MoviesListing() {
         .join(" ")
         .toLowerCase();
       return (
-        genreMatch && languageMatch && formatMatch && (!needle || searchableText.includes(needle))
+        categoryMatch && genreMatch && languageMatch && formatMatch && (!needle || searchableText.includes(needle))
       );
     });
 
@@ -153,11 +169,12 @@ function MoviesListing() {
         parseVoteCount(left.votes ?? left.votesText)
       );
     });
-  }, [activeFormat, activeGenre, activeLanguage, cityListedMovies, searchTerm, sortBy]);
+  }, [activeCategory, activeFormat, activeGenre, activeLanguage, cityListedMovies, searchTerm, sortBy]);
   const bannerMovies = useMemo(() => buildBannerMovies(cityListedMovies), [cityListedMovies]);
   const featured =
     bannerMovies[activeSlide % Math.max(bannerMovies.length, 1)] ?? cityListedMovies[0];
   const activeFilterCount = [
+    activeCategory !== allFilterValue,
     activeGenre !== allFilterValue,
     activeLanguage !== allFilterValue,
     activeFormat !== allFilterValue,
@@ -178,6 +195,7 @@ function MoviesListing() {
   }, [bannerMovies.length]);
 
   const clearFilters = () => {
+    setActiveCategory(allFilterValue);
     setActiveGenre(allFilterValue);
     setActiveLanguage(allFilterValue);
     setActiveFormat(allFilterValue);
@@ -347,21 +365,21 @@ function MoviesListing() {
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-2 text-xs font-extrabold text-primary">
                 <Sparkles className="h-3.5 w-3.5" />
-                Quick Filters
+                Categories
               </span>
               <div className="flex max-w-full gap-1.5 overflow-x-auto rounded-full border border-border/50 bg-background/75 p-1 shadow-inner">
-                {visibleQuickGenres.map((genre) => (
+                {visibleCategories.map((category) => (
                   <button
-                    key={genre}
+                    key={category}
                     type="button"
-                    onClick={() => setActiveGenre(genre)}
+                    onClick={() => setActiveCategory(category)}
                     className={`h-8 shrink-0 whitespace-nowrap rounded-full border px-3 text-xs font-bold transition-all ${
-                      activeGenre === genre
+                      activeCategory === category
                         ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                         : "border-transparent text-foreground hover:border-primary/35 hover:bg-card hover:text-primary"
                     }`}
                   >
-                    {genre}
+                    {category}
                   </button>
                 ))}
               </div>
@@ -556,6 +574,26 @@ function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
     return catalog;
   }
   return listedMovies;
+}
+
+function categorizeMovie(movie) {
+  const genres = getMovieGenres(movie).map(normalizeText);
+  const formats = getMovieFormats(movie).map(normalizeText);
+
+  if (formats.some((format) => ["imax", "4dx", "laser"].includes(format))) {
+    return "Premium formats";
+  }
+  if (genres.some((genre) => ["animation", "family"].includes(genre))) {
+    return "Family";
+  }
+  if (genres.some((genre) => ["action", "adventure", "sci-fi", "fantasy"].includes(genre))) {
+    return "Blockbusters";
+  }
+  if (genres.some((genre) => ["drama", "biography", "history"].includes(genre))) {
+    return "Critics' picks";
+  }
+
+  return "New releases";
 }
 
 function getMovieGenres(movie) {

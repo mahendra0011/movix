@@ -13,7 +13,6 @@ import {
   Languages,
   Search,
   SlidersHorizontal,
-  Sparkles,
   Star,
   Ticket,
   X,
@@ -28,20 +27,11 @@ import { readPreferredCity, subscribePreferredCity } from "@/shared/services/cit
 
 const allFilterValue = "All";
 const sortOptions = ["Release date", "Popularity", "A-Z"];
-const categoryOrder = [
-  "All",
-  "Blockbusters",
-  "Family",
-  "Critics' picks",
-  "Premium formats",
-  "New releases",
-];
 
 const Route = createFileRoute("/coming-soon")({
   loader: () => fetchComingSoonMovies(),
   validateSearch: (search) => ({
     q: typeof search.q === "string" ? search.q : "",
-    category: typeof search.category === "string" ? search.category : allFilterValue,
     genre: typeof search.genre === "string" ? search.genre : allFilterValue,
     language: typeof search.language === "string" ? search.language : allFilterValue,
     format: typeof search.format === "string" ? search.format : allFilterValue,
@@ -57,7 +47,6 @@ function ComingSoonPage() {
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
   const [comingSoonMovies, setComingSoonMovies] = useState(loadedMovies);
   const [searchTerm, setSearchTerm] = useState(initialSearch.q || "");
-  const [activeCategory, setActiveCategory] = useState(initialSearch.category || allFilterValue);
   const [activeGenre, setActiveGenre] = useState(initialSearch.genre || allFilterValue);
   const [activeLanguage, setActiveLanguage] = useState(initialSearch.language || allFilterValue);
   const [activeFormat, setActiveFormat] = useState(initialSearch.format || allFilterValue);
@@ -72,7 +61,6 @@ function ComingSoonPage() {
 
   useEffect(() => {
     setSearchTerm(initialSearch.q || "");
-    setActiveCategory(initialSearch.category || allFilterValue);
     setActiveGenre(initialSearch.genre || allFilterValue);
     setActiveLanguage(initialSearch.language || allFilterValue);
     setActiveFormat(initialSearch.format || allFilterValue);
@@ -100,15 +88,7 @@ function ComingSoonPage() {
       ),
     [comingSoonMovies, selectedCity],
   );
-  const categories = useMemo(
-    () =>
-      categoryOrder.filter(
-        (category) =>
-          category === allFilterValue ||
-          cityVisibleMovies.some((movie) => movie.category === category),
-      ),
-    [cityVisibleMovies],
-  );
+
   const genres = useMemo(
     () => [allFilterValue, ...unique(cityVisibleMovies.flatMap((movie) => getMovieGenres(movie)))],
     [cityVisibleMovies],
@@ -138,7 +118,6 @@ function ComingSoonPage() {
       const genres = getMovieGenres(movie);
       const languages = getMovieLanguages(movie);
       const formats = getMovieFormats(movie);
-      const categoryMatch = activeCategory === allFilterValue || movie.category === activeCategory;
       const genreMatch = activeGenre === allFilterValue || genres.includes(activeGenre);
       const languageMatch = activeLanguage === allFilterValue || languages.includes(activeLanguage);
       const formatMatch = activeFormat === allFilterValue || formats.includes(activeFormat);
@@ -160,7 +139,6 @@ function ComingSoonPage() {
         .toLowerCase();
 
       return (
-        categoryMatch &&
         genreMatch &&
         languageMatch &&
         formatMatch &&
@@ -180,7 +158,6 @@ function ComingSoonPage() {
       return getReleaseTime(left) - getReleaseTime(right);
     });
   }, [
-    activeCategory,
     activeFormat,
     activeGenre,
     activeLanguage,
@@ -201,7 +178,6 @@ function ComingSoonPage() {
     comingSoonMovies[0];
   const activeFilterCount = [
     searchTerm.trim().length > 0,
-    activeCategory !== allFilterValue,
     activeGenre !== allFilterValue,
     activeLanguage !== allFilterValue,
     activeFormat !== allFilterValue,
@@ -224,7 +200,6 @@ function ComingSoonPage() {
 
   const clearFilters = () => {
     setSearchTerm("");
-    setActiveCategory(allFilterValue);
     setActiveGenre(allFilterValue);
     setActiveLanguage(allFilterValue);
     setActiveFormat(allFilterValue);
@@ -283,7 +258,7 @@ function ComingSoonPage() {
               Coming soon in {selectedCity}
             </h1>
             <p className="mt-4 max-w-xl text-base leading-7 text-foreground/80 dark:text-muted-foreground">
-              Explore upcoming releases, filter by category and set reminders before bookings open.
+              Explore upcoming releases, filter by details and set reminders before bookings open.
             </p>
             <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold">
               <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-primary">
@@ -405,29 +380,7 @@ function ComingSoonPage() {
             />
           </div>
 
-          <div className="relative mt-3 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-2 text-xs font-extrabold text-primary">
-                <Sparkles className="h-3.5 w-3.5" />
-                Categories
-              </span>
-              <div className="flex max-w-full gap-1.5 overflow-x-auto rounded-full border border-border/50 bg-background/75 p-1 shadow-inner">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => setActiveCategory(category)}
-                    className={`h-8 shrink-0 whitespace-nowrap rounded-full border px-3 text-xs font-bold transition-all ${
-                      activeCategory === category
-                        ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                        : "border-transparent text-foreground hover:border-primary/35 hover:bg-card hover:text-primary"
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="relative mt-3 flex flex-wrap items-center justify-end gap-3">
             <div className="flex items-center gap-2">
               {activeFilterCount ? (
                 <span className="rounded-full bg-primary/10 px-3 py-2 text-xs font-bold text-primary">
