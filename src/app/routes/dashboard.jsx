@@ -158,7 +158,7 @@ function UserDashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 pb-20">
+    <div className="mx-auto max-w-[1560px] px-4 py-8 pb-20 sm:px-5 lg:px-6">
       <section className="cinema-grid overflow-hidden rounded-lg border border-border/60 bg-card/75 shadow-2xl shadow-black/20">
         <div className="grid gap-6 p-6 lg:grid-cols-[1.2fr_0.8fr] lg:p-8">
           <div>

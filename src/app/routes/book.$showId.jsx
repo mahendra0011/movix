@@ -302,7 +302,7 @@ function BookingPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 pb-44">
+    <div className="mx-auto max-w-[1560px] px-4 py-8 pb-44 sm:px-5 lg:px-6">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/60 pb-5">
         <div>
           <h1 className="text-xl font-bold">{search.movie || "Movie"}</h1>
@@ -408,7 +408,7 @@ function BookingPage() {
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/95 backdrop-blur-xl">
-        <div className="mx-auto grid max-w-6xl gap-3 px-4 py-4 md:grid-cols-[1fr_390px_auto] md:items-center">
+        <div className="mx-auto grid max-w-[1560px] gap-3 px-4 py-4 sm:px-5 md:grid-cols-[1fr_390px_auto] md:items-center lg:px-6">
           <div>
             <p className="text-xs text-muted-foreground">
               {selected.length} {selected.length === 1 ? "seat" : "seats"} selected

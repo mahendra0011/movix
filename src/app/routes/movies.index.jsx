@@ -207,7 +207,7 @@ function MoviesListing() {
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/78 to-background/20 dark:via-background/86 dark:to-background/45" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-        <div className="relative mx-auto grid min-h-[360px] max-w-[1168px] items-center gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_270px]">
+        <div className="relative mx-auto grid min-h-[360px] max-w-[1560px] items-center gap-8 px-4 py-8 sm:px-5 lg:grid-cols-[minmax(0,1fr)_270px] lg:px-6">
           <div className="max-w-2xl">
             <Link
               to="/"
@@ -281,7 +281,7 @@ function MoviesListing() {
         </div>
       </section>
 
-      <section className="mx-auto -mt-6 max-w-[1168px] px-4">
+      <section className="mx-auto -mt-6 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         <div className="relative overflow-hidden rounded-xl border border-primary/15 bg-gradient-to-r from-card/95 via-background/95 to-primary/8 p-4 shadow-2xl shadow-black/8 backdrop-blur dark:from-card/92 dark:via-background/90 dark:to-primary/10">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_92%_12%,rgba(20,184,166,0.14),transparent_30%)]" />
           <div className="relative grid gap-3 lg:grid-cols-[1.35fr_repeat(4,minmax(0,0.82fr))]">
@@ -380,7 +380,7 @@ function MoviesListing() {
         </div>
       </section>
 
-      <section className="mx-auto mt-7 max-w-[1168px] px-4">
+      <section className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-2xl font-extrabold tracking-tight">Movies available now</h2>

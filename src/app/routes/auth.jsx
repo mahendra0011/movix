@@ -282,7 +282,7 @@ function AuthPage() {
       <div className="absolute inset-0 bg-gradient-to-r from-background via-background/88 to-background/40" />
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/35 to-transparent" />
 
-      <div className="relative mx-auto grid min-h-[calc(100vh-190px)] max-w-7xl items-center gap-8 px-4 py-10 lg:grid-cols-[1fr_460px]">
+      <div className="relative mx-auto grid min-h-[calc(100vh-190px)] max-w-[1560px] items-center gap-8 px-4 py-10 sm:px-5 lg:grid-cols-[1fr_460px] lg:px-6">
         <section className="hidden lg:block">
           <span className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-3 py-2 text-sm font-medium text-primary backdrop-blur">
             <ShieldCheck className="h-4 w-4" />

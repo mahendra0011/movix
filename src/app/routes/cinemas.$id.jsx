@@ -83,7 +83,7 @@ function CinemaDetailPage() {
 
   if (!cinema) {
     return (
-      <main className="mx-auto max-w-5xl px-4 py-12">
+      <main className="mx-auto max-w-[1560px] px-4 py-12 sm:px-5 lg:px-6">
         <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
           <ArrowLeft className="h-4 w-4" />
           Back home
@@ -102,7 +102,7 @@ function CinemaDetailPage() {
   return (
     <main className="bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_30%),linear-gradient(180deg,color-mix(in_oklch,var(--secondary)_48%,transparent),var(--background)_440px)] pb-12 dark:bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_32%),linear-gradient(180deg,color-mix(in_oklch,var(--card)_78%,transparent),var(--background)_520px)]">
       <section className="border-b border-border/60">
-        <div className="mx-auto grid max-w-[1168px] gap-6 px-4 py-8 lg:grid-cols-[1fr_320px]">
+        <div className="mx-auto grid max-w-[1560px] gap-6 px-4 py-8 sm:px-5 lg:grid-cols-[1fr_320px] lg:px-6">
           <div>
             <Link
               to="/"
@@ -146,7 +146,7 @@ function CinemaDetailPage() {
         </div>
       </section>
 
-      <section className="mx-auto -mt-5 max-w-[1168px] px-4">
+      <section className="mx-auto -mt-5 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         <div className="rounded-xl border border-primary/15 bg-gradient-to-r from-card/95 via-background/95 to-primary/8 p-4 shadow-2xl shadow-black/8 backdrop-blur">
           <div className="grid gap-3 lg:grid-cols-[1.25fr_repeat(3,minmax(0,0.72fr))]">
             <label className="relative block">
@@ -183,7 +183,7 @@ function CinemaDetailPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-6 max-w-[1168px] px-4">
+      <section className="mx-auto mt-6 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         <div className="flex gap-2 overflow-x-auto rounded-xl border border-border/60 bg-card/70 p-2 shadow-sm">
           {dateOptions.map((date) => (
             <button
@@ -204,7 +204,7 @@ function CinemaDetailPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-6 max-w-[1168px] px-4">
+      <section className="mx-auto mt-6 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-2xl font-extrabold tracking-tight">Movies and show timings</h2>

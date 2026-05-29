@@ -274,7 +274,7 @@ function MoviePage() {
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/60" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-        <div className="relative mx-auto max-w-7xl px-4 py-8 md:py-10">
+        <div className="relative mx-auto max-w-[1560px] px-4 py-8 sm:px-5 md:py-10 lg:px-6">
           <div className="grid gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)_280px] lg:items-center">
             <div className="mx-auto w-full max-w-[220px] overflow-hidden rounded-lg border border-border/70 bg-card shadow-lg shadow-black/10 md:mx-0 md:max-w-none">
               <img
@@ -446,7 +446,7 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
   const reviews = getVisibleReviews(reviewData);
 
   return (
-    <div className="mx-auto mt-10 grid max-w-7xl gap-10 px-4">
+    <div className="mx-auto mt-10 grid max-w-[1560px] gap-10 px-4 sm:px-5 lg:px-6">
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         <div>
           <SectionHeader icon={Info} eyebrow="Story" title="About the movie" />
@@ -1114,7 +1114,7 @@ function ShowtimesView({
   return (
     <section id="showtimes" className="mt-12 border-y border-border/60 bg-muted/30">
       <div className="bg-background">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mx-auto flex max-w-[1560px] flex-col gap-4 px-4 py-8 sm:px-5 lg:flex-row lg:items-end lg:justify-between lg:px-6">
           <div>
             <button
               type="button"
@@ -1150,7 +1150,7 @@ function ShowtimesView({
       </div>
 
       <div className="border-y border-border/60 bg-background/95 backdrop-blur">
-        <div className="mx-auto grid max-w-7xl gap-4 px-4 md:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="mx-auto grid max-w-[1560px] gap-4 px-4 sm:px-5 md:grid-cols-[minmax(0,1fr)_auto] lg:px-6">
           <div className="flex gap-2 overflow-x-auto py-3">
             {dateOptions.map((date) => (
               <button
@@ -1202,7 +1202,7 @@ function ShowtimesView({
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-4">
+      <div className="mx-auto max-w-[1560px] px-4 py-4 sm:px-5 lg:px-6">
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <Moon className="h-4 w-4" /> Late night

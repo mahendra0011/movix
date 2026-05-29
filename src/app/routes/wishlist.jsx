@@ -36,7 +36,7 @@ function WishlistPage() {
   return (
     <main className="bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_32%),linear-gradient(180deg,color-mix(in_oklch,var(--secondary)_42%,transparent),var(--background)_430px)] pb-12 dark:bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--primary)_16%,transparent),transparent_32%),linear-gradient(180deg,color-mix(in_oklch,var(--card)_76%,transparent),var(--background)_520px)]">
       <section className="border-b border-border/60">
-        <div className="mx-auto max-w-[1168px] px-4 py-10">
+        <div className="mx-auto max-w-[1560px] px-4 py-10 sm:px-5 lg:px-6">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary">
             <Heart className="h-3.5 w-3.5 fill-primary" />
             Your saved picks
@@ -58,7 +58,7 @@ function WishlistPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-7 max-w-[1168px] px-4">
+      <section className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         {items.length ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {items.map((item) => (
@@ -82,7 +82,7 @@ function WishlistPage() {
         )}
       </section>
 
-      <section className="mx-auto mt-8 max-w-[1168px] px-4">
+      <section className="mx-auto mt-8 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-extrabold tracking-tight">More movies to save</h2>
