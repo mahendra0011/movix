@@ -119,7 +119,7 @@ router.get(
     const theaters = await Theater.find(theaterFilter).lean();
     const theaterById = new Map(theaters.map((theater) => [theater.id, theater]));
     const rows = visibleShows
-      .map((show, index) => formatMongoShow(show, theaterById.get(show.theaterId), index))
+      .map((show, index) => formatMongoShow(show, theaterById.get(show.theaterId), index, date))
       .filter(Boolean);
 
     response.json({ shows: rows });
@@ -149,18 +149,20 @@ router.get(
     const theaters = await Theater.find(theaterFilter).lean();
     const theaterById = new Map(theaters.map((theater) => [theater.id, theater]));
     const rows = visibleShows
-      .map((show, index) => formatMongoShow(show, theaterById.get(show.theaterId), index))
+      .map((show, index) => formatMongoShow(show, theaterById.get(show.theaterId), index, date))
       .filter(Boolean);
 
     response.json({ shows: rows });
   }),
 );
 
-function formatMongoShow(show, theater, index) {
+function formatMongoShow(show, theater, index, activeDate = "") {
   if (!theater) return null;
   const screen = theater.screens?.find((item) => item.id === show.screenId);
+  const showDate = String(show.date || "").trim();
+  const resolvedDate = showDate || String(activeDate || "").trim();
   return {
-    id: show.id,
+    id: scopedShowId(show.id, showDate, resolvedDate),
     movieId: show.movieId,
     theaterId: show.theaterId,
     theater: theater.name,
@@ -171,7 +173,7 @@ function formatMongoShow(show, theater, index) {
     logoText: theater.logoText,
     screenId: show.screenId,
     screen: show.screen || screen?.name || "Screen 1",
-    date: show.date || "",
+    date: resolvedDate,
     startTime: show.startTime,
     endTime: show.endTime,
     time: show.time || show.startTime,
@@ -187,6 +189,13 @@ function formatMongoShow(show, theater, index) {
     status: show.status || "ok",
     cancellable: show.cancellable !== false,
   };
+}
+
+function scopedShowId(id, showDate, resolvedDate) {
+  if (showDate || !resolvedDate) return id;
+  const suffix = resolvedDate.replace(/\D/g, "");
+  if (!suffix || String(id).endsWith(`-${suffix}`)) return id;
+  return `${id}-${suffix}`;
 }
 
 function isPublicShow(show) {

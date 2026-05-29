@@ -73,6 +73,7 @@ Create one Render Web Service for the API and one Render Static Site for the Rea
   - `ADMIN_EMAIL`: first admin email
   - `ADMIN_PASSWORD`: strong first admin password
 - Optional production integrations:
+  - `ALLOW_MEMORY_STORE`: set to `true` only for temporary demos without MongoDB
   - `PAYMENT_PROVIDER`: `razorpay`
   - `RAZORPAY_KEY_ID`
   - `RAZORPAY_KEY_SECRET`
@@ -92,6 +93,8 @@ Create one Render Web Service for the API and one Render Static Site for the Rea
 Socket.IO uses `VITE_API_URL`, so no separate frontend socket URL is required.
 
 Render Web Services must bind to the port from `PORT`. The API reads `PORT` first. The frontend is a static SPA, so it does not need a start command.
+
+In `NODE_ENV=production`, the API refuses to start without `CLIENT_ORIGIN`, `JWT_SECRET`, and a persistent `MONGODB_URI` unless `ALLOW_MEMORY_STORE=true` is explicitly set. This keeps auth, bookings, seats, and owner/admin data from silently running on disposable memory storage.
 
 ### Fix for "Publish directory does not exist"
 

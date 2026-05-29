@@ -159,6 +159,9 @@ async function ensureCollections() {
 
 async function connectDatabase() {
   if (!env.mongoUri) {
+    if (env.isProduction && !env.allowMemoryStore) {
+      throw new Error("MONGODB_URI is required in production unless ALLOW_MEMORY_STORE=true.");
+    }
     console.log("MONGODB_URI not set. API is running with local in-memory data.");
     return false;
   }
@@ -176,6 +179,9 @@ async function connectDatabase() {
     return true;
   } catch (error) {
     mongoReady = false;
+    if (env.isProduction && !env.allowMemoryStore) {
+      throw error;
+    }
     console.warn("MongoDB connection failed. Falling back to local in-memory data.");
     console.warn(error);
     return false;
