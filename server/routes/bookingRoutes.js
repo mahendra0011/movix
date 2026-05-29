@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 import { Booking } from "../models/Booking.js";
 import {
   addMemoryBooking,
@@ -14,7 +14,7 @@ import { cleanDocument, isMongoReady } from "../services/database.js";
 import { sendBookingEmail, sendOtpEmail } from "../services/emailService.js";
 import { generateQrDataUrl, generateQrPng, generateTicketPdf } from "../services/ticketService.js";
 import { getSeatState, roomName } from "../services/seatService.js";
-import { publishNotification } from "../services/notificationHub.js";
+import { notifyBookingCreated, notifyBookingStatusChange } from "../services/notificationEvents.js";
 
 function createRef() {
   return `MX${Date.now().toString(36).toUpperCase()}${Math.random()
@@ -230,25 +230,9 @@ function createBookingRoutes({ io }) {
     bookingEmailTokens.delete(emailVerificationToken);
     const state = await emitSeatState(showId);
     const qrDataUrl = await generateQrDataUrl(saved);
-    const seatText = saved.seats?.join(", ") || "selected seats";
 
     sendBookingEmail(saved).catch((error) => console.warn("Booking email failed:", error.message));
-    publishNotification({
-      audience: "user",
-      email: saved.email,
-      type: "booking",
-      title: "Ticket confirmed",
-      message: `${saved.movie} at ${saved.theater} - ${seatText}`,
-      href: `/confirmation?ref=${encodeURIComponent(saved.ref)}`,
-    });
-    publishNotification({
-      audience: "role",
-      role: "admin",
-      type: "booking",
-      title: "New booking received",
-      message: `${saved.movie} - ${seatText} - Rs ${saved.total}`,
-      href: "/admin",
-    });
+    notifyBookingCreated(saved);
 
     response.status(201).json({
       booking: saved,
@@ -282,6 +266,53 @@ function createBookingRoutes({ io }) {
             .slice(0, 8);
 
       response.json({ bookings: bookings.map(serializeBooking) });
+    }),
+  );
+
+  router.patch(
+    "/bookings/:ref/status",
+    requireAuth,
+    requireRole("admin", "theater-owner"),
+    asyncHandler(async (request, response) => {
+      const booking = await findBooking(request.params.ref);
+      if (!booking) {
+        response.status(404).json({ error: "Booking not found." });
+        return;
+      }
+
+      const previousBooking = { ...booking };
+      const nextStatus = normalizeBookingStatus(request.body.status, booking.status);
+      const nextPaymentStatus = normalizePaymentStatus(
+        request.body.paymentStatus,
+        booking.paymentStatus,
+      );
+      const nextTime = String(request.body.time || booking.time || "");
+      const reason = String(request.body.reason || "").trim();
+
+      const updates = {
+        status: nextStatus,
+        paymentStatus: nextPaymentStatus,
+        time: nextTime,
+      };
+
+      let saved;
+      if (isMongoReady()) {
+        saved = cleanDocument(
+          await Booking.findOneAndUpdate(
+            { ref: request.params.ref },
+            { $set: updates },
+            { new: true },
+          ),
+        );
+      } else {
+        Object.assign(booking, updates, { updatedAt: new Date().toISOString() });
+        saved = booking;
+      }
+
+      const event = buildBookingStatusEvent(previousBooking, saved, reason);
+      notifyBookingStatusChange(saved, event);
+
+      response.json({ booking: serializeBooking(saved), event });
     }),
   );
 
@@ -339,6 +370,48 @@ function createBookingRoutes({ io }) {
   );
 
   return { router, getBookedSeats, emitSeatState };
+}
+
+function normalizeBookingStatus(value, fallback = "confirmed") {
+  return ["confirmed", "held", "cancelled"].includes(value) ? value : fallback || "confirmed";
+}
+
+function normalizePaymentStatus(value, fallback = "paid") {
+  return ["pending", "paid", "failed", "refunded"].includes(value) ? value : fallback || "paid";
+}
+
+function buildBookingStatusEvent(previous, next, reason) {
+  if (next.status === "cancelled" && previous.status !== "cancelled") {
+    return {
+      type: "cancellation",
+      title: "Booking cancelled",
+      message: `${next.movie} booking ${next.ref} was cancelled.${
+        reason ? ` Reason: ${reason}` : ""
+      }`,
+    };
+  }
+
+  if (next.paymentStatus === "refunded" && previous.paymentStatus !== "refunded") {
+    return {
+      type: "refund",
+      title: "Refund update",
+      message: `Refund completed for ${next.movie} booking ${next.ref}.`,
+    };
+  }
+
+  if (next.time !== previous.time) {
+    return {
+      type: "reschedule",
+      title: "Show rescheduled",
+      message: `${next.movie} has a new showtime: ${next.time}.`,
+    };
+  }
+
+  return {
+    type: "booking-update",
+    title: "Booking updated",
+    message: `${next.movie} booking ${next.ref} was updated.${reason ? ` ${reason}` : ""}`,
+  };
 }
 
 export { createBookingRoutes };

@@ -1,37 +1,22 @@
 import { Router } from "express";
-import { Subscriber } from "../models/Subscriber.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { isMongoReady } from "../services/database.js";
+import { notifySubscriptionCreated } from "../services/notificationEvents.js";
+import { addSubscriber } from "../services/subscriberStore.js";
 
 const router = Router();
-const memorySubscribers = new Set();
-
-function normalizeEmail(email) {
-  return String(email ?? "")
-    .trim()
-    .toLowerCase();
-}
 
 router.post(
   "/subscribe",
   asyncHandler(async (request, response) => {
-    const email = normalizeEmail(request.body.email);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      response.status(400).json({ error: "Please enter a valid email address." });
-      return;
-    }
+    const email = await addSubscriber(request.body.email, request.body.source ?? "homepage");
+    notifySubscriptionCreated(email).catch((error) =>
+      console.warn("Subscription email failed:", error.message),
+    );
 
-    if (isMongoReady()) {
-      await Subscriber.updateOne(
-        { email },
-        { $setOnInsert: { email, source: request.body.source ?? "homepage" } },
-        { upsert: true },
-      );
-    } else {
-      memorySubscribers.add(email);
-    }
-
-    response.status(201).json({ ok: true, message: "You are on the premiere alerts list." });
+    response.status(201).json({
+      ok: true,
+      message: "Subscribed. New movie and trailer alerts will reach your email.",
+    });
   }),
 );
 

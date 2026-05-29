@@ -8,6 +8,7 @@ import { buildSeedReviews, REVIEW_TAGS } from "../data/reviewSeeds.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
 import { getMemoryBookings } from "../services/bookingStore.js";
 import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
+import { notifyMovieRelease } from "../services/notificationEvents.js";
 import { movies } from "../../src/features/movies/data/movieCatalog.js";
 
 const router = Router();
@@ -302,8 +303,9 @@ router.post(
         return;
       }
 
-      const movie = await Movie.create(payload);
-      response.status(201).json({ movie: cleanDocument(movie) });
+      const movie = cleanDocument(await Movie.create(payload));
+      await notifyMovieRelease(movie);
+      response.status(201).json({ movie });
       return;
     }
 
@@ -313,6 +315,7 @@ router.post(
     }
 
     movies.unshift(payload);
+    await notifyMovieRelease(payload);
     response.status(201).json({ movie: payload });
   }),
 );

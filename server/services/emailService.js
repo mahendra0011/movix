@@ -140,6 +140,37 @@ async function sendBookingEmail(booking) {
   });
 }
 
+async function sendNotificationEmail({
+  to,
+  subject,
+  eyebrow = "Moviex alerts",
+  title,
+  preview,
+  message,
+  actionHref = "",
+  actionLabel = "Open moviex",
+  footer,
+}) {
+  const action = actionHref
+    ? `<p style="margin:24px 0 0;"><a href="${escapeHtml(actionHref)}" style="display:inline-block;background:${brand.primary};color:white;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:800;">${escapeHtml(actionLabel)}</a></p>`
+    : "";
+
+  return sendEmail({
+    to,
+    subject,
+    html: emailLayout({
+      eyebrow,
+      title,
+      preview: preview || message,
+      body: `
+        <p style="margin:0;color:#dbeafe;">${escapeHtml(message)}</p>
+        ${action}
+      `,
+      footer,
+    }),
+  });
+}
+
 async function sendOtpEmail(email, otp, options = {}) {
   const purpose = options.purpose ?? "login";
   const templates = {
@@ -193,4 +224,4 @@ async function sendOtpEmail(email, otp, options = {}) {
   });
 }
 
-export { sendBookingEmail, sendEmail, sendOtpEmail };
+export { sendBookingEmail, sendEmail, sendNotificationEmail, sendOtpEmail };

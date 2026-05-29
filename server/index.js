@@ -47,7 +47,7 @@ app.get("/api/health", (_request, response) => {
     database: isMongoReady() ? "MongoDB connected" : "Local memory store",
     socket: "enabled",
     seats: "Booked-seat sync",
-    notifications: "Socket.IO live notifications",
+    notifications: "Live notifications enabled",
     email:
       env.brevoApiKey && env.brevoFromEmail ? "Brevo configured" : "Email provider not configured",
     payment:

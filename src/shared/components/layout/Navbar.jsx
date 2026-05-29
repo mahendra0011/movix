@@ -80,10 +80,7 @@ function Navbar() {
         ? "Owner"
         : "Dashboard";
   const visiblePanelLinks = useMemo(
-    () =>
-      panelLinks.filter(
-        (item) => auth.user && item.roles.includes(auth.user.role) && item.to !== "/owner",
-      ),
+    () => panelLinks.filter((item) => auth.user && item.roles.includes(auth.user.role)),
     [auth.user],
   );
 
@@ -217,38 +214,23 @@ function Navbar() {
         </div>
 
         <div className="hidden items-center gap-2 xl:flex">
-          <Button
-            size="sm"
-            variant="secondary"
-            asChild
-            className="border border-border/60 bg-card/80 hover:bg-primary/10 hover:text-primary"
-          >
-            <Link to="/owner">
-              <Building2 className="h-4 w-4" />
-              Theatre Owner Panel
-            </Link>
-          </Button>
-          {visiblePanelLinks.length > 0 && (
-            <>
-              {visiblePanelLinks.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Button
-                    key={item.to}
-                    size="sm"
-                    variant="secondary"
-                    asChild
-                    className="border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
-                  >
-                    <Link to={item.to}>
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </Link>
-                  </Button>
-                );
-              })}
-            </>
-          )}
+          {visiblePanelLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={item.to}
+                size="sm"
+                variant="secondary"
+                asChild
+                className="border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
+              >
+                <Link to={item.to}>
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              </Button>
+            );
+          })}
         </div>
 
         <div ref={notificationRef} className="relative">
@@ -277,10 +259,10 @@ function Navbar() {
                   <p className="text-sm font-semibold">Notifications</p>
                   <p className="text-xs text-muted-foreground">
                     {notificationStatus === "live"
-                      ? "Socket.IO live"
+                      ? "Live alerts active"
                       : notificationStatus === "connecting"
-                        ? "Connecting..."
-                        : "Socket.IO offline"}
+                        ? "Connecting alerts..."
+                        : "Alerts offline"}
                   </p>
                 </div>
                 <span
@@ -350,38 +332,29 @@ function Navbar() {
         )}
       </div>
 
-      <div className="border-t border-border/60 px-4 py-2 xl:hidden">
-        <div className="mx-auto flex max-w-[1560px] gap-2 overflow-x-auto">
-          <Button
-            size="sm"
-            variant="secondary"
-            asChild
-            className="shrink-0 border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
-          >
-            <Link to="/owner">
-              <Building2 className="h-4 w-4" />
-              Theatre Owner Panel
-            </Link>
-          </Button>
-          {visiblePanelLinks.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Button
-                key={item.to}
-                size="sm"
-                variant="secondary"
-                asChild
-                className="shrink-0 border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
-              >
-                <Link to={item.to}>
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              </Button>
-            );
-          })}
+      {visiblePanelLinks.length > 0 && (
+        <div className="border-t border-border/60 px-4 py-2 xl:hidden">
+          <div className="mx-auto flex max-w-[1560px] gap-2 overflow-x-auto">
+            {visiblePanelLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Button
+                  key={item.to}
+                  size="sm"
+                  variant="secondary"
+                  asChild
+                  className="shrink-0 border border-border/60 bg-card/70 hover:bg-primary/10 hover:text-primary"
+                >
+                  <Link to={item.to}>
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                </Button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="border-t border-border/60 px-4 py-2 md:hidden">
         <form onSubmit={submitSearch} className="relative mx-auto max-w-[1560px]">

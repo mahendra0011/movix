@@ -7,6 +7,7 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { isMongoReady } from "../services/database.js";
 import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
+import { notifyOwnerShowChanges } from "../services/notificationEvents.js";
 
 const router = Router();
 
@@ -41,6 +42,11 @@ router.put(
     });
     await ensureShowsUseCloudinary(shows, owner);
     const services = normalizeServices(request.body.services);
+    const previousShows = await Show.find({ ownerId: owner._id, theaterId: theater.id }).lean();
+    const impactedBookings = await Booking.find({
+      theaterId: theater.id,
+      showId: { $in: unique([...previousShows, ...shows].map((show) => show.id).filter(Boolean)) },
+    }).lean();
 
     await Theater.updateOne(
       { _id: theater._id },
@@ -84,6 +90,12 @@ router.put(
 
     const nextTheater = await Theater.findById(theater._id).lean();
     const workspace = await buildOwnerWorkspace(owner, nextTheater);
+    await notifyOwnerShowChanges({
+      theater: nextTheater,
+      previousShows,
+      nextShows: shows,
+      bookings: impactedBookings,
+    });
     response.json({ workspace });
   }),
 );

@@ -9,6 +9,7 @@ import {
   CarFront,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Clapperboard,
   Film,
@@ -115,6 +116,7 @@ const premiereRatingOverrides = {
 };
 
 const allFilterValue = "All";
+const recommendedPageSize = 6;
 const sortOptions = ["Popularity", "Rating", "A-Z"];
 
 function Home() {
@@ -128,6 +130,7 @@ function Home() {
   const [activeLanguage, setActiveLanguage] = useState(allFilterValue);
   const [activeFormat, setActiveFormat] = useState(allFilterValue);
   const [sortBy, setSortBy] = useState("Popularity");
+  const [recommendedPage, setRecommendedPage] = useState(0);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
@@ -213,9 +216,24 @@ function Home() {
     });
   }, [activeFormat, activeGenre, activeLanguage, cityListedMovies, query, sortBy]);
 
-  const recommended = hasActiveFilters
-    ? visibleMovies.slice(0, 6)
-    : buildRecommendedMovies(visibleMovies);
+  const recommendedPool = useMemo(
+    () => (hasActiveFilters ? visibleMovies : buildRecommendedMovies(visibleMovies)),
+    [hasActiveFilters, visibleMovies],
+  );
+  const recommendedPageCount = Math.max(1, Math.ceil(recommendedPool.length / recommendedPageSize));
+  const activeRecommendedPage = Math.min(recommendedPage, recommendedPageCount - 1);
+  const recommended = getCarouselPageItems(
+    recommendedPool,
+    activeRecommendedPage,
+    recommendedPageSize,
+  );
+  const canSlideRecommended = recommendedPool.length > recommendedPageSize;
+  const showPreviousRecommended = () => {
+    setRecommendedPage((current) => (current === 0 ? recommendedPageCount - 1 : current - 1));
+  };
+  const showNextRecommended = () => {
+    setRecommendedPage((current) => (current + 1) % recommendedPageCount);
+  };
   const moviesPageSearch = buildMoviesPageSearch({
     city: selectedCity,
     genre: activeGenre,
@@ -235,6 +253,10 @@ function Home() {
     () => searchCinemas(cinemaCatalog, selectedCity, query).slice(0, 8),
     [cinemaCatalog, query, selectedCity],
   );
+
+  useEffect(() => {
+    setRecommendedPage(0);
+  }, [recommendedPool]);
 
   const subscribe = async (event) => {
     event.preventDefault();
@@ -494,9 +516,44 @@ function Home() {
         title="Recommended for you"
         subtitle={`Curated picks from ${cityListedMovies.length} movies listed in ${selectedCity}`}
         icon={Star}
-        actionLabel="See all"
-        actionTo="/movies/"
-        actionSearch={moviesPageSearch}
+        actionSlot={
+          <div className="flex shrink-0 items-center gap-2">
+            {canSlideRecommended ? (
+              <div className="flex items-center gap-1 rounded-full border border-border/60 bg-card/75 p-1 shadow-sm">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={showPreviousRecommended}
+                  className="h-8 w-8 rounded-full"
+                  aria-label="Previous recommended movies"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="min-w-9 text-center text-xs font-bold text-muted-foreground">
+                  {activeRecommendedPage + 1}/{recommendedPageCount}
+                </span>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={showNextRecommended}
+                  className="h-8 w-8 rounded-full"
+                  aria-label="Next recommended movies"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : null}
+            <Link
+              to="/movies/"
+              search={moviesPageSearch}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+            >
+              See all <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        }
         wide
       >
         {recommended.length ? (
@@ -768,6 +825,7 @@ function HomeSection({
   actionSearch,
   actionHref,
   actionLabel = "See all",
+  actionSlot,
   onAction,
   children,
 }) {
@@ -781,30 +839,31 @@ function HomeSection({
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           </div>
         </div>
-        {onAction ? (
-          <button
-            type="button"
-            onClick={onAction}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
-          >
-            {actionLabel} <ArrowRight className="h-4 w-4" />
-          </button>
-        ) : actionTo ? (
-          <Link
-            to={actionTo}
-            search={actionSearch}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
-          >
-            {actionLabel} <ArrowRight className="h-4 w-4" />
-          </Link>
-        ) : actionHref ? (
-          <a
-            href={actionHref}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
-          >
-            {actionLabel} <ArrowRight className="h-4 w-4" />
-          </a>
-        ) : null}
+        {actionSlot ??
+          (onAction ? (
+            <button
+              type="button"
+              onClick={onAction}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+            >
+              {actionLabel} <ArrowRight className="h-4 w-4" />
+            </button>
+          ) : actionTo ? (
+            <Link
+              to={actionTo}
+              search={actionSearch}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+            >
+              {actionLabel} <ArrowRight className="h-4 w-4" />
+            </Link>
+          ) : actionHref ? (
+            <a
+              href={actionHref}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+            >
+              {actionLabel} <ArrowRight className="h-4 w-4" />
+            </a>
+          ) : null)}
       </div>
       {children}
     </section>
@@ -1082,7 +1141,13 @@ function buildRecommendedMovies(list) {
   const byId = new Map(list.map((movie) => [movie.id, movie]));
   const preferred = recommendedOrder.map((id) => byId.get(id)).filter(Boolean);
   const rest = list.filter((movie) => !recommendedOrder.includes(movie.id));
-  return [...preferred, ...rest].slice(0, 6);
+  return [...preferred, ...rest];
+}
+
+function getCarouselPageItems(list, page, pageSize) {
+  if (list.length <= pageSize) return list;
+  const start = (page * pageSize) % list.length;
+  return Array.from({ length: pageSize }, (_, index) => list[(start + index) % list.length]);
 }
 
 function buildMoviesPageSearch({ city, genre, language, format, sort }) {
