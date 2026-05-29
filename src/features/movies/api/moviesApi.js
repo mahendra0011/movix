@@ -9,6 +9,35 @@ const SHOULD_FETCH_PUBLIC_MOVIES = true;
 let moviesCache = null;
 let moviesRequest = null;
 
+function normalizeMovieMedia(movie) {
+  if (!movie) return movie;
+  return {
+    ...movie,
+    poster: normalizeImageUrl(movie.poster),
+    backdrop: normalizeImageUrl(movie.backdrop),
+    cast: (movie.cast ?? []).map((member) => ({
+      ...member,
+      avatar: normalizeImageUrl(member.avatar),
+    })),
+  };
+}
+
+function normalizeImageUrl(value) {
+  const image = String(value || "").trim();
+  if (!image.includes("/image/fetch/")) return image;
+
+  try {
+    const url = new URL(image);
+    const parts = url.pathname.split("/");
+    const fetchIndex = parts.findIndex((part) => part === "fetch");
+    if (fetchIndex === -1) return image;
+    const encodedSource = parts.slice(fetchIndex + 1).findLast((part) => /^https?%3A/i.test(part));
+    return encodedSource ? decodeURIComponent(encodedSource) : image;
+  } catch {
+    return image;
+  }
+}
+
 async function fetchMovies(options = {}) {
   if (moviesCache) return moviesCache;
   if (moviesRequest) return moviesRequest;
@@ -20,7 +49,8 @@ async function fetchMovies(options = {}) {
   const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
   moviesRequest = requestJson("/api/movies", { timeoutMs })
     .then((data) => {
-      moviesCache = data.movies?.length > 0 ? data.movies : fallbackMovies;
+      moviesCache =
+        data.movies?.length > 0 ? data.movies.map(normalizeMovieMedia) : fallbackMovies;
       return moviesCache;
     })
     .catch(() => {
@@ -42,7 +72,7 @@ async function fetchMovie(id, options = {}) {
   const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
   try {
     const data = await requestJson(`/api/movies/${encodeURIComponent(id)}`, { timeoutMs });
-    return data.movie ?? getFallbackMovie(id);
+    return normalizeMovieMedia(data.movie) ?? getFallbackMovie(id);
   } catch {
     return getFallbackMovie(id);
   }
@@ -70,7 +100,7 @@ async function createMovie(input) {
     body: JSON.stringify(input),
   });
   moviesCache = null;
-  return data.movie;
+  return normalizeMovieMedia(data.movie);
 }
 
 async function deleteMovie(id) {
