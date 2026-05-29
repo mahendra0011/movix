@@ -28,7 +28,11 @@ import {
   Ticket,
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
-import { movies as fallbackMovies, theaters } from "@/features/movies/data/movieCatalog";
+import {
+  comingSoonMovies,
+  movies as fallbackMovies,
+  theaters,
+} from "@/features/movies/data/movieCatalog";
 import { movieImageFallback } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -115,6 +119,7 @@ function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
+  const [homeComingSoonMovies, setHomeComingSoonMovies] = useState(comingSoonMovies);
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
@@ -134,6 +139,23 @@ function Home() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const query = selectedCity ? `?city=${encodeURIComponent(selectedCity)}` : "";
+
+    requestJson(`/api/shows/coming-soon${query}`, { timeoutMs: 8000 })
+      .then((data) => {
+        if (active && data.movies?.length) setHomeComingSoonMovies(data.movies);
+      })
+      .catch(() => {
+        if (active) setHomeComingSoonMovies(comingSoonMovies);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedCity]);
 
   const cityListedMovies = useMemo(
     () => buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog),
@@ -230,6 +252,7 @@ function Home() {
     sort: sortBy,
   });
   const premieres = rotateMovies(cityListedMovies, 3).slice(0, 4);
+  const comingSoon = rotateMovies(homeComingSoonMovies, 0).slice(0, 3);
   const topCinemas = buildTopCinemas(selectedCity, cinemaCatalog);
   const showSearch = query.trim().length > 0;
   const matchingCinemas = useMemo(
@@ -627,17 +650,28 @@ function Home() {
           subtitle="Exciting movies heading your way"
           actionTo="/coming-soon"
         >
-          <div className="mt-4 rounded-lg border border-dashed border-primary/25 bg-primary/7 p-4">
-            <BellRing className="h-6 w-6 text-primary" />
-            <p className="mt-3 text-sm font-semibold">Upcoming movies are kept on one page.</p>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              Browse city-wise upcoming releases and set reminders from Coming Soon.
-            </p>
-            <Button asChild variant="secondary" className="mt-4 h-9 rounded-full">
-              <Link to="/coming-soon">
-                Open Coming Soon <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+          <div className="mt-4 grid gap-2">
+            {comingSoon.map((movie, index) => {
+              const date = formatComingSoonPanelDate(movie, index);
+              return (
+                <Link
+                  key={movie.movieId || movie.id}
+                  to="/coming-soon"
+                  className="grid grid-cols-[44px_1fr] gap-2 rounded-lg border border-border/60 bg-background/55 p-1.5 transition-colors hover:border-primary/40"
+                >
+                  <div className="grid h-11 place-items-center rounded-md bg-primary/10 text-center text-primary">
+                    <span className="text-sm font-bold">{date.day}</span>
+                    <span className="text-[10px] font-semibold">{date.month}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold leading-5">{movie.title}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">
+                      {getMovieGenres(movie).slice(0, 3).join(" - ")}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </PanelCard>
 
@@ -1385,6 +1419,19 @@ function rotateMovies(list, offset) {
   if (!list.length) return [];
   const normalizedOffset = offset % list.length;
   return [...list.slice(normalizedOffset), ...list.slice(0, normalizedOffset)];
+}
+
+function formatComingSoonPanelDate(movie, index) {
+  const rawDate = movie.releaseAt || movie.date || movie.releaseDate;
+  const parsed = /^\d{4}-\d{2}-\d{2}$/.test(String(rawDate || ""))
+    ? new Date(`${rawDate}T00:00:00`)
+    : new Date(rawDate);
+  const date = Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  if (Number.isNaN(parsed.getTime())) date.setDate(date.getDate() + 24 + index * 7);
+  return {
+    day: String(date.getDate()).padStart(2, "0"),
+    month: date.toLocaleDateString("en-IN", { month: "short" }).toUpperCase(),
+  };
 }
 
 function splitList(value) {
