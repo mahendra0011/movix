@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import dns from "node:dns";
 import bcrypt from "bcryptjs";
 import { env } from "../config/env.js";
 import { Booking } from "../models/Booking.js";
@@ -19,6 +20,14 @@ import {
 let mongoReady = false;
 const collectionModels = [Booking, Movie, Review, Show, Subscriber, Theater, User];
 const SHOW_WRITE_BATCH_SIZE = 500;
+
+if (env.mongodbDnsServers !== "system") {
+  const dnsServers = String(env.mongodbDnsServers || "")
+    .split(",")
+    .map((server) => server.trim())
+    .filter(Boolean);
+  if (dnsServers.length) dns.setServers(dnsServers);
+}
 
 function cleanDocument(document) {
   const value = document?.toObject ? document.toObject() : document;
@@ -80,6 +89,7 @@ async function seedShows({ force = false } = {}) {
 }
 
 async function seedBookings({ force = false } = {}) {
+  if (!env.seedDemoBookings) return;
   const count = await Booking.estimatedDocumentCount();
   if (count > 0 && !force) return;
 
@@ -157,7 +167,7 @@ async function ensureCollections() {
       await database.createCollection(collectionName);
       existingCollections.add(collectionName);
     }
-    await model.createIndexes();
+    if (model !== Show || env.createShowIndexes) await model.createIndexes();
   }
 
   console.log(

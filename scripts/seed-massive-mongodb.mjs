@@ -1,4 +1,5 @@
 import "dotenv/config";
+import dns from "node:dns";
 import mongoose from "mongoose";
 import { Booking } from "../server/models/Booking.js";
 import { Movie } from "../server/models/Movie.js";
@@ -26,14 +27,19 @@ const TARGET_THEATERS = Number(process.env.MASSIVE_THEATER_TARGET || 4800);
 const TARGET_SHOWS = Number(process.env.MASSIVE_SHOW_TARGET || 1_500_000);
 const TARGET_USERS = Number(process.env.MASSIVE_USER_TARGET || 1500);
 const TARGET_SUBSCRIBERS = Number(process.env.MASSIVE_SUBSCRIBER_TARGET || 500);
+const SHOWS_ONLY = process.env.MASSIVE_SHOWS_ONLY === "true";
 const MOVIE_BATCH_SIZE = 20;
 const WRITE_BATCH_SIZE = 1000;
-const SHOW_BATCH_SIZE = 5000;
+const SHOW_BATCH_SIZE = 10000;
 const USER_AGENT = "BookMyScreenMassiveSeed/1.0 (local data seed)";
 const WIKIPEDIA_API = "https://en.wikipedia.org/w/api.php";
 const WIKIDATA_SPARQL = "https://query.wikidata.org/sparql";
 const HTTP_IMAGE_PATTERN = /^https?:\/\//i;
 const uploadCache = new Map();
+
+if (process.env.MONGODB_DNS_SERVERS !== "system") {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+}
 
 const priorityMoviePages = [
   "Interstellar (film)",
@@ -275,6 +281,13 @@ await mongoose.connect(mongoUri, {
 });
 
 console.log(`Connected to MongoDB database "${mongoose.connection.name}".`);
+
+if (SHOWS_ONLY) {
+  await runShowsOnly();
+  await mongoose.disconnect();
+  process.exit(0);
+}
+
 await ensureMovieTextIndex();
 
 const movies = await buildMovieInventory();
@@ -329,6 +342,31 @@ const counts = {
 
 console.log("Massive MongoDB seed complete:", counts);
 await mongoose.disconnect();
+
+async function runShowsOnly() {
+  const movies = await Movie.find({}).sort({ sortOrder: 1, title: 1 }).limit(TARGET_MOVIES).lean();
+  const theaters = await Theater.find({ approved: true })
+    .sort({ city: 1, name: 1 })
+    .limit(TARGET_THEATERS)
+    .lean();
+  if (movies.length < 1 || theaters.length < 1) {
+    throw new Error("Movies/theaters are missing. Run the full massive seed before shows-only mode.");
+  }
+
+  const deletedBookings = await Booking.deleteMany({});
+  console.log(`Deleted ${deletedBookings.deletedCount} bookings. Booking collection will stay empty.`);
+  await rebuildMassiveShows(theaters, movies);
+  const counts = {
+    movies: await Movie.countDocuments(),
+    theaters: await Theater.countDocuments(),
+    shows: await Show.countDocuments(),
+    reviews: await Review.countDocuments(),
+    users: await User.countDocuments(),
+    bookings: await Booking.countDocuments(),
+    subscribers: await Subscriber.countDocuments(),
+  };
+  console.log("Massive MongoDB shows-only seed complete:", counts);
+}
 
 async function buildMovieInventory() {
   console.log(`Discovering real movie pages for ${TARGET_MOVIES} movies...`);
@@ -769,49 +807,22 @@ async function rebuildMassiveShows(theaters, movies) {
   console.log("Removing old generated shows without ownerId...");
   const deleted = await Show.deleteMany({ ownerId: { $exists: false } });
   console.log(`Deleted ${deleted.deletedCount} generated shows.`);
+  await dropMassiveShowIndexes();
 
   let batch = [];
   let inserted = 0;
-  const now = new Date();
   for (let index = 0; index < TARGET_SHOWS; index += 1) {
     const theater = theaters[(index * 37) % theaters.length];
     const movie = movies[(index * 17) % movies.length];
     const plan = theater.showPlan[index % theater.showPlan.length];
-    const screen = theater.screens.find((item) => item.name === plan.screen) || theater.screens[0];
     const date = showDate(index);
     batch.push({
-      id: `mass-show-${String(index + 1).padStart(8, "0")}`,
+      id: `s${(index + 1).toString(36)}`,
       movieId: movie.id,
-      movie: movie.title,
-      poster: movie.poster,
-      backdrop: movie.backdrop,
-      duration: movie.duration,
-      genres: movie.genres,
-      releaseDate: movie.releaseDate,
-      description: movie.description,
-      cast: [],
       theaterId: theater.id,
-      theater: theater.name,
-      screenId: screen?.id || `${theater.id}-screen-1`,
-      screen: screen?.name || plan.screen || "Screen 1",
+      screenId: "s1",
       date,
-      time: plan.time,
       startTime: plan.time,
-      endTime: "Auto calculated",
-      price: showPrice(index),
-      language: movie.language,
-      format: plan.format || movie.format[0] || "2D",
-      certificate: movie.certificate,
-      status: plan.status || "ok",
-      cancellable: plan.cancellable !== false,
-      listingType: "live",
-      seats: screen?.totalSeats || 140,
-      seatLayout: screen?.seatLayout || {},
-      bookingOpensAt: "Now",
-      trailerUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(`${movie.title} official trailer`)}`,
-      notes: "Massive seeded show inventory",
-      createdAt: now,
-      updatedAt: now,
     });
 
     if (batch.length >= SHOW_BATCH_SIZE) {
@@ -826,6 +837,20 @@ async function rebuildMassiveShows(theaters, movies) {
     inserted += batch.length;
   }
   console.log(`Inserted ${inserted} shows.`);
+}
+
+async function dropMassiveShowIndexes() {
+  const keepIndexes = new Set(["_id_"]);
+  const indexes = await Show.collection.indexes();
+  for (const index of indexes) {
+    if (keepIndexes.has(index.name)) continue;
+    try {
+      await Show.collection.dropIndex(index.name);
+      console.log(`Dropped show index ${index.name} for massive seed storage.`);
+    } catch (error) {
+      console.warn(`Could not drop show index ${index.name}: ${error.message}`);
+    }
+  }
 }
 
 function buildSyntheticUsers(theaters) {
@@ -1192,15 +1217,6 @@ function certificateFor(genres) {
   if (genres.some((genre) => ["Horror", "Crime"].includes(genre))) return "A";
   if (genres.includes("Animation")) return "U";
   return "UA";
-}
-
-function showPrice(index) {
-  return {
-    platinum: 180 + (index % 5) * 20,
-    silver: 220 + (index % 6) * 20,
-    gold: 260 + (index % 7) * 25,
-    vip: 420 + (index % 8) * 30,
-  };
 }
 
 function showDate(index) {
