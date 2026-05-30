@@ -109,6 +109,7 @@ function isSafeMovieImageUrl(value) {
   return (
     isCloudinaryImageUrl(image) &&
     !isCastMediaImage(image) &&
+    !isFallbackMovieArtwork(image) &&
     !isGeneratedImageUrl(image) &&
     !image.startsWith("data:")
   );
@@ -132,6 +133,10 @@ function isCastMediaImage(value) {
 
 function isGeneratedImageUrl(value) {
   return normalizeImageUrl(value).includes("l_text:");
+}
+
+function isFallbackMovieArtwork(value) {
+  return normalizeImageUrl(value).includes("/movix/movie-artwork/");
 }
 
 function transformCloudinaryImage(value, type = "poster") {
@@ -163,6 +168,7 @@ function initials(value) {
 export {
   castAvatarFallback,
   isCastMediaImage,
+  isFallbackMovieArtwork,
   isGeneratedImageUrl,
   isSafeCastImageUrl,
   isSafeMovieImageUrl,

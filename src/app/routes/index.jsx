@@ -99,10 +99,10 @@ const testimonials = [
 ];
 
 const cinemaImages = [
-  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
-  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780146462/movix/cinema-artwork/cinema-1.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780146463/movix/cinema-artwork/cinema-2.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780146464/movix/cinema-artwork/cinema-3.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780146465/movix/cinema-artwork/cinema-4.jpg",
 ];
 
 const allFilterValue = "All";

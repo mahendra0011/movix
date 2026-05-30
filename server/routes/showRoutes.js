@@ -16,6 +16,7 @@ import {
   theaterHasMovie,
 } from "../../src/features/movies/services/showSchedule.js";
 import {
+  isFallbackMovieArtwork,
   normalizeCastImageUrl,
   normalizeMovieImageUrl,
 } from "../../src/features/movies/services/movieMedia.js";
@@ -261,8 +262,12 @@ function groupComingSoonShows(shows, theaterById) {
         id: `coming-soon-${key}`,
         movieId: key,
         title,
-        poster,
-        backdrop,
+        poster:
+          isFallbackMovieArtwork(poster) && catalogMovie?.poster ? catalogMovie.poster : poster,
+        backdrop:
+          isFallbackMovieArtwork(backdrop) && catalogMovie?.backdrop
+            ? catalogMovie.backdrop
+            : backdrop,
         duration: show.duration || catalogMovie?.duration || "",
         genres: new Set(
           splitCatalogList(show.genres).length
@@ -328,9 +333,26 @@ function mergeComingSoonMovies(...lists) {
   lists.flat().forEach((movie) => {
     const key = movie.movieId || movie.id;
     if (!key) return;
-    byId.set(key, { ...(byId.get(key) ?? {}), ...movie, id: movie.id || `coming-soon-${key}` });
+    byId.set(key, mergeComingSoonMovie(byId.get(key), movie, key));
   });
   return [...byId.values()];
+}
+
+function mergeComingSoonMovie(current = {}, next = {}, key) {
+  const poster =
+    isFallbackMovieArtwork(next.poster) && current.poster ? current.poster : next.poster;
+  const backdrop =
+    isFallbackMovieArtwork(next.backdrop) && current.backdrop ? current.backdrop : next.backdrop;
+  const cast = (next.cast ?? []).length >= (current.cast ?? []).length ? next.cast : current.cast;
+
+  return {
+    ...current,
+    ...next,
+    id: next.id || current.id || `coming-soon-${key}`,
+    poster,
+    backdrop,
+    cast,
+  };
 }
 
 function normalizeCastList(cast = []) {

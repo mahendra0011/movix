@@ -119,6 +119,26 @@ async function findMovieSource(movie) {
     }
   }
 
+  const searched = await searchMovieSource(movie);
+  if (searched) return searched;
+
+  return "";
+}
+
+async function searchMovieSource(movie) {
+  const queries = uniqueNames([
+    `${movie.title} film`,
+    `${movie.title} ${movie.releaseDate || ""} film`,
+    `${movie.title} ${movie.language || ""} film`,
+    `${movie.title} movie poster`,
+  ]);
+
+  for (const query of queries) {
+    const summary = await searchSummary(query, (candidate) => isMovieSummary(candidate, movie));
+    const image = summary ? imageFromSummary(summary) : "";
+    if (image) return image;
+  }
+
   return "";
 }
 
@@ -158,7 +178,7 @@ async function findPersonSource(name) {
   return "";
 }
 
-async function searchSummary(query) {
+async function searchSummary(query, predicate = (summary) => isPersonSummary(summary, query)) {
   try {
     const params = new URLSearchParams({
       action: "query",
@@ -174,7 +194,7 @@ async function searchSummary(query) {
     );
     for (const page of pages) {
       const summary = await getSummary(page.title);
-      if (summary && isPersonSummary(summary, query)) return summary;
+      if (summary && predicate(summary)) return summary;
     }
   } catch {
     return null;
@@ -340,9 +360,14 @@ function isReusableMovieImage(value) {
   return (
     isCloudinaryImage(image) &&
     !isCastMediaImage(image) &&
+    !isFallbackMovieArtwork(image) &&
     !image.includes("l_text:") &&
     !image.startsWith("data:")
   );
+}
+
+function isFallbackMovieArtwork(value) {
+  return String(value || "").includes("/movix/movie-artwork/");
 }
 
 function isLikelyPersonAvatar(name, value) {

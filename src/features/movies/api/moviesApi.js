@@ -3,7 +3,7 @@ import {
   getMovie as getFallbackMovie,
   movies as fallbackMovies,
 } from "@/features/movies/data/movieCatalog";
-import { normalizeMovieMedia } from "@/features/movies/services/movieMedia";
+import { isFallbackMovieArtwork, normalizeMovieMedia } from "@/features/movies/services/movieMedia";
 
 const PUBLIC_MOVIE_TIMEOUT_MS = 8000;
 const SHOULD_FETCH_PUBLIC_MOVIES = true;
@@ -11,21 +11,49 @@ let moviesCache = null;
 let moviesRequest = null;
 
 function normalizePublicMovies(remoteMovies = []) {
-  const byId = new Map();
-  [...fallbackMovies, ...remoteMovies].map(normalizeMovieMedia).forEach((movie) => {
-    if (!movie?.id || movie.listingType === "coming-soon") return;
-    byId.set(movie.id, movie);
+  const byId = new Map(
+    fallbackMovies
+      .map(normalizeMovieMedia)
+      .filter((movie) => movie?.id && movie.listingType !== "coming-soon")
+      .map((movie) => [movie.id, movie]),
+  );
+
+  remoteMovies.forEach((movie) => {
+    const normalized = mergeRemoteMovieWithFallback(movie, movie?.id);
+    if (!normalized?.id || normalized.listingType === "coming-soon") return;
+    byId.set(normalized.id, normalized);
   });
   return [...byId.values()];
 }
 
 function normalizePublicMovie(remoteMovie, id) {
-  const fallbackMovie = getFallbackMovie(id);
-  const normalizedRemote = normalizeMovieMedia(remoteMovie);
-  if (normalizedRemote?.id && normalizedRemote.listingType !== "coming-soon")
-    return normalizedRemote;
-  if (fallbackMovie?.listingType !== "coming-soon") return normalizeMovieMedia(fallbackMovie);
-  return null;
+  return mergeRemoteMovieWithFallback(remoteMovie, id);
+}
+
+function mergeRemoteMovieWithFallback(remoteMovie, id) {
+  const fallbackMovie = getFallbackMovie(id || remoteMovie?.id);
+  const fallback = fallbackMovie ? normalizeMovieMedia(fallbackMovie) : null;
+  const remote = normalizeMovieMedia(remoteMovie);
+
+  if (!remote?.id || remote.listingType === "coming-soon") {
+    return fallback?.listingType !== "coming-soon" ? fallback : null;
+  }
+
+  const poster =
+    isFallbackMovieArtwork(remote.poster) && fallback?.poster ? fallback.poster : remote.poster;
+  const backdrop =
+    isFallbackMovieArtwork(remote.backdrop) && fallback?.backdrop
+      ? fallback.backdrop
+      : remote.backdrop;
+  const cast = remote.cast?.length >= (fallback?.cast?.length ?? 0) ? remote.cast : fallback?.cast;
+
+  return normalizeMovieMedia({
+    ...fallback,
+    ...remote,
+    poster,
+    backdrop,
+    cast,
+  });
 }
 
 async function fetchMovies(options = {}) {

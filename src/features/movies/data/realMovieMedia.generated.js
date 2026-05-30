@@ -262,28 +262,6 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
     },
   },
-  "o-romeo": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    cast: {
-      "Shahid Kapoor":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140867/movix/real-cast/shahid-kapoor.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
   subedaar: {
     poster:
       "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135143/movix/real-catalog/subedaar/subedaar-poster.jpg",
@@ -591,28 +569,6 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
     },
   },
-  devagudi: {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    cast: {
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-      "Adivi Sesh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
-    },
-  },
   "hey-balwanth": {
     poster:
       "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138374/movix/real-catalog/hey-balwanth/hey-balwanth-poster.jpg",
@@ -634,48 +590,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
     },
   },
-  "gaaya-padda-simham": {
+  "o-romeo": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145669/movix/real-catalog/o-romeo/o-romeo-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145669/movix/real-catalog/o-romeo/o-romeo-poster.jpg",
     cast: {
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-      "Adivi Sesh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
-    },
-  },
-  raakaasaa: {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    cast: {
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-      "Adivi Sesh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
+      "Shahid Kapoor":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140867/movix/real-cast/shahid-kapoor.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
     },
   },
   "couple-friendly": {
@@ -744,11 +678,11 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
     },
   },
-  "ugly-story": {
+  "gaaya-padda-simham": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145671/movix/real-catalog/gaaya-padda-simham/gaaya-padda-simham-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145671/movix/real-catalog/gaaya-padda-simham/gaaya-padda-simham-poster.jpg",
     cast: {
       "Rana Daggubati":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
@@ -766,11 +700,11 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
     },
   },
-  purushaha: {
+  devagudi: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145668/movix/real-catalog/devagudi/devagudi-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145668/movix/real-catalog/devagudi/devagudi-poster.jpg",
     cast: {
       "Rana Daggubati":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
@@ -788,26 +722,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
     },
   },
-  parasakthi: {
+  raakaasaa: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145673/movix/real-catalog/raakaasaa/raakaasaa-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145673/movix/real-catalog/raakaasaa/raakaasaa-poster.jpg",
     cast: {
-      Sivakarthikeyan:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
-      Sreeleela:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140893/movix/real-cast/sreeleela.png",
-      "Vijay Sethupathi":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
       Nayanthara:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Trisha Krishnan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
-      Karthi:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
-      "Aishwarya Rajesh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+      "Adivi Sesh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
     },
   },
   "vaa-vaathiyaar": {
@@ -832,26 +766,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
-  "gandhi-talks": {
+  purushaha: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145676/movix/real-catalog/purushaha/purushaha-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145676/movix/real-catalog/purushaha/purushaha-poster.jpg",
     cast: {
-      "Vijay Sethupathi":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
-      "Arvind Swamy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140920/movix/real-cast/arvind-swamy.jpg",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
       Nayanthara:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Trisha Krishnan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
-      Karthi:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
-      Sivakarthikeyan:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
-      "Aishwarya Rajesh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+      "Adivi Sesh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
     },
   },
   "draupathi-2": {
@@ -875,37 +809,16 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
-  anantha: {
+  "gandhi-talks": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145679/movix/real-catalog/gandhi-talks/gandhi-talks-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145679/movix/real-catalog/gandhi-talks/gandhi-talks-poster.jpg",
     cast: {
-      "Jagapathi Babu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138212/movix/real-cast/jagapathi-babu.jpg",
-      Suhasini: "",
       "Vijay Sethupathi":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Trisha Krishnan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
-      Karthi:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
-      Sivakarthikeyan:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
-    },
-  },
-  honey: {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    cast: {
-      "Naveen Chandra":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138221/movix/real-cast/naveen-chandra.jpg",
-      "Vijay Sethupathi":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
+      "Arvind Swamy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140920/movix/real-cast/arvind-swamy.jpg",
       Nayanthara:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
       "Trisha Krishnan":
@@ -918,14 +831,38 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
-  lockdown: {
+  "ugly-story": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145675/movix/real-catalog/ugly-story/ugly-story-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145675/movix/real-catalog/ugly-story/ugly-story-poster.jpg",
     cast: {
-      "Anupama Parameswaran":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140940/movix/real-cast/anupama-parameswaran.jpg",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+      "Adivi Sesh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
+    },
+  },
+  parasakthi: {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145678/movix/real-catalog/parasakthi/parasakthi-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145678/movix/real-catalog/parasakthi/parasakthi-poster.jpg",
+    cast: {
+      Sivakarthikeyan:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
+      Sreeleela:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140893/movix/real-cast/sreeleela.png",
       "Vijay Sethupathi":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
       Nayanthara:
@@ -934,8 +871,6 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
       Karthi:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
-      Sivakarthikeyan:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
       "Aishwarya Rajesh":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
@@ -962,47 +897,48 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
-  "ramayana-part-1": {
+  anantha: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145681/movix/real-catalog/anantha/anantha-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145681/movix/real-catalog/anantha/anantha-poster.jpg",
     cast: {
-      "Ranbir Kapoor":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137511/movix/real-cast/ranbir-kapoor.jpg",
-      "Sai Pallavi":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140939/movix/real-cast/sai-pallavi.jpg",
-      Yash: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140941/movix/real-cast/yash.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Jagapathi Babu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138212/movix/real-cast/jagapathi-babu.jpg",
+      Suhasini:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145390/movix/real-cast/suhasini.jpg",
+      "Vijay Sethupathi":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Trisha Krishnan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
+      Karthi:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
+      Sivakarthikeyan:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
     },
   },
-  "love-and-war": {
+  honey: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145681/movix/real-catalog/honey/honey-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145681/movix/real-catalog/honey/honey-poster.jpg",
     cast: {
-      "Ranbir Kapoor":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137511/movix/real-cast/ranbir-kapoor.jpg",
-      "Alia Bhatt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138223/movix/real-cast/alia-bhatt.jpg",
-      "Vicky Kaushal":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/vicky-kaushal.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Naveen Chandra":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138221/movix/real-cast/naveen-chandra.jpg",
+      "Vijay Sethupathi":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Trisha Krishnan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
+      Karthi:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
+      Sivakarthikeyan:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
+      "Aishwarya Rajesh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
   "border-2": {
@@ -1027,26 +963,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
     },
   },
-  spirit: {
+  lockdown: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145684/movix/real-catalog/lockdown/lockdown-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145684/movix/real-catalog/lockdown/lockdown-poster.jpg",
     cast: {
-      Prabhas:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140942/movix/real-cast/prabhas.jpg",
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      "Anupama Parameswaran":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140940/movix/real-cast/anupama-parameswaran.jpg",
+      "Vijay Sethupathi":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
       Nayanthara:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+      "Trisha Krishnan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
+      Karthi:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
+      Sivakarthikeyan:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
+      "Aishwarya Rajesh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
   king: {
@@ -1071,25 +1007,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
     },
   },
-  toxic: {
+  "love-and-war": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145686/movix/real-catalog/love-and-war/love-and-war-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145686/movix/real-catalog/love-and-war/love-and-war-poster.jpg",
     cast: {
-      Yash: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140941/movix/real-cast/yash.jpg",
-      "Kareena Kapoor":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/kareena-kapoor.jpg",
-      "Rishab Shetty":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/rishab-shetty.jpg",
-      "Rakshit Shetty":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138223/movix/real-cast/rakshit-shetty.jpg",
-      Sudeep:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140956/movix/real-cast/sudeep.jpg",
-      "Rukmini Vasanth":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140951/movix/real-cast/rukmini-vasanth.jpg",
-      "Prakash Raj":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140952/movix/real-cast/prakash-raj.jpg",
+      "Ranbir Kapoor":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137511/movix/real-cast/ranbir-kapoor.jpg",
+      "Alia Bhatt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138223/movix/real-cast/alia-bhatt.jpg",
+      "Vicky Kaushal":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/vicky-kaushal.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
     },
   },
   "bhooth-bangla": {
@@ -1114,77 +1051,11 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
     },
   },
-  "drishyam-3": {
+  spirit: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145689/movix/real-catalog/spirit/spirit-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    cast: {
-      Mohanlal:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140966/movix/real-cast/mohanlal.jpg",
-      "Ajay Devgn":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140885/movix/real-cast/ajay-devgn.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
-  "bhediya-2": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    cast: {
-      "Varun Dhawan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/varun-dhawan.jpg",
-      "Kriti Sanon":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140971/movix/real-cast/kriti-sanon.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
-  alpha: {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    cast: {
-      "Alia Bhatt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138223/movix/real-cast/alia-bhatt.jpg",
-      "Sharvari Wagh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140969/movix/real-cast/sharvari-wagh.png",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
-  "the-raja-saab": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145689/movix/real-catalog/spirit/spirit-poster.jpg",
     cast: {
       Prabhas:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140942/movix/real-cast/prabhas.jpg",
@@ -1202,14 +1073,122 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
     },
   },
-  vishwambhara: {
+  "ramayana-part-1": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145686/movix/real-catalog/ramayana-part-1/ramayana-part-1-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145686/movix/real-catalog/ramayana-part-1/ramayana-part-1-poster.jpg",
     cast: {
-      Chiranjeevi:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140871/movix/real-cast/chiranjeevi.jpg",
+      "Ranbir Kapoor":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137511/movix/real-cast/ranbir-kapoor.jpg",
+      "Sai Pallavi":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140939/movix/real-cast/sai-pallavi.jpg",
+      Yash: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140941/movix/real-cast/yash.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+    },
+  },
+  "drishyam-3": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145691/movix/real-catalog/drishyam-3/drishyam-3-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145691/movix/real-catalog/drishyam-3/drishyam-3-poster.jpg",
+    cast: {
+      Mohanlal:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140966/movix/real-cast/mohanlal.jpg",
+      "Ajay Devgn":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140885/movix/real-cast/ajay-devgn.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
+  toxic: {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145920/movix/real-catalog/toxic/toxic-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145920/movix/real-catalog/toxic/toxic-poster.jpg",
+    cast: {
+      Yash: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140941/movix/real-cast/yash.jpg",
+      "Kareena Kapoor":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/kareena-kapoor.jpg",
+      "Rishab Shetty":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/rishab-shetty.jpg",
+      "Rakshit Shetty":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138223/movix/real-cast/rakshit-shetty.jpg",
+      Sudeep:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140956/movix/real-cast/sudeep.jpg",
+      "Rukmini Vasanth":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140951/movix/real-cast/rukmini-vasanth.jpg",
+      "Prakash Raj":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140952/movix/real-cast/prakash-raj.jpg",
+    },
+  },
+  alpha: {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145696/movix/real-catalog/alpha/alpha-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145696/movix/real-catalog/alpha/alpha-poster.jpg",
+    cast: {
+      "Alia Bhatt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138223/movix/real-cast/alia-bhatt.jpg",
+      "Sharvari Wagh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140969/movix/real-cast/sharvari-wagh.png",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
+  "bhediya-2": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145693/movix/real-catalog/bhediya-2/bhediya-2-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145693/movix/real-catalog/bhediya-2/bhediya-2-poster.jpg",
+    cast: {
+      "Varun Dhawan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/varun-dhawan.jpg",
+      "Kriti Sanon":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140971/movix/real-cast/kriti-sanon.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
+  "the-raja-saab": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145696/movix/real-catalog/the-raja-saab/the-raja-saab-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145696/movix/real-catalog/the-raja-saab/the-raja-saab-poster.jpg",
+    cast: {
+      Prabhas:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140942/movix/real-cast/prabhas.jpg",
       "Rana Daggubati":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
       Nayanthara:
@@ -1222,50 +1201,6 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
       Brahmanandam:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-    },
-  },
-  "jailer-2": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
-    cast: {
-      Rajinikanth:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140973/movix/real-cast/rajinikanth.jpg",
-      "Vijay Sethupathi":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Trisha Krishnan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
-      Karthi:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
-      Sivakarthikeyan:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
-      "Aishwarya Rajesh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
-    },
-  },
-  "lahore-1947": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
-    cast: {
-      "Sunny Deol":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137587/movix/real-cast/sunny-deol.jpg",
-      "Preity Zinta":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140978/movix/real-cast/preity-zinta.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
     },
   },
   "pati-patni-aur-woh-do": {
@@ -1312,82 +1247,82 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
     },
   },
+  vishwambhara: {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145700/movix/real-catalog/vishwambhara/vishwambhara-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145700/movix/real-catalog/vishwambhara/vishwambhara-poster.jpg",
+    cast: {
+      Chiranjeevi:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140871/movix/real-cast/chiranjeevi.jpg",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+    },
+  },
+  "lahore-1947": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145704/movix/real-catalog/lahore-1947/lahore-1947-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145704/movix/real-catalog/lahore-1947/lahore-1947-poster.jpg",
+    cast: {
+      "Sunny Deol":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137587/movix/real-cast/sunny-deol.jpg",
+      "Preity Zinta":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140978/movix/real-cast/preity-zinta.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
+  "jailer-2": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145699/movix/real-catalog/jailer-2/jailer-2-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145699/movix/real-catalog/jailer-2/jailer-2-poster.jpg",
+    cast: {
+      Rajinikanth:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140973/movix/real-cast/rajinikanth.jpg",
+      "Vijay Sethupathi":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Trisha Krishnan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
+      Karthi:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
+      Sivakarthikeyan:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
+      "Aishwarya Rajesh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
+    },
+  },
   "dhamaal-4": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145706/movix/real-catalog/dhamaal-4/dhamaal-4-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145706/movix/real-catalog/dhamaal-4/dhamaal-4-poster.jpg",
     cast: {
       "Riteish Deshmukh":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140982/movix/real-cast/riteish-deshmukh.jpg",
       "Arshad Warsi":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140990/movix/real-cast/arshad-warsi.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
-  "awarapan-2": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    cast: {
-      "Emraan Hashmi":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141007/movix/real-cast/emraan-hashmi.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-    },
-  },
-  "welcome-to-the-jungle": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    cast: {
-      "Akshay Kumar":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140958/movix/real-cast/akshay-kumar.jpg",
-      "Sanjay Dutt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141004/movix/real-cast/sanjay-dutt.jpg",
-      "Suniel Shetty":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141004/movix/real-cast/suniel-shetty.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-    },
-  },
-  "mirzapur-the-movie": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    cast: {
-      "Pankaj Tripathi":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141009/movix/real-cast/pankaj-tripathi.jpg",
-      "Ali Fazal":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141011/movix/real-cast/ali-fazal.jpg",
       "Deepika Padukone":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
       "Amitabh Bachchan":
@@ -1444,26 +1379,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
     },
   },
-  "the-batman-part-ii": {
+  "awarapan-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145708/movix/real-catalog/awarapan-2/awarapan-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145708/movix/real-catalog/awarapan-2/awarapan-2-poster.jpg",
     cast: {
-      "Robert Pattinson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141011/movix/real-cast/robert-pattinson.jpg",
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Emraan Hashmi":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141007/movix/real-cast/emraan-hashmi.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
     },
   },
   "the-mandalorian-and-grogu": {
@@ -1554,14 +1489,36 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
     },
   },
-  "supergirl-woman-of-tomorrow": {
+  "welcome-to-the-jungle": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145710/movix/real-catalog/welcome-to-the-jungle/welcome-to-the-jungle-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145710/movix/real-catalog/welcome-to-the-jungle/welcome-to-the-jungle-poster.jpg",
     cast: {
-      "Milly Alcock":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141014/movix/real-cast/milly-alcock.jpg",
+      "Akshay Kumar":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140958/movix/real-cast/akshay-kumar.jpg",
+      "Sanjay Dutt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141004/movix/real-cast/sanjay-dutt.jpg",
+      "Suniel Shetty":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141004/movix/real-cast/suniel-shetty.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+    },
+  },
+  "the-batman-part-ii": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145713/movix/real-catalog/the-batman-part-ii/the-batman-part-ii-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145713/movix/real-catalog/the-batman-part-ii/the-batman-part-ii-poster.jpg",
+    cast: {
+      "Robert Pattinson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141011/movix/real-cast/robert-pattinson.jpg",
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
       "Florence Pugh":
@@ -1576,48 +1533,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
     },
   },
-  "mortal-kombat-2": {
+  "mirzapur-the-movie": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145712/movix/real-catalog/mirzapur-the-movie/mirzapur-the-movie-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145712/movix/real-catalog/mirzapur-the-movie/mirzapur-the-movie-poster.jpg",
     cast: {
-      "Karl Urban":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141015/movix/real-cast/karl-urban.jpg",
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-    },
-  },
-  "project-hail-mary": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    cast: {
-      "Ryan Gosling":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141016/movix/real-cast/ryan-gosling.jpg",
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Pankaj Tripathi":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141009/movix/real-cast/pankaj-tripathi.jpg",
+      "Ali Fazal":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141011/movix/real-cast/ali-fazal.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
     },
   },
   "the-hunger-games-sunrise-on-the-reaping": {
@@ -1641,14 +1576,14 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
     },
   },
-  "insidious-out-of-the-further": {
+  "supergirl-woman-of-tomorrow": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145715/movix/real-catalog/supergirl-woman-of-tomorrow/supergirl-woman-of-tomorrow-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145715/movix/real-catalog/supergirl-woman-of-tomorrow/supergirl-woman-of-tomorrow-poster.jpg",
     cast: {
-      "Lin Shaye":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141017/movix/real-cast/lin-shaye.jpg",
+      "Milly Alcock":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141014/movix/real-cast/milly-alcock.jpg",
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
       "Florence Pugh":
@@ -1663,14 +1598,14 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
     },
   },
-  "godzilla-x-kong-supernova": {
+  "mortal-kombat-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145715/movix/real-catalog/mortal-kombat-2/mortal-kombat-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145715/movix/real-catalog/mortal-kombat-2/mortal-kombat-2-poster.jpg",
     cast: {
-      "Dan Stevens":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141016/movix/real-cast/dan-stevens.jpg",
+      "Karl Urban":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141015/movix/real-cast/karl-urban.jpg",
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
       "Florence Pugh":
@@ -1685,15 +1620,14 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
     },
   },
-  "street-fighter": {
+  "project-hail-mary": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145717/movix/real-catalog/project-hail-mary/project-hail-mary-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145717/movix/real-catalog/project-hail-mary/project-hail-mary-poster.jpg",
     cast: {
-      "Andrew Koji": "",
-      "Noah Centineo":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141021/movix/real-cast/noah-centineo.jpg",
+      "Ryan Gosling":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141016/movix/real-cast/ryan-gosling.jpg",
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
       "Florence Pugh":
@@ -1704,6 +1638,8 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
       "Rebecca Ferguson":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
     },
   },
   "scream-7": {
@@ -1816,26 +1752,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
     },
   },
-  "tiger-vs-pathaan": {
+  "insidious-out-of-the-further": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145717/movix/real-catalog/insidious-out-of-the-further/insidious-out-of-the-further-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145717/movix/real-catalog/insidious-out-of-the-further/insidious-out-of-the-further-poster.jpg",
     cast: {
-      "Shah Rukh Khan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/shah-rukh-khan.jpg",
-      "Salman Khan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141018/movix/real-cast/salman-khan.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Lin Shaye":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141017/movix/real-cast/lin-shaye.jpg",
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
     },
   },
   "golmaal-5": {
@@ -1882,11 +1818,76 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
     },
   },
+  "street-fighter": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145720/movix/real-catalog/street-fighter/street-fighter-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145720/movix/real-catalog/street-fighter/street-fighter-poster.jpg",
+    cast: {
+      "Andrew Koji": "",
+      "Noah Centineo":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141021/movix/real-cast/noah-centineo.jpg",
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+    },
+  },
+  "godzilla-x-kong-supernova": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145719/movix/real-catalog/godzilla-x-kong-supernova/godzilla-x-kong-supernova-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145719/movix/real-catalog/godzilla-x-kong-supernova/godzilla-x-kong-supernova-poster.jpg",
+    cast: {
+      "Dan Stevens":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141016/movix/real-cast/dan-stevens.jpg",
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+    },
+  },
+  "tiger-vs-pathaan": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145724/movix/real-catalog/tiger-vs-pathaan/tiger-vs-pathaan-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145724/movix/real-catalog/tiger-vs-pathaan/tiger-vs-pathaan-poster.jpg",
+    cast: {
+      "Shah Rukh Khan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/shah-rukh-khan.jpg",
+      "Salman Khan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141018/movix/real-cast/salman-khan.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
   "chhava-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145722/movix/real-catalog/chhava-2/chhava-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145722/movix/real-catalog/chhava-2/chhava-2-poster.jpg",
     cast: {
       "Vicky Kaushal":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/vicky-kaushal.jpg",
@@ -1906,9 +1907,9 @@ const realMovieMedia = {
   },
   "jawan-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145725/movix/real-catalog/jawan-2/jawan-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145725/movix/real-catalog/jawan-2/jawan-2-poster.jpg",
     cast: {
       "Shah Rukh Khan":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/shah-rukh-khan.jpg",
@@ -1928,78 +1929,12 @@ const realMovieMedia = {
   },
   "pathaan-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145727/movix/real-catalog/pathaan-2/pathaan-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145727/movix/real-catalog/pathaan-2/pathaan-2-poster.jpg",
     cast: {
       "Shah Rukh Khan":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/shah-rukh-khan.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-    },
-  },
-  "don-3": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    cast: {
-      "Ranveer Singh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141022/movix/real-cast/ranveer-singh.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-    },
-  },
-  "dhoom-4": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    cast: {
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-      "R Madhavan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138231/movix/real-cast/r-madhavan.jpg",
-    },
-  },
-  "munna-bhai-3": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    cast: {
-      "Sanjay Dutt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141004/movix/real-cast/sanjay-dutt.jpg",
       "Deepika Padukone":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
       "Amitabh Bachchan":
@@ -2080,11 +2015,55 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
     },
   },
+  "don-3": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145728/movix/real-catalog/don-3/don-3-poster.webp",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145728/movix/real-catalog/don-3/don-3-poster.webp",
+    cast: {
+      "Ranveer Singh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141022/movix/real-cast/ranveer-singh.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+    },
+  },
+  "munna-bhai-3": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145733/movix/real-catalog/munna-bhai-3/munna-bhai-3-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145733/movix/real-catalog/munna-bhai-3/munna-bhai-3-poster.jpg",
+    cast: {
+      "Sanjay Dutt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141004/movix/real-cast/sanjay-dutt.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+    },
+  },
   "jolly-llb-3": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145733/movix/real-catalog/jolly-llb-3/jolly-llb-3-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145733/movix/real-catalog/jolly-llb-3/jolly-llb-3-poster.jpg",
     cast: {
       "Akshay Kumar":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140958/movix/real-cast/akshay-kumar.jpg",
@@ -2102,11 +2081,55 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
     },
   },
+  "dhoom-4": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145731/movix/real-catalog/dhoom-4/dhoom-4-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145731/movix/real-catalog/dhoom-4/dhoom-4-poster.jpg",
+    cast: {
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+      "R Madhavan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138231/movix/real-cast/r-madhavan.jpg",
+    },
+  },
+  "no-entry-2": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145736/movix/real-catalog/no-entry-2/no-entry-2-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145736/movix/real-catalog/no-entry-2/no-entry-2-poster.jpg",
+    cast: {
+      "Varun Dhawan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/varun-dhawan.jpg",
+      "Arjun Kapoor":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145386/movix/real-cast/arjun-kapoor.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
   "awara-pagal-deewana-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145735/movix/real-catalog/awara-pagal-deewana-2/awara-pagal-deewana-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145735/movix/real-catalog/awara-pagal-deewana-2/awara-pagal-deewana-2-poster.jpg",
     cast: {
       "Akshay Kumar":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140958/movix/real-cast/akshay-kumar.jpg",
@@ -2124,32 +2147,11 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
     },
   },
-  "no-entry-2": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    cast: {
-      "Varun Dhawan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/varun-dhawan.jpg",
-      "Arjun Kapoor": "",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
   "fukrey-4": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145738/movix/real-catalog/fukrey-4/fukrey-4-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145738/movix/real-catalog/fukrey-4/fukrey-4-poster.jpg",
     cast: {
       "Pulkit Samrat":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141355/movix/real-cast/pulkit-samrat.jpg",
@@ -2169,9 +2171,9 @@ const realMovieMedia = {
   },
   "stree-3": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145740/movix/real-catalog/stree-3/stree-3-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145740/movix/real-catalog/stree-3/stree-3-poster.jpg",
     cast: {
       "Shraddha Kapoor":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141025/movix/real-cast/shraddha-kapoor.jpg",
@@ -2191,53 +2193,9 @@ const realMovieMedia = {
   },
   "munjya-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145745/movix/real-catalog/munjya-2/munjya-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    cast: {
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-      "R Madhavan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138231/movix/real-cast/r-madhavan.jpg",
-    },
-  },
-  "vampires-of-vijay-nagar": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    cast: {
-      "Ayushmann Khurrana":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138225/movix/real-cast/ayushmann-khurrana.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
-  "aashiqui-3": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145745/movix/real-catalog/munjya-2/munjya-2-poster.jpg",
     cast: {
       "Deepika Padukone":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
@@ -2257,9 +2215,53 @@ const realMovieMedia = {
   },
   "malang-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145750/movix/real-catalog/malang-2/malang-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145750/movix/real-catalog/malang-2/malang-2-poster.jpg",
+    cast: {
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+      "R Madhavan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138231/movix/real-cast/r-madhavan.jpg",
+    },
+  },
+  "vampires-of-vijay-nagar": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145746/movix/real-catalog/vampires-of-vijay-nagar/vampires-of-vijay-nagar-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145746/movix/real-catalog/vampires-of-vijay-nagar/vampires-of-vijay-nagar-poster.jpg",
+    cast: {
+      "Ayushmann Khurrana":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138225/movix/real-cast/ayushmann-khurrana.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
+  "aashiqui-3": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145751/movix/real-catalog/aashiqui-3/aashiqui-3-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145751/movix/real-catalog/aashiqui-3/aashiqui-3-poster.jpg",
     cast: {
       "Deepika Padukone":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
@@ -2279,78 +2281,12 @@ const realMovieMedia = {
   },
   "ek-villain-3": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145754/movix/real-catalog/ek-villain-3/ek-villain-3-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145754/movix/real-catalog/ek-villain-3/ek-villain-3-poster.jpg",
     cast: {
       "John Abraham":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141359/movix/real-cast/john-abraham.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-    },
-  },
-  "sanam-teri-kasam-2": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    cast: {
-      "Harshvardhan Rane":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141026/movix/real-cast/harshvardhan-rane.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-    },
-  },
-  "tu-jhoothi-main-makkaar-2": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    cast: {
-      "Ranbir Kapoor":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137511/movix/real-cast/ranbir-kapoor.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-    },
-  },
-  "kabir-singh-2": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    cast: {
-      "Shahid Kapoor":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140867/movix/real-cast/shahid-kapoor.jpg",
       "Deepika Padukone":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
       "Amitabh Bachchan":
@@ -2387,11 +2323,99 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
     },
   },
+  "sanam-teri-kasam-2": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145753/movix/real-catalog/sanam-teri-kasam-2/sanam-teri-kasam-2-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145753/movix/real-catalog/sanam-teri-kasam-2/sanam-teri-kasam-2-poster.jpg",
+    cast: {
+      "Harshvardhan Rane":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141026/movix/real-cast/harshvardhan-rane.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+    },
+  },
+  "kabir-singh-2": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145757/movix/real-catalog/kabir-singh-2/kabir-singh-2-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145757/movix/real-catalog/kabir-singh-2/kabir-singh-2-poster.jpg",
+    cast: {
+      "Shahid Kapoor":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140867/movix/real-cast/shahid-kapoor.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+    },
+  },
+  "tu-jhoothi-main-makkaar-2": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145756/movix/real-catalog/tu-jhoothi-main-makkaar-2/tu-jhoothi-main-makkaar-2-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145756/movix/real-catalog/tu-jhoothi-main-makkaar-2/tu-jhoothi-main-makkaar-2-poster.jpg",
+    cast: {
+      "Ranbir Kapoor":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137511/movix/real-cast/ranbir-kapoor.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+    },
+  },
+  "salaar-part-2-shouryaanga-parvam": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145760/movix/real-catalog/salaar-part-2-shouryaanga-parvam/salaar-part-2-shouryaanga-parvam-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145760/movix/real-catalog/salaar-part-2-shouryaanga-parvam/salaar-part-2-shouryaanga-parvam-poster.jpg",
+    cast: {
+      Prabhas:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140942/movix/real-cast/prabhas.jpg",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+    },
+  },
   "pushpa-3-the-rampage": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145760/movix/real-catalog/pushpa-3-the-rampage/pushpa-3-the-rampage-poster.webp",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145760/movix/real-catalog/pushpa-3-the-rampage/pushpa-3-the-rampage-poster.webp",
     cast: {
       "Allu Arjun":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141025/movix/real-cast/allu-arjun.jpg",
@@ -2407,94 +2431,6 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
       Brahmanandam:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-    },
-  },
-  "salaar-part-2-shouryaanga-parvam": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
-    cast: {
-      Prabhas:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140942/movix/real-cast/prabhas.jpg",
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-    },
-  },
-  "kalki-2898-ad-part-2": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
-    cast: {
-      Prabhas:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140942/movix/real-cast/prabhas.jpg",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kamal Haasan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141025/movix/real-cast/kamal-haasan.jpg",
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-    },
-  },
-  "ntr-31": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
-    cast: {
-      "Jr. NTR":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141021/movix/real-cast/jr-ntr.jpg",
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-    },
-  },
-  "devara-part-2": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    cast: {
-      "Jr. NTR":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141021/movix/real-cast/jr-ntr.jpg",
-      "Janhvi Kapoor":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141027/movix/real-cast/janhvi-kapoor.jpg",
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
     },
   },
   "leo-2": {
@@ -2519,26 +2455,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
-  "kaithi-2": {
+  "kalki-2898-ad-part-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145762/movix/real-catalog/kalki-2898-ad-part-2/kalki-2898-ad-part-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145762/movix/real-catalog/kalki-2898-ad-part-2/kalki-2898-ad-part-2-poster.jpg",
     cast: {
-      Karthi:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
-      "Vijay Sethupathi":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
+      Prabhas:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140942/movix/real-cast/prabhas.jpg",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kamal Haasan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141025/movix/real-cast/kamal-haasan.jpg",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
       Nayanthara:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Trisha Krishnan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
-      Sivakarthikeyan:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
-      "Aishwarya Rajesh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
-      "Prakash Raj":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140952/movix/real-cast/prakash-raj.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
     },
   },
   "vikram-2": {
@@ -2563,25 +2499,26 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
-  "rolex-solo-spin-off": {
+  "ntr-31": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145763/movix/real-catalog/ntr-31/ntr-31-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145763/movix/real-catalog/ntr-31/ntr-31-poster.jpg",
     cast: {
-      Suriya: "",
-      "Vijay Sethupathi":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
+      "Jr. NTR":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141021/movix/real-cast/jr-ntr.jpg",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
       Nayanthara:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Trisha Krishnan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
-      Karthi:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
-      Sivakarthikeyan:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
-      "Aishwarya Rajesh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
     },
   },
   "kanguva-2": {
@@ -2590,7 +2527,8 @@ const realMovieMedia = {
     backdrop:
       "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135329/movix/real-catalog/kanguva-2/kanguva-2-backdrop.jpg",
     cast: {
-      Suriya: "",
+      Suriya:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145388/movix/real-cast/suriya.jpg",
       "Vijay Sethupathi":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
       Nayanthara:
@@ -2605,32 +2543,77 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
-  "kantara-chapter-1": {
+  "devara-part-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145766/movix/real-catalog/devara-part-2/devara-part-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145766/movix/real-catalog/devara-part-2/devara-part-2-poster.jpg",
     cast: {
-      "Rishab Shetty":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/rishab-shetty.jpg",
-      "Rakshit Shetty":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138223/movix/real-cast/rakshit-shetty.jpg",
-      Sudeep:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140956/movix/real-cast/sudeep.jpg",
-      "Rukmini Vasanth":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140951/movix/real-cast/rukmini-vasanth.jpg",
+      "Jr. NTR":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141021/movix/real-cast/jr-ntr.jpg",
+      "Janhvi Kapoor":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141027/movix/real-cast/janhvi-kapoor.jpg",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+    },
+  },
+  "kaithi-2": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145765/movix/real-catalog/kaithi-2/kaithi-2-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145765/movix/real-catalog/kaithi-2/kaithi-2-poster.jpg",
+    cast: {
+      Karthi:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
+      "Vijay Sethupathi":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Trisha Krishnan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
+      Sivakarthikeyan:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
+      "Aishwarya Rajesh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
       "Prakash Raj":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140952/movix/real-cast/prakash-raj.jpg",
-      "Achyuth Kumar":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141501/movix/real-cast/achyuth-kumar.jpg",
-      "Sapthami Gowda": "",
+    },
+  },
+  "rolex-solo-spin-off": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145768/movix/real-catalog/rolex-solo-spin-off/rolex-solo-spin-off-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145768/movix/real-catalog/rolex-solo-spin-off/rolex-solo-spin-off-poster.jpg",
+    cast: {
+      Suriya:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145388/movix/real-cast/suriya.jpg",
+      "Vijay Sethupathi":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Trisha Krishnan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/trisha-krishnan.jpg",
+      Karthi:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/karthi.jpg",
+      Sivakarthikeyan:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140896/movix/real-cast/sivakarthikeyan.jpg",
+      "Aishwarya Rajesh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
   "kgf-chapter-3": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145770/movix/real-catalog/kgf-chapter-3/kgf-chapter-3-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145770/movix/real-catalog/kgf-chapter-3/kgf-chapter-3-poster.jpg",
     cast: {
       Yash: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140941/movix/real-cast/yash.jpg",
       "Rishab Shetty":
@@ -2647,11 +2630,32 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141501/movix/real-cast/achyuth-kumar.jpg",
     },
   },
+  "kantara-chapter-1": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145770/movix/real-catalog/kantara-chapter-1/kantara-chapter-1-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145770/movix/real-catalog/kantara-chapter-1/kantara-chapter-1-poster.jpg",
+    cast: {
+      "Rishab Shetty":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/rishab-shetty.jpg",
+      "Rakshit Shetty":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138223/movix/real-cast/rakshit-shetty.jpg",
+      Sudeep:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140956/movix/real-cast/sudeep.jpg",
+      "Rukmini Vasanth":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140951/movix/real-cast/rukmini-vasanth.jpg",
+      "Prakash Raj":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140952/movix/real-cast/prakash-raj.jpg",
+      "Achyuth Kumar":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141501/movix/real-cast/achyuth-kumar.jpg",
+      "Sapthami Gowda": "",
+    },
+  },
   ssmb29: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145773/movix/real-catalog/ssmb29/ssmb29-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145773/movix/real-catalog/ssmb29/ssmb29-poster.jpg",
     cast: {
       "Mahesh Babu": "",
       "Rana Daggubati":
@@ -2670,9 +2674,9 @@ const realMovieMedia = {
   },
   "hanuman-2-jai-hanuman": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145773/movix/real-catalog/hanuman-2-jai-hanuman/hanuman-2-jai-hanuman-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145773/movix/real-catalog/hanuman-2-jai-hanuman/hanuman-2-jai-hanuman-poster.jpg",
     cast: {
       "Rana Daggubati":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
@@ -2692,31 +2696,9 @@ const realMovieMedia = {
   },
   mahakali: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145776/movix/real-catalog/mahakali/mahakali-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    cast: {
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-      "Adivi Sesh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
-    },
-  },
-  adhira: {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145776/movix/real-catalog/mahakali/mahakali-poster.jpg",
     cast: {
       "Rana Daggubati":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
@@ -2736,9 +2718,9 @@ const realMovieMedia = {
   },
   "thug-life": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145780/movix/real-catalog/thug-life/thug-life-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145780/movix/real-catalog/thug-life/thug-life-poster.jpg",
     cast: {
       "Kamal Haasan":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141025/movix/real-cast/kamal-haasan.jpg",
@@ -2756,11 +2738,33 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
+  adhira: {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145776/movix/real-catalog/adhira/adhira-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145776/movix/real-catalog/adhira/adhira-poster.jpg",
+    cast: {
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+      "Adivi Sesh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
+    },
+  },
   coolie: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145780/movix/real-catalog/coolie/coolie-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145780/movix/real-catalog/coolie/coolie-poster.jpg",
     cast: {
       Rajinikanth:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140973/movix/real-cast/rajinikanth.jpg",
@@ -2778,11 +2782,33 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
+  "hari-hara-veera-mallu": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145785/movix/real-catalog/hari-hara-veera-mallu/hari-hara-veera-mallu-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145785/movix/real-catalog/hari-hara-veera-mallu/hari-hara-veera-mallu-poster.jpg",
+    cast: {
+      "Pawan Kalyan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145392/movix/real-cast/pawan-kalyan.jpg",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+    },
+  },
   vrishabha: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145782/movix/real-catalog/vrishabha/vrishabha-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145782/movix/real-catalog/vrishabha/vrishabha-poster.jpg",
     cast: {
       Mohanlal:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140966/movix/real-cast/mohanlal.jpg",
@@ -2790,8 +2816,10 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138235/movix/real-cast/fahadh-faasil.jpg",
       "Prithviraj Sukumaran":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141504/movix/real-cast/prithviraj-sukumaran.jpg",
-      "Manju Warrier": "",
-      "Tovino Thomas": "",
+      "Manju Warrier":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145390/movix/real-cast/manju-warrier.jpg",
+      "Tovino Thomas":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145391/movix/real-cast/tovino-thomas.jpg",
       "Dulquer Salmaan":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141031/movix/real-cast/dulquer-salmaan.jpg",
       "Aparna Balamurali": "",
@@ -2799,9 +2827,9 @@ const realMovieMedia = {
   },
   "empuraan-lucifer-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145785/movix/real-catalog/empuraan-lucifer-2/empuraan-lucifer-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145785/movix/real-catalog/empuraan-lucifer-2/empuraan-lucifer-2-poster.jpg",
     cast: {
       Mohanlal:
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140966/movix/real-cast/mohanlal.jpg",
@@ -2809,62 +2837,23 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141504/movix/real-cast/prithviraj-sukumaran.jpg",
       "Fahadh Faasil":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138235/movix/real-cast/fahadh-faasil.jpg",
-      "Manju Warrier": "",
-      "Tovino Thomas": "",
+      "Manju Warrier":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145390/movix/real-cast/manju-warrier.jpg",
+      "Tovino Thomas":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145391/movix/real-cast/tovino-thomas.jpg",
       "Dulquer Salmaan":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141031/movix/real-cast/dulquer-salmaan.jpg",
       "Aparna Balamurali": "",
     },
   },
-  "hari-hara-veera-mallu": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
-    cast: {
-      "Pawan Kalyan": "",
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-    },
-  },
   og: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145788/movix/real-catalog/og/og-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145788/movix/real-catalog/og/og-poster.jpg",
     cast: {
-      "Pawan Kalyan": "",
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-    },
-  },
-  "ustaad-bhagat-singh": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    cast: {
-      "Pawan Kalyan": "",
+      "Pawan Kalyan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145392/movix/real-cast/pawan-kalyan.jpg",
       "Rana Daggubati":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
       Nayanthara:
@@ -2881,9 +2870,9 @@ const realMovieMedia = {
   },
   "goodachari-2-g2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145791/movix/real-catalog/goodachari-2-g2/goodachari-2-g2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145791/movix/real-catalog/goodachari-2-g2/goodachari-2-g2-poster.jpg",
     cast: {
       "Adivi Sesh":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
@@ -2901,13 +2890,14 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
     },
   },
-  "hit-3": {
+  "ustaad-bhagat-singh": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145788/movix/real-catalog/ustaad-bhagat-singh/ustaad-bhagat-singh-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145788/movix/real-catalog/ustaad-bhagat-singh/ustaad-bhagat-singh-poster.jpg",
     cast: {
-      Nani: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141366/movix/real-cast/nani.png",
+      "Pawan Kalyan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145392/movix/real-cast/pawan-kalyan.jpg",
       "Rana Daggubati":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
       Nayanthara:
@@ -2924,30 +2914,9 @@ const realMovieMedia = {
   },
   "dasara-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145793/movix/real-catalog/dasara-2/dasara-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    cast: {
-      Nani: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141366/movix/real-cast/nani.png",
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-    },
-  },
-  "saripodhaa-sanivaaram-prequel-sequel": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145793/movix/real-catalog/dasara-2/dasara-2-poster.jpg",
     cast: {
       Nani: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141366/movix/real-cast/nani.png",
       "Rana Daggubati":
@@ -2966,11 +2935,12 @@ const realMovieMedia = {
   },
   "suriya-44": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145795/movix/real-catalog/suriya-44/suriya-44-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145795/movix/real-catalog/suriya-44/suriya-44-poster.jpg",
     cast: {
-      Suriya: "",
+      Suriya:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145388/movix/real-cast/suriya.jpg",
       "Vijay Sethupathi":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
       Nayanthara:
@@ -2985,11 +2955,53 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
+  "saripodhaa-sanivaaram-prequel-sequel": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145793/movix/real-catalog/saripodhaa-sanivaaram-prequel-sequel/saripodhaa-sanivaaram-prequel-sequel-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145793/movix/real-catalog/saripodhaa-sanivaaram-prequel-sequel/saripodhaa-sanivaaram-prequel-sequel-poster.jpg",
+    cast: {
+      Nani: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141366/movix/real-cast/nani.png",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+    },
+  },
+  "hit-3": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145791/movix/real-catalog/hit-3/hit-3-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145791/movix/real-catalog/hit-3/hit-3-poster.jpg",
+    cast: {
+      Nani: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141366/movix/real-cast/nani.png",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+    },
+  },
   "thalapathy-69": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145795/movix/real-catalog/thalapathy-69/thalapathy-69-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145795/movix/real-catalog/thalapathy-69/thalapathy-69-poster.jpg",
     cast: {
       "Thalapathy Vijay":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141499/movix/real-cast/thalapathy-vijay.jpg",
@@ -3009,9 +3021,9 @@ const realMovieMedia = {
   },
   "viduthalai-part-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145798/movix/real-catalog/viduthalai-part-2/viduthalai-part-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145798/movix/real-catalog/viduthalai-part-2/viduthalai-part-2-poster.jpg",
     cast: {
       "Vijay Sethupathi":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
@@ -3028,33 +3040,11 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140924/movix/real-cast/aishwarya-rajesh.jpg",
     },
   },
-  "fast-and-furious-11": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    cast: {
-      "Vin Diesel":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141033/movix/real-cast/vin-diesel.jpg",
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-    },
-  },
   "avatar-4": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145800/movix/real-catalog/avatar-4/avatar-4-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145800/movix/real-catalog/avatar-4/avatar-4-poster.jpg",
     cast: {
       "Sam Worthington":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141510/movix/real-cast/sam-worthington.jpg",
@@ -3072,11 +3062,33 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
     },
   },
+  "fast-and-furious-11": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145798/movix/real-catalog/fast-and-furious-11/fast-and-furious-11-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145798/movix/real-catalog/fast-and-furious-11/fast-and-furious-11-poster.jpg",
+    cast: {
+      "Vin Diesel":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141033/movix/real-cast/vin-diesel.jpg",
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+    },
+  },
   "constantine-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145800/movix/real-catalog/constantine-2/constantine-2-poster.webp",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145800/movix/real-catalog/constantine-2/constantine-2-poster.webp",
     cast: {
       "Keanu Reeves":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138243/movix/real-cast/keanu-reeves.jpg",
@@ -3096,9 +3108,9 @@ const realMovieMedia = {
   },
   "john-wick-chapter-5": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145802/movix/real-catalog/john-wick-chapter-5/john-wick-chapter-5-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145802/movix/real-catalog/john-wick-chapter-5/john-wick-chapter-5-poster.jpg",
     cast: {
       "Keanu Reeves":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138243/movix/real-cast/keanu-reeves.jpg",
@@ -3118,9 +3130,9 @@ const realMovieMedia = {
   },
   blade: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145803/movix/real-catalog/blade/blade-poster.webp",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145803/movix/real-catalog/blade/blade-poster.webp",
     cast: {
       "Mahershala Ali": "",
       "Chris Pratt":
@@ -3139,9 +3151,9 @@ const realMovieMedia = {
   },
   "armor-wars": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145805/movix/real-catalog/armor-wars/armor-wars-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145805/movix/real-catalog/armor-wars/armor-wars-poster.jpg",
     cast: {
       "Don Cheadle": "",
       "Chris Pratt":
@@ -3160,9 +3172,9 @@ const realMovieMedia = {
   },
   "shang-chi-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145805/movix/real-catalog/shang-chi-2/shang-chi-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145805/movix/real-catalog/shang-chi-2/shang-chi-2-poster.jpg",
     cast: {
       "Simu Liu": "",
       "Chris Pratt":
@@ -3181,9 +3193,9 @@ const realMovieMedia = {
   },
   "x-men-live-action-reboot": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145807/movix/real-catalog/x-men-live-action-reboot/x-men-live-action-reboot-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145807/movix/real-catalog/x-men-live-action-reboot/x-men-live-action-reboot-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3203,9 +3215,9 @@ const realMovieMedia = {
   },
   "batman-the-brave-and-the-bold": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145807/movix/real-catalog/batman-the-brave-and-the-bold/batman-the-brave-and-the-bold-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145807/movix/real-catalog/batman-the-brave-and-the-bold/batman-the-brave-and-the-bold-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3225,9 +3237,9 @@ const realMovieMedia = {
   },
   "swamp-thing": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145810/movix/real-catalog/swamp-thing/swamp-thing-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145810/movix/real-catalog/swamp-thing/swamp-thing-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3247,9 +3259,9 @@ const realMovieMedia = {
   },
   "the-matrix-5": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145810/movix/real-catalog/the-matrix-5/the-matrix-5-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145810/movix/real-catalog/the-matrix-5/the-matrix-5-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3269,9 +3281,9 @@ const realMovieMedia = {
   },
   "dune-messiah-dune-3": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145812/movix/real-catalog/dune-messiah-dune-3/dune-messiah-dune-3-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145812/movix/real-catalog/dune-messiah-dune-3/dune-messiah-dune-3-poster.jpg",
     cast: {
       "Timothee Chalamet":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141367/movix/real-cast/timothee-chalamet.jpg",
@@ -3291,9 +3303,9 @@ const realMovieMedia = {
   },
   "mad-max-wasteland": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145812/movix/real-catalog/mad-max-wasteland/mad-max-wasteland-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145812/movix/real-catalog/mad-max-wasteland/mad-max-wasteland-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3313,31 +3325,9 @@ const realMovieMedia = {
   },
   "top-gun-3": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145921/movix/real-catalog/top-gun-3/top-gun-3-poster.webp",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    cast: {
-      "Tom Cruise":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141288/movix/real-cast/tom-cruise.jpg",
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-    },
-  },
-  "mission-impossible-9": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145921/movix/real-catalog/top-gun-3/top-gun-3-poster.webp",
     cast: {
       "Tom Cruise":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141288/movix/real-cast/tom-cruise.jpg",
@@ -3357,53 +3347,9 @@ const realMovieMedia = {
   },
   "inception-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145817/movix/real-catalog/inception-2/inception-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
-    cast: {
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
-    },
-  },
-  "interstellar-prequel-project": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    cast: {
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
-    },
-  },
-  "gladiator-iii": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145817/movix/real-catalog/inception-2/inception-2-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3439,12 +3385,14 @@ const realMovieMedia = {
       "Kuranosuke Sasaki": "",
     },
   },
-  "pacific-rim-reboot": {
+  "mission-impossible-9": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145817/movix/real-catalog/mission-impossible-9/mission-impossible-9-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145817/movix/real-catalog/mission-impossible-9/mission-impossible-9-poster.jpg",
     cast: {
+      "Tom Cruise":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141288/movix/real-cast/tom-cruise.jpg",
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
       "Florence Pugh":
@@ -3457,8 +3405,6 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
       "Oscar Isaac":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
   "scary-movie-6": {
@@ -3481,13 +3427,12 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
     },
   },
-  "stop-that-train": {
+  "gladiator-iii": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145820/movix/real-catalog/gladiator-iii/gladiator-iii-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145820/movix/real-catalog/gladiator-iii/gladiator-iii-poster.jpg",
     cast: {
-      "Sarah Michelle Gellar": "",
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
       "Florence Pugh":
@@ -3500,6 +3445,8 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
       "Oscar Isaac":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
   "disclosure-day": {
@@ -3523,11 +3470,76 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
     },
   },
+  "interstellar-prequel-project": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145821/movix/real-catalog/interstellar-prequel-project/interstellar-prequel-project-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145821/movix/real-catalog/interstellar-prequel-project/interstellar-prequel-project-poster.jpg",
+    cast: {
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
+    },
+  },
+  "pacific-rim-reboot": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145822/movix/real-catalog/pacific-rim-reboot/pacific-rim-reboot-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145822/movix/real-catalog/pacific-rim-reboot/pacific-rim-reboot-poster.jpg",
+    cast: {
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
+    },
+  },
+  "stop-that-train": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145823/movix/real-catalog/stop-that-train/stop-that-train-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145823/movix/real-catalog/stop-that-train/stop-that-train-poster.jpg",
+    cast: {
+      "Sarah Michelle Gellar": "",
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+    },
+  },
   "jackass-best-and-last": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145825/movix/real-catalog/jackass-best-and-last/jackass-best-and-last-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145825/movix/real-catalog/jackass-best-and-last/jackass-best-and-last-poster.jpg",
     cast: {
       "Johnny Knoxville":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141039/movix/real-cast/johnny-knoxville.jpg",
@@ -3547,75 +3559,9 @@ const realMovieMedia = {
   },
   "the-death-of-robin-hood": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145826/movix/real-catalog/the-death-of-robin-hood/the-death-of-robin-hood-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    cast: {
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
-    },
-  },
-  "the-furious": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    cast: {
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
-    },
-  },
-  "lucky-strike": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    cast: {
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
-    },
-  },
-  "girls-like-girls": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145826/movix/real-catalog/the-death-of-robin-hood/the-death-of-robin-hood-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3655,14 +3601,12 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
     },
   },
-  "enola-holmes-3": {
+  "the-furious": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145828/movix/real-catalog/the-furious/the-furious-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145828/movix/real-catalog/the-furious/the-furious-poster.jpg",
     cast: {
-      "Millie Bobby Brown": "",
-      "Henry Cavill": "",
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
       "Florence Pugh":
@@ -3673,13 +3617,39 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
       "Rebecca Ferguson":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
+    },
+  },
+  "lucky-strike": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145828/movix/real-catalog/lucky-strike/lucky-strike-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145828/movix/real-catalog/lucky-strike/lucky-strike-poster.jpg",
+    cast: {
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
   "young-washington": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145833/movix/real-catalog/young-washington/young-washington-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145833/movix/real-catalog/young-washington/young-washington-poster.jpg",
     cast: {
       "Ben Kingsley": "",
       "Chris Pratt":
@@ -3698,9 +3668,9 @@ const realMovieMedia = {
   },
   "evil-dead-burn": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145922/movix/real-catalog/evil-dead-burn/evil-dead-burn-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145922/movix/real-catalog/evil-dead-burn/evil-dead-burn-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3718,11 +3688,11 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
-  "reading-lolita-in-tehran": {
+  "girls-like-girls": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145830/movix/real-catalog/girls-like-girls/girls-like-girls-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145830/movix/real-catalog/girls-like-girls/girls-like-girls-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3740,12 +3710,14 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
-  "the-magic-faraway-tree": {
+  "enola-holmes-3": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145831/movix/real-catalog/enola-holmes-3/enola-holmes-3-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145831/movix/real-catalog/enola-holmes-3/enola-holmes-3-poster.jpg",
     cast: {
+      "Millie Bobby Brown": "",
+      "Henry Cavill": "",
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
       "Florence Pugh":
@@ -3756,32 +3728,6 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
       "Rebecca Ferguson":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
-    },
-  },
-  "coyote-vs-acme": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    cast: {
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
   mutiny: {
@@ -3828,11 +3774,11 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
-  "tom-and-jerry-forbidden-compass": {
+  "reading-lolita-in-tehran": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145835/movix/real-catalog/reading-lolita-in-tehran/reading-lolita-in-tehran-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145835/movix/real-catalog/reading-lolita-in-tehran/reading-lolita-in-tehran-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3872,77 +3818,77 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
     },
   },
+  "coyote-vs-acme": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145838/movix/real-catalog/coyote-vs-acme/coyote-vs-acme-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145838/movix/real-catalog/coyote-vs-acme/coyote-vs-acme-poster.jpg",
+    cast: {
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
+    },
+  },
+  "tom-and-jerry-forbidden-compass": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145839/movix/real-catalog/tom-and-jerry-forbidden-compass/tom-and-jerry-forbidden-compass-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145839/movix/real-catalog/tom-and-jerry-forbidden-compass/tom-and-jerry-forbidden-compass-poster.jpg",
+    cast: {
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
+    },
+  },
+  "the-magic-faraway-tree": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145836/movix/real-catalog/the-magic-faraway-tree/the-magic-faraway-tree-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145836/movix/real-catalog/the-magic-faraway-tree/the-magic-faraway-tree-poster.jpg",
+    cast: {
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
+    },
+  },
   runner: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145841/movix/real-catalog/runner/runner-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
-    cast: {
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
-    },
-  },
-  "resident-evil-new": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
-    cast: {
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
-    },
-  },
-  verity: {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
-    cast: {
-      "Chris Pratt":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
-      "Florence Pugh":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
-      "Anya Taylor-Joy":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
-      "John Boyega":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
-      "Rebecca Ferguson":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
-      "Oscar Isaac":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
-      "Vanessa Kirby":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
-    },
-  },
-  clayface: {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135472/movix/real-catalog/clayface/clayface-backdrop.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145841/movix/real-catalog/runner/runner-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -4048,11 +3994,11 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
-  "jumanji-open-world": {
+  "resident-evil-new": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145841/movix/real-catalog/resident-evil-new/resident-evil-new-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145841/movix/real-catalog/resident-evil-new/resident-evil-new-poster.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -4070,32 +4016,77 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
-  "madhuri-dixit-and-tripti-dimri-film": {
+  verity: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145843/movix/real-catalog/verity/verity-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145843/movix/real-catalog/verity/verity-poster.jpg",
     cast: {
-      "Madhuri Dixit": "",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
+    },
+  },
+  clayface: {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145844/movix/real-catalog/clayface/clayface-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145844/movix/real-catalog/clayface/clayface-poster.jpg",
+    cast: {
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
+    },
+  },
+  "jumanji-open-world": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145845/movix/real-catalog/jumanji-open-world/jumanji-open-world-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145845/movix/real-catalog/jumanji-open-world/jumanji-open-world-poster.jpg",
+    cast: {
+      "Chris Pratt":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
+      "Florence Pugh":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140850/movix/real-cast/florence-pugh.jpg",
+      "Anya Taylor-Joy":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/anya-taylor-joy.jpg",
+      "John Boyega":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/john-boyega.jpg",
+      "Rebecca Ferguson":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/rebecca-ferguson.jpg",
+      "Oscar Isaac":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
+      "Vanessa Kirby":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138190/movix/real-cast/vanessa-kirby.jpg",
     },
   },
   "bobby-deol-film": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145848/movix/real-catalog/bobby-deol-film/bobby-deol-film-poster.png",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145848/movix/real-catalog/bobby-deol-film/bobby-deol-film-poster.png",
     cast: {
       "Bobby Deol": "",
       "Deepika Padukone":
@@ -4112,11 +4103,32 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
     },
   },
+  "madhuri-dixit-and-tripti-dimri-film": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145847/movix/real-catalog/madhuri-dixit-and-tripti-dimri-film/madhuri-dixit-and-tripti-dimri-film-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145847/movix/real-catalog/madhuri-dixit-and-tripti-dimri-film/madhuri-dixit-and-tripti-dimri-film-poster.jpg",
+    cast: {
+      "Madhuri Dixit": "",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
   "varun-dhawan-and-pooja-hegde-film": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145851/movix/real-catalog/varun-dhawan-and-pooja-hegde-film/varun-dhawan-and-pooja-hegde-film-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145851/movix/real-catalog/varun-dhawan-and-pooja-hegde-film/varun-dhawan-and-pooja-hegde-film-poster.jpg",
     cast: {
       "Varun Dhawan":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/varun-dhawan.jpg",
@@ -4135,9 +4147,9 @@ const realMovieMedia = {
   },
   "diljit-dosanjh-and-sharvari-film": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145852/movix/real-catalog/diljit-dosanjh-and-sharvari-film/diljit-dosanjh-and-sharvari-film-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145852/movix/real-catalog/diljit-dosanjh-and-sharvari-film/diljit-dosanjh-and-sharvari-film-poster.jpg",
     cast: {
       "Diljit Dosanjh":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140942/movix/real-cast/diljit-dosanjh.jpg",
@@ -4157,9 +4169,9 @@ const realMovieMedia = {
   },
   "manoj-bajpayee-and-adah-sharma-film": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145855/movix/real-catalog/manoj-bajpayee-and-adah-sharma-film/manoj-bajpayee-and-adah-sharma-film-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145855/movix/real-catalog/manoj-bajpayee-and-adah-sharma-film/manoj-bajpayee-and-adah-sharma-film-poster.jpg",
     cast: {
       "Manoj Bajpayee": "",
       "Adah Sharma": "",
@@ -4173,70 +4185,6 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
       "Nawazuddin Siddiqui":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
-  "anurag-kashyap-film": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
-    cast: {
-      "Gagan Ahuja": "",
-      "Saba Azad": "",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
-  "shahid-kapoor-and-rashmika-mandanna-film": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
-    cast: {
-      "Shahid Kapoor":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140867/movix/real-cast/shahid-kapoor.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-    },
-  },
-  naagzilla: {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
-    cast: {
-      "Deepika Padukone":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
-      "Amitabh Bachchan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
-      "Kiara Advani":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
-      "Rajkummar Rao":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
-      "Nawazuddin Siddiqui":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
-      "Triptii Dimri":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
-      "R Madhavan":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138231/movix/real-cast/r-madhavan.jpg",
     },
   },
   peddi: {
@@ -4282,11 +4230,75 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
     },
   },
+  "anurag-kashyap-film": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145855/movix/real-catalog/anurag-kashyap-film/anurag-kashyap-film-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145855/movix/real-catalog/anurag-kashyap-film/anurag-kashyap-film-poster.jpg",
+    cast: {
+      "Gagan Ahuja": "",
+      "Saba Azad": "",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
+  "shahid-kapoor-and-rashmika-mandanna-film": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145857/movix/real-catalog/shahid-kapoor-and-rashmika-mandanna-film/shahid-kapoor-and-rashmika-mandanna-film-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145857/movix/real-catalog/shahid-kapoor-and-rashmika-mandanna-film/shahid-kapoor-and-rashmika-mandanna-film-poster.jpg",
+    cast: {
+      "Shahid Kapoor":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140867/movix/real-cast/shahid-kapoor.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+    },
+  },
+  naagzilla: {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145859/movix/real-catalog/naagzilla/naagzilla-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145859/movix/real-catalog/naagzilla/naagzilla-poster.jpg",
+    cast: {
+      "Deepika Padukone":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
+      "Amitabh Bachchan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
+      "Kiara Advani":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/kiara-advani.jpg",
+      "Rajkummar Rao":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140862/movix/real-cast/rajkummar-rao.jpg",
+      "Nawazuddin Siddiqui":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
+      "Triptii Dimri":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/triptii-dimri.jpg",
+      "R Madhavan":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138231/movix/real-cast/r-madhavan.jpg",
+    },
+  },
   "naga-chaitanya-and-meenakshi-chaudhary-film": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145860/movix/real-catalog/naga-chaitanya-and-meenakshi-chaudhary-film/naga-chaitanya-and-meenakshi-chaudhary-film-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145860/movix/real-catalog/naga-chaitanya-and-meenakshi-chaudhary-film/naga-chaitanya-and-meenakshi-chaudhary-film-poster.jpg",
     cast: {
       "Naga Chaitanya": "",
       "Meenakshi Chaudhary":
@@ -4305,9 +4317,9 @@ const realMovieMedia = {
   },
   "fahadh-faasil-telugu-film": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145862/movix/real-catalog/fahadh-faasil-telugu-film/fahadh-faasil-telugu-film-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145862/movix/real-catalog/fahadh-faasil-telugu-film/fahadh-faasil-telugu-film-poster.jpg",
     cast: {
       "Fahadh Faasil":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138235/movix/real-cast/fahadh-faasil.jpg",
@@ -4325,32 +4337,11 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
     },
   },
-  "ashok-galla-film": {
-    poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
-    backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
-    cast: {
-      "Ashok Galla": "",
-      "Rana Daggubati":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
-      Nayanthara:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
-      "Vijay Deverakonda":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
-      "Rashmika Mandanna":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
-      "Samantha Ruth Prabhu":
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
-      Brahmanandam:
-        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
-    },
-  },
   "the-paradise": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145864/movix/real-catalog/the-paradise/the-paradise-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145864/movix/real-catalog/the-paradise/the-paradise-poster.jpg",
     cast: {
       Nani: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141366/movix/real-cast/nani.png",
       "Rana Daggubati":
@@ -4367,11 +4358,32 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
     },
   },
+  "ashok-galla-film": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145863/movix/real-catalog/ashok-galla-film/ashok-galla-film-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145863/movix/real-catalog/ashok-galla-film/ashok-galla-film-poster.jpg",
+    cast: {
+      "Ashok Galla": "",
+      "Rana Daggubati":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138209/movix/real-cast/rana-daggubati.jpg",
+      Nayanthara:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138199/movix/real-cast/nayanthara.jpg",
+      "Vijay Deverakonda":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+      "Rashmika Mandanna":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137313/movix/real-cast/rashmika-mandanna.jpg",
+      "Samantha Ruth Prabhu":
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
+      Brahmanandam:
+        "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+    },
+  },
   swayambhu: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145866/movix/real-catalog/swayambhu/swayambhu-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145866/movix/real-catalog/swayambhu/swayambhu-poster.jpg",
     cast: {
       "Nikhil Siddhartha": "",
       "Rana Daggubati":
@@ -4409,6 +4421,7 @@ function isReusableMovieImage(value) {
   return (
     isCloudinaryImage(image) &&
     !isCastMediaImage(image) &&
+    !isFallbackMovieArtwork(image) &&
     !image.includes("l_text:") &&
     !image.startsWith("data:")
   );
@@ -4420,6 +4433,10 @@ function isCloudinaryImage(value) {
 
 function isCastMediaImage(value) {
   return /\/(?:real-cast|cast)\//.test(String(value || ""));
+}
+
+function isFallbackMovieArtwork(value) {
+  return String(value || "").includes("/movix/movie-artwork/");
 }
 
 export { getRealCastAvatar, getRealMovieMedia, realMovieMedia };

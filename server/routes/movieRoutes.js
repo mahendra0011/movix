@@ -12,6 +12,7 @@ import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
 import { notifyMovieRelease } from "../services/notificationEvents.js";
 import { movies } from "../../src/features/movies/data/movieCatalog.js";
 import {
+  isFallbackMovieArtwork,
   normalizeCastImageUrl,
   normalizeMovieImageUrl,
 } from "../../src/features/movies/services/movieMedia.js";
@@ -25,6 +26,7 @@ const memoryReviews = buildSeedReviews(movies.map((movie) => movie.id)).map((rev
 }));
 const catalogMovieIds = movies.map((movie) => movie.id);
 const catalogMovieIdSet = new Set(catalogMovieIds);
+const catalogMovieById = new Map(movies.map((movie) => [movie.id, movie]));
 
 function slugify(value) {
   return String(value ?? "")
@@ -114,7 +116,7 @@ async function findMovieById(id) {
 
   if (catalogMovieIdSet.has(id)) {
     const movie = cleanDocument(await Movie.findOne({ id }).lean());
-    if (movie) return movie;
+    if (movie) return mergeCatalogMovieMedia(movie);
   }
 
   const shows = await Show.find({
@@ -123,7 +125,7 @@ async function findMovieById(id) {
     listingType: { $ne: "coming-soon" },
   }).lean();
   const show = shows.find(isPublicLiveShow);
-  return show ? mapShowMovie(show) : null;
+  return show ? mergeCatalogMovieMedia(mapShowMovie(show)) : null;
 }
 
 async function getLiveShowMovies() {
@@ -133,7 +135,9 @@ async function getLiveShowMovies() {
   })
     .limit(1000)
     .lean();
-  return mergeMovieLists(shows.filter(isPublicLiveShow).map(mapShowMovie));
+  return mergeMovieLists(
+    shows.filter(isPublicLiveShow).map(mapShowMovie).map(mergeCatalogMovieMedia),
+  );
 }
 
 function isPublicLiveShow(show) {
@@ -168,6 +172,38 @@ function mapShowMovie(show) {
     listingType: "live",
     releaseStatus: "released",
     sortOrder: Number(show.sortOrder || Date.now()),
+  };
+}
+
+function mergeCatalogMovieMedia(movie) {
+  if (!movie?.id) return movie;
+  const catalogMovie = catalogMovieById.get(movie.id);
+  if (!catalogMovie) return movie;
+
+  const title = movie.title || catalogMovie.title || "Movie";
+  const poster = normalizeMovieImageUrl(movie.poster || catalogMovie.poster, title, "poster");
+  const backdrop = normalizeMovieImageUrl(
+    movie.backdrop || movie.poster || catalogMovie.backdrop,
+    title,
+    "backdrop",
+    poster,
+  );
+  const catalogPoster = normalizeMovieImageUrl(catalogMovie.poster, title, "poster");
+  const catalogBackdrop = normalizeMovieImageUrl(
+    catalogMovie.backdrop,
+    title,
+    "backdrop",
+    catalogPoster,
+  );
+  const cast = normalizeCastInput(movie.cast);
+  const catalogCast = normalizeCastInput(catalogMovie.cast);
+
+  return {
+    ...catalogMovie,
+    ...movie,
+    poster: isFallbackMovieArtwork(poster) ? catalogPoster : poster,
+    backdrop: isFallbackMovieArtwork(backdrop) ? catalogBackdrop : backdrop,
+    cast: cast.length >= catalogCast.length ? cast : catalogCast,
   };
 }
 
@@ -389,7 +425,7 @@ router.get(
         cleanDocument,
       );
       const showMovies = await getLiveShowMovies();
-      list = mergeMovieLists(catalogList, showMovies);
+      list = mergeMovieLists(catalogList.map(mergeCatalogMovieMedia), showMovies);
     }
 
     list = filterMovieList(list, { query, genre, language });
