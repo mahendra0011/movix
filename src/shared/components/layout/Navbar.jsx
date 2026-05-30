@@ -27,8 +27,12 @@ import {
   subscribePreferredCity,
   writePreferredCity,
 } from "@/shared/services/cityPreference";
-import { writeHomeSearchQuery } from "@/shared/services/homeSearch";
-import { clearSearchBox, readSearchBoxValue } from "@/shared/services/searchBox";
+import {
+  readHomeSearchQuery,
+  subscribeHomeSearchQuery,
+  writeHomeSearchQuery,
+} from "@/shared/services/homeSearch";
+import { readSearchBoxValue } from "@/shared/services/searchBox";
 
 const navItems = [
   { label: "Home", to: "/", icon: Home, exact: true },
@@ -64,6 +68,7 @@ function Navbar() {
   const auth = useSelector((state) => state.auth);
   const [theme, setTheme] = useState("light");
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
+  const [searchValue, setSearchValue] = useState(readHomeSearchQuery);
   const [notifications, setNotifications] = useState([]);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [notificationStatus, setNotificationStatus] = useState("connecting");
@@ -97,6 +102,7 @@ function Navbar() {
   }, []);
 
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
+  useEffect(() => subscribeHomeSearchQuery(setSearchValue), []);
 
   useEffect(() => {
     notificationOpenRef.current = notificationOpen;
@@ -155,11 +161,19 @@ function Navbar() {
     event.preventDefault();
     const nextSearch = readSearchBoxValue(event.currentTarget);
     writeHomeSearchQuery(nextSearch);
-    clearSearchBox(event.currentTarget);
-    if (window.location.pathname === "/") return;
+    setSearchValue(nextSearch);
+    if (!nextSearch || window.location.pathname === "/") return;
     void navigate({
       to: "/",
     });
+  };
+
+  const updateLiveSearch = (event) => {
+    const nextSearch = event.currentTarget.value;
+    setSearchValue(nextSearch);
+    writeHomeSearchQuery(nextSearch);
+    if (!nextSearch.trim() || window.location.pathname === "/") return;
+    void navigate({ to: "/" });
   };
 
   const toggleTheme = () => {
@@ -209,6 +223,8 @@ function Navbar() {
               <Search className="h-4 w-4" />
             </button>
             <SearchBox
+              value={searchValue}
+              onChange={updateLiveSearch}
               placeholder="Search for movies, cinemas..."
               className="h-10 border border-border/60 bg-card/70 pl-9 shadow-sm"
             />
@@ -368,6 +384,8 @@ function Navbar() {
             <Search className="h-4 w-4" />
           </button>
           <SearchBox
+            value={searchValue}
+            onChange={updateLiveSearch}
             placeholder="Search movies, cinemas..."
             className="h-10 border border-border/60 bg-card/60 pl-9"
           />
