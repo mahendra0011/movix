@@ -421,6 +421,7 @@ function formatMongoShow(show, theater, index, activeDate = "") {
     address: theater.address,
     amenities: theater.amenities ?? [],
     logoText: theater.logoText,
+    coverImage: theater.coverImage || "",
     screenId: show.screenId,
     screen: show.screen || screen?.name || "Screen 1",
     date: resolvedDate,

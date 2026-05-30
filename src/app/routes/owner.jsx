@@ -117,6 +117,7 @@ const defaultCinemaProfile = {
   manager: "Manager desk",
   amenities: "IMAX Laser, Dolby Atmos, Recliners, Parking, Food counter",
   cancellationPolicy: "Cancellation available up to 2 hours before movie timing.",
+  coverImage: "",
 };
 
 function createBlankShow(screens = screenSeeds) {
@@ -383,6 +384,7 @@ function OwnerDashboard() {
       manager: String(cinemaProfile.manager ?? "").trim(),
       amenities: String(cinemaProfile.amenities ?? "").trim(),
       cancellationPolicy: String(cinemaProfile.cancellationPolicy ?? "").trim(),
+      coverImage: String(cinemaProfile.coverImage ?? "").trim(),
     };
     setCinemaProfile(nextProfile);
     await persistWorkspace(
@@ -1265,6 +1267,25 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
   const update = (field) => (event) =>
     onProfileChange((current) => ({ ...current, [field]: event.target.value }));
   const amenities = splitAmenities(cinemaProfile.amenities);
+  const previewImage = cinemaProfile.coverImage || "";
+  const [uploadNotice, setUploadNotice] = useState("");
+
+  const uploadCinemaImage = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadNotice(`${file.name} cinema image upload ho raha hai...`);
+      const imageUrl = await uploadImageFile(file, {
+        folder: "movix/owner/cinemas",
+      });
+      onProfileChange((current) => ({ ...current, coverImage: imageUrl }));
+      setUploadNotice(`${file.name} cinema image saved.`);
+    } catch (error) {
+      setUploadNotice(error.message || "Cinema image upload failed.");
+    } finally {
+      event.target.value = "";
+    }
+  };
 
   return (
     <section className="mt-6 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
@@ -1311,6 +1332,22 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
                 className="mt-2 min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
               />
             </label>
+          </FormSection>
+
+          <FormSection title="Cinema photo">
+            <ImageUploadField
+              label="Cinema photo"
+              value={cinemaProfile.coverImage || ""}
+              placeholder="Paste cinema photo URL or upload one image"
+              onChange={update("coverImage")}
+              onUpload={uploadCinemaImage}
+              previewClassName="aspect-video"
+            />
+            {uploadNotice && (
+              <p className="md:col-span-2 rounded-md border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-medium text-primary">
+                {uploadNotice}
+              </p>
+            )}
           </FormSection>
 
           <FormSection title="Contact and rules">
@@ -1360,6 +1397,15 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
       <SpotlightCard className="rounded-lg p-5">
         <PanelHeader icon={Building2} title="Public preview" subtitle="Cinema card for users" />
         <div className="mt-5 rounded-lg border border-border/60 bg-background/35 p-5">
+          {previewImage && (
+            <div className="mb-5 overflow-hidden rounded-lg border border-border/60 bg-muted">
+              <img
+                src={previewImage}
+                alt={cinemaProfile.name || "Cinema"}
+                className="aspect-video w-full object-cover"
+              />
+            </div>
+          )}
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-xl font-bold tracking-tight">{cinemaProfile.name}</h3>
@@ -1938,13 +1984,22 @@ function FormField({ label, children }) {
   );
 }
 
-function ImageUploadField({ label, value, placeholder, onChange, onUpload }) {
+function ImageUploadField({
+  label,
+  value,
+  placeholder,
+  onChange,
+  onUpload,
+  previewClassName = "aspect-[2/3]",
+}) {
   return (
     <div>
       <span className="text-xs font-medium uppercase text-muted-foreground">{label}</span>
       <div className="mt-2 grid gap-3 rounded-lg border border-border/60 bg-background/40 p-3">
         <div className="grid grid-cols-[88px_1fr] gap-3">
-          <div className="grid aspect-[2/3] place-items-center overflow-hidden rounded-md bg-muted">
+          <div
+            className={`grid place-items-center overflow-hidden rounded-md bg-muted ${previewClassName}`}
+          >
             {value ? (
               <img src={value} alt="" className="h-full w-full object-cover" />
             ) : (

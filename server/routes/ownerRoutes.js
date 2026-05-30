@@ -37,6 +37,7 @@ router.put(
 
     const theater = await ensureOwnerTheater(owner);
     const profile = normalizeProfile(request.body.cinemaProfile, theater, owner);
+    await ensureProfileUsesCloudinary(profile, owner);
     const screens = normalizeScreens(request.body.screens);
     const shows = normalizeShows(request.body.shows, {
       owner,
@@ -64,6 +65,7 @@ router.put(
           contact: profile.contact,
           manager: profile.manager,
           cancellationPolicy: profile.cancellationPolicy,
+          coverImage: profile.coverImage,
           amenities: splitList(profile.amenities),
           logoText: initials(profile.name),
           movieIds: unique(
@@ -152,6 +154,7 @@ async function ensureOwnerTheater(owner) {
       cancellationPolicy: "Cancellation available up to 2 hours before movie timing.",
       ownerId: owner._id,
       approved: true,
+      coverImage: "",
       screens: buildInitialScreens(application.screens),
       foodMenu: defaultFoodMenu(),
       staff: defaultStaff(),
@@ -221,6 +224,7 @@ function mapCinemaProfile(theater, owner) {
     manager: theater.manager || owner.name || "Manager desk",
     amenities: (theater.amenities ?? []).join(", "),
     cancellationPolicy: theater.cancellationPolicy || "",
+    coverImage: theater.coverImage || "",
   };
 }
 
@@ -332,6 +336,9 @@ function normalizeProfile(input = {}, theater, owner) {
       cleanText(input.cancellationPolicy) ||
       theater.cancellationPolicy ||
       "Cancellation available up to 2 hours before movie timing.",
+    coverImage: hasOwn(input, "coverImage")
+      ? cleanText(input.coverImage)
+      : theater.coverImage || "",
   };
 }
 
@@ -428,6 +435,14 @@ function normalizeServices(input = {}) {
     refundCases: Array.isArray(input.refundCases) ? input.refundCases : defaultRefundCases(),
     scanStats: Array.isArray(input.scanStats) ? input.scanStats : defaultScanStats(),
   };
+}
+
+async function ensureProfileUsesCloudinary(profile, owner) {
+  const folder = `movix/owners/${slugify(owner.email || owner._id)}/cinema`;
+  profile.coverImage = await ensureCloudinaryImageUrl(profile.coverImage, {
+    folder,
+    publicId: `${profile.id || "cinema"}-cover`,
+  });
 }
 
 function normalizeCast(input = []) {
@@ -613,6 +628,10 @@ function unique(values) {
 
 function cleanText(value) {
   return String(value ?? "").trim();
+}
+
+function hasOwn(value, key) {
+  return Object.prototype.hasOwnProperty.call(value ?? {}, key);
 }
 
 function emailName(email) {

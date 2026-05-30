@@ -10,7 +10,6 @@ import {
 
 const router = Router();
 const catalogMovieIds = catalogMovies.map((movie) => movie.id);
-const catalogMovieIdSet = new Set(catalogMovieIds);
 
 const screens = [
   {
@@ -39,16 +38,18 @@ function enrichTheater(theater, index = 0) {
     address: theater.address || `${theater.area}, ${theater.city || "Bengaluru"}`,
     amenities: Array.isArray(theater.amenities) ? theater.amenities : splitList(theater.amenities),
     approved: theater.approved !== false,
+    isOwner: Boolean(theater.ownerId),
     screens: sourceScreens,
     showPlan: Array.isArray(theater.showPlan) ? theater.showPlan : [],
-    movieIds: sanitizeMovieIds(theater.movieIds),
+    movieIds: resolveTheaterMovieIds(theater),
     rating: 4.5 + (index % 4) / 10,
   };
 }
 
-function sanitizeMovieIds(value) {
-  const movieIds = splitList(value).filter((movieId) => catalogMovieIdSet.has(movieId));
-  return movieIds.length ? movieIds : catalogMovieIds;
+function resolveTheaterMovieIds(theater) {
+  const movieIds = splitList(theater.movieIds);
+  if (movieIds.length) return movieIds;
+  return theater.ownerId ? [] : catalogMovieIds;
 }
 
 router.get(

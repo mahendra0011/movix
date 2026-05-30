@@ -21,6 +21,7 @@ const theaterSchema = new mongoose.Schema(
     area: { type: String, default: "" },
     distance: { type: String, default: "" },
     amenities: { type: [String], default: [] },
+    coverImage: { type: String, default: "" },
     logoText: { type: String, default: "" },
     movieIds: { type: [String], default: [] },
     showPlan: { type: [Object], default: [] },

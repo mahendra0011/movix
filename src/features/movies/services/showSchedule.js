@@ -2,7 +2,9 @@ function buildCatalogCinemaSchedule({ cinema, catalog, activeDate, showTimes }) 
   const movieIds = splitCatalogList(cinema.movieIds);
   const listedMovies = movieIds.length
     ? movieIds.map((movieId) => catalog.find((movie) => movie.id === movieId)).filter(Boolean)
-    : catalog;
+    : isOwnerTheater(cinema)
+      ? []
+      : catalog;
   const plans = getCatalogTheaterPlans(cinema, showTimes);
 
   return listedMovies.map((movie) => ({
@@ -111,7 +113,12 @@ function getCatalogScreenLayout(theater, screenName) {
 
 function theaterHasMovie(theater, movieId) {
   const movieIds = splitCatalogList(theater.movieIds);
-  return movieIds.length === 0 || movieIds.includes(movieId);
+  if (movieIds.length) return movieIds.includes(movieId);
+  return !isOwnerTheater(theater);
+}
+
+function isOwnerTheater(theater) {
+  return Boolean(theater?.isOwner || theater?.ownerId);
 }
 
 function inferCatalogShowStatus(index) {

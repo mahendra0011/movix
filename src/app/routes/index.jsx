@@ -791,7 +791,7 @@ function Home() {
               <CinemaCard
                 key={cinema.name}
                 cinema={cinema}
-                image={cinemaImages[index % cinemaImages.length]}
+                image={cinema.image || cinemaImages[index % cinemaImages.length]}
               />
             ))}
           </div>
@@ -1365,14 +1365,22 @@ function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
   );
   if (!localTheaters.length) return catalog;
 
+  const hasOwnerTheater = localTheaters.some((theater) => theater.isOwner || theater.ownerId);
   const theaterMovieIds = localTheaters.map((theater) => splitList(theater.movieIds));
-  const hasOpenCatalogTheater = theaterMovieIds.some((movieIds) => movieIds.length === 0);
+  const hasOpenCatalogTheater = localTheaters.some(
+    (theater, index) =>
+      !(theater.isOwner || theater.ownerId) && theaterMovieIds[index].length === 0,
+  );
   if (hasOpenCatalogTheater) return catalog;
 
   const listedMovieIds = new Set(theaterMovieIds.flat());
-  if (!listedMovieIds.size) return catalog;
+  if (!listedMovieIds.size) return hasOwnerTheater ? [] : catalog;
   const listedMovies = catalog.filter((movie) => listedMovieIds.has(movie.id));
-  if (catalog.length > 50 && listedMovies.length < Math.min(24, Math.ceil(catalog.length * 0.12))) {
+  if (
+    !hasOwnerTheater &&
+    catalog.length > 50 &&
+    listedMovies.length < Math.min(24, Math.ceil(catalog.length * 0.12))
+  ) {
     return catalog;
   }
   return listedMovies;
@@ -1435,6 +1443,7 @@ function buildTopCinemas(selectedCity, cinemaCatalog) {
     city: theater.city,
     features: splitList(theater.amenities).slice(0, 2).join(", ") || "M-Ticket, Snacks",
     rating: (4.5 + (index % 3) * 0.1).toFixed(1),
+    image: theater.coverImage || "",
   }));
 }
 
@@ -1447,9 +1456,17 @@ function CinemaSearchResult({ cinema }) {
       params={{ id: cinema.id }}
       className="group grid gap-3 rounded-lg border border-border/60 bg-background/65 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg sm:grid-cols-[56px_1fr_auto]"
     >
-      <div className="grid h-14 w-14 place-items-center rounded-lg border border-primary/20 bg-primary/10 text-sm font-extrabold text-primary">
-        {cinema.logoText || initials(cinema.name)}
-      </div>
+      {cinema.coverImage ? (
+        <img
+          src={cinema.coverImage}
+          alt={cinema.name}
+          className="h-14 w-14 rounded-lg border border-border/60 object-cover"
+        />
+      ) : (
+        <div className="grid h-14 w-14 place-items-center rounded-lg border border-primary/20 bg-primary/10 text-sm font-extrabold text-primary">
+          {cinema.logoText || initials(cinema.name)}
+        </div>
+      )}
       <div className="min-w-0">
         <h3 className="truncate text-base font-bold">{cinema.name}</h3>
         <p className="mt-1 text-sm text-muted-foreground">

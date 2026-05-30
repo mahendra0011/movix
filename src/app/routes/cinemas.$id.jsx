@@ -157,12 +157,23 @@ function CinemaDetailPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-border/60 bg-card/80 p-4 shadow-lg">
-            <div className="grid grid-cols-2 gap-3">
-              <StatCard icon={Star} label="Cinema rating" value={formatRating(cinema.rating)} />
-              <StatCard icon={Film} label="Movies listed" value={String(schedule.length)} />
-              <StatCard icon={Clock3} label="Shows today" value={String(countShows(schedule))} />
-              <StatCard icon={Ticket} label="From price" value={lowestSchedulePrice(schedule)} />
+          <div className="grid gap-4">
+            {cinema.coverImage && (
+              <div className="overflow-hidden rounded-xl border border-border/60 bg-muted shadow-lg">
+                <img
+                  src={cinema.coverImage}
+                  alt={cinema.name}
+                  className="aspect-video w-full object-cover"
+                />
+              </div>
+            )}
+            <div className="rounded-xl border border-border/60 bg-card/80 p-4 shadow-lg">
+              <div className="grid grid-cols-2 gap-3">
+                <StatCard icon={Star} label="Cinema rating" value={formatRating(cinema.rating)} />
+                <StatCard icon={Film} label="Movies listed" value={String(schedule.length)} />
+                <StatCard icon={Clock3} label="Shows today" value={String(countShows(schedule))} />
+                <StatCard icon={Ticket} label="From price" value={lowestSchedulePrice(schedule)} />
+              </div>
             </div>
           </div>
         </div>
