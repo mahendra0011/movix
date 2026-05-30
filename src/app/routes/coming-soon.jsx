@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   Bell,
@@ -28,9 +28,12 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { requestJson } from "@/shared/services/httpClient";
 import { readPreferredCity, subscribePreferredCity } from "@/shared/services/cityPreference";
+import { createSearchIndex, joinSearchFields, searchEntries } from "@/shared/services/flexSearch";
 
 const allFilterValue = "All";
 const sortOptions = ["Release date", "Popularity", "A-Z"];
+const initialVisibleMovieLimit = 60;
+const visibleMovieIncrement = 40;
 const bundledComingSoonById = new Map(
   fallbackMovies
     .map(normalizeMovieMedia)
@@ -69,6 +72,8 @@ function ComingSoonPage() {
   );
   const [notifiedIds, setNotifiedIds] = useState(() => new Set());
   const [activeSlide, setActiveSlide] = useState(0);
+  const [visibleMovieLimit, setVisibleMovieLimit] = useState(initialVisibleMovieLimit);
+  const deferredSearchTerm = useDeferredValue(searchTerm);
 
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
 
@@ -123,10 +128,28 @@ function ComingSoonPage() {
     ],
     [cityVisibleMovies],
   );
+  const comingSoonSearchIndex = useMemo(
+    () =>
+      createSearchIndex(
+        cityVisibleMovies.map((movie) => ({
+          id: movie.movieId || movie.id,
+          item: movie,
+          title: movie.title,
+          searchText: buildComingSoonSearchText(movie),
+          type: "coming-soon",
+        })),
+      ),
+    [cityVisibleMovies],
+  );
 
   const filteredMovies = useMemo(() => {
-    const needle = normalizeText(searchTerm);
-    const filtered = cityVisibleMovies.filter((movie) => {
+    const searchFilteredMovies = deferredSearchTerm.trim()
+      ? searchEntries(comingSoonSearchIndex, deferredSearchTerm, {
+          limit: cityVisibleMovies.length || initialVisibleMovieLimit,
+        }).map((entry) => entry.item)
+      : cityVisibleMovies;
+
+    const filtered = searchFilteredMovies.filter((movie) => {
       const genres = getMovieGenres(movie);
       const languages = getMovieLanguages(movie);
       const formats = getMovieFormats(movie);
@@ -134,29 +157,7 @@ function ComingSoonPage() {
       const languageMatch = activeLanguage === allFilterValue || languages.includes(activeLanguage);
       const formatMatch = activeFormat === allFilterValue || formats.includes(activeFormat);
       const monthMatch = activeMonth === allFilterValue || movie.monthBucket === activeMonth;
-      const searchableText = [
-        movie.title,
-        movie.description,
-        movie.category,
-        movie.releaseDate,
-        movie.duration,
-        movie.certificate,
-        ...genres,
-        ...languages,
-        ...formats,
-        ...(movie.cities ?? []),
-        ...(movie.theaters ?? []),
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return (
-        genreMatch &&
-        languageMatch &&
-        formatMatch &&
-        monthMatch &&
-        (!needle || searchableText.includes(needle))
-      );
+      return genreMatch && languageMatch && formatMatch && monthMatch;
     });
 
     return [...filtered].sort((left, right) => {
@@ -174,10 +175,15 @@ function ComingSoonPage() {
     activeGenre,
     activeLanguage,
     activeMonth,
+    comingSoonSearchIndex,
     cityVisibleMovies,
-    searchTerm,
+    deferredSearchTerm,
     sortBy,
   ]);
+  const visibleFilteredMovies = useMemo(
+    () => filteredMovies.slice(0, visibleMovieLimit),
+    [filteredMovies, visibleMovieLimit],
+  );
 
   const bannerMovies = useMemo(
     () => buildBannerMovies(filteredMovies.length ? filteredMovies : cityVisibleMovies),
@@ -197,6 +203,19 @@ function ComingSoonPage() {
     sortBy !== "Release date",
   ].filter(Boolean).length;
   const releaseMonths = unique(cityVisibleMovies.map((movie) => movie.monthBucket).filter(Boolean));
+
+  useEffect(() => {
+    setVisibleMovieLimit(initialVisibleMovieLimit);
+  }, [
+    activeFormat,
+    activeGenre,
+    activeLanguage,
+    activeMonth,
+    cityVisibleMovies.length,
+    deferredSearchTerm,
+    selectedCity,
+    sortBy,
+  ]);
 
   useEffect(() => {
     setActiveSlide(0);
@@ -414,7 +433,8 @@ function ComingSoonPage() {
           <div>
             <h2 className="text-2xl font-extrabold tracking-tight">Release calendar</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {filteredMovies.length} of {cityVisibleMovies.length} movies for {selectedCity}
+              Showing {visibleFilteredMovies.length} of {filteredMovies.length} matches for{" "}
+              {selectedCity}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-xs font-bold">
@@ -430,16 +450,30 @@ function ComingSoonPage() {
         </div>
 
         {filteredMovies.length ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {filteredMovies.map((movie) => (
-              <ComingSoonMovieCard
-                key={movie.id}
-                movie={movie}
-                notified={notifiedIds.has(movie.id)}
-                onToggleNotify={() => toggleNotify(movie.id)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              {visibleFilteredMovies.map((movie) => (
+                <ComingSoonMovieCard
+                  key={movie.id}
+                  movie={movie}
+                  notified={notifiedIds.has(movie.id)}
+                  onToggleNotify={() => toggleNotify(movie.id)}
+                />
+              ))}
+            </div>
+            {visibleFilteredMovies.length < filteredMovies.length ? (
+              <div className="mt-7 flex justify-center">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setVisibleMovieLimit((current) => current + visibleMovieIncrement)}
+                  className="rounded-full px-6"
+                >
+                  Show more movies
+                </Button>
+              </div>
+            ) : null}
+          </>
         ) : (
           <div className="rounded-xl border border-dashed border-border/70 bg-card/70 p-10 text-center">
             <Search className="mx-auto h-8 w-8 text-primary" />
@@ -601,6 +635,35 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
       </div>
     </article>
   );
+}
+
+function buildComingSoonSearchText(movie) {
+  return joinSearchFields(
+    movie.title,
+    movie.movie,
+    movie.description,
+    movie.category,
+    movie.releaseDate,
+    movie.releaseAt,
+    movie.duration,
+    movie.certificate,
+    movie.votes,
+    movie.votesText,
+    getMovieGenres(movie),
+    getMovieLanguages(movie),
+    getMovieFormats(movie),
+    getMovieCastSearchFields(movie),
+    movie.cities,
+    movie.theaters,
+  );
+}
+
+function getMovieCastSearchFields(movie) {
+  if (!Array.isArray(movie.cast)) return [];
+  return movie.cast.flatMap((member) => {
+    if (typeof member === "string") return member;
+    return [member.name, member.role, member.character];
+  });
 }
 
 async function fetchComingSoonMovies(city = "") {

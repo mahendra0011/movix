@@ -48,6 +48,7 @@ import {
   writeHomeSearchQuery,
 } from "@/shared/services/homeSearch";
 import { readPreferredCity, subscribePreferredCity } from "@/shared/services/cityPreference";
+import { createSearchIndex, joinSearchFields, searchEntries } from "@/shared/services/flexSearch";
 
 const Route = createFileRoute("/")({
   loader: () => fetchMovies(),
@@ -110,6 +111,10 @@ const allFilterValue = "All";
 const excludedHeroMovieIds = new Set(["i-love-boosters"]);
 const recommendedPageSize = 6;
 const sortOptions = ["Popularity", "Rating", "A-Z"];
+const homeSearchResultLimit = 120;
+const homeSearchMovieLimit = 24;
+const homeSearchComingSoonLimit = 24;
+const homeSearchCinemaLimit = 12;
 const bundledComingSoonById = new Map(
   comingSoonMovies
     .map(normalizeMovieMedia)
@@ -138,6 +143,9 @@ function Home() {
   const [homeComingSoonMovies, setHomeComingSoonMovies] = useState(() =>
     comingSoonMovies.map(normalizeHomeComingSoonMovie),
   );
+  const [globalComingSoonMovies, setGlobalComingSoonMovies] = useState(() =>
+    comingSoonMovies.map(normalizeHomeComingSoonMovie),
+  );
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
@@ -151,6 +159,24 @@ function Home() {
       })
       .catch(() => {
         if (active) setCinemaCatalog(theaters);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    requestJson("/api/shows/coming-soon", { timeoutMs: 8000 })
+      .then((data) => {
+        if (active && data.movies?.length) {
+          setGlobalComingSoonMovies(data.movies.map(normalizeHomeComingSoonMovie));
+        }
+      })
+      .catch(() => {
+        if (active) setGlobalComingSoonMovies(comingSoonMovies.map(normalizeHomeComingSoonMovie));
       });
 
     return () => {
@@ -207,7 +233,6 @@ function Home() {
     activeFormat !== allFilterValue ||
     sortBy !== "Popularity";
   const visibleMovies = useMemo(() => {
-    const needle = query.trim().toLowerCase();
     const filtered = homeDisplayMovies.filter((movie) => {
       const movieGenres = getMovieGenres(movie);
       const movieLanguages = getMovieLanguages(movie);
@@ -216,18 +241,7 @@ function Home() {
       const languageMatch =
         activeLanguage === allFilterValue || movieLanguages.includes(activeLanguage);
       const formatMatch = activeFormat === allFilterValue || movieFormats.includes(activeFormat);
-      const text = [
-        movie.title,
-        movie.duration,
-        movie.certificate,
-        movie.description,
-        ...movieGenres,
-        ...movieLanguages,
-        ...movieFormats,
-      ]
-        .join(" ")
-        .toLowerCase();
-      return genreMatch && languageMatch && formatMatch && (!needle || text.includes(needle));
+      return genreMatch && languageMatch && formatMatch;
     });
 
     return [...filtered].sort((left, right) => {
@@ -238,7 +252,7 @@ function Home() {
         parseVoteCount(left.votes ?? left.votesText)
       );
     });
-  }, [activeFormat, activeGenre, activeLanguage, homeDisplayMovies, query, sortBy]);
+  }, [activeFormat, activeGenre, activeLanguage, homeDisplayMovies, sortBy]);
   const heroMoviePool = (hasActiveFilters ? visibleMovies : homeDisplayMovies).filter(
     isHeroMovieAllowed,
   );
@@ -285,10 +299,46 @@ function Home() {
   const premieres = rotateMovies(homeDisplayMovies, 3).slice(0, 4);
   const comingSoon = rotateMovies(homeComingSoonMovies, 0).slice(0, 3);
   const topCinemas = buildTopCinemas(selectedCity, cinemaCatalog);
-  const showSearch = query.trim().length > 0;
-  const matchingCinemas = useMemo(
-    () => searchCinemas(cinemaCatalog, selectedCity, query).slice(0, 8),
-    [cinemaCatalog, query, selectedCity],
+  const trimmedSearchQuery = query.trim();
+  const showSearch = trimmedSearchQuery.length > 0;
+  const globalSearchIndex = useMemo(
+    () =>
+      createSearchIndex(
+        buildHomeSearchEntries({
+          cinemaCatalog,
+          comingSoonCatalog: globalComingSoonMovies,
+          movieCatalog: catalog,
+        }),
+      ),
+    [catalog, cinemaCatalog, globalComingSoonMovies],
+  );
+  const searchGroups = useMemo(() => {
+    if (!showSearch) {
+      return { cinemas: [], comingSoon: [], movies: [], total: 0 };
+    }
+
+    const results = searchEntries(globalSearchIndex, trimmedSearchQuery, {
+      limit: homeSearchResultLimit,
+    });
+
+    return {
+      cinemas: results
+        .filter((entry) => entry.type === "cinema")
+        .slice(0, homeSearchCinemaLimit)
+        .map((entry) => entry.item),
+      comingSoon: results
+        .filter((entry) => entry.type === "coming-soon")
+        .slice(0, homeSearchComingSoonLimit)
+        .map((entry) => entry.item),
+      movies: results
+        .filter((entry) => entry.type === "movie")
+        .slice(0, homeSearchMovieLimit)
+        .map((entry) => entry.item),
+      total: results.length,
+    };
+  }, [globalSearchIndex, showSearch, trimmedSearchQuery]);
+  const hasSearchResults = Boolean(
+    searchGroups.movies.length || searchGroups.comingSoon.length || searchGroups.cinemas.length,
   );
 
   useEffect(() => {
@@ -348,8 +398,8 @@ function Home() {
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Search results</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {visibleMovies.length} movies and {matchingCinemas.length} cinemas for "
-                {query.trim()}"
+                {searchGroups.movies.length} movies, {searchGroups.comingSoon.length} coming soon
+                and {searchGroups.cinemas.length} cinemas for "{trimmedSearchQuery}"
               </p>
             </div>
             <Button
@@ -364,34 +414,50 @@ function Home() {
             </Button>
           </div>
 
-          {visibleMovies.length || matchingCinemas.length ? (
+          {hasSearchResults ? (
             <div className="mt-6 grid gap-7">
-              {visibleMovies.length ? (
+              {searchGroups.movies.length ? (
                 <div>
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <h2 className="text-lg font-bold">Movies</h2>
                     <span className="text-xs font-semibold text-muted-foreground">
-                      {visibleMovies.length} found
+                      {searchGroups.movies.length} found
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                    {visibleMovies.map((movie) => (
+                    {searchGroups.movies.map((movie) => (
                       <CompactMovieCard key={movie.id} movie={movie} />
                     ))}
                   </div>
                 </div>
               ) : null}
 
-              {matchingCinemas.length ? (
+              {searchGroups.comingSoon.length ? (
+                <div>
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h2 className="text-lg font-bold">Coming Soon</h2>
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {searchGroups.comingSoon.length} found
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                    {searchGroups.comingSoon.map((movie) => (
+                      <CompactMovieCard key={movie.movieId || movie.id} movie={movie} />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {searchGroups.cinemas.length ? (
                 <div>
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <h2 className="text-lg font-bold">Cinemas</h2>
                     <span className="text-xs font-semibold text-muted-foreground">
-                      {matchingCinemas.length} found in {selectedCity}
+                      {searchGroups.cinemas.length} found
                     </span>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
-                    {matchingCinemas.map((cinema) => (
+                    {searchGroups.cinemas.map((cinema) => (
                       <CinemaSearchResult key={cinema.id} cinema={cinema} />
                     ))}
                   </div>
@@ -1006,8 +1072,9 @@ function HomeSection({
 
 function MovieCardLink({ movie, className, children }) {
   if (isComingSoonMovie(movie)) {
+    const detailId = movie.movieId || movie.id;
     return (
-      <Link to="/coming-soon" className={className}>
+      <Link to="/coming-soon/$id" params={{ id: detailId }} className={className}>
         {children}
       </Link>
     );
@@ -1060,7 +1127,7 @@ function CompactMovieCard({ movie, prominent = false }) {
           {movie.title}
         </h3>
         <p className={`${prominent ? "mt-1.5" : "mt-1"} truncate text-xs text-muted-foreground`}>
-          {movie.genres.slice(0, 3).join(" - ")}
+          {getMovieGenres(movie).slice(0, 3).join(" - ")}
         </p>
       </div>
     </MovieCardLink>
@@ -1403,7 +1470,7 @@ function parseVoteCount(value) {
 }
 
 function displayMovieRating(movie) {
-  return movie.rating;
+  return movie.rating || (isComingSoonMovie(movie) ? "Soon" : "New");
 }
 
 function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
@@ -1432,6 +1499,80 @@ function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
     return catalog;
   }
   return listedMovies;
+}
+
+function buildHomeSearchEntries({ cinemaCatalog, comingSoonCatalog, movieCatalog }) {
+  const movieTitleById = new Map(
+    [...movieCatalog, ...comingSoonCatalog]
+      .map((movie) => [String(movie.id ?? movie.movieId ?? ""), movie.title])
+      .filter(([id, title]) => id && title),
+  );
+
+  return [
+    ...movieCatalog.map((movie) => buildMovieSearchEntry(movie, "movie")),
+    ...comingSoonCatalog.map((movie) => buildMovieSearchEntry(movie, "coming-soon")),
+    ...cinemaCatalog.map((cinema) => buildCinemaSearchEntry(cinema, movieTitleById)),
+  ];
+}
+
+function buildMovieSearchEntry(movie, type) {
+  const entryId = movie.movieId || movie.id || movie.title;
+  return {
+    id: `${type}:${entryId}`,
+    item: movie,
+    title: movie.title,
+    type,
+    searchText: joinSearchFields(
+      movie.title,
+      movie.movie,
+      movie.description,
+      movie.duration,
+      movie.certificate,
+      movie.releaseDate,
+      movie.releaseAt,
+      movie.category,
+      movie.votes,
+      movie.votesText,
+      getMovieGenres(movie),
+      getMovieLanguages(movie),
+      getMovieFormats(movie),
+      getMovieCastSearchFields(movie),
+      movie.cities,
+      movie.theaters,
+    ),
+  };
+}
+
+function buildCinemaSearchEntry(cinema, movieTitleById) {
+  const movieIds = splitList(cinema.movieIds);
+  const movieTitles = movieIds.map((movieId) => movieTitleById.get(movieId)).filter(Boolean);
+
+  return {
+    id: `cinema:${cinema.id}`,
+    item: cinema,
+    title: cinema.name,
+    type: "cinema",
+    searchText: joinSearchFields(
+      cinema.name,
+      cinema.city,
+      cinema.area,
+      cinema.address,
+      cinema.distance,
+      cinema.logoText,
+      cinema.features,
+      cinema.amenities,
+      movieIds,
+      movieTitles,
+    ),
+  };
+}
+
+function getMovieCastSearchFields(movie) {
+  if (!Array.isArray(movie.cast)) return [];
+  return movie.cast.flatMap((member) => {
+    if (typeof member === "string") return member;
+    return [member.name, member.role, member.character];
+  });
 }
 
 function normalizeHomeComingSoonMovie(movie) {
@@ -1592,26 +1733,6 @@ function splitList(value) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
-}
-
-function searchCinemas(cinemaCatalog, selectedCity, query) {
-  const needle = normalizeHomeText(query);
-  if (!needle) return [];
-  const cityKey = normalizeHomeText(selectedCity);
-  return cinemaCatalog.filter((cinema) => {
-    if (cityKey && normalizeHomeText(cinema.city) !== cityKey) return false;
-    const text = [
-      cinema.name,
-      cinema.city,
-      cinema.area,
-      cinema.address,
-      cinema.distance,
-      ...splitList(cinema.amenities),
-    ]
-      .join(" ")
-      .toLowerCase();
-    return text.includes(needle);
-  });
 }
 
 function normalizeHomeText(value) {
