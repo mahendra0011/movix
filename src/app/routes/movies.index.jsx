@@ -30,15 +30,13 @@ import {
 
 const allFilterValue = "All";
 const sortOptions = ["Popularity", "Rating", "A-Z"];
-const quickCategoryOrder = [
+const categoryOrder = [
   "All",
-  "Action",
-  "Comedy",
-  "Drama",
-  "Horror",
-  "Romance",
-  "Thriller",
+  "Blockbusters",
   "Family",
+  "Critics' picks",
+  "Premium formats",
+  "New releases",
 ];
 
 function validateMoviesSearch(search) {
@@ -134,12 +132,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
     ],
     [cityListedMovies],
   );
-  const visibleCategories = useMemo(() => {
-    const availableGenres = new Set(cityListedMovies.flatMap((movie) => getMovieGenres(movie)));
-    return quickCategoryOrder.filter(
-      (category) => category === allFilterValue || availableGenres.has(category),
-    );
-  }, [cityListedMovies]);
+  const visibleCategories = categoryOrder;
   const activeCategoryFilter = visibleCategories.includes(activeCategory)
     ? activeCategory
     : allFilterValue;
@@ -150,8 +143,9 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
       const movieGenres = getMovieGenres(movie);
       const movieLanguages = getMovieLanguages(movie);
       const movieFormats = getMovieFormats(movie);
+      const movieCategories = getMovieCategories(movie);
       const categoryMatch =
-        activeCategoryFilter === allFilterValue || movieGenres.includes(activeCategoryFilter);
+        activeCategoryFilter === allFilterValue || movieCategories.includes(activeCategoryFilter);
       const genreMatch = activeGenre === allFilterValue || movieGenres.includes(activeGenre);
       const languageMatch =
         activeLanguage === allFilterValue || movieLanguages.includes(activeLanguage);
@@ -162,6 +156,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
         movie.duration,
         movie.certificate,
         movie.language,
+        ...movieCategories,
         ...movieGenres,
         ...movieLanguages,
         ...movieFormats,
@@ -622,6 +617,39 @@ function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
   return listedMovies;
 }
 
+function getMovieCategories(movie) {
+  const genres = getMovieGenres(movie).map(normalizeText);
+  const formats = getMovieFormats(movie).map(normalizeText);
+  const categories = [];
+
+  if (
+    genres.some((genre) =>
+      ["action", "adventure", "crime", "sci-fi", "spy", "superhero", "thriller", "war"].includes(
+        genre,
+      ),
+    )
+  ) {
+    categories.push("Blockbusters");
+  }
+  if (genres.some((genre) => ["animation", "comedy", "family", "fantasy"].includes(genre))) {
+    categories.push("Family");
+  }
+  if (
+    genres.some((genre) =>
+      ["biography", "drama", "epic", "history", "mythological", "period"].includes(genre),
+    )
+  ) {
+    categories.push("Critics' picks");
+  }
+  if (formats.some((format) => ["imax", "4dx", "laser"].includes(format))) {
+    categories.push("Premium formats");
+  }
+  if (isNewRelease(movie) || categories.length === 0) {
+    categories.push("New releases");
+  }
+  return categories;
+}
+
 function getMovieGenres(movie) {
   return toFilterList(movie.genres);
 }
@@ -649,6 +677,16 @@ function parseVoteCount(value) {
   if (normalized.includes("M")) return amount * 1_000_000;
   if (normalized.includes("K")) return amount * 1_000;
   return amount;
+}
+
+function isNewRelease(movie) {
+  const releaseAt = new Date(movie.releaseAt || movie.releaseDate || movie.date || "");
+  if (Number.isNaN(releaseAt.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  releaseAt.setHours(0, 0, 0, 0);
+  const ageInDays = (today.getTime() - releaseAt.getTime()) / 86_400_000;
+  return ageInDays >= 0 && ageInDays <= 45;
 }
 
 function splitList(value) {
