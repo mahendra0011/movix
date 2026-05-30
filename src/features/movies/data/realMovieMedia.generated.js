@@ -4407,6 +4407,7 @@ const movieMediaAliases = {
   bandar: "bobby-deol-film",
   "hai-jawani-toh-ishq-hona-hai": "varun-dhawan-and-pooja-hegde-film",
   "governor-the-silent-saviour": "manoj-bajpayee-and-adah-sharma-film",
+  "cocktail-2": "shahid-kapoor-and-rashmika-mandanna-film",
   "rao-bahadur": "satya-dev-film",
   vrushakarma: "naga-chaitanya-and-meenakshi-chaudhary-film",
   "don-t-trouble-the-trouble": "fahadh-faasil-telugu-film",
