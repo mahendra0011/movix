@@ -29,6 +29,7 @@ import {
 } from "@/shared/services/cityPreference";
 
 const allFilterValue = "All";
+const excludedHeroMovieIds = new Set(["i-love-boosters"]);
 const sortOptions = ["Popularity", "Rating", "A-Z"];
 const categoryOrder = [
   "All",
@@ -197,7 +198,9 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
     sortBy !== "Popularity",
     searchTerm.trim().length > 0,
   ].filter(Boolean).length;
-  const heroMovies = activeFilterCount ? filteredMovies : cityListedMovies;
+  const heroMovies = (activeFilterCount ? filteredMovies : cityListedMovies).filter(
+    isHeroMovieAllowed,
+  );
   const bannerMovies = useMemo(
     () => (activeFilterCount ? heroMovies.slice(0, 4) : buildBannerMovies(heroMovies)),
     [activeFilterCount, heroMovies],
@@ -648,6 +651,10 @@ function buildBannerMovies(list) {
   return [...list]
     .sort((left, right) => Number(right.rating || 0) - Number(left.rating || 0))
     .slice(0, 4);
+}
+
+function isHeroMovieAllowed(movie) {
+  return !excludedHeroMovieIds.has(String(movie?.id ?? ""));
 }
 
 function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {

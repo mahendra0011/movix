@@ -107,6 +107,7 @@ const cinemaImages = [
 ];
 
 const allFilterValue = "All";
+const excludedHeroMovieIds = new Set(["i-love-boosters"]);
 const recommendedPageSize = 6;
 const sortOptions = ["Popularity", "Rating", "A-Z"];
 const bundledComingSoonById = new Map(
@@ -238,7 +239,9 @@ function Home() {
       );
     });
   }, [activeFormat, activeGenre, activeLanguage, homeDisplayMovies, query, sortBy]);
-  const heroMoviePool = hasActiveFilters ? visibleMovies : homeDisplayMovies;
+  const heroMoviePool = (hasActiveFilters ? visibleMovies : homeDisplayMovies).filter(
+    isHeroMovieAllowed,
+  );
   const featured =
     heroMoviePool[activeHeroSlide % Math.max(heroMoviePool.length, 1)] ?? heroMoviePool[0] ?? null;
   const heroUsesComingSoon = !hasLiveMovies && Boolean(featured);
@@ -1333,6 +1336,10 @@ function isComingSoonMovie(movie) {
     movie?.releaseStatus === "coming-soon" ||
     id.startsWith("coming-soon-")
   );
+}
+
+function isHeroMovieAllowed(movie) {
+  return !excludedHeroMovieIds.has(String(movie?.id ?? ""));
 }
 
 function buildRecommendedMovies(list) {
