@@ -89,8 +89,9 @@ async function seedShows() {
   const operations = buildShowSeedOperations(true);
   const seedShowIds = operations.map((operation) => operation.updateOne.filter.id);
   const [removedNonCatalog, removedStaleCatalog] = await Promise.all([
-    Show.deleteMany({ movieId: { $nin: catalogMovieIds } }),
+    Show.deleteMany({ listingType: { $ne: "coming-soon" }, movieId: { $nin: catalogMovieIds } }),
     Show.deleteMany({
+      listingType: { $ne: "coming-soon" },
       id: { $nin: seedShowIds },
       movieId: { $in: catalogMovieIds },
       theaterId: { $in: catalogTheaterIds },

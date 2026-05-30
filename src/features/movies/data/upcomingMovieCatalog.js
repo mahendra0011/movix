@@ -751,7 +751,80 @@ const movieSeeds = [
   ...extraComingSoonMovieSeeds,
 ];
 
-const TARGET_CAST_COUNT = 7;
+const TARGET_CAST_COUNT = 6;
+
+const castPools = {
+  Hindi: [
+    "Deepika Padukone",
+    "Amitabh Bachchan",
+    "Kiara Advani",
+    "Rajkummar Rao",
+    "Nawazuddin Siddiqui",
+    "Triptii Dimri",
+    "R Madhavan",
+    "Tabu",
+    "Jaideep Ahlawat",
+  ],
+  Telugu: [
+    "Rana Daggubati",
+    "Nayanthara",
+    "Vijay Deverakonda",
+    "Rashmika Mandanna",
+    "Samantha Ruth Prabhu",
+    "Brahmanandam",
+    "Adivi Sesh",
+    "Sreeleela",
+    "Nassar",
+  ],
+  Tamil: [
+    "Vijay Sethupathi",
+    "Nayanthara",
+    "Trisha Krishnan",
+    "Karthi",
+    "Sivakarthikeyan",
+    "Aishwarya Rajesh",
+    "Prakash Raj",
+    "Dhanush",
+    "Anirudh Ravichander",
+  ],
+  Kannada: [
+    "Rishab Shetty",
+    "Sudeep",
+    "Rakshit Shetty",
+    "Rukmini Vasanth",
+    "Kishore",
+    "Prakash Raj",
+    "Achyuth Kumar",
+  ],
+  Malayalam: [
+    "Prithviraj Sukumaran",
+    "Fahadh Faasil",
+    "Tovino Thomas",
+    "Manju Warrier",
+    "Parvathy Thiruvothu",
+    "Soubin Shahir",
+    "Indrajith Sukumaran",
+  ],
+  English: [
+    "Chris Pratt",
+    "Florence Pugh",
+    "Anya Taylor-Joy",
+    "John Boyega",
+    "Rebecca Ferguson",
+    "Oscar Isaac",
+    "Vanessa Kirby",
+    "Dev Patel",
+    "Jenna Ortega",
+  ],
+  Japanese: [
+    "Ryunosuke Kamiki",
+    "Minami Hamabe",
+    "Sakura Ando",
+    "Kuranosuke Sasaki",
+    "Munetaka Aoki",
+    "Hidetaka Yoshioka",
+  ],
+};
 
 const upcomingMovies = uniqueByTitle(movieSeeds.filter(hasPublicMovieTitle)).map(buildMovie);
 const upcomingMovieIds = upcomingMovies.map((movie) => movie.id);
@@ -790,10 +863,12 @@ function buildMovie(seed, index) {
 }
 
 function expandCast(seed) {
+  const pool = castPools[seed.language] ?? castPools.English;
   const names = uniqueNames(
     (seed.cast ?? []).filter((name) => normalizeKey(name) !== "official cast"),
   );
-  return names.slice(0, TARGET_CAST_COUNT);
+  const source = names.length ? names : pool.slice(0, 2);
+  return uniqueNames([...source, ...pool]).slice(0, TARGET_CAST_COUNT);
 }
 
 function uniqueNames(list) {

@@ -523,10 +523,11 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
   const genres = getMovieGenres(movie);
   const formats = getMovieFormats(movie);
   const cast = (movie.cast ?? []).slice(0, 7);
+  const detailId = movie.movieId || movie.id;
 
   return (
     <article className="group overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
-      <div className="block">
+      <Link to="/coming-soon/$id" params={{ id: detailId }} className="block">
         <div className="relative aspect-[2/3] overflow-hidden bg-muted">
           <img
             src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
@@ -553,12 +554,14 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
             </span>
           </div>
         </div>
-      </div>
+      </Link>
 
       <div className="p-3.5">
-        <h3 className="line-clamp-2 min-h-11 text-[15px] font-extrabold leading-[22px]">
-          {movie.title}
-        </h3>
+        <Link to="/coming-soon/$id" params={{ id: detailId }} className="block hover:text-primary">
+          <h3 className="line-clamp-2 min-h-11 text-[15px] font-extrabold leading-[22px]">
+            {movie.title}
+          </h3>
+        </Link>
         <p className="mt-1.5 truncate text-xs text-muted-foreground">
           {genres.slice(0, 3).join(" - ")}
         </p>
@@ -584,6 +587,16 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
         >
           {notified ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
           {notified ? "Reminder set" : "Notify me"}
+        </Button>
+        <Button
+          asChild
+          type="button"
+          variant="ghost"
+          className="mt-2 h-9 w-full rounded-full text-xs"
+        >
+          <Link to="/coming-soon/$id" params={{ id: detailId }}>
+            View details
+          </Link>
         </Button>
       </div>
     </article>

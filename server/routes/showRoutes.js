@@ -184,6 +184,21 @@ router.get(
 );
 
 router.get(
+  "/coming-soon/:movieId",
+  asyncHandler(async (request, response) => {
+    const city = String(request.query.city ?? "").trim();
+    const movie = await findComingSoonMovie(request.params.movieId, city);
+
+    if (!movie) {
+      response.status(404).json({ error: "Coming soon movie not found" });
+      return;
+    }
+
+    response.json({ movie });
+  }),
+);
+
+router.get(
   "/:movieId",
   asyncHandler(async (request, response) => {
     if (!isMongoReady()) {
@@ -213,6 +228,35 @@ router.get(
     response.json({ shows: rows });
   }),
 );
+
+async function findComingSoonMovie(movieId, city = "") {
+  const key = normalizeComingSoonLookupKey(movieId);
+  let movies = generatedComingSoonMovies(city);
+
+  if (isMongoReady()) {
+    const shows = await Show.find(ownerScopedShowFilter({ listingType: "coming-soon" })).lean();
+    const theaterIds = [...new Set(shows.map((show) => show.theaterId).filter(Boolean))];
+    const theaterFilter = { id: { $in: theaterIds }, approved: true };
+    if (city) theaterFilter.city = new RegExp(`^${escapeRegExp(city)}$`, "i");
+
+    const theaters = await Theater.find(theaterFilter).lean();
+    const theaterById = new Map(theaters.map((theater) => [theater.id, theater]));
+    movies = mergeComingSoonMovies(movies, groupComingSoonShows(shows, theaterById));
+  }
+
+  return movies.find((movie) => matchesComingSoonMovie(movie, key)) ?? null;
+}
+
+function matchesComingSoonMovie(movie, key) {
+  return [movie.id, movie.movieId, movie.title]
+    .filter(Boolean)
+    .map(normalizeComingSoonLookupKey)
+    .includes(key);
+}
+
+function normalizeComingSoonLookupKey(value) {
+  return slugify(String(value ?? "").replace(/^coming-soon-/i, ""));
+}
 
 function generatedComingSoonMovies(city = "") {
   const cityFilter = String(city ?? "")
