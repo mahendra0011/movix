@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import { Clock3, Mail, Radio, Ticket, WifiOff } from "lucide-react";
 import {
   confirmPayment,
@@ -12,7 +13,15 @@ import {
 import { buildSeatLayout, tierPrice } from "@/features/booking/data/seatLayout";
 import { createBookingSocket } from "@/shared/services/socketClient";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/shared/components/ui/input-otp";
 
 const Route = createFileRoute("/book/$showId")({
   component: BookingPage,
@@ -67,6 +76,8 @@ function BookingPage() {
   const search = Route.useSearch();
   const { showId } = Route.useParams();
   const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth);
+  const bookingEmail = auth.hydrated ? (auth.user?.email ?? "") : "";
   const layout = useMemo(
     () =>
       buildSeatLayout({
@@ -92,10 +103,11 @@ function BookingPage() {
   const [seatState, setSeatState] = useState({ booked: [] });
   const [connection, setConnection] = useState("connecting");
   const [message, setMessage] = useState("");
-  const [email, setEmail] = useState("");
   const [ticketOtp, setTicketOtp] = useState("");
   const [ticketOtpSent, setTicketOtpSent] = useState(false);
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
+  const [otpDialogOpen, setOtpDialogOpen] = useState(false);
+  const [otpMessage, setOtpMessage] = useState("");
   const [otpBusy, setOtpBusy] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const socketRef = useRef(null);
@@ -176,36 +188,51 @@ function BookingPage() {
     setMessage("");
   };
 
-  const updateEmail = (event) => {
-    setEmail(event.target.value);
+  useEffect(() => {
     setTicketOtp("");
     setTicketOtpSent(false);
     setEmailVerificationToken("");
-  };
+    setOtpMessage("");
+  }, [bookingEmail]);
 
   const requestTicketOtp = async () => {
+    if (!bookingEmail) {
+      setOtpMessage("Login first so OTP can be sent to your account email.");
+      return;
+    }
+
     setOtpBusy(true);
-    setMessage("");
+    setOtpMessage("");
     try {
-      const result = await sendTicketOtp(email);
+      const result = await sendTicketOtp(bookingEmail);
       setTicketOtpSent(true);
-      setMessage(result.message ?? "Ticket OTP sent to your email.");
+      setTicketOtp("");
+      setOtpMessage(
+        `${result.message ?? "Ticket OTP sent to your login email."} Ticket will be emailed here after booking.`,
+      );
     } catch (error) {
-      setMessage(error.response?.data?.error ?? "Unable to send ticket OTP.");
+      setOtpMessage(error.response?.data?.error ?? "Unable to send ticket OTP.");
     } finally {
       setOtpBusy(false);
     }
   };
 
   const confirmTicketOtp = async () => {
+    if (!bookingEmail) {
+      setOtpMessage("Login first so OTP can be sent to your account email.");
+      return;
+    }
+
     setOtpBusy(true);
-    setMessage("");
+    setOtpMessage("");
     try {
-      const result = await verifyTicketOtp({ email, otp: ticketOtp });
+      const result = await verifyTicketOtp({ email: bookingEmail, otp: ticketOtp });
       setEmailVerificationToken(result.emailVerificationToken);
-      setMessage(result.message ?? "Ticket email verified.");
+      setOtpDialogOpen(false);
+      setMessage(result.message ?? "Ticket email verified. Confirming payment...");
+      await handlePay(result.emailVerificationToken);
     } catch (error) {
-      setMessage(error.response?.data?.error ?? "Ticket OTP verification failed.");
+      setOtpMessage(error.response?.data?.error ?? "Ticket OTP verification failed.");
     } finally {
       setOtpBusy(false);
     }
@@ -223,7 +250,7 @@ function BookingPage() {
         name: "movix",
         description: `${search.movie || "Movie"} tickets`,
         order_id: payment.orderId,
-        prefill: { email },
+        prefill: { email: bookingEmail },
         theme: { color: "#e4475b" },
         handler: async (response) => {
           try {
@@ -247,9 +274,30 @@ function BookingPage() {
     });
   };
 
-  const handlePay = async () => {
+  const startCheckout = async () => {
     if (selectedSeats.length === 0) return;
-    if (!emailVerificationToken) {
+    if (!auth.hydrated) {
+      setMessage("Checking your login before sending OTP...");
+      return;
+    }
+    if (!bookingEmail) {
+      setMessage("Login first so OTP can be sent to your account email.");
+      navigate({ to: "/auth" });
+      return;
+    }
+
+    if (emailVerificationToken) {
+      await handlePay(emailVerificationToken);
+      return;
+    }
+
+    setOtpDialogOpen(true);
+    await requestTicketOtp();
+  };
+
+  const handlePay = async (verificationToken = emailVerificationToken) => {
+    if (selectedSeats.length === 0) return;
+    if (!verificationToken) {
       setMessage("Verify your ticket email with OTP before payment.");
       return;
     }
@@ -275,8 +323,8 @@ function BookingPage() {
         time: search.date ? `${search.date} ${search.time}` : search.time || "Showtime",
         seats: selectedSeats,
         total,
-        email,
-        emailVerificationToken,
+        email: bookingEmail,
+        emailVerificationToken: verificationToken,
         paymentId: payment.payment.id,
         paymentProvider: payment.payment.provider,
       });
@@ -407,6 +455,61 @@ function BookingPage() {
         </div>
       </div>
 
+      <Dialog open={otpDialogOpen} onOpenChange={setOtpDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Verify booking OTP</DialogTitle>
+            <DialogDescription>
+              Enter the 6 digit code sent to your login email. Your ticket will be emailed here
+              after booking.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg border border-border/60 bg-card/60 p-3">
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="h-4 w-4 text-primary" />
+              <span className="truncate font-medium">{bookingEmail || "Login required"}</span>
+            </div>
+          </div>
+          <div className="flex justify-center py-2">
+            <InputOTP
+              maxLength={6}
+              value={ticketOtp}
+              onChange={setTicketOtp}
+              disabled={otpBusy || isPaying}
+              containerClassName="justify-center gap-2"
+            >
+              <InputOTPGroup className="gap-2">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <InputOTPSlot
+                    key={index}
+                    index={index}
+                    className="h-11 w-10 rounded-md border border-border bg-background text-base font-semibold"
+                  />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+          {otpMessage && <p className="text-center text-xs text-amber-400">{otpMessage}</p>}
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={otpBusy || isPaying || !bookingEmail}
+              onClick={requestTicketOtp}
+            >
+              {ticketOtpSent ? "Resend OTP" : "Send OTP"}
+            </Button>
+            <Button
+              type="button"
+              disabled={otpBusy || isPaying || ticketOtp.length !== 6}
+              onClick={confirmTicketOtp}
+            >
+              {isPaying ? "Paying..." : otpBusy ? "Checking..." : "Verify & Pay"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/95 backdrop-blur-xl">
         <div className="mx-auto grid max-w-[1560px] gap-3 px-4 py-4 sm:px-5 md:grid-cols-[1fr_390px_auto] md:items-center lg:px-6">
           <div>
@@ -424,45 +527,18 @@ function BookingPage() {
             </p>
             {message && <p className="mt-1 text-xs text-amber-400">{message}</p>}
           </div>
-          <div className="space-y-2">
-            <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-              <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={updateEmail}
-                  placeholder="Email for ticket"
-                  className="h-11 pl-9"
-                />
-              </div>
-              <Button
-                type="button"
-                variant={emailVerificationToken ? "secondary" : "outline"}
-                disabled={otpBusy || !email || Boolean(emailVerificationToken)}
-                onClick={requestTicketOtp}
-              >
-                {emailVerificationToken ? "Verified" : ticketOtpSent ? "Resend OTP" : "Send OTP"}
-              </Button>
+          <div className="rounded-lg border border-border/60 bg-card/70 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              OTP and ticket will be sent to
+            </p>
+            <div className="mt-1 flex items-center gap-2 text-sm">
+              <Mail className="h-4 w-4 text-primary" />
+              <span className="truncate font-medium">
+                {auth.hydrated
+                  ? bookingEmail || "Login required for OTP and ticket"
+                  : "Checking login..."}
+              </span>
             </div>
-            {ticketOtpSent && !emailVerificationToken && (
-              <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                <Input
-                  value={ticketOtp}
-                  onChange={(event) => setTicketOtp(event.target.value)}
-                  placeholder="Enter ticket OTP"
-                  className="h-10"
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={otpBusy || ticketOtp.length < 4}
-                  onClick={confirmTicketOtp}
-                >
-                  Verify
-                </Button>
-              </div>
-            )}
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" asChild>
@@ -470,8 +546,8 @@ function BookingPage() {
             </Button>
             <Button
               size="lg"
-              disabled={selected.length === 0 || !emailVerificationToken || isPaying}
-              onClick={handlePay}
+              disabled={selected.length === 0 || otpBusy || isPaying}
+              onClick={startCheckout}
               className="gap-2"
             >
               {isPaying ? (
