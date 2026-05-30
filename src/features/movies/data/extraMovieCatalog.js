@@ -1,4 +1,5 @@
 import { castAvatarFallback, movieImageFallback } from "../services/movieMedia.js";
+import { getRealCastAvatar, getRealMovieMedia } from "./realMovieMedia.generated.js";
 
 const TARGET_CAST_COUNT = 7;
 
@@ -605,17 +606,19 @@ function seed(title, cast, industry, genres, language, releaseAt) {
 }
 
 function buildReleasedMovie(item, index) {
+  const id = slugify(item.title);
+  const media = getRealMovieMedia(id);
   const cast = expandCast(item).map((name, castIndex) => ({
     name,
     role: castIndex === 0 ? "Lead" : "Cast",
-    avatar: castAvatarFallback(name),
+    avatar: getRealCastAvatar(id, name) || castAvatarFallback(name),
   }));
 
   return {
-    id: slugify(item.title),
+    id,
     title: item.title,
-    poster: movieImageFallback(item.title, "poster"),
-    backdrop: movieImageFallback(item.title, "backdrop"),
+    poster: media?.poster || movieImageFallback(item.title, "poster"),
+    backdrop: media?.backdrop || media?.poster || movieImageFallback(item.title, "backdrop"),
     genres: item.genres,
     language: item.language,
     languages: [item.language],

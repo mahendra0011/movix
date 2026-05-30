@@ -1,5 +1,6 @@
 import { castAvatarFallback, movieImageFallback } from "../services/movieMedia.js";
 import { extraComingSoonMovieSeeds } from "./extraMovieCatalog.js";
+import { getRealCastAvatar, getRealMovieMedia } from "./realMovieMedia.generated.js";
 
 const movieSeeds = [
   m(
@@ -841,11 +842,12 @@ function m(title, cast, industry, genres, language, releaseDate, options = {}) {
 
 function buildMovie(seed, index) {
   const id = slugify(seed.title);
+  const media = getRealMovieMedia(id);
   return {
     id,
     title: seed.title,
-    poster: movieImageFallback(seed.title, "poster"),
-    backdrop: movieImageFallback(seed.title, "backdrop"),
+    poster: media?.poster || movieImageFallback(seed.title, "poster"),
+    backdrop: media?.backdrop || media?.poster || movieImageFallback(seed.title, "backdrop"),
     genres: seed.genres,
     language: seed.language,
     duration: runtimeFor(seed, index),
@@ -859,7 +861,7 @@ function buildMovie(seed, index) {
     cast: expandCast(seed).map((name, castIndex) => ({
       name,
       role: castIndex === 0 ? "Lead" : "Cast",
-      avatar: castAvatarFallback(name),
+      avatar: getRealCastAvatar(id, name) || castAvatarFallback(name),
     })),
     format: formatsFor(seed),
     certificate: certificateFor(seed),
