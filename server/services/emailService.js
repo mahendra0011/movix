@@ -1,12 +1,16 @@
 import { env } from "../config/env.js";
 
 const brand = {
-  name: "movix",
+  name: env.brevoFromName || "BookMyScreen",
   primary: "#e11d48",
-  background: "#09090b",
-  card: "#111827",
-  text: "#f8fafc",
-  muted: "#94a3b8",
+  primaryDark: "#be123c",
+  surface: "#fff1f2",
+  background: "#f8fafc",
+  card: "#ffffff",
+  text: "#111827",
+  body: "#334155",
+  muted: "#64748b",
+  border: "#e5e7eb",
 };
 
 function escapeHtml(value) {
@@ -31,35 +35,38 @@ function emailLayout({ eyebrow, title, preview, body, footer = "" }) {
         <span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;overflow:hidden;">
           ${escapeHtml(preview)}
         </span>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${brand.background};padding:32px 12px;">
           <tr>
             <td align="center">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:${brand.background};border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(15,23,42,0.22);">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:${brand.card};border:1px solid ${brand.border};border-radius:18px;overflow:hidden;box-shadow:0 18px 45px rgba(15,23,42,0.08);">
                 <tr>
-                  <td style="padding:28px 30px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                  <td style="height:5px;background:linear-gradient(90deg,${brand.primary},#fb7185,#f97316);font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+                <tr>
+                  <td style="padding:24px 28px;border-bottom:1px solid ${brand.border};">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td>
-                          <div style="display:inline-block;width:34px;height:34px;line-height:34px;border-radius:10px;background:${brand.primary};color:white;text-align:center;font-weight:800;">X</div>
-                          <span style="margin-left:10px;color:${brand.text};font-size:18px;font-weight:800;vertical-align:middle;">${brand.name}</span>
+                          <div style="display:inline-block;width:36px;height:36px;line-height:36px;border-radius:10px;background:${brand.primary};color:white;text-align:center;font-weight:900;">B</div>
+                          <span style="margin-left:10px;color:${brand.text};font-size:19px;font-weight:850;vertical-align:middle;">${escapeHtml(brand.name)}</span>
                         </td>
-                        <td align="right" style="color:${brand.muted};font-size:12px;">Secure email</td>
+                        <td align="right" style="color:${brand.muted};font-size:12px;">Secure booking email</td>
                       </tr>
                     </table>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:34px 30px;">
-                    <p style="margin:0 0 12px;color:${brand.primary};font-size:12px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;">${escapeHtml(eyebrow)}</p>
+                  <td style="padding:30px 28px 28px;">
+                    <p style="margin:0 0 10px;color:${brand.primaryDark};font-size:12px;font-weight:850;letter-spacing:0.12em;text-transform:uppercase;">${escapeHtml(eyebrow)}</p>
                     <h1 style="margin:0;color:${brand.text};font-size:28px;line-height:1.18;font-weight:850;">${escapeHtml(title)}</h1>
-                    <div style="margin-top:22px;color:#dbeafe;font-size:15px;line-height:1.65;">
+                    <div style="margin-top:20px;color:${brand.body};font-size:15px;line-height:1.65;">
                       ${body}
                     </div>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding:22px 30px;background:${brand.card};color:${brand.muted};font-size:12px;line-height:1.6;">
-                    ${footer || "This email was sent by movix. If you did not request it, you can safely ignore it."}
+                  <td style="padding:20px 28px;background:#f8fafc;border-top:1px solid ${brand.border};color:${brand.muted};font-size:12px;line-height:1.6;">
+                    ${footer || `This email was sent by ${escapeHtml(brand.name)}. If you did not request it, you can safely ignore it.`}
                   </td>
                 </tr>
               </table>
@@ -68,6 +75,42 @@ function emailLayout({ eyebrow, title, preview, body, footer = "" }) {
         </table>
       </body>
     </html>
+  `;
+}
+
+function detailTable(rows) {
+  const items = rows
+    .filter((row) => row.value !== undefined && row.value !== null && String(row.value).trim())
+    .map(
+      (row) => `
+        <tr>
+          <td style="padding:11px 0;color:${brand.muted};font-size:13px;border-bottom:1px solid ${brand.border};">${escapeHtml(row.label)}</td>
+          <td align="right" style="padding:11px 0;color:${brand.text};font-size:13px;font-weight:700;border-bottom:1px solid ${brand.border};">${escapeHtml(row.value)}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;background:#ffffff;border:1px solid ${brand.border};border-radius:14px;padding:6px 16px;">
+      ${items}
+    </table>
+  `;
+}
+
+function noteBox(text) {
+  return `
+    <div style="margin-top:18px;background:${brand.surface};border:1px solid #fecdd3;border-radius:14px;padding:14px 16px;color:${brand.primaryDark};font-size:13px;line-height:1.55;">
+      ${escapeHtml(text)}
+    </div>
+  `;
+}
+
+function otpBlock(otp) {
+  return `
+    <div style="margin:24px 0;text-align:center;">
+      <div style="display:inline-block;letter-spacing:0.36em;background:#ffffff;color:${brand.text};border:1px solid #fecdd3;border-radius:16px;padding:18px 20px;font-size:32px;font-weight:900;box-shadow:0 12px 28px rgba(225,29,72,0.12);">${escapeHtml(otp)}</div>
+    </div>
   `;
 }
 
@@ -115,27 +158,28 @@ async function sendEmail({ to, subject, html }) {
 async function sendBookingEmail(booking) {
   if (!booking.email) return { sent: false, reason: "missing-recipient" };
 
-  const seats = (booking.seats ?? []).map(escapeHtml).join(", ");
+  const seats = (booking.seats ?? []).join(", ");
   return sendEmail({
     to: booking.email,
-    subject: `Your movix ticket ${booking.ref}`,
+    subject: `Your ${brand.name} ticket ${booking.ref}`,
     html: emailLayout({
       eyebrow: "Booking confirmed",
       title: `${booking.movie} tickets are ready`,
       preview: `Your ticket ${booking.ref} is confirmed.`,
       body: `
-        <p style="margin:0 0 18px;">Your booking is confirmed. Show this ticket or the QR code at the cinema entry.</p>
-        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;">
-          <p style="margin:0 0 10px;"><strong>Movie:</strong> ${escapeHtml(booking.movie)}</p>
-          <p style="margin:0 0 10px;"><strong>Theater:</strong> ${escapeHtml(booking.theater)}</p>
-          <p style="margin:0 0 10px;"><strong>Show:</strong> ${escapeHtml(booking.time)}</p>
-          <p style="margin:0 0 10px;"><strong>Seats:</strong> ${seats}</p>
-          <p style="margin:0;"><strong>Total paid:</strong> Rs ${escapeHtml(booking.total)}</p>
-        </div>
-        <p style="margin:18px 0 0;color:${brand.muted};">Reference: <strong style="color:${brand.text};">${escapeHtml(booking.ref)}</strong></p>
+        <p style="margin:0;">Your booking is confirmed. Show this email or the QR/ticket from your dashboard at the cinema entry.</p>
+        ${detailTable([
+          { label: "Booking reference", value: booking.ref },
+          { label: "Movie", value: booking.movie },
+          { label: "Theater", value: booking.theater },
+          { label: "Screen", value: booking.screen },
+          { label: "Showtime", value: booking.time },
+          { label: "Seats", value: seats },
+          { label: "Total paid", value: `Rs ${booking.total}` },
+        ])}
+        ${noteBox("Ticket, invoice and QR are available in your dashboard. Please carry a valid ID if the cinema asks for verification.")}
       `,
-      footer:
-        "Carry a valid ID if the cinema asks for verification. Ticket, invoice and QR are available inside your movix dashboard.",
+      footer: "You are receiving this because a ticket was booked with this email address.",
     }),
   });
 }
@@ -163,7 +207,8 @@ async function sendNotificationEmail({
       title,
       preview: preview || message,
       body: `
-        <p style="margin:0;color:#dbeafe;">${escapeHtml(message)}</p>
+        <p style="margin:0;">${escapeHtml(message)}</p>
+        ${noteBox("This update is related to your account, booking, or cinema activity.")}
         ${action}
       `,
       footer,
@@ -175,32 +220,41 @@ async function sendOtpEmail(email, otp, options = {}) {
   const purpose = options.purpose ?? "login";
   const templates = {
     login: {
-      subject: "Your movix sign-in OTP",
+      subject: `Your ${brand.name} sign-in OTP`,
       eyebrow: "Secure sign in",
       title: "Confirm your login",
-      preview: "Use this OTP to sign in to movix.",
-      text: "Use this one-time password to finish signing in. It expires in 10 minutes.",
+      preview: `Use this OTP to sign in to ${brand.name}.`,
+      text: "Use this one-time password to finish signing in.",
+      context: "This code was requested from the login screen.",
+      nextStep: "Enter the code on the sign-in page to open your account.",
     },
     "verify-account": {
-      subject: "Verify your movix account",
+      subject: `Verify your ${brand.name} account`,
       eyebrow: "Account verification",
       title: "Verify your email",
-      preview: "Use this OTP to verify your movix account.",
-      text: "Use this one-time password to verify your new account. It expires in 10 minutes.",
+      preview: `Use this OTP to verify your ${brand.name} account.`,
+      text: "Welcome. Use this one-time password to verify your new account.",
+      context: "This code confirms that this email belongs to you.",
+      nextStep: "Enter the code on the verification screen to complete account setup.",
     },
     "password-reset": {
-      subject: "Reset your movix password",
+      subject: `Reset your ${brand.name} password`,
       eyebrow: "Password reset",
       title: "Reset your password",
-      preview: "Use this OTP to reset your movix password.",
-      text: "Use this one-time password on the reset screen and choose a new password. It expires in 10 minutes.",
+      preview: `Use this OTP to reset your ${brand.name} password.`,
+      text: "Use this one-time password to continue with password reset.",
+      context: "This code was requested because someone started a password reset.",
+      nextStep: "Enter the code on the reset screen, then choose a new password.",
     },
     ticket: {
       subject: "Verify your ticket email",
       eyebrow: "Ticket OTP",
       title: "Confirm ticket email",
       preview: "Use this OTP to verify your ticket email.",
-      text: "Use this one-time password to verify where your ticket and invoice should be sent.",
+      text: "Use this one-time password to verify where your ticket should be sent.",
+      context: "This code was requested from the movie booking page.",
+      nextStep:
+        "Enter the code in the booking popup. Your ticket and invoice will be emailed here after booking.",
     },
   };
   const copy = templates[purpose] ?? templates.login;
@@ -213,11 +267,15 @@ async function sendOtpEmail(email, otp, options = {}) {
       title: copy.title,
       preview: copy.preview,
       body: `
-        <p style="margin:0 0 18px;">${escapeHtml(copy.text)}</p>
-        <div style="margin:24px 0;text-align:center;">
-          <div style="display:inline-block;letter-spacing:0.42em;background:white;color:#111827;border-radius:16px;padding:18px 22px;font-size:30px;font-weight:900;">${escapeHtml(otp)}</div>
-        </div>
-        <p style="margin:0;color:${brand.muted};">Never share this code with anyone. movix will never ask for your password or OTP on a phone call.</p>
+        <p style="margin:0;">${escapeHtml(copy.text)}</p>
+        ${otpBlock(otp)}
+        ${detailTable([
+          { label: "Purpose", value: copy.eyebrow },
+          { label: "Requested for", value: email },
+          { label: "Valid for", value: "10 minutes" },
+        ])}
+        <p style="margin:0;color:${brand.body};">${escapeHtml(copy.nextStep)}</p>
+        ${noteBox(`${copy.context} Never share this code with anyone. ${brand.name} will never ask for your password or OTP on a phone call.`)}
       `,
       footer: "This OTP expires in 10 minutes. If you did not request it, no action is needed.",
     }),
