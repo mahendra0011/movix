@@ -189,9 +189,6 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
     searchTerm,
     sortBy,
   ]);
-  const bannerMovies = useMemo(() => buildBannerMovies(cityListedMovies), [cityListedMovies]);
-  const featured =
-    bannerMovies[activeSlide % Math.max(bannerMovies.length, 1)] ?? cityListedMovies[0];
   const activeFilterCount = [
     activeGenre !== allFilterValue,
     activeLanguage !== allFilterValue,
@@ -200,10 +197,26 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
     sortBy !== "Popularity",
     searchTerm.trim().length > 0,
   ].filter(Boolean).length;
+  const heroMovies = activeFilterCount ? filteredMovies : cityListedMovies;
+  const bannerMovies = useMemo(
+    () => (activeFilterCount ? heroMovies.slice(0, 4) : buildBannerMovies(heroMovies)),
+    [activeFilterCount, heroMovies],
+  );
+  const featured =
+    bannerMovies[activeSlide % Math.max(bannerMovies.length, 1)] ?? heroMovies[0] ?? null;
 
   useEffect(() => {
     setActiveSlide(0);
-  }, [selectedCity, bannerMovies.length]);
+  }, [
+    activeCategoryFilter,
+    activeFormat,
+    activeGenre,
+    activeLanguage,
+    bannerMovies.length,
+    searchTerm,
+    selectedCity,
+    sortBy,
+  ]);
 
   useEffect(() => {
     if (bannerMovies.length <= 1) return undefined;
@@ -254,16 +267,54 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
               <ArrowLeft className="h-4 w-4" />
               Home
             </Link>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary shadow-sm backdrop-blur">
-              <MapPin className="h-3.5 w-3.5" />
-              {selectedCity} movies
-            </span>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary shadow-sm backdrop-blur">
+                <MapPin className="h-3.5 w-3.5" />
+                {selectedCity} movies
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/75 px-3 py-1.5 text-xs font-bold shadow-sm backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                {activeGenre !== allFilterValue
+                  ? `${activeGenre} spotlight`
+                  : activeFilterCount
+                    ? "Filtered spotlight"
+                    : "Trending #1 This Week"}
+              </span>
+            </div>
             <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-foreground md:text-6xl">
-              All listed movies in {selectedCity}
+              {featured ? featured.title : `All listed movies in ${selectedCity}`}
             </h1>
+            {featured ? (
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+                <span className="inline-flex items-center gap-1.5 font-semibold">
+                  <Star className="h-5 w-5 fill-primary text-primary" />
+                  {featured.rating}/10
+                </span>
+                <span className="text-muted-foreground">{featured.votes ?? "New"} votes</span>
+                <span className="h-4 w-px bg-border" />
+                <span>{featured.certificate}</span>
+                <span className="h-4 w-px bg-border" />
+                <span>{featured.duration}</span>
+              </div>
+            ) : null}
             <p className="mt-4 max-w-xl text-base leading-7 text-foreground/80 dark:text-muted-foreground">
-              Search, filter and book from every movie currently listed for your selected city.
+              {featured?.description ??
+                "Search, filter and book from every movie currently listed for your selected city."}
             </p>
+            {featured ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {getMovieGenres(featured)
+                  .slice(0, 3)
+                  .map((genre) => (
+                    <span
+                      key={genre}
+                      className="rounded-md border border-border/70 bg-card/70 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+              </div>
+            ) : null}
             <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold">
               <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-primary">
                 {cityListedMovies.length} listed movies
@@ -275,6 +326,14 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
                 Auto-sliding picks
               </span>
             </div>
+            {featured ? (
+              <Button asChild className="mt-5 h-11 gap-2 px-7 shadow-lg shadow-primary/20">
+                <Link to="/movies/$id" params={{ id: featured.id }}>
+                  <Ticket className="h-4 w-4" />
+                  Book Tickets
+                </Link>
+              </Button>
+            ) : null}
           </div>
 
           {featured ? (

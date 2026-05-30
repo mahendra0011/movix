@@ -129,6 +129,7 @@ function Home() {
   const [activeLanguage, setActiveLanguage] = useState(allFilterValue);
   const [activeFormat, setActiveFormat] = useState(allFilterValue);
   const [sortBy, setSortBy] = useState("Popularity");
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [recommendedPage, setRecommendedPage] = useState(0);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
@@ -181,15 +182,6 @@ function Home() {
   );
   const hasLiveMovies = cityListedMovies.length > 0;
   const homeDisplayMovies = hasLiveMovies ? cityListedMovies : homeComingSoonMovies;
-  const featured = homeDisplayMovies[0] ?? null;
-  const heroUsesComingSoon = !hasLiveMovies && Boolean(featured);
-  const heroTitle = featured?.title ?? `Movies in ${selectedCity}`;
-  const heroDescription =
-    featured?.description ??
-    "Released movies will appear here after theater owners publish live show timings.";
-  const heroBackdrop = featured
-    ? normalizeMovieImageUrl(featured.backdrop || featured.poster, featured.title, "backdrop")
-    : movieImageFallback(`movix ${selectedCity} movies`, "backdrop");
   const topMovies = useMemo(() => buildTopMovies(homeDisplayMovies), [homeDisplayMovies]);
   const genres = useMemo(
     () => [
@@ -246,6 +238,21 @@ function Home() {
       );
     });
   }, [activeFormat, activeGenre, activeLanguage, homeDisplayMovies, query, sortBy]);
+  const heroMoviePool = hasActiveFilters ? visibleMovies : homeDisplayMovies;
+  const featured =
+    heroMoviePool[activeHeroSlide % Math.max(heroMoviePool.length, 1)] ?? heroMoviePool[0] ?? null;
+  const heroUsesComingSoon = !hasLiveMovies && Boolean(featured);
+  const heroTitle =
+    featured?.title ??
+    (hasActiveFilters ? `Filtered movies in ${selectedCity}` : `Movies in ${selectedCity}`);
+  const heroDescription =
+    featured?.description ??
+    (hasActiveFilters
+      ? "No movies match these filters yet. Choose All in genres, languages, or format to see more movies."
+      : "Released movies will appear here after theater owners publish live show timings.");
+  const heroBackdrop = featured
+    ? normalizeMovieImageUrl(featured.backdrop || featured.poster, featured.title, "backdrop")
+    : movieImageFallback(`movix ${selectedCity} movies`, "backdrop");
 
   const recommendedPool = useMemo(
     () => (hasActiveFilters ? visibleMovies : buildRecommendedMovies(visibleMovies)),
@@ -280,6 +287,26 @@ function Home() {
     () => searchCinemas(cinemaCatalog, selectedCity, query).slice(0, 8),
     [cinemaCatalog, query, selectedCity],
   );
+
+  useEffect(() => {
+    setActiveHeroSlide(0);
+  }, [
+    activeFormat,
+    activeGenre,
+    activeLanguage,
+    homeDisplayMovies.length,
+    query,
+    selectedCity,
+    sortBy,
+  ]);
+
+  useEffect(() => {
+    if (heroMoviePool.length <= 1) return undefined;
+    const timer = window.setInterval(() => {
+      setActiveHeroSlide((current) => (current + 1) % heroMoviePool.length);
+    }, 4500);
+    return () => window.clearInterval(timer);
+  }, [heroMoviePool.length]);
 
   useEffect(() => {
     setRecommendedPage(0);
@@ -403,7 +430,11 @@ function Home() {
               {heroUsesComingSoon
                 ? "Coming soon spotlight"
                 : featured
-                  ? "Trending #1 This Week"
+                  ? activeGenre !== allFilterValue
+                    ? `${activeGenre} spotlight`
+                    : hasActiveFilters
+                      ? "Filtered spotlight"
+                      : "Trending #1 This Week"
                   : "Released movies"}
             </span>
             <h1 className="mt-4 text-5xl font-extrabold leading-none tracking-tight text-foreground md:text-[64px]">
