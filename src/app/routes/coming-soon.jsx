@@ -18,11 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { comingSoonMovies as fallbackMovies } from "@/features/movies/data/movieCatalog";
-import {
-  castAvatarFallback,
-  movieImageFallback,
-  normalizeMovieMedia,
-} from "@/features/movies/services/movieMedia";
+import { movieImageFallback, normalizeMovieMedia } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { requestJson } from "@/shared/services/httpClient";
@@ -553,25 +549,9 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
           {genres.slice(0, 3).join(" - ")}
         </p>
         {cast.length ? (
-          <div className="mt-3 flex items-center gap-2">
-            <div className="flex -space-x-2">
-              {cast.map((member) => (
-                <img
-                  key={`${movie.id}-${member.name}`}
-                  src={member.avatar || castAvatarFallback(member.name)}
-                  alt={member.name}
-                  loading="lazy"
-                  className="h-7 w-7 rounded-full border-2 border-card object-cover"
-                  onError={(event) => {
-                    event.currentTarget.src = castAvatarFallback(member.name);
-                  }}
-                />
-              ))}
-            </div>
-            <p className="min-w-0 truncate text-[11px] font-semibold text-muted-foreground">
-              {cast.map((member) => member.name).join(", ")}
-            </p>
-          </div>
+          <p className="mt-3 min-h-4 truncate text-[11px] font-semibold text-muted-foreground">
+            {cast.map((member) => member.name).join(", ")}
+          </p>
         ) : null}
         <div className="mt-3 flex items-center justify-between gap-2 text-[11px] font-bold text-muted-foreground">
           <span className="inline-flex min-w-0 items-center gap-1">

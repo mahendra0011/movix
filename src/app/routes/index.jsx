@@ -95,10 +95,10 @@ const testimonials = [
 ];
 
 const cinemaImages = [
-  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=600&q=80",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
 ];
 
 const allFilterValue = "All";

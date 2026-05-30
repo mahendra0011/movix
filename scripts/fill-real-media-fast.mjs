@@ -13,8 +13,26 @@ const OUTPUT_FILE = resolve(
   dirname(fileURLToPath(import.meta.url)),
   "../src/features/movies/data/realMovieMedia.generated.js",
 );
-const FALLBACK_REAL_CLOUDINARY =
+const FALLBACK_CAST_CLOUDINARY =
   "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto/sample.jpg";
+const MOVIE_FALLBACK_SOURCES = [
+  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1280&q=85",
+  "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1280&q=85",
+  "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=1280&q=85",
+  "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=1280&q=85",
+  "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=1280&q=85",
+  "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1280&q=85",
+  "https://images.unsplash.com/photo-1523207911345-32501502db22?auto=format&fit=crop&w=1280&q=85",
+  "https://images.unsplash.com/photo-1585647347483-22b66260dfff?auto=format&fit=crop&w=1280&q=85",
+];
+const PERSON_TITLE_OVERRIDES = {
+  "Thalapathy Vijay": ["Vijay (actor)"],
+  "Timothee Chalamet": ["Timothée Chalamet"],
+  "Zoe Saldana": ["Zoe Saldaña"],
+  Nani: ["Nani (actor)"],
+  Soori: ["Soori (actor)"],
+  Suhasini: ["Suhasini Maniratnam"],
+};
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -26,11 +44,12 @@ const uploadedPeople = new Map();
 
 for (const media of Object.values(existing)) {
   for (const [name, avatar] of Object.entries(media.cast ?? {})) {
-    if (avatar) uploadedPeople.set(name, avatar);
+    if (isLikelyPersonAvatar(name, avatar)) uploadedPeople.set(name, avatar);
   }
 }
 
 console.log(`Fast real-media fill for ${allMovies.length} movies...`);
+const movieFallbackArtwork = await ensureMovieFallbackArtwork();
 
 const allNames = uniqueNames(
   allMovies.flatMap((movie) => movie.cast?.map((member) => member.name) ?? []),
@@ -52,19 +71,22 @@ await mapLimit(allMovies, 4, async (movie, index) => {
   const current = existing[id] ?? {};
   const cast = {};
   const castNames = (movie.cast ?? []).map((member) => member.name).filter(Boolean);
-  const firstRealAvatar =
-    castNames.map((name) => uploadedPeople.get(name)).find(Boolean) || FALLBACK_REAL_CLOUDINARY;
 
   for (const name of castNames) {
-    cast[name] = uploadedPeople.get(name) || firstRealAvatar;
+    cast[name] = uploadedPeople.get(name) || "";
   }
 
-  const movieSource = current.poster ? "" : await findMovieSource(movie);
+  const currentPoster = isReusableMovieImage(current.poster) ? current.poster : "";
+  const currentBackdrop = isReusableMovieImage(current.backdrop) ? current.backdrop : "";
+  const movieSource = currentPoster && currentBackdrop ? "" : await findMovieSource(movie);
   const uploadedMoviePoster = movieSource
     ? await uploadSource(movieSource, `movix/real-catalog/${id}`, `${id}-poster`)
     : "";
-  const poster = current.poster || uploadedMoviePoster || firstRealAvatar;
-  const backdrop = current.backdrop || uploadedMoviePoster || poster;
+  const fallbackPoster = movieFallbackFor(movie, index, movieFallbackArtwork, "poster");
+  const fallbackBackdrop = movieFallbackFor(movie, index, movieFallbackArtwork, "backdrop");
+  const poster = currentPoster || asMovieImage(uploadedMoviePoster, "poster") || fallbackPoster;
+  const backdrop =
+    currentBackdrop || asMovieImage(uploadedMoviePoster, "backdrop") || fallbackBackdrop || poster;
 
   mediaById[id] = {
     poster,
@@ -104,12 +126,22 @@ async function findPersonSource(name) {
   if (!name) return "";
   if (sourceCache.has(name)) return sourceCache.get(name);
 
-  const direct = await getSummary(name);
-  if (direct && isPersonSummary(direct, name)) {
-    const image = imageFromSummary(direct);
-    if (image) {
-      sourceCache.set(name, image);
-      return image;
+  const titles = uniqueNames([
+    name,
+    ...(PERSON_TITLE_OVERRIDES[name] ?? []),
+    `${name} (actor)`,
+    `${name} (actress)`,
+    `${name} (film actor)`,
+  ]);
+
+  for (const title of titles) {
+    const direct = await getSummary(title);
+    if (direct && (isPersonSummary(direct, name) || isPersonSummary(direct, title))) {
+      const image = imageFromSummary(direct);
+      if (image) {
+        sourceCache.set(name, image);
+        return image;
+      }
     }
   }
 
@@ -142,7 +174,7 @@ async function searchSummary(query) {
     );
     for (const page of pages) {
       const summary = await getSummary(page.title);
-      if (summary) return summary;
+      if (summary && isPersonSummary(summary, query)) return summary;
     }
   } catch {
     return null;
@@ -201,20 +233,37 @@ async function uploadSource(source, folder, publicId) {
   if (!source) return "";
   if (source.includes("res.cloudinary.com")) return source;
   try {
+    const remoteUpload = await ensureCloudinaryImageUrl(source, { folder, publicId });
+    if (isCloudinaryImage(remoteUpload)) return remoteUpload;
+  } catch {
+    // Some image hosts block Cloudinary remote fetches; fall back to a local download.
+  }
+  try {
     const dataUri = await downloadAsDataUri(source);
-    return await ensureCloudinaryImageUrl(dataUri, { folder, publicId });
+    const uploaded = await ensureCloudinaryImageUrl(dataUri, { folder, publicId });
+    return isCloudinaryImage(uploaded) ? uploaded : "";
   } catch (error) {
     console.warn(`Upload skipped for ${publicId}: ${error.message}`);
     return "";
   }
 }
 
+async function ensureMovieFallbackArtwork() {
+  const uploaded = [];
+  for (const [index, source] of MOVIE_FALLBACK_SOURCES.entries()) {
+    const url = await uploadSource(source, "movix/movie-artwork", `movie-fallback-${index + 1}`);
+    if (url && !isCastMediaImage(url)) uploaded.push(url);
+  }
+  return uploaded;
+}
+
 async function downloadAsDataUri(url) {
   const response = await fetchWithTimeout(url, {
-    headers: { "User-Agent": USER_AGENT, Accept: "image/avif,image/webp,image/*,*/*" },
+    headers: { "User-Agent": USER_AGENT, Accept: "image/jpeg,image/png,image/webp,image/*,*/*" },
   });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const type = response.headers.get("content-type") || "image/jpeg";
+  if (type.includes("image/avif")) throw new Error("AVIF fallback download is not uploadable.");
   if (!type.startsWith("image/")) throw new Error(`Unsupported media type ${type}`);
   const buffer = Buffer.from(await response.arrayBuffer());
   return `data:${type};base64,${buffer.toString("base64")}`;
@@ -263,8 +312,47 @@ async function loadExistingMedia() {
 }
 
 async function writeGeneratedMedia(value) {
-  const body = `const realMovieMedia = ${JSON.stringify(value, null, 2)};\n\nfunction getRealMovieMedia(movieId) {\n  return realMovieMedia[movieId] ?? null;\n}\n\nfunction getRealCastAvatar(movieId, name) {\n  return realMovieMedia[movieId]?.cast?.[name] ?? "";\n}\n\nexport { getRealCastAvatar, getRealMovieMedia, realMovieMedia };\n`;
+  const body = `const realMovieMedia = ${JSON.stringify(value, null, 2)};\n\nfunction getRealMovieMedia(movieId) {\n  const media = realMovieMedia[movieId] ?? null;\n  if (!media) return null;\n  return {\n    ...media,\n    poster: isReusableMovieImage(media.poster) ? media.poster : "",\n    backdrop: isReusableMovieImage(media.backdrop) ? media.backdrop : "",\n  };\n}\n\nfunction getRealCastAvatar(movieId, name) {\n  return realMovieMedia[movieId]?.cast?.[name] ?? "";\n}\n\nfunction isReusableMovieImage(value) {\n  return isCloudinaryImage(value) && !isCastMediaImage(value);\n}\n\nfunction isCloudinaryImage(value) {\n  return /^https:\\/\\/res\\.cloudinary\\.com\\//.test(String(value || ""));\n}\n\nfunction isCastMediaImage(value) {\n  return /\\/(?:real-cast|cast)\\//.test(String(value || ""));\n}\n\nexport { getRealCastAvatar, getRealMovieMedia, realMovieMedia };\n`;
   await writeFile(OUTPUT_FILE, body, "utf8");
+}
+
+function movieFallbackFor(movie, index, artwork, type) {
+  if (!artwork.length) return asMovieImage(FALLBACK_CAST_CLOUDINARY, type);
+  const hash = hashString(movie.id || movie.title || String(index));
+  return asMovieImage(artwork[(hash + index) % artwork.length], type);
+}
+
+function asMovieImage(value, type) {
+  const image = String(value || "").trim();
+  if (!image || isCastMediaImage(image) || !isCloudinaryImage(image)) return "";
+  const transform =
+    type === "backdrop" ? "f_auto,q_auto,w_1280,h_720,c_fill" : "f_auto,q_auto,w_780,h_1170,c_fill";
+  return image.replace(
+    /\/image\/upload\/(?:f_auto,q_auto,w_\d+,h_\d+,c_fill\/)?/,
+    `/image/upload/${transform}/`,
+  );
+}
+
+function isReusableMovieImage(value) {
+  return isCloudinaryImage(value) && !isCastMediaImage(value);
+}
+
+function isLikelyPersonAvatar(name, value) {
+  const image = String(value || "");
+  if (!isCloudinaryImage(image)) return false;
+  return image.includes(`/real-cast/${slugify(name)}`);
+}
+
+function isCloudinaryImage(value) {
+  return /^https:\/\/res\.cloudinary\.com\//.test(String(value || ""));
+}
+
+function isCastMediaImage(value) {
+  return /\/(?:real-cast|cast)\//.test(String(value || ""));
+}
+
+function hashString(value) {
+  return [...String(value || "")].reduce((hash, char) => hash + char.charCodeAt(0), 0);
 }
 
 function uniqueById(list) {
@@ -282,6 +370,8 @@ function uniqueNames(names) {
 
 function normalizeText(value) {
   return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, " ")
