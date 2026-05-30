@@ -1,4 +1,5 @@
 import { castAvatarFallback, movieImageFallback } from "../services/movieMedia.js";
+import { extraComingSoonMovieSeeds } from "./extraMovieCatalog.js";
 
 const movieSeeds = [
   m(
@@ -746,6 +747,7 @@ const movieSeeds = [
     "English",
     "2026+",
   ),
+  ...extraComingSoonMovieSeeds,
 ];
 
 const TARGET_CAST_COUNT = 7;
@@ -833,8 +835,8 @@ const castPools = {
 const upcomingMovies = uniqueByTitle(movieSeeds).map(buildMovie);
 const upcomingMovieIds = upcomingMovies.map((movie) => movie.id);
 
-function m(title, cast, industry, genres, language, releaseDate) {
-  return { title, cast, industry, genres, language, releaseDate };
+function m(title, cast, industry, genres, language, releaseDate, options = {}) {
+  return { title, cast, industry, genres, language, releaseDate, ...options };
 }
 
 function buildMovie(seed, index) {
@@ -849,6 +851,7 @@ function buildMovie(seed, index) {
     duration: runtimeFor(seed, index),
     rating: Number((8.1 + (index % 14) * 0.09).toFixed(1)),
     votes: `${85 + ((index * 17) % 780)}K`,
+    releaseAt: seed.releaseAt || "",
     releaseDate: seed.releaseDate,
     listingType: "coming-soon",
     releaseStatus: "coming-soon",

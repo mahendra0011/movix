@@ -1,7 +1,8 @@
 import { SEARCHABLE_CITY_OPTIONS } from "../../../shared/services/cityPreference.js";
+import { extraReleasedMovies } from "./extraMovieCatalog.js";
 import { upcomingMovies as comingSoonMovies } from "./upcomingMovieCatalog.js";
 
-const movies = [];
+const movies = extraReleasedMovies;
 
 const curatedTheaters = [
   {

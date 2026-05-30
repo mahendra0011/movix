@@ -611,14 +611,14 @@ async function fetchComingSoonMovies(city = "") {
 function buildFallbackComingSoon(catalog, city) {
   const source = catalog.length ? catalog : fallbackMovies;
   return source.map((movie, index) => {
-    const releaseAt = futureIsoDate(10 + index * 6);
+    const releaseAt = resolveCatalogReleaseAt(movie, index);
     const normalized = normalizeMovieMedia(movie);
     return {
       ...normalized,
       id: `coming-soon-${normalized.id}`,
       movieId: normalized.id,
       releaseAt,
-      releaseDate: formatReleaseDate(releaseAt),
+      releaseDate: displayCatalogReleaseDate(normalized.releaseDate, releaseAt),
       monthBucket: formatReleaseMonth(releaseAt),
       category: categorizeMovie(normalized),
       votes: normalized.votes || `${120 + index * 37}K`,
@@ -722,6 +722,18 @@ function futureIsoDate(offsetDays) {
   date.setHours(0, 0, 0, 0);
   date.setDate(date.getDate() + offsetDays);
   return date.toISOString().slice(0, 10);
+}
+
+function resolveCatalogReleaseAt(movie, index) {
+  const releaseAt = String(movie.releaseAt || movie.date || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(releaseAt)) return releaseAt;
+  return futureIsoDate(10 + index * 6);
+}
+
+function displayCatalogReleaseDate(value, releaseAt) {
+  const label = String(value || "").trim();
+  if (label && label !== "2026" && label !== "2026+" && label !== "Coming soon") return label;
+  return formatReleaseDate(releaseAt);
 }
 
 function normalizeDateInput(value) {
