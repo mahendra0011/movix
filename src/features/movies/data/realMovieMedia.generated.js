@@ -1075,9 +1075,9 @@ const realMovieMedia = {
   },
   "ramayana-part-1": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145686/movix/real-catalog/ramayana-part-1/ramayana-part-1-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168193/movix/real-catalog/ramayana-part-1/ramayana-part-1-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145686/movix/real-catalog/ramayana-part-1/ramayana-part-1-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168193/movix/real-catalog/ramayana-part-1/ramayana-part-1-poster-fixed.jpg",
     cast: {
       "Ranbir Kapoor":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137511/movix/real-cast/ranbir-kapoor.jpg",
@@ -1535,9 +1535,9 @@ const realMovieMedia = {
   },
   "mirzapur-the-movie": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145712/movix/real-catalog/mirzapur-the-movie/mirzapur-the-movie-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168199/movix/real-catalog/mirzapur-the-movie/mirzapur-the-movie-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145712/movix/real-catalog/mirzapur-the-movie/mirzapur-the-movie-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168199/movix/real-catalog/mirzapur-the-movie/mirzapur-the-movie-poster-fixed.jpg",
     cast: {
       "Pankaj Tripathi":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141009/movix/real-cast/pankaj-tripathi.jpg",
@@ -1776,9 +1776,9 @@ const realMovieMedia = {
   },
   "golmaal-5": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135283/movix/real-catalog/golmaal-5/golmaal-5-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168201/movix/real-catalog/golmaal-5/golmaal-5-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135284/movix/real-catalog/golmaal-5/golmaal-5-backdrop.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168201/movix/real-catalog/golmaal-5/golmaal-5-poster-fixed.jpg",
     cast: {
       "Ajay Devgn":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140885/movix/real-cast/ajay-devgn.jpg",
@@ -1798,9 +1798,9 @@ const realMovieMedia = {
   },
   "singham-again-follow-up": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135287/movix/real-catalog/singham-again-follow-up/singham-again-follow-up-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168202/movix/real-catalog/singham-again-follow-up/singham-again-follow-up-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135289/movix/real-catalog/singham-again-follow-up/singham-again-follow-up-backdrop.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168202/movix/real-catalog/singham-again-follow-up/singham-again-follow-up-poster-fixed.jpg",
     cast: {
       "Ajay Devgn":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140885/movix/real-cast/ajay-devgn.jpg",
@@ -1863,9 +1863,9 @@ const realMovieMedia = {
   },
   "tiger-vs-pathaan": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145724/movix/real-catalog/tiger-vs-pathaan/tiger-vs-pathaan-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168200/movix/real-catalog/tiger-vs-pathaan/tiger-vs-pathaan-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145724/movix/real-catalog/tiger-vs-pathaan/tiger-vs-pathaan-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168200/movix/real-catalog/tiger-vs-pathaan/tiger-vs-pathaan-poster-fixed.jpg",
     cast: {
       "Shah Rukh Khan":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/shah-rukh-khan.jpg",
@@ -2017,9 +2017,9 @@ const realMovieMedia = {
   },
   "don-3": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145728/movix/real-catalog/don-3/don-3-poster.webp",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168203/movix/real-catalog/don-3/don-3-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145728/movix/real-catalog/don-3/don-3-poster.webp",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168203/movix/real-catalog/don-3/don-3-poster-fixed.jpg",
     cast: {
       "Ranveer Singh":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141022/movix/real-cast/ranveer-singh.jpg",
@@ -2215,9 +2215,9 @@ const realMovieMedia = {
   },
   "malang-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145750/movix/real-catalog/malang-2/malang-2-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168204/movix/real-catalog/malang-2/malang-2-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145750/movix/real-catalog/malang-2/malang-2-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168204/movix/real-catalog/malang-2/malang-2-poster-fixed.jpg",
     cast: {
       "Deepika Padukone":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
@@ -2259,9 +2259,9 @@ const realMovieMedia = {
   },
   "aashiqui-3": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145751/movix/real-catalog/aashiqui-3/aashiqui-3-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168205/movix/real-catalog/aashiqui-3/aashiqui-3-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145751/movix/real-catalog/aashiqui-3/aashiqui-3-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168205/movix/real-catalog/aashiqui-3/aashiqui-3-poster-fixed.jpg",
     cast: {
       "Deepika Padukone":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138198/movix/real-cast/deepika-padukone.png",
@@ -2914,9 +2914,9 @@ const realMovieMedia = {
   },
   "dasara-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145793/movix/real-catalog/dasara-2/dasara-2-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168206/movix/real-catalog/dasara-2/dasara-2-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145793/movix/real-catalog/dasara-2/dasara-2-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168206/movix/real-catalog/dasara-2/dasara-2-poster-fixed.jpg",
     cast: {
       Nani: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141366/movix/real-cast/nani.png",
       "Rana Daggubati":
@@ -3603,9 +3603,9 @@ const realMovieMedia = {
   },
   "the-furious": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780145828/movix/real-catalog/the-furious/the-furious-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168195/movix/real-catalog/the-furious/the-furious-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780145828/movix/real-catalog/the-furious/the-furious-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168195/movix/real-catalog/the-furious/the-furious-poster-fixed.jpg",
     cast: {
       "Chris Pratt":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
@@ -3798,9 +3798,9 @@ const realMovieMedia = {
   },
   "practical-magic-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135444/movix/real-catalog/practical-magic-2/practical-magic-2-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_780,h_1170,c_fill/v1780168197/movix/real-catalog/practical-magic-2/practical-magic-2-poster-fixed.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135447/movix/real-catalog/practical-magic-2/practical-magic-2-backdrop.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/f_auto,q_auto,w_1280,h_720,c_fill/v1780168197/movix/real-catalog/practical-magic-2/practical-magic-2-poster-fixed.jpg",
     cast: {
       "Sandra Bullock":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141040/movix/real-cast/sandra-bullock.jpg",
