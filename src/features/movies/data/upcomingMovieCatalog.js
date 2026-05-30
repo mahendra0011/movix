@@ -748,6 +748,88 @@ const movieSeeds = [
   ),
 ];
 
+const TARGET_CAST_COUNT = 7;
+
+const castPools = {
+  Hindi: [
+    "Deepika Padukone",
+    "Amitabh Bachchan",
+    "Kiara Advani",
+    "Rajkummar Rao",
+    "Nawazuddin Siddiqui",
+    "Triptii Dimri",
+    "R Madhavan",
+    "Tabu",
+    "Jaideep Ahlawat",
+  ],
+  Telugu: [
+    "Rana Daggubati",
+    "Nayanthara",
+    "Vijay Deverakonda",
+    "Rashmika Mandanna",
+    "Samantha Ruth Prabhu",
+    "Brahmanandam",
+    "Adivi Sesh",
+    "Sreeleela",
+    "Nassar",
+  ],
+  Tamil: [
+    "Vijay Sethupathi",
+    "Nayanthara",
+    "Trisha Krishnan",
+    "Karthi",
+    "Sivakarthikeyan",
+    "Aishwarya Rajesh",
+    "Prakash Raj",
+    "Dhanush",
+    "Anirudh Ravichander",
+  ],
+  Kannada: [
+    "Rishab Shetty",
+    "Rakshit Shetty",
+    "Sudeep",
+    "Rukmini Vasanth",
+    "Prakash Raj",
+    "Achyuth Kumar",
+    "Sapthami Gowda",
+    "Sriimurali",
+    "Dhananjaya",
+  ],
+  Malayalam: [
+    "Fahadh Faasil",
+    "Prithviraj Sukumaran",
+    "Manju Warrier",
+    "Tovino Thomas",
+    "Dulquer Salmaan",
+    "Aparna Balamurali",
+    "Soubin Shahir",
+    "Parvathy Thiruvothu",
+    "Indrajith Sukumaran",
+  ],
+  Japanese: [
+    "Ryunosuke Kamiki",
+    "Minami Hamabe",
+    "Hidetaka Yoshioka",
+    "Sakura Ando",
+    "Yuki Yamada",
+    "Munetaka Aoki",
+    "Kuranosuke Sasaki",
+    "Kaho",
+    "Masaki Suda",
+  ],
+  English: [
+    "Chris Pratt",
+    "Florence Pugh",
+    "Anya Taylor-Joy",
+    "John Boyega",
+    "Rebecca Ferguson",
+    "Oscar Isaac",
+    "Vanessa Kirby",
+    "Dev Patel",
+    "Jenna Ortega",
+  ],
+};
+
 const upcomingMovies = uniqueByTitle(movieSeeds).map(buildMovie);
 const upcomingMovieIds = upcomingMovies.map((movie) => movie.id);
 
@@ -771,7 +853,7 @@ function buildMovie(seed, index) {
     listingType: "coming-soon",
     releaseStatus: "coming-soon",
     description: `${seed.title} is part of the 2026+ movix upcoming lineup, positioned as a ${seed.industry} release with ${seed.genres.slice(0, 2).join(" and ").toLowerCase()} appeal.`,
-    cast: seed.cast.map((name, castIndex) => ({
+    cast: expandCast(seed).map((name, castIndex) => ({
       name,
       role: castIndex === 0 ? "Lead" : "Cast",
       avatar: castAvatarFallback(name),
@@ -780,6 +862,23 @@ function buildMovie(seed, index) {
     certificate: certificateFor(seed),
     sortOrder: index + 1,
   };
+}
+
+function expandCast(seed) {
+  const pool = castPools[seed.language] ?? castPools.English;
+  const names = uniqueNames(seed.cast.filter((name) => normalizeKey(name) !== "official cast"));
+  const source = names.length ? names : pool.slice(0, 2);
+  return uniqueNames([...source, ...pool]).slice(0, TARGET_CAST_COUNT);
+}
+
+function uniqueNames(list) {
+  const seen = new Set();
+  return list.filter((name) => {
+    const key = normalizeKey(name);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function uniqueByTitle(list) {

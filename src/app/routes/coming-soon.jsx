@@ -512,7 +512,7 @@ function ComingSoonFilter({ icon: Icon, title, value, detail, options = [], onCh
 function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
   const genres = getMovieGenres(movie);
   const formats = getMovieFormats(movie);
-  const cast = (movie.cast ?? []).slice(0, 3);
+  const cast = (movie.cast ?? []).slice(0, 7);
 
   return (
     <article className="group overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">

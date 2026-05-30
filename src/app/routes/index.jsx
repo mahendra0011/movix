@@ -161,7 +161,10 @@ function Home() {
     () => buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog),
     [catalog, cinemaCatalog, selectedCity],
   );
-  const featured = cityListedMovies[0] ?? null;
+  const hasLiveMovies = cityListedMovies.length > 0;
+  const homeDisplayMovies = hasLiveMovies ? cityListedMovies : homeComingSoonMovies;
+  const featured = homeDisplayMovies[0] ?? null;
+  const heroUsesComingSoon = !hasLiveMovies && Boolean(featured);
   const heroTitle = featured?.title ?? `Movies in ${selectedCity}`;
   const heroDescription =
     featured?.description ??
@@ -169,21 +172,21 @@ function Home() {
   const heroBackdrop = featured
     ? featured.backdrop || movieImageFallback(featured.title, "backdrop")
     : movieImageFallback(`movix ${selectedCity} movies`, "backdrop");
-  const topMovies = useMemo(() => buildTopMovies(cityListedMovies), [cityListedMovies]);
+  const topMovies = useMemo(() => buildTopMovies(homeDisplayMovies), [homeDisplayMovies]);
   const genres = useMemo(
     () => [
       allFilterValue,
-      ...Array.from(new Set(cityListedMovies.flatMap((movie) => getMovieGenres(movie)))),
+      ...Array.from(new Set(homeDisplayMovies.flatMap((movie) => getMovieGenres(movie)))),
     ],
-    [cityListedMovies],
+    [homeDisplayMovies],
   );
   const languages = useMemo(
-    () => Array.from(new Set(cityListedMovies.flatMap((movie) => getMovieLanguages(movie)))),
-    [cityListedMovies],
+    () => Array.from(new Set(homeDisplayMovies.flatMap((movie) => getMovieLanguages(movie)))),
+    [homeDisplayMovies],
   );
   const formats = useMemo(
-    () => Array.from(new Set(cityListedMovies.flatMap((movie) => getMovieFormats(movie)))),
-    [cityListedMovies],
+    () => Array.from(new Set(homeDisplayMovies.flatMap((movie) => getMovieFormats(movie)))),
+    [homeDisplayMovies],
   );
   const languageOptions = useMemo(() => [allFilterValue, ...languages], [languages]);
   const formatOptions = useMemo(() => [allFilterValue, ...formats], [formats]);
@@ -194,7 +197,7 @@ function Home() {
     sortBy !== "Popularity";
   const visibleMovies = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const filtered = cityListedMovies.filter((movie) => {
+    const filtered = homeDisplayMovies.filter((movie) => {
       const movieGenres = getMovieGenres(movie);
       const movieLanguages = getMovieLanguages(movie);
       const movieFormats = getMovieFormats(movie);
@@ -224,7 +227,7 @@ function Home() {
         parseVoteCount(left.votes ?? left.votesText)
       );
     });
-  }, [activeFormat, activeGenre, activeLanguage, cityListedMovies, query, sortBy]);
+  }, [activeFormat, activeGenre, activeLanguage, homeDisplayMovies, query, sortBy]);
 
   const recommendedPool = useMemo(
     () => (hasActiveFilters ? visibleMovies : buildRecommendedMovies(visibleMovies)),
@@ -251,7 +254,7 @@ function Home() {
     format: activeFormat,
     sort: sortBy,
   });
-  const premieres = rotateMovies(cityListedMovies, 3).slice(0, 4);
+  const premieres = rotateMovies(homeDisplayMovies, 3).slice(0, 4);
   const comingSoon = rotateMovies(homeComingSoonMovies, 0).slice(0, 3);
   const topCinemas = buildTopCinemas(selectedCity, cinemaCatalog);
   const showSearch = query.trim().length > 0;
@@ -379,7 +382,11 @@ function Home() {
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" />
-              {featured ? "Trending #1 This Week" : "Released movies"}
+              {heroUsesComingSoon
+                ? "Coming soon spotlight"
+                : featured
+                  ? "Trending #1 This Week"
+                  : "Released movies"}
             </span>
             <h1 className="mt-4 text-5xl font-extrabold leading-none tracking-tight text-foreground md:text-[64px]">
               {heroTitle}
@@ -416,7 +423,12 @@ function Home() {
             ) : null}
             <div className="mt-5 flex flex-wrap gap-3">
               <Button size="lg" asChild className="h-11 gap-2 px-7 shadow-lg shadow-primary/20">
-                {featured ? (
+                {heroUsesComingSoon ? (
+                  <Link to="/coming-soon">
+                    <CalendarDays className="h-4 w-4" />
+                    View Coming Soon
+                  </Link>
+                ) : featured ? (
                   <Link to="/movies/$id" params={{ id: featured.id }}>
                     <Ticket className="h-4 w-4" />
                     Book Tickets
@@ -560,7 +572,11 @@ function Home() {
       <HomeSection
         id="movies"
         title="Recommended for you"
-        subtitle={`Curated picks from ${cityListedMovies.length} movies listed in ${selectedCity}`}
+        subtitle={
+          heroUsesComingSoon
+            ? `Curated picks from ${homeDisplayMovies.length} upcoming movies for ${selectedCity}`
+            : `Curated picks from ${homeDisplayMovies.length} movies listed in ${selectedCity}`
+        }
         icon={Star}
         actionSlot={
           <div className="flex shrink-0 items-center gap-2">
@@ -591,13 +607,22 @@ function Home() {
                 </Button>
               </div>
             ) : null}
-            <Link
-              to="/movies/"
-              search={moviesPageSearch}
-              className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
-            >
-              See all <ArrowRight className="h-4 w-4" />
-            </Link>
+            {heroUsesComingSoon ? (
+              <Link
+                to="/coming-soon"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+              >
+                See all <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <Link
+                to="/movies/"
+                search={moviesPageSearch}
+                className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+              >
+                See all <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
           </div>
         }
         wide
@@ -611,9 +636,15 @@ function Home() {
         ) : (
           <div className="rounded-lg border border-dashed border-border/70 bg-card/70 p-8 text-center">
             <Search className="mx-auto h-7 w-7 text-primary" />
-            <h3 className="mt-3 text-base font-semibold">No movies match these filters</h3>
+            <h3 className="mt-3 text-base font-semibold">
+              {heroUsesComingSoon
+                ? "Coming soon movies are loading"
+                : "No movies match these filters"}
+            </h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Choose All in genres, languages, or format to see more movies.
+              {heroUsesComingSoon
+                ? "Please refresh once the upcoming catalog finishes loading."
+                : "Choose All in genres, languages, or format to see more movies."}
             </p>
           </div>
         )}
@@ -921,11 +952,26 @@ function HomeSection({
   );
 }
 
+function MovieCardLink({ movie, className, children }) {
+  if (isComingSoonMovie(movie)) {
+    return (
+      <Link to="/coming-soon" className={className}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <Link to="/movies/$id" params={{ id: movie.id }} className={className}>
+      {children}
+    </Link>
+  );
+}
+
 function CompactMovieCard({ movie, prominent = false }) {
   return (
-    <Link
-      to="/movies/$id"
-      params={{ id: movie.id }}
+    <MovieCardLink
+      movie={movie}
       className={`group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg ${
         prominent ? "shadow-md" : ""
       }`}
@@ -965,7 +1011,7 @@ function CompactMovieCard({ movie, prominent = false }) {
           {movie.genres.slice(0, 3).join(" - ")}
         </p>
       </div>
-    </Link>
+    </MovieCardLink>
   );
 }
 
@@ -1152,9 +1198,8 @@ function PremiereSpotlightCard({ movie }) {
   const backdrop = movie.backdrop || poster;
 
   return (
-    <Link
-      to="/movies/$id"
-      params={{ id: movie.id }}
+    <MovieCardLink
+      movie={movie}
       className="group relative grid min-h-[176px] grid-cols-[92px_1fr] overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg sm:grid-cols-[118px_1fr]"
     >
       <img
@@ -1203,13 +1248,13 @@ function PremiereSpotlightCard({ movie }) {
           </span>
         </p>
       </div>
-    </Link>
+    </MovieCardLink>
   );
 }
 
 function MiniMovieTile({ movie, badge }) {
   return (
-    <Link to="/movies/$id" params={{ id: movie.id }} className="group block">
+    <MovieCardLink movie={movie} className="group block">
       <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-muted">
         <img
           src={movie.backdrop || movie.poster || movieImageFallback(movie.title, "backdrop")}
@@ -1228,7 +1273,16 @@ function MiniMovieTile({ movie, badge }) {
       <p className="mt-1 text-[11px] text-muted-foreground">
         {displayMovieRating(movie, "premiere")} - {movie.duration} - {movie.certificate}
       </p>
-    </Link>
+    </MovieCardLink>
+  );
+}
+
+function isComingSoonMovie(movie) {
+  const id = String(movie?.id ?? movie?.movieId ?? "");
+  return (
+    movie?.listingType === "coming-soon" ||
+    movie?.releaseStatus === "coming-soon" ||
+    id.startsWith("coming-soon-")
   );
 }
 

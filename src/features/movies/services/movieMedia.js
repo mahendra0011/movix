@@ -29,66 +29,74 @@ function normalizeCastMedia(cast = []) {
 
 function normalizeImageUrl(value) {
   const image = String(value || "").trim();
-  if (!image.includes("/image/fetch/")) return image;
-
-  try {
-    const url = new URL(image);
-    const parts = url.pathname.split("/");
-    const fetchIndex = parts.findIndex((part) => part === "fetch");
-    if (fetchIndex === -1) return image;
-    const encodedSource = parts.slice(fetchIndex + 1).findLast((part) => /^https?%3A/i.test(part));
-    return encodedSource ? decodeURIComponent(encodedSource) : image;
-  } catch {
-    return image;
-  }
+  return image;
 }
 
 function movieImageFallback(title, type = "poster") {
   const width = type === "backdrop" ? 1280 : 780;
   const height = type === "backdrop" ? 720 : 1170;
-  return svgDataUri({
+  return cloudinaryGeneratedImageUrl({
     width,
     height,
-    title: title || "Movie",
-    subtitle: type === "backdrop" ? "movix backdrop" : "movix poster",
+    text: title || "Movie",
+    fontSize: type === "backdrop" ? 74 : 58,
+    baseImage: "sample.jpg",
   });
 }
 
 function castAvatarFallback(name) {
-  return svgDataUri({
+  return cloudinaryGeneratedImageUrl({
     width: 256,
     height: 256,
-    title: initials(name),
-    subtitle: "Cast",
-    round: true,
+    text: initials(name),
+    fontSize: 72,
+    baseImage: "sample.jpg",
+    rounded: true,
   });
 }
 
-function svgDataUri({ width, height, title, subtitle, round = false }) {
-  const safeTitle = escapeXml(String(title || "Movie").slice(0, 42));
-  const safeSubtitle = escapeXml(String(subtitle || "movix").slice(0, 32));
-  const titleSize = round ? 76 : Math.max(34, Math.round(width / 15));
-  const subtitleSize = round ? 28 : Math.max(22, Math.round(width / 34));
-  const radius = round ? width / 2 : 0;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0f766e"/><stop offset="55%" stop-color="#111827"/><stop offset="100%" stop-color="#e11d48"/></linearGradient></defs><rect width="${width}" height="${height}" rx="${radius}" fill="url(#g)"/><circle cx="${Math.round(width * 0.82)}" cy="${Math.round(height * 0.18)}" r="${Math.round(width * 0.22)}" fill="#ffffff" opacity="0.1"/><text x="50%" y="48%" text-anchor="middle" fill="#f8fafc" font-family="Arial, sans-serif" font-size="${titleSize}" font-weight="800">${safeTitle}</text><text x="50%" y="58%" text-anchor="middle" fill="#ccfbf1" font-family="Arial, sans-serif" font-size="${subtitleSize}" font-weight="700">${safeSubtitle}</text></svg>`;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+function cloudinaryGeneratedImageUrl({
+  width,
+  height,
+  text,
+  fontSize,
+  baseImage,
+  rounded = false,
+}) {
+  const label = cloudinaryText(text);
+  const transforms = [
+    "f_auto",
+    "q_auto",
+    `w_${width}`,
+    `h_${height}`,
+    "c_fill",
+    rounded ? "r_max" : "",
+    "e_blur:1200",
+    `l_text:Arial_${fontSize}_bold:${label},co_white,g_center`,
+    "fl_layer_apply",
+  ].filter(Boolean);
+  return `https://res.cloudinary.com/dfmetzhrk/image/upload/${transforms.join("/")}/${baseImage}`;
+}
+
+function cloudinaryText(value) {
+  return encodeURIComponent(
+    String(value || "Movie")
+      .replace(/[^a-z0-9 ]+/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 32) || "Movie",
+  );
 }
 
 function initials(value) {
-  return String(value || "Cast")
-    .split(/\s+/)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function escapeXml(value) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return (
+    String(value || "Cast")
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "C"
+  );
 }
 
 export { castAvatarFallback, movieImageFallback, normalizeImageUrl, normalizeMovieMedia };
