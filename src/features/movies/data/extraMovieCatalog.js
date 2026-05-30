@@ -589,7 +589,7 @@ const extraComingSoonMovieSeeds = [
     "Telugu",
     "2026-09-11",
   ),
-];
+].filter(hasPublicMovieTitle);
 
 const extraReleasedMovies = uniqueByTitle(extraReleasedSeeds).map(buildReleasedMovie);
 
@@ -714,6 +714,10 @@ function normalizeKey(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase();
+}
+
+function hasPublicMovieTitle(item) {
+  return !/\bfilm$/i.test(String(item?.title ?? "").trim());
 }
 
 export { extraComingSoonMovieSeeds, extraReleasedMovies };

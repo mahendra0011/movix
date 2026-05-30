@@ -1951,9 +1951,9 @@ const realMovieMedia = {
   },
   "raid-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135295/movix/real-catalog/raid-2/raid-2-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780150648/movix/real-catalog/raid-2/raid-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135296/movix/real-catalog/raid-2/raid-2-backdrop.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780150648/movix/real-catalog/raid-2/raid-2-poster.jpg",
     cast: {
       "Ajay Devgn":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140885/movix/real-cast/ajay-devgn.jpg",
@@ -1973,9 +1973,9 @@ const realMovieMedia = {
   },
   "son-of-sardaar-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135298/movix/real-catalog/son-of-sardaar-2/son-of-sardaar-2-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780150650/movix/real-catalog/son-of-sardaar-2/son-of-sardaar-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135300/movix/real-catalog/son-of-sardaar-2/son-of-sardaar-2-backdrop.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780150650/movix/real-catalog/son-of-sardaar-2/son-of-sardaar-2-poster.jpg",
     cast: {
       "Ajay Devgn":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140885/movix/real-cast/ajay-devgn.jpg",
@@ -1995,9 +1995,9 @@ const realMovieMedia = {
   },
   "de-de-pyaar-de-2": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135300/movix/real-catalog/de-de-pyaar-de-2/de-de-pyaar-de-2-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780150651/movix/real-catalog/de-de-pyaar-de-2/de-de-pyaar-de-2-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135301/movix/real-catalog/de-de-pyaar-de-2/de-de-pyaar-de-2-backdrop.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780150651/movix/real-catalog/de-de-pyaar-de-2/de-de-pyaar-de-2-poster.jpg",
     cast: {
       "Ajay Devgn":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140885/movix/real-cast/ajay-devgn.jpg",
@@ -3409,9 +3409,9 @@ const realMovieMedia = {
   },
   "scary-movie-6": {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135396/movix/real-catalog/scary-movie-6/scary-movie-6-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780159667/movix/real-catalog/scary-movie-6/scary-movie-6-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135397/movix/real-catalog/scary-movie-6/scary-movie-6-backdrop.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780159667/movix/real-catalog/scary-movie-6/scary-movie-6-poster.jpg",
     cast: {
       "Regina Hall": "",
       "Anna Faris": "",
@@ -4189,9 +4189,9 @@ const realMovieMedia = {
   },
   peddi: {
     poster:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135504/movix/real-catalog/peddi/peddi-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780156462/movix/real-catalog/peddi/peddi-poster.jpg",
     backdrop:
-      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780135504/movix/real-catalog/peddi/peddi-poster.jpg",
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780156462/movix/real-catalog/peddi/peddi-poster.jpg",
     cast: {
       "Ram Charan":
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141045/movix/real-cast/ram-charan.jpg",
