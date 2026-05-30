@@ -4400,6 +4400,42 @@ const realMovieMedia = {
         "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
     },
   },
+  "maa-behen": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173216/movix/verified-posters/maa-behen/maa-behen-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173218/movix/verified-posters/maa-behen/maa-behen-backdrop.jpg",
+  },
+  bandar: {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173220/movix/verified-posters/bandar/bandar-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173221/movix/verified-posters/bandar/bandar-backdrop.jpg",
+  },
+  "hai-jawani-toh-ishq-hona-hai": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173222/movix/verified-posters/hai-jawani-toh-ishq-hona-hai/hai-jawani-toh-ishq-hona-hai-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173224/movix/verified-posters/hai-jawani-toh-ishq-hona-hai/hai-jawani-toh-ishq-hona-hai-backdrop.jpg",
+  },
+  "governor-the-silent-saviour": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173225/movix/verified-posters/governor-the-silent-saviour/governor-the-silent-saviour-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173226/movix/verified-posters/governor-the-silent-saviour/governor-the-silent-saviour-backdrop.jpg",
+  },
+  vrushakarma: {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173227/movix/verified-posters/vrushakarma/vrushakarma-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173228/movix/verified-posters/vrushakarma/vrushakarma-backdrop.jpg",
+  },
+  "cocktail-2": {
+    poster:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173229/movix/verified-posters/cocktail-2/cocktail-2-poster.jpg",
+    backdrop:
+      "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780173230/movix/verified-posters/cocktail-2/cocktail-2-backdrop.jpg",
+  },
 };
 
 const movieMediaAliases = {
@@ -4427,11 +4463,15 @@ function getRealMovieMedia(movieId) {
 }
 
 function getRealCastAvatar(movieId, name) {
-  return realMovieMedia[resolveMovieMediaId(movieId)]?.cast?.[name] ?? "";
+  return (
+    realMovieMedia[movieId]?.cast?.[name] ??
+    realMovieMedia[movieMediaAliases[movieId]]?.cast?.[name] ??
+    ""
+  );
 }
 
 function resolveMovieMediaId(movieId) {
-  return movieMediaAliases[movieId] || movieId;
+  return realMovieMedia[movieId] ? movieId : movieMediaAliases[movieId] || movieId;
 }
 
 function isReusableMovieImage(value) {
