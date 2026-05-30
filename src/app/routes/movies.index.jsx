@@ -132,15 +132,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
     ],
     [cityListedMovies],
   );
-  const visibleCategories = useMemo(
-    () =>
-      categoryOrder.filter(
-        (category) =>
-          category === allFilterValue ||
-          cityListedMovies.some((movie) => categorizeMovie(movie) === category),
-      ),
-    [cityListedMovies],
-  );
+  const visibleCategories = categoryOrder;
   const filteredMovies = useMemo(() => {
     const needle = searchTerm.trim().toLowerCase();
     const filtered = cityListedMovies.filter((movie) => {

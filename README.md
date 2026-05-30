@@ -100,6 +100,8 @@ In `NODE_ENV=production`, the API refuses to start without `CLIENT_ORIGIN`, `JWT
 
 Do not put `npm run web`, `npm run preview`, or any other command in Render's Publish Directory field. That field must be a folder path. For this project, use `dist`.
 
+Do not use `HOST=0.0.0.0 npm run start:web` in Render for the frontend. Render Static Site does not need a start command, and Render's command validator rejects shell-style environment assignments with `=`.
+
 ## Full-stack features
 
 - JWT register/login, email OTP verification, and forgot-password OTP reset
