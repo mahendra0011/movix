@@ -17,6 +17,7 @@ import {
 } from "../../src/features/movies/services/showSchedule.js";
 import {
   isFallbackMovieArtwork,
+  isGeneratedImageUrl,
   normalizeCastImageUrl,
   normalizeMovieImageUrl,
 } from "../../src/features/movies/services/movieMedia.js";
@@ -422,7 +423,7 @@ function mergeComingSoonMovie(current = {}, next = {}, key) {
     isFallbackMovieArtwork(next.poster) && current.poster ? current.poster : next.poster;
   const backdrop =
     isFallbackMovieArtwork(next.backdrop) && current.backdrop ? current.backdrop : next.backdrop;
-  const cast = (current.cast ?? []).length ? current.cast : next.cast;
+  const cast = selectBestCast(current.cast, next.cast);
 
   return {
     ...current,
@@ -434,16 +435,30 @@ function mergeComingSoonMovie(current = {}, next = {}, key) {
   };
 }
 
+function selectBestCast(current = [], next = []) {
+  const currentCast = verifiedCastList(current);
+  const nextCast = verifiedCastList(next);
+  return nextCast.length >= currentCast.length ? nextCast : currentCast;
+}
+
+function verifiedCastList(cast = []) {
+  return (Array.isArray(cast) ? cast : []).filter(
+    (member) => member?.avatar && !isGeneratedImageUrl(member.avatar),
+  );
+}
+
 function normalizeCastList(cast = []) {
   if (!Array.isArray(cast)) return [];
   return cast
     .map((member) => {
       const name = String(member?.name ?? member ?? "").trim();
       if (!name) return null;
+      const avatar = normalizeCastImageUrl(member?.avatar, name);
+      if (isGeneratedImageUrl(avatar)) return null;
       return {
         name,
         role: String(member?.role ?? "Actor").trim() || "Actor",
-        avatar: normalizeCastImageUrl(member?.avatar, name),
+        avatar,
       };
     })
     .filter(Boolean)

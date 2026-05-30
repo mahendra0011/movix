@@ -18,6 +18,7 @@ import {
 import { comingSoonMovies as fallbackMovies } from "@/features/movies/data/movieCatalog";
 import {
   castAvatarFallback,
+  isGeneratedImageUrl,
   movieImageFallback,
   normalizeCastImageUrl,
   normalizeMovieImageUrl,
@@ -35,41 +36,6 @@ const bundledComingSoonById = new Map(
         .map((key) => [normalizeLookupKey(key), movie]),
     ),
 );
-
-const castPools = {
-  Hindi: [
-    "Deepika Padukone",
-    "Amitabh Bachchan",
-    "Kiara Advani",
-    "Rajkummar Rao",
-    "Nawazuddin Siddiqui",
-    "Triptii Dimri",
-  ],
-  Telugu: [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Adivi Sesh",
-  ],
-  Tamil: [
-    "Vijay Sethupathi",
-    "Nayanthara",
-    "Trisha Krishnan",
-    "Karthi",
-    "Sivakarthikeyan",
-    "Prakash Raj",
-  ],
-  English: [
-    "Chris Pratt",
-    "Florence Pugh",
-    "Anya Taylor-Joy",
-    "John Boyega",
-    "Rebecca Ferguson",
-    "Oscar Isaac",
-  ],
-};
 
 const Route = createFileRoute("/coming-soon_/$id")({
   loader: async ({ params }) => {
@@ -249,11 +215,20 @@ function ComingSoonDetailPage() {
               {castMembers.length} members
             </span>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-            {castMembers.map((member) => (
-              <CastCard key={`${member.name}-${member.role}`} member={member} />
-            ))}
-          </div>
+          {castMembers.length ? (
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+              {castMembers.map((member) => (
+                <CastCard key={`${member.name}-${member.role}`} member={member} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4 rounded-lg border border-dashed border-border/70 bg-card p-6">
+              <p className="text-sm font-semibold">Cast announcement pending</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Verified cast photos will appear here after the distributor confirms them.
+              </p>
+            </div>
+          )}
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
@@ -430,18 +405,9 @@ function normalizeComingSoonMovie(movie) {
 
 function getSixCastMembers(movie) {
   const bundled = findBundledComingSoonMovie(movie);
-  const pool = castPools[movie.language] ?? castPools.English;
   const cast = uniqueCast([...(movie.cast ?? []), ...(bundled?.cast ?? [])]);
-  const castByName = new Map(cast.map((member) => [normalizeText(member.name), member]));
 
-  pool.forEach((name) => {
-    const key = normalizeText(name);
-    if (!castByName.has(key)) {
-      castByName.set(key, { name, role: "Cast", avatar: castAvatarFallback(name) });
-    }
-  });
-
-  return [...castByName.values()]
+  return cast
     .filter((member) => member.name)
     .slice(0, 6)
     .map((member, index) => ({
@@ -462,6 +428,7 @@ function uniqueCast(list = []) {
     .filter((member) => {
       const key = normalizeText(member.name);
       if (!key || seen.has(key)) return false;
+      if (!member.avatar || isGeneratedImageUrl(member.avatar)) return false;
       seen.add(key);
       return true;
     });
