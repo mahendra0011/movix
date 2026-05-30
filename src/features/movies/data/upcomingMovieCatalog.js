@@ -753,87 +753,7 @@ const movieSeeds = [
 
 const TARGET_CAST_COUNT = 7;
 
-const castPools = {
-  Hindi: [
-    "Deepika Padukone",
-    "Amitabh Bachchan",
-    "Kiara Advani",
-    "Rajkummar Rao",
-    "Nawazuddin Siddiqui",
-    "Triptii Dimri",
-    "R Madhavan",
-    "Tabu",
-    "Jaideep Ahlawat",
-  ],
-  Telugu: [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Brahmanandam",
-    "Adivi Sesh",
-    "Sreeleela",
-    "Nassar",
-  ],
-  Tamil: [
-    "Vijay Sethupathi",
-    "Nayanthara",
-    "Trisha Krishnan",
-    "Karthi",
-    "Sivakarthikeyan",
-    "Aishwarya Rajesh",
-    "Prakash Raj",
-    "Dhanush",
-    "Anirudh Ravichander",
-  ],
-  Kannada: [
-    "Rishab Shetty",
-    "Rakshit Shetty",
-    "Sudeep",
-    "Rukmini Vasanth",
-    "Prakash Raj",
-    "Achyuth Kumar",
-    "Sapthami Gowda",
-    "Sriimurali",
-    "Dhananjaya",
-  ],
-  Malayalam: [
-    "Fahadh Faasil",
-    "Prithviraj Sukumaran",
-    "Manju Warrier",
-    "Tovino Thomas",
-    "Dulquer Salmaan",
-    "Aparna Balamurali",
-    "Soubin Shahir",
-    "Parvathy Thiruvothu",
-    "Indrajith Sukumaran",
-  ],
-  Japanese: [
-    "Ryunosuke Kamiki",
-    "Minami Hamabe",
-    "Hidetaka Yoshioka",
-    "Sakura Ando",
-    "Yuki Yamada",
-    "Munetaka Aoki",
-    "Kuranosuke Sasaki",
-    "Kaho",
-    "Masaki Suda",
-  ],
-  English: [
-    "Chris Pratt",
-    "Florence Pugh",
-    "Anya Taylor-Joy",
-    "John Boyega",
-    "Rebecca Ferguson",
-    "Oscar Isaac",
-    "Vanessa Kirby",
-    "Dev Patel",
-    "Jenna Ortega",
-  ],
-};
-
-const upcomingMovies = uniqueByTitle(movieSeeds).map(buildMovie);
+const upcomingMovies = uniqueByTitle(movieSeeds.filter(hasPublicMovieTitle)).map(buildMovie);
 const upcomingMovieIds = upcomingMovies.map((movie) => movie.id);
 
 function m(title, cast, industry, genres, language, releaseDate, options = {}) {
@@ -870,10 +790,10 @@ function buildMovie(seed, index) {
 }
 
 function expandCast(seed) {
-  const pool = castPools[seed.language] ?? castPools.English;
-  const names = uniqueNames(seed.cast.filter((name) => normalizeKey(name) !== "official cast"));
-  const source = names.length ? names : pool.slice(0, 2);
-  return uniqueNames([...source, ...pool]).slice(0, TARGET_CAST_COUNT);
+  const names = uniqueNames(
+    (seed.cast ?? []).filter((name) => normalizeKey(name) !== "official cast"),
+  );
+  return names.slice(0, TARGET_CAST_COUNT);
 }
 
 function uniqueNames(list) {
@@ -894,6 +814,18 @@ function uniqueByTitle(list) {
     seen.add(key);
     return true;
   });
+}
+
+function hasPublicMovieTitle(seed) {
+  const title = String(seed?.title ?? "").trim();
+  if (!title) return false;
+  return ![
+    /\bfilm$/i,
+    /\bfollow-up$/i,
+    /\bprequel\/sequel$/i,
+    /\b(?:live action )?reboot$/i,
+    /\bprequel project$/i,
+  ].some((pattern) => pattern.test(title));
 }
 
 function formatsFor(seed) {

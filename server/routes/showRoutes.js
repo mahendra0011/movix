@@ -26,6 +26,26 @@ const catalogMovieIds = catalogMovies.map((movie) => movie.id);
 const catalogMovieIdSet = new Set(catalogMovieIds);
 const catalogMovieById = new Map(catalogMovies.map((movie) => [movie.id, movie]));
 const comingSoonMovieById = new Map(comingSoonMovies.map((movie) => [movie.id, movie]));
+const comingSoonTitleCorrections = new Map(
+  [
+    ["Madhuri Dixit & Tripti Dimri Film", "Maa Behen"],
+    ["Madhuri Dixit & Triptii Dimri Film", "Maa Behen"],
+    ["Bobby Deol Film", "Bandar"],
+    ["Varun Dhawan & Pooja Hegde Film", "Hai Jawani Toh Ishq Hona Hai"],
+    ["Diljit Dosanjh & Sharvari Film", "Main Vaapas Aaunga"],
+    ["Manoj Bajpayee & Adah Sharma Film", "Governor: The Silent Saviour"],
+    ["Anurag Kashyap Film", "Bandar"],
+    ["Shahid Kapoor & Rashmika Mandanna Film", "Cocktail 2"],
+    ["Satya Dev Film", "Rao Bahadur"],
+    ["Naga Chaitanya & Meenakshi Chaudhary Film", "Vrushakarma"],
+    ["Fahadh Faasil Film", "Don't Trouble The Trouble"],
+    ["Fahadh Faasil Telugu Film", "Don't Trouble The Trouble"],
+    ["Ashok Galla Film", "VISA - Vintara Saradaga"],
+  ].flatMap(([from, to]) => [
+    [normalizeText(from), to],
+    [slugify(from), to],
+  ]),
+);
 
 function generatedShows(movieId, city = "", activeDate = "") {
   if (!catalogMovieIdSet.has(movieId)) return [];
@@ -204,37 +224,39 @@ function generatedComingSoonMovies(city = "") {
   const theaters = matchingTheaters.length ? matchingTheaters : catalogTheaters.slice(0, 8);
   const cityNames = uniqueList(theaters.map((theater) => theater.city).filter(Boolean));
 
-  return comingSoonMovies.map((movie, index) => {
-    const releaseAt = resolveCatalogReleaseAt(movie, index);
-    const visibleTheaters = rotateList(theaters, index).slice(0, 3);
-    const poster = normalizeMovieImageUrl(movie.poster, movie.title, "poster");
-    const backdrop = normalizeMovieImageUrl(movie.backdrop, movie.title, "backdrop", poster);
-    return {
-      id: `coming-soon-${movie.id}`,
-      movieId: movie.id,
-      title: movie.title,
-      poster,
-      backdrop,
-      duration: movie.duration || "",
-      genres: movie.genres ?? [],
-      language: movie.language || "English",
-      languages: splitCatalogList((movie.languages ?? movie.language) || "English"),
-      format: movie.format ?? ["2D"],
-      formats: splitCatalogList(movie.format ?? ["2D"]),
-      certificate: movie.certificate || "UA",
-      rating: movie.rating,
-      votes: movie.votes || `${120 + index * 37}K`,
-      cast: normalizeCastList(movie.cast),
-      releaseAt,
-      releaseDate: displayCatalogReleaseDate(movie.releaseDate, releaseAt),
-      monthBucket: formatReleaseMonth(releaseAt),
-      description: movie.description || "",
-      category: categorizeComingSoonMovie(movie),
-      cities: cityFilter ? [city] : cityNames.slice(0, 6),
-      theaters: visibleTheaters.map((theater) => theater.name),
-      listings: visibleTheaters.length,
-    };
-  });
+  return comingSoonMovies
+    .filter((movie) => hasPublicMovieTitle(movie.title))
+    .map((movie, index) => {
+      const releaseAt = resolveCatalogReleaseAt(movie, index);
+      const visibleTheaters = rotateList(theaters, index).slice(0, 3);
+      const poster = normalizeMovieImageUrl(movie.poster, movie.title, "poster");
+      const backdrop = normalizeMovieImageUrl(movie.backdrop, movie.title, "backdrop", poster);
+      return {
+        id: `coming-soon-${movie.id}`,
+        movieId: movie.id,
+        title: movie.title,
+        poster,
+        backdrop,
+        duration: movie.duration || "",
+        genres: movie.genres ?? [],
+        language: movie.language || "English",
+        languages: splitCatalogList((movie.languages ?? movie.language) || "English"),
+        format: movie.format ?? ["2D"],
+        formats: splitCatalogList(movie.format ?? ["2D"]),
+        certificate: movie.certificate || "UA",
+        rating: movie.rating,
+        votes: movie.votes || `${120 + index * 37}K`,
+        cast: normalizeCastList(movie.cast),
+        releaseAt,
+        releaseDate: displayCatalogReleaseDate(movie.releaseDate, releaseAt),
+        monthBucket: formatReleaseMonth(releaseAt),
+        description: movie.description || "",
+        category: categorizeComingSoonMovie(movie),
+        cities: cityFilter ? [city] : cityNames.slice(0, 6),
+        theaters: visibleTheaters.map((theater) => theater.name),
+        listings: visibleTheaters.length,
+      };
+    });
 }
 
 function groupComingSoonShows(shows, theaterById) {
@@ -244,13 +266,26 @@ function groupComingSoonShows(shows, theaterById) {
     const theater = theaterById.get(show.theaterId);
     if (!theater) return;
 
-    const key = show.movieId || slugify(show.movie);
+    const rawKey = show.movieId || slugify(show.movie);
+    const initialCatalogMovie = comingSoonMovieById.get(rawKey) ?? catalogMovieById.get(rawKey);
+    const correctedTitle = correctComingSoonTitle(
+      show.movie || initialCatalogMovie?.title || show.movieId,
+    );
+    if (!hasPublicMovieTitle(correctedTitle)) return;
+
+    const correctedKey = slugify(correctedTitle);
+    const key =
+      correctedTitle !==
+      String(show.movie || initialCatalogMovie?.title || show.movieId || "").trim()
+        ? correctedKey
+        : rawKey;
     if (!key) return;
-    const catalogMovie = comingSoonMovieById.get(key) ?? catalogMovieById.get(key);
+    const catalogMovie =
+      comingSoonMovieById.get(key) ?? catalogMovieById.get(key) ?? initialCatalogMovie;
 
     if (!groups.has(key)) {
       const releaseAt = normalizeDateInput(show.date || show.releaseDate);
-      const title = show.movie || catalogMovie?.title || show.movieId;
+      const title = correctedTitle || catalogMovie?.title || show.movieId;
       const poster = normalizeMovieImageUrl(show.poster || catalogMovie?.poster, title, "poster");
       const backdrop = normalizeMovieImageUrl(
         show.backdrop || show.poster || catalogMovie?.backdrop,
@@ -343,7 +378,7 @@ function mergeComingSoonMovie(current = {}, next = {}, key) {
     isFallbackMovieArtwork(next.poster) && current.poster ? current.poster : next.poster;
   const backdrop =
     isFallbackMovieArtwork(next.backdrop) && current.backdrop ? current.backdrop : next.backdrop;
-  const cast = (next.cast ?? []).length >= (current.cast ?? []).length ? next.cast : current.cast;
+  const cast = (current.cast ?? []).length ? current.cast : next.cast;
 
   return {
     ...current,
@@ -513,6 +548,20 @@ function normalizeText(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase();
+}
+
+function correctComingSoonTitle(value) {
+  const title = String(value ?? "").trim();
+  return (
+    comingSoonTitleCorrections.get(normalizeText(title)) ||
+    comingSoonTitleCorrections.get(slugify(title)) ||
+    title
+  );
+}
+
+function hasPublicMovieTitle(value) {
+  const title = String(value ?? "").trim();
+  return Boolean(title) && !/\bfilm$/i.test(title);
 }
 
 function slugify(value) {

@@ -74,16 +74,12 @@ const latestMovieSeeds = [
     "Zendaya",
   ]),
   seed(7, "The Backrooms", "Hollywood", "English", ["Horror", "Sci-Fi"], "2026", ["Kane Parsons"]),
-  seed(
-    8,
-    "Christopher Nolan's New Film",
-    "Hollywood",
-    "English",
-    ["Drama", "Adventure"],
-    "Jul 17, 2026",
-    ["Matt Damon"],
-    { skipWikiPoster: true },
-  ),
+  seed(8, "The Odyssey", "Hollywood", "English", ["Epic", "Adventure", "Drama"], "Jul 17, 2026", [
+    "Matt Damon",
+    "Tom Holland",
+    "Anne Hathaway",
+    "Zendaya",
+  ]),
   seed(9, "Greenland 2: Migration", "Hollywood", "English", ["Action", "Thriller"], "Jan 2026", [
     "Gerard Butler",
     "Morena Baccarin",
@@ -201,36 +197,17 @@ const latestMovieSeeds = [
     "Jun 4, 2026",
     ["Yash", "Kiara Advani"],
   ),
-  seed(
-    35,
-    "Singham / Akshay Kumar Film",
-    "Bollywood",
-    "Hindi",
-    ["Action"],
-    "Jun 26, 2026",
-    ["Akshay Kumar", "Suniel Shetty"],
-    { skipWikiPoster: true },
-  ),
-  seed(
-    36,
-    "Shahid Kapoor & Rashmika Mandanna Film",
-    "Bollywood",
-    "Hindi",
-    ["Action", "Drama"],
-    "Jun 19, 2026",
-    ["Shahid Kapoor", "Rashmika Mandanna"],
-    { skipWikiPoster: true },
-  ),
-  seed(
-    37,
-    "Bobby Deol Film",
-    "Bollywood",
-    "Hindi",
-    ["Action", "Drama"],
-    "Jun 5, 2026",
-    ["Bobby Deol", "Saba Azad"],
-    { skipWikiPoster: true },
-  ),
+  seed(36, "Cocktail 2", "Bollywood", "Hindi", ["Romance", "Comedy", "Drama"], "Jun 19, 2026", [
+    "Shahid Kapoor",
+    "Rashmika Mandanna",
+    "Kriti Sanon",
+  ]),
+  seed(37, "Bandar", "Bollywood", "Hindi", ["Crime", "Drama"], "Jun 5, 2026", [
+    "Bobby Deol",
+    "Sanya Malhotra",
+    "Sapna Pabbi",
+    "Saba Azad",
+  ]),
   seed(38, "Love and War", "Bollywood", "Hindi", ["Drama", "Romance"], "Mar 20, 2026", [
     "Ranbir Kapoor",
     "Alia Bhatt",
@@ -254,55 +231,35 @@ const latestMovieSeeds = [
     "Sanjay Mishra",
     "Neena Gupta",
   ]),
-  seed(
-    44,
-    "Diljit Dosanjh & Sharvari Film",
-    "Bollywood",
-    "Hindi",
-    ["Drama", "Romance"],
-    "Jun 12, 2026",
-    ["Diljit Dosanjh", "Sharvari"],
-    { skipWikiPoster: true },
-  ),
+  seed(44, "Main Vaapas Aaunga", "Bollywood", "Hindi", ["Drama", "Romance"], "Jun 12, 2026", [
+    "Diljit Dosanjh",
+    "Sharvari",
+    "Naseeruddin Shah",
+    "Vedang Raina",
+  ]),
   seed(
     45,
-    "Varun Dhawan & Pooja Hegde Film",
+    "Hai Jawani Toh Ishq Hona Hai",
     "Bollywood",
     "Hindi",
-    ["Drama", "Romance"],
+    ["Comedy", "Romance"],
     "Jun 5, 2026",
-    ["Varun Dhawan", "Pooja Hegde"],
-    { skipWikiPoster: true },
+    ["Varun Dhawan", "Mrunal Thakur", "Pooja Hegde"],
   ),
-  seed(
-    46,
-    "Madhuri Dixit & Tripti Dimri Film",
-    "Bollywood",
-    "Hindi",
-    ["Drama"],
-    "Jun 4, 2026",
-    ["Madhuri Dixit", "Triptii Dimri"],
-    { skipWikiPoster: true },
-  ),
+  seed(46, "Maa Behen", "Bollywood", "Hindi", ["Comedy", "Crime"], "Jun 4, 2026", [
+    "Madhuri Dixit",
+    "Triptii Dimri",
+    "Dharna Durgaa",
+    "Ravi Kishan",
+  ]),
   seed(
     47,
-    "Manoj Bajpayee & Adah Sharma Film",
-    "Bollywood",
-    "Hindi",
-    ["Drama"],
-    "Jun 12, 2026",
-    ["Manoj Bajpayee", "Adah Sharma"],
-    { skipWikiPoster: true },
-  ),
-  seed(
-    48,
-    "Anurag Kashyap Film",
+    "Governor: The Silent Saviour",
     "Bollywood",
     "Hindi",
     ["Drama", "Thriller"],
-    "2026",
-    ["Gagan Ahuja", "Saba Azad"],
-    { skipWikiPoster: true },
+    "Jun 12, 2026",
+    ["Manoj Bajpayee", "Adah Sharma"],
   ),
   seed(49, "Ramayan (Part 1)", "Bollywood", "Hindi", ["History", "Mythology", "Drama"], "2026", [
     "Ranbir Kapoor",
@@ -350,34 +307,26 @@ const latestMovieSeeds = [
   ]),
   seed(
     62,
-    "Fahadh Faasil Film",
+    "Don't Trouble The Trouble",
     "Tollywood",
     "Telugu",
-    ["Action", "Thriller"],
+    ["Drama", "Fantasy"],
     "Jun 12, 2026",
     ["Fahadh Faasil"],
-    { skipWikiPoster: true },
   ),
   seed(
     63,
-    "Ashok Galla Film",
+    "VISA - Vintara Saradaga",
     "Tollywood",
     "Telugu",
-    ["Action", "Drama"],
+    ["Comedy", "Romance"],
     "Jun 12, 2026",
     ["Ashok Galla", "Sri Gouri Priya Reddy"],
-    { skipWikiPoster: true },
   ),
-  seed(
-    64,
-    "Satya Dev Film",
-    "Tollywood",
-    "Telugu",
-    ["Action", "Drama"],
-    "Jun 5, 2026",
-    ["Satya Dev", "Vikas Muppala"],
-    { skipWikiPoster: true },
-  ),
+  seed(64, "Rao Bahadur", "Tollywood", "Telugu", ["Comedy", "Fantasy"], "Jun 5, 2026", [
+    "Satya Dev",
+    "Vikas Muppala",
+  ]),
   seed(65, "Swayambhu", "Tollywood", "Telugu", ["Mythological", "Action"], "2026", [
     "Nikhil Siddhartha",
   ]),
@@ -403,17 +352,16 @@ const latestMovieSeeds = [
   seed(72, "Ugly Story", "Tollywood", "Telugu", ["Drama", "Thriller"], "May 2026", []),
   seed(
     73,
-    "Naga Chaitanya & Meenakshi Chaudhary Film",
+    "Vrushakarma",
     "Tollywood",
     "Telugu",
-    ["Drama", "Romance"],
+    ["Action", "Adventure", "Thriller"],
     "Jun 12, 2026",
     ["Naga Chaitanya", "Meenakshi Chaudhary"],
-    { skipWikiPoster: true },
   ),
   seed(74, "The Paradise", "Tollywood", "Telugu", ["Fantasy", "Drama"], "2026", ["Nani"]),
   seed(75, "Gaaya Padda Simham", "Tollywood", "Telugu", ["Action", "Drama"], "2026", []),
-];
+].filter(hasPublicMovieTitle);
 
 if (!mongoUri) {
   throw new Error("MONGODB_URI is required to seed latest movies.");
@@ -457,6 +405,10 @@ await mongoose.disconnect();
 
 function seed(number, title, industry, language, genres, releaseDate, cast, options = {}) {
   return { number, title, industry, language, genres, releaseDate, cast, ...options };
+}
+
+function hasPublicMovieTitle(seedItem) {
+  return !/\bfilm$/i.test(String(seedItem?.title ?? "").trim());
 }
 
 async function buildMoviePayload(seedItem, index) {
