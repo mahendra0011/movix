@@ -15,7 +15,10 @@ import {
   splitCatalogList,
   theaterHasMovie,
 } from "../../src/features/movies/services/showSchedule.js";
-import { castAvatarFallback } from "../../src/features/movies/services/movieMedia.js";
+import {
+  normalizeCastImageUrl,
+  normalizeMovieImageUrl,
+} from "../../src/features/movies/services/movieMedia.js";
 
 const router = Router();
 const catalogMovieIds = catalogMovies.map((movie) => movie.id);
@@ -203,12 +206,14 @@ function generatedComingSoonMovies(city = "") {
   return comingSoonMovies.map((movie, index) => {
     const releaseAt = resolveCatalogReleaseAt(movie, index);
     const visibleTheaters = rotateList(theaters, index).slice(0, 3);
+    const poster = normalizeMovieImageUrl(movie.poster, movie.title, "poster");
+    const backdrop = normalizeMovieImageUrl(movie.backdrop, movie.title, "backdrop", poster);
     return {
       id: `coming-soon-${movie.id}`,
       movieId: movie.id,
       title: movie.title,
-      poster: movie.poster || "",
-      backdrop: movie.backdrop || "",
+      poster,
+      backdrop,
       duration: movie.duration || "",
       genres: movie.genres ?? [],
       language: movie.language || "English",
@@ -244,12 +249,20 @@ function groupComingSoonShows(shows, theaterById) {
 
     if (!groups.has(key)) {
       const releaseAt = normalizeDateInput(show.date || show.releaseDate);
+      const title = show.movie || catalogMovie?.title || show.movieId;
+      const poster = normalizeMovieImageUrl(show.poster || catalogMovie?.poster, title, "poster");
+      const backdrop = normalizeMovieImageUrl(
+        show.backdrop || show.poster || catalogMovie?.backdrop,
+        title,
+        "backdrop",
+        poster,
+      );
       groups.set(key, {
         id: `coming-soon-${key}`,
         movieId: key,
-        title: show.movie || catalogMovie?.title || show.movieId,
-        poster: show.poster || catalogMovie?.poster || "",
-        backdrop: show.backdrop || show.poster || catalogMovie?.backdrop || "",
+        title,
+        poster,
+        backdrop,
         duration: show.duration || catalogMovie?.duration || "",
         genres: new Set(
           splitCatalogList(show.genres).length
@@ -329,7 +342,7 @@ function normalizeCastList(cast = []) {
       return {
         name,
         role: String(member?.role ?? "Actor").trim() || "Actor",
-        avatar: String(member?.avatar ?? "").trim() || castAvatarFallback(name),
+        avatar: normalizeCastImageUrl(member?.avatar, name),
       };
     })
     .filter(Boolean)

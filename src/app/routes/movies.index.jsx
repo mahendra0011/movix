@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
 import { movies as fallbackMovies, theaters } from "@/features/movies/data/movieCatalog";
-import { movieImageFallback } from "@/features/movies/services/movieMedia";
+import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { requestJson } from "@/shared/services/httpClient";
@@ -224,7 +224,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
           {bannerMovies.map((movie, index) => (
             <img
               key={movie.id}
-              src={movie.backdrop || movie.poster || movieImageFallback(movie.title, "backdrop")}
+              src={normalizeMovieImageUrl(movie.backdrop || movie.poster, movie.title, "backdrop")}
               alt=""
               className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${
                 index === activeSlide % bannerMovies.length
@@ -280,7 +280,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
             >
               <div className="relative">
                 <img
-                  src={featured.poster || movieImageFallback(featured.title, "poster")}
+                  src={normalizeMovieImageUrl(featured.poster, featured.title, "poster")}
                   alt={featured.title}
                   className="aspect-[2/3] w-full rounded-md object-cover"
                   onError={(event) => {
@@ -544,7 +544,7 @@ function MovieListingCard({ movie }) {
     >
       <div className="relative aspect-[2/3] overflow-hidden bg-muted">
         <img
-          src={movie.poster || movieImageFallback(movie.title, "poster")}
+          src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
           alt={movie.title}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"

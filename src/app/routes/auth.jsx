@@ -27,7 +27,7 @@ import {
 } from "@/features/auth/api/authApi";
 import { hydrateAuth, logout, readStoredAuth, setCredentials } from "@/features/auth/authSlice";
 import { comingSoonMovies, movies } from "@/features/movies/data/movieCatalog";
-import { movieImageFallback } from "@/features/movies/services/movieMedia";
+import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 
@@ -276,7 +276,11 @@ function AuthPage() {
   return (
     <div className="relative min-h-[calc(100vh-190px)] overflow-hidden">
       <img
-        src={authMovie.backdrop || movieImageFallback(authMovie.title, "backdrop")}
+        src={normalizeMovieImageUrl(
+          authMovie.backdrop || authMovie.poster,
+          authMovie.title,
+          "backdrop",
+        )}
         alt={authMovie.title}
         className="absolute inset-0 h-full w-full object-cover"
         onError={(event) => {
@@ -309,7 +313,7 @@ function AuthPage() {
           <div className="mt-8 max-w-xl rounded-lg border border-border/60 bg-background/50 p-4 backdrop-blur">
             <div className="flex items-center gap-3">
               <img
-                src={authMovie.poster || movieImageFallback(authMovie.title, "poster")}
+                src={normalizeMovieImageUrl(authMovie.poster, authMovie.title, "poster")}
                 alt={authMovie.title}
                 className="h-20 w-14 rounded-md object-cover"
                 onError={(event) => {

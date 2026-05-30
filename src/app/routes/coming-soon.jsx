@@ -18,7 +18,11 @@ import {
   X,
 } from "lucide-react";
 import { comingSoonMovies as fallbackMovies } from "@/features/movies/data/movieCatalog";
-import { movieImageFallback, normalizeMovieMedia } from "@/features/movies/services/movieMedia";
+import {
+  movieImageFallback,
+  normalizeMovieImageUrl,
+  normalizeMovieMedia,
+} from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { requestJson } from "@/shared/services/httpClient";
@@ -223,7 +227,7 @@ function ComingSoonPage() {
           {bannerMovies.map((movie, index) => (
             <img
               key={movie.id}
-              src={movie.backdrop || movie.poster || movieImageFallback(movie.title, "backdrop")}
+              src={normalizeMovieImageUrl(movie.backdrop || movie.poster, movie.title, "backdrop")}
               alt=""
               className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${
                 index === activeSlide % bannerMovies.length
@@ -274,7 +278,7 @@ function ComingSoonPage() {
           <div className="hidden overflow-hidden rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8 lg:block">
             <div className="relative">
               <img
-                src={featured.poster || movieImageFallback(featured.title, "poster")}
+                src={normalizeMovieImageUrl(featured.poster, featured.title, "poster")}
                 alt={featured.title}
                 className="aspect-[2/3] w-full rounded-md object-cover"
                 onError={(event) => {
@@ -515,7 +519,7 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
       <div className="block">
         <div className="relative aspect-[2/3] overflow-hidden bg-muted">
           <img
-            src={movie.poster || movieImageFallback(movie.title, "poster")}
+            src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
             alt={movie.title}
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"

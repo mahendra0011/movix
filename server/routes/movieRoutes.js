@@ -12,8 +12,8 @@ import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
 import { notifyMovieRelease } from "../services/notificationEvents.js";
 import { movies } from "../../src/features/movies/data/movieCatalog.js";
 import {
-  castAvatarFallback,
-  movieImageFallback,
+  normalizeCastImageUrl,
+  normalizeMovieImageUrl,
 } from "../../src/features/movies/services/movieMedia.js";
 
 const router = Router();
@@ -55,13 +55,19 @@ function normalizeMovie(input) {
 
   const baseMovie = movies[0] ?? {};
   const id = slugify(input.id || title);
+  const poster = normalizeMovieImageUrl(input.poster || baseMovie.poster, title, "poster");
+  const backdrop = normalizeMovieImageUrl(
+    input.backdrop || input.poster || baseMovie.backdrop,
+    title,
+    "backdrop",
+    poster,
+  );
 
   return {
     id,
     title,
-    poster: input.poster || baseMovie.poster || movieImageFallback(title, "poster"),
-    backdrop:
-      input.backdrop || input.poster || baseMovie.backdrop || movieImageFallback(title, "backdrop"),
+    poster,
+    backdrop,
     genres: toList(input.genres, ["Drama"]),
     language: String(input.language ?? "English").trim() || "English",
     duration: String(input.duration ?? "2h 10m").trim() || "2h 10m",
@@ -87,7 +93,7 @@ function normalizeCastInput(cast = []) {
       return {
         name,
         role: String(member?.role ?? "Actor").trim() || "Actor",
-        avatar: String(member?.avatar ?? "").trim() || castAvatarFallback(name),
+        avatar: normalizeCastImageUrl(member?.avatar, name),
       };
     })
     .filter(Boolean)
@@ -140,11 +146,13 @@ function isPublicLiveShow(show) {
 
 function mapShowMovie(show) {
   const title = show.movie || show.movieId || "Movie";
+  const poster = normalizeMovieImageUrl(show.poster, title, "poster");
+  const backdrop = normalizeMovieImageUrl(show.backdrop || show.poster, title, "backdrop", poster);
   return {
     id: show.movieId || slugify(title),
     title,
-    poster: show.poster || movieImageFallback(title, "poster"),
-    backdrop: show.backdrop || show.poster || movieImageFallback(title, "backdrop"),
+    poster,
+    backdrop,
     genres: toList(show.genres, ["Drama"]),
     language: show.language || "English",
     duration: show.duration || "2h 10m",

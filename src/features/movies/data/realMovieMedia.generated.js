@@ -4405,7 +4405,13 @@ function getRealCastAvatar(movieId, name) {
 }
 
 function isReusableMovieImage(value) {
-  return isCloudinaryImage(value) && !isCastMediaImage(value);
+  const image = String(value || "");
+  return (
+    isCloudinaryImage(image) &&
+    !isCastMediaImage(image) &&
+    !image.includes("l_text:") &&
+    !image.startsWith("data:")
+  );
 }
 
 function isCloudinaryImage(value) {

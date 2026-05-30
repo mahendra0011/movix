@@ -9,8 +9,8 @@ import { isMongoReady } from "../services/database.js";
 import { ensureCloudinaryImageUrl } from "../services/cloudinaryService.js";
 import { notifyOwnerShowChanges } from "../services/notificationEvents.js";
 import {
-  castAvatarFallback,
-  movieImageFallback,
+  normalizeCastImageUrl,
+  normalizeMovieImageUrl,
 } from "../../src/features/movies/services/movieMedia.js";
 
 const router = Router();
@@ -367,11 +367,13 @@ function normalizeShows(input = [], context) {
     const vip = Number(show.pricing?.vip || platinum);
     const movieTitle = cleanText(show.movie) || cleanText(show.customTitle) || "Untitled show";
     const id = cleanText(show.id) || `${slugify(movieTitle)}-${Date.now()}-${index}`;
-    const poster = cleanText(show.poster) || movieImageFallback(movieTitle, "poster");
-    const backdrop =
-      cleanText(show.backdrop) ||
-      cleanText(show.poster) ||
-      movieImageFallback(movieTitle, "backdrop");
+    const poster = normalizeMovieImageUrl(cleanText(show.poster), movieTitle, "poster");
+    const backdrop = normalizeMovieImageUrl(
+      cleanText(show.backdrop) || cleanText(show.poster),
+      movieTitle,
+      "backdrop",
+      poster,
+    );
 
     return {
       id,
@@ -435,7 +437,7 @@ function normalizeCast(input = []) {
     .map((member) => ({
       name: cleanText(member?.name),
       role: cleanText(member?.role) || "Actor",
-      avatar: cleanText(member?.avatar) || castAvatarFallback(member?.name),
+      avatar: normalizeCastImageUrl(member?.avatar, member?.name),
     }))
     .filter((member) => member.name);
 }
@@ -447,25 +449,37 @@ async function ensureShowsUseCloudinary(shows, owner) {
     const folder = `movix/owners/${slugify(owner.email || owner._id)}/movies/${slugify(
       show.movieId || show.movie,
     )}`;
-    show.poster = await ensureCachedCloudinaryImage(show.poster, {
-      cache,
-      folder,
-      publicId: `${show.movieId || show.id}-poster`,
-    });
-    show.backdrop = await ensureCachedCloudinaryImage(show.backdrop, {
-      cache,
-      folder,
-      publicId: `${show.movieId || show.id}-backdrop`,
-    });
+    show.poster = normalizeMovieImageUrl(
+      await ensureCachedCloudinaryImage(show.poster, {
+        cache,
+        folder,
+        publicId: `${show.movieId || show.id}-poster`,
+      }),
+      show.movie,
+      "poster",
+    );
+    show.backdrop = normalizeMovieImageUrl(
+      await ensureCachedCloudinaryImage(show.backdrop, {
+        cache,
+        folder,
+        publicId: `${show.movieId || show.id}-backdrop`,
+      }),
+      show.movie,
+      "backdrop",
+      show.poster,
+    );
 
     show.cast = await Promise.all(
       (show.cast || []).map(async (member, index) => ({
         ...member,
-        avatar: await ensureCachedCloudinaryImage(member.avatar, {
-          cache,
-          folder: `${folder}/cast`,
-          publicId: `${show.movieId || show.id}-cast-${index + 1}`,
-        }),
+        avatar: normalizeCastImageUrl(
+          await ensureCachedCloudinaryImage(member.avatar, {
+            cache,
+            folder: `${folder}/cast`,
+            publicId: `${show.movieId || show.id}-cast-${index + 1}`,
+          }),
+          member.name,
+        ),
       })),
     );
   }

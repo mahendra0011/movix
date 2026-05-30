@@ -29,7 +29,11 @@ import {
   fetchMovies,
 } from "@/features/movies/api/moviesApi";
 import { movies as catalogMovies, theaters, showTimes } from "@/features/movies/data/movieCatalog";
-import { castAvatarFallback, movieImageFallback } from "@/features/movies/services/movieMedia";
+import {
+  castAvatarFallback,
+  movieImageFallback,
+  normalizeMovieImageUrl,
+} from "@/features/movies/services/movieMedia";
 import { buildCatalogTheaterListings } from "@/features/movies/services/showSchedule";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
@@ -269,7 +273,7 @@ function MoviePage() {
     <div className="pb-20">
       <section className="relative overflow-hidden border-b border-border/60 bg-background">
         <img
-          src={movie.backdrop || movieImageFallback(movie.title, "backdrop")}
+          src={normalizeMovieImageUrl(movie.backdrop || movie.poster, movie.title, "backdrop")}
           alt=""
           aria-hidden="true"
           className="absolute inset-y-0 right-0 h-full w-full object-cover opacity-20 md:w-[72%] md:opacity-25"
@@ -284,7 +288,7 @@ function MoviePage() {
           <div className="grid gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)_280px] lg:items-center">
             <div className="mx-auto w-full max-w-[220px] overflow-hidden rounded-lg border border-border/70 bg-card shadow-lg shadow-black/10 md:mx-0 md:max-w-none">
               <img
-                src={movie.poster || movieImageFallback(movie.title, "poster")}
+                src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
                 alt={movie.title}
                 className="aspect-[2/3] w-full object-cover"
                 onError={(event) => {
@@ -469,7 +473,7 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
 
       <OfferSlider />
 
-      <section>
+      <section aria-label="Cast" data-cast>
         <SectionTitleBar title="Cast" actionLabel="View all" />
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
           {castMembers.map((member) => (
@@ -900,7 +904,7 @@ function SuggestionCard({ movie }) {
       <div className="relative aspect-[2/3] bg-muted">
         {movie.poster ? (
           <img
-            src={movie.poster || movieImageFallback(movie.title, "poster")}
+            src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
             alt={movie.title}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
             onError={(event) => {

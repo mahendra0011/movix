@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
-import { movieImageFallback } from "@/features/movies/services/movieMedia";
+import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/services/movieMedia";
 
 function MovieCard({ movie }) {
-  const poster = movie.poster || movieImageFallback(movie.title, "poster");
+  const poster = normalizeMovieImageUrl(movie.poster, movie.title, "poster");
 
   return (
     <Link to="/movies/$id" params={{ id: movie.id }} className="group block w-full">

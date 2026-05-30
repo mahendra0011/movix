@@ -33,7 +33,11 @@ import {
   movies as fallbackMovies,
   theaters,
 } from "@/features/movies/data/movieCatalog";
-import { movieImageFallback } from "@/features/movies/services/movieMedia";
+import {
+  movieImageFallback,
+  normalizeMovieImageUrl,
+  normalizeMovieMedia,
+} from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
@@ -119,7 +123,9 @@ function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
-  const [homeComingSoonMovies, setHomeComingSoonMovies] = useState(comingSoonMovies);
+  const [homeComingSoonMovies, setHomeComingSoonMovies] = useState(() =>
+    comingSoonMovies.map(normalizeMovieMedia),
+  );
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
   useEffect(() => subscribePreferredCity(setSelectedCity), []);
@@ -146,10 +152,12 @@ function Home() {
 
     requestJson(`/api/shows/coming-soon${query}`, { timeoutMs: 8000 })
       .then((data) => {
-        if (active && data.movies?.length) setHomeComingSoonMovies(data.movies);
+        if (active && data.movies?.length) {
+          setHomeComingSoonMovies(data.movies.map(normalizeMovieMedia));
+        }
       })
       .catch(() => {
-        if (active) setHomeComingSoonMovies(comingSoonMovies);
+        if (active) setHomeComingSoonMovies(comingSoonMovies.map(normalizeMovieMedia));
       });
 
     return () => {
@@ -170,7 +178,7 @@ function Home() {
     featured?.description ??
     "Released movies will appear here after theater owners publish live show timings.";
   const heroBackdrop = featured
-    ? featured.backdrop || movieImageFallback(featured.title, "backdrop")
+    ? normalizeMovieImageUrl(featured.backdrop || featured.poster, featured.title, "backdrop")
     : movieImageFallback(`movix ${selectedCity} movies`, "backdrop");
   const topMovies = useMemo(() => buildTopMovies(homeDisplayMovies), [homeDisplayMovies]);
   const genres = useMemo(
@@ -463,7 +471,7 @@ function Home() {
               {featured ? (
                 <>
                   <img
-                    src={featured.poster || movieImageFallback(featured.title, "poster")}
+                    src={normalizeMovieImageUrl(featured.poster, featured.title, "poster")}
                     alt={featured.title}
                     className="aspect-[2/3] w-full rounded-md object-cover"
                     onError={(event) => {
@@ -982,7 +990,7 @@ function CompactMovieCard({ movie, prominent = false }) {
         }`}
       >
         <img
-          src={movie.poster || movieImageFallback(movie.title, "poster")}
+          src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
           alt={movie.title}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -1194,8 +1202,8 @@ function PremiereSpotlightSection({ movies }) {
 }
 
 function PremiereSpotlightCard({ movie }) {
-  const poster = movie.poster || movieImageFallback(movie.title, "poster");
-  const backdrop = movie.backdrop || poster;
+  const poster = normalizeMovieImageUrl(movie.poster, movie.title, "poster");
+  const backdrop = normalizeMovieImageUrl(movie.backdrop, movie.title, "backdrop", poster);
 
   return (
     <MovieCardLink
@@ -1257,7 +1265,7 @@ function MiniMovieTile({ movie, badge }) {
     <MovieCardLink movie={movie} className="group block">
       <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-muted">
         <img
-          src={movie.backdrop || movie.poster || movieImageFallback(movie.title, "backdrop")}
+          src={normalizeMovieImageUrl(movie.backdrop || movie.poster, movie.title, "backdrop")}
           alt={movie.title}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"

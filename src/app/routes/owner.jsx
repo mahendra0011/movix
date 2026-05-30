@@ -29,7 +29,12 @@ import {
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { buildSeatLayout, normalizeSeatLayoutConfig } from "@/features/booking/data/seatLayout";
 import { movies } from "@/features/movies/data/movieCatalog";
-import { castAvatarFallback, movieImageFallback } from "@/features/movies/services/movieMedia";
+import {
+  castAvatarFallback,
+  movieImageFallback,
+  normalizeCastImageUrl,
+  normalizeMovieImageUrl,
+} from "@/features/movies/services/movieMedia";
 import { fetchOwnerWorkspace, saveOwnerWorkspace } from "@/features/owner/api/ownerApi";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
@@ -1108,7 +1113,11 @@ function OwnerMoviesTab({
             <div className="relative h-56">
               {moviePreview.backdrop || moviePreview.poster ? (
                 <img
-                  src={moviePreview.backdrop || moviePreview.poster}
+                  src={normalizeMovieImageUrl(
+                    moviePreview.backdrop || moviePreview.poster,
+                    moviePreview.title,
+                    "backdrop",
+                  )}
                   alt={moviePreview.title}
                   className="h-full w-full object-cover"
                 />
@@ -1965,7 +1974,7 @@ function ImageUploadField({ label, value, placeholder, onChange, onUpload }) {
 function MoviePosterFrame({ src, title, className = "" }) {
   return (
     <img
-      src={src || movieImageFallback(title, "poster")}
+      src={normalizeMovieImageUrl(src, title, "poster")}
       alt={title || "Movie"}
       className={`overflow-hidden object-cover ${className}`}
       onError={(event) => {
@@ -1982,7 +1991,7 @@ function CastPhotoControl({ member, index, onUpload, onAvatarChange }) {
       <div className="mt-2 grid gap-2">
         <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-primary/10 ring-1 ring-primary/20">
           <img
-            src={member.avatar || castAvatarFallback(member.name)}
+            src={normalizeCastImageUrl(member.avatar, member.name)}
             alt={member.name || "Cast"}
             className="h-full w-full object-cover"
             onError={(event) => {
@@ -2020,7 +2029,7 @@ function CastAvatarStack({ cast }) {
         >
           <div className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-primary/10">
             <img
-              src={member.avatar || castAvatarFallback(member.name)}
+              src={normalizeCastImageUrl(member.avatar, member.name)}
               alt={member.name || "Cast"}
               className="h-full w-full object-cover"
               onError={(event) => {
@@ -2039,20 +2048,16 @@ function CastAvatarStack({ cast }) {
 }
 
 function TimingPreview({ timing }) {
-  const heroImage = timing.backdrop || timing.poster;
+  const heroImage = normalizeMovieImageUrl(
+    timing.backdrop || timing.poster,
+    timing.movie,
+    "backdrop",
+  );
 
   return (
     <div className="mt-5 overflow-hidden rounded-lg border border-border/60 bg-background/35">
       <div className="relative h-64">
-        {heroImage ? (
-          <img src={heroImage} alt={timing.movie} className="h-full w-full object-cover" />
-        ) : (
-          <div className="grid h-full place-items-center bg-gradient-to-br from-primary/20 via-background to-secondary">
-            <div className="grid h-20 w-20 place-items-center rounded-full bg-primary/15 text-primary">
-              <Film className="h-9 w-9" />
-            </div>
-          </div>
-        )}
+        <img src={heroImage} alt={timing.movie} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         <div className="absolute left-4 top-4">
           <StatusPill status={timing.status} />

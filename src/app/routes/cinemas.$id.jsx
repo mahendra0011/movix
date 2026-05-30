@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
 import { movies as fallbackMovies, showTimes, theaters } from "@/features/movies/data/movieCatalog";
-import { movieImageFallback } from "@/features/movies/services/movieMedia";
+import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { buildCatalogCinemaSchedule } from "@/features/movies/services/showSchedule";
@@ -336,7 +336,7 @@ function CinemaMovieRow({ item, cinema, activeDateLabel }) {
     <article className="grid gap-5 border-b border-border/60 p-5 last:border-b-0 lg:grid-cols-[92px_1fr]">
       <Link to="/movies/$id" params={{ id: item.movie.id }} className="group hidden lg:block">
         <img
-          src={item.movie.poster || movieImageFallback(item.movie.title, "poster")}
+          src={normalizeMovieImageUrl(item.movie.poster, item.movie.title, "poster")}
           alt={item.movie.title}
           loading="lazy"
           className="aspect-[2/3] w-full rounded-lg object-cover shadow-sm transition-transform group-hover:scale-[1.02]"

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { fetchMyBookings } from "@/features/booking/api/bookingsApi";
 import { movies } from "@/features/movies/data/movieCatalog";
-import { movieImageFallback } from "@/features/movies/services/movieMedia";
+import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/services/movieMedia";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
@@ -285,7 +285,7 @@ function UserDashboard() {
                 className="group grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-lg border border-border/60 bg-background/35 p-2 transition-colors hover:border-primary/50"
               >
                 <img
-                  src={movie.poster || movieImageFallback(movie.title, "poster")}
+                  src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
                   alt={movie.title}
                   className="h-20 w-16 rounded-md object-cover"
                   onError={(event) => {

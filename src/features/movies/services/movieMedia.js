@@ -1,8 +1,19 @@
+const MOVIE_ARTWORK_FALLBACKS = [
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140021/movix/movie-artwork/movie-fallback-1.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140023/movix/movie-artwork/movie-fallback-2.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140024/movix/movie-artwork/movie-fallback-3.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140026/movix/movie-artwork/movie-fallback-4.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140027/movix/movie-artwork/movie-fallback-5.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140028/movix/movie-artwork/movie-fallback-6.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140030/movix/movie-artwork/movie-fallback-7.jpg",
+  "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140033/movix/movie-artwork/movie-fallback-8.jpg",
+];
+
 function normalizeMovieMedia(movie) {
   if (!movie) return movie;
   const title = String(movie.title || "Movie").trim() || "Movie";
-  const poster = normalizeImageUrl(movie.poster) || movieImageFallback(title, "poster");
-  const backdrop = normalizeImageUrl(movie.backdrop) || movieImageFallback(title, "backdrop");
+  const poster = normalizeMovieImageUrl(movie.poster, title, "poster");
+  const backdrop = normalizeMovieImageUrl(movie.backdrop, title, "backdrop", poster);
 
   return {
     ...movie,
@@ -21,7 +32,7 @@ function normalizeCastMedia(cast = []) {
         ...member,
         name,
         role: String(member?.role ?? "Actor").trim() || "Actor",
-        avatar: normalizeImageUrl(member?.avatar) || castAvatarFallback(name),
+        avatar: normalizeCastImageUrl(member?.avatar, name),
       };
     })
     .filter(Boolean);
@@ -33,15 +44,8 @@ function normalizeImageUrl(value) {
 }
 
 function movieImageFallback(title, type = "poster") {
-  const width = type === "backdrop" ? 1280 : 780;
-  const height = type === "backdrop" ? 720 : 1170;
-  return cloudinaryGeneratedImageUrl({
-    width,
-    height,
-    text: title || "Movie",
-    fontSize: type === "backdrop" ? 74 : 58,
-    baseImage: "sample.jpg",
-  });
+  const artwork = MOVIE_ARTWORK_FALLBACKS[hashString(title) % MOVIE_ARTWORK_FALLBACKS.length];
+  return transformCloudinaryImage(artwork, type);
 }
 
 function castAvatarFallback(name) {
@@ -88,6 +92,63 @@ function cloudinaryText(value) {
   );
 }
 
+function normalizeMovieImageUrl(value, title, type = "poster", fallback) {
+  const image = normalizeImageUrl(value);
+  if (isSafeMovieImageUrl(image)) return transformCloudinaryImage(image, type);
+  if (isSafeMovieImageUrl(fallback)) return transformCloudinaryImage(fallback, type);
+  return movieImageFallback(title, type);
+}
+
+function normalizeCastImageUrl(value, name) {
+  const image = normalizeImageUrl(value);
+  return isSafeCastImageUrl(image) ? image : castAvatarFallback(name);
+}
+
+function isSafeMovieImageUrl(value) {
+  const image = normalizeImageUrl(value);
+  return (
+    isCloudinaryImageUrl(image) &&
+    !isCastMediaImage(image) &&
+    !isGeneratedImageUrl(image) &&
+    !image.startsWith("data:")
+  );
+}
+
+function isSafeCastImageUrl(value) {
+  const image = normalizeImageUrl(value);
+  if (!isCloudinaryImageUrl(image) || image.startsWith("data:")) return false;
+  if (image.includes("/movix/movie-artwork/")) return false;
+  if (image.includes("/poster") || image.includes("/backdrop")) return false;
+  return true;
+}
+
+function isCloudinaryImageUrl(value) {
+  return /^https:\/\/res\.cloudinary\.com\//.test(normalizeImageUrl(value));
+}
+
+function isCastMediaImage(value) {
+  return /\/(?:real-cast|cast)\//.test(normalizeImageUrl(value));
+}
+
+function isGeneratedImageUrl(value) {
+  return normalizeImageUrl(value).includes("l_text:");
+}
+
+function transformCloudinaryImage(value, type = "poster") {
+  const image = normalizeImageUrl(value);
+  if (!isCloudinaryImageUrl(image)) return image;
+  const transform =
+    type === "backdrop" ? "f_auto,q_auto,w_1280,h_720,c_fill" : "f_auto,q_auto,w_780,h_1170,c_fill";
+  return image.replace(
+    /\/image\/upload\/(?:f_auto,q_auto,w_\d+,h_\d+,c_fill\/)?/,
+    `/image/upload/${transform}/`,
+  );
+}
+
+function hashString(value) {
+  return [...String(value || "Movie")].reduce((hash, char) => hash + char.charCodeAt(0), 0);
+}
+
 function initials(value) {
   return (
     String(value || "Cast")
@@ -99,4 +160,15 @@ function initials(value) {
   );
 }
 
-export { castAvatarFallback, movieImageFallback, normalizeImageUrl, normalizeMovieMedia };
+export {
+  castAvatarFallback,
+  isCastMediaImage,
+  isGeneratedImageUrl,
+  isSafeCastImageUrl,
+  isSafeMovieImageUrl,
+  movieImageFallback,
+  normalizeCastImageUrl,
+  normalizeImageUrl,
+  normalizeMovieImageUrl,
+  normalizeMovieMedia,
+};

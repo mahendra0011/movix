@@ -312,7 +312,7 @@ async function loadExistingMedia() {
 }
 
 async function writeGeneratedMedia(value) {
-  const body = `const realMovieMedia = ${JSON.stringify(value, null, 2)};\n\nfunction getRealMovieMedia(movieId) {\n  const media = realMovieMedia[movieId] ?? null;\n  if (!media) return null;\n  return {\n    ...media,\n    poster: isReusableMovieImage(media.poster) ? media.poster : "",\n    backdrop: isReusableMovieImage(media.backdrop) ? media.backdrop : "",\n  };\n}\n\nfunction getRealCastAvatar(movieId, name) {\n  return realMovieMedia[movieId]?.cast?.[name] ?? "";\n}\n\nfunction isReusableMovieImage(value) {\n  return isCloudinaryImage(value) && !isCastMediaImage(value);\n}\n\nfunction isCloudinaryImage(value) {\n  return /^https:\\/\\/res\\.cloudinary\\.com\\//.test(String(value || ""));\n}\n\nfunction isCastMediaImage(value) {\n  return /\\/(?:real-cast|cast)\\//.test(String(value || ""));\n}\n\nexport { getRealCastAvatar, getRealMovieMedia, realMovieMedia };\n`;
+  const body = `const realMovieMedia = ${JSON.stringify(value, null, 2)};\n\nfunction getRealMovieMedia(movieId) {\n  const media = realMovieMedia[movieId] ?? null;\n  if (!media) return null;\n  return {\n    ...media,\n    poster: isReusableMovieImage(media.poster) ? media.poster : "",\n    backdrop: isReusableMovieImage(media.backdrop) ? media.backdrop : "",\n  };\n}\n\nfunction getRealCastAvatar(movieId, name) {\n  return realMovieMedia[movieId]?.cast?.[name] ?? "";\n}\n\nfunction isReusableMovieImage(value) {\n  const image = String(value || "");\n  return isCloudinaryImage(image) && !isCastMediaImage(image) && !image.includes("l_text:") && !image.startsWith("data:");\n}\n\nfunction isCloudinaryImage(value) {\n  return /^https:\\/\\/res\\.cloudinary\\.com\\//.test(String(value || ""));\n}\n\nfunction isCastMediaImage(value) {\n  return /\\/(?:real-cast|cast)\\//.test(String(value || ""));\n}\n\nexport { getRealCastAvatar, getRealMovieMedia, realMovieMedia };\n`;
   await writeFile(OUTPUT_FILE, body, "utf8");
 }
 
@@ -324,7 +324,9 @@ function movieFallbackFor(movie, index, artwork, type) {
 
 function asMovieImage(value, type) {
   const image = String(value || "").trim();
-  if (!image || isCastMediaImage(image) || !isCloudinaryImage(image)) return "";
+  if (!image || isCastMediaImage(image) || !isCloudinaryImage(image) || image.includes("l_text:")) {
+    return "";
+  }
   const transform =
     type === "backdrop" ? "f_auto,q_auto,w_1280,h_720,c_fill" : "f_auto,q_auto,w_780,h_1170,c_fill";
   return image.replace(
@@ -334,7 +336,13 @@ function asMovieImage(value, type) {
 }
 
 function isReusableMovieImage(value) {
-  return isCloudinaryImage(value) && !isCastMediaImage(value);
+  const image = String(value || "");
+  return (
+    isCloudinaryImage(image) &&
+    !isCastMediaImage(image) &&
+    !image.includes("l_text:") &&
+    !image.startsWith("data:")
+  );
 }
 
 function isLikelyPersonAvatar(name, value) {
