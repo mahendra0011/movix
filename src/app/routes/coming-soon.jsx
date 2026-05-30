@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { comingSoonMovies as fallbackMovies } from "@/features/movies/data/movieCatalog";
 import {
+  isFallbackMovieArtwork,
   movieImageFallback,
   normalizeMovieImageUrl,
   normalizeMovieMedia,
@@ -30,6 +31,15 @@ import { readPreferredCity, subscribePreferredCity } from "@/shared/services/cit
 
 const allFilterValue = "All";
 const sortOptions = ["Release date", "Popularity", "A-Z"];
+const bundledComingSoonById = new Map(
+  fallbackMovies
+    .map(normalizeMovieMedia)
+    .flatMap((movie) =>
+      [movie.id, movie.movieId, movie.title]
+        .filter(Boolean)
+        .map((key) => [normalizeText(key), movie]),
+    ),
+);
 
 const Route = createFileRoute("/coming-soon")({
   loader: () => fetchComingSoonMovies(),
@@ -614,6 +624,13 @@ function buildFallbackComingSoon(catalog, city) {
 
 function normalizeComingSoonMovie(movie) {
   const normalized = normalizeMovieMedia(movie);
+  const bundled = findBundledComingSoonMovie(normalized);
+  const poster = shouldUseBundledImage(normalized.poster, bundled?.poster)
+    ? bundled.poster
+    : normalized.poster;
+  const backdrop = shouldUseBundledImage(normalized.backdrop, bundled?.backdrop)
+    ? bundled.backdrop
+    : normalized.backdrop;
   const releaseAt = normalizeDateInput(normalized.releaseAt || normalized.date);
   const releaseDate =
     normalized.releaseDate && normalized.releaseDate !== "Coming soon"
@@ -622,6 +639,8 @@ function normalizeComingSoonMovie(movie) {
 
   return {
     ...normalized,
+    poster,
+    backdrop,
     id: normalized.id || normalized.movieId,
     movieId: normalized.movieId || normalized.id,
     title: normalized.title || normalized.movie || "Untitled movie",
@@ -638,6 +657,22 @@ function normalizeComingSoonMovie(movie) {
       : toFilterList(normalized.theater),
     votes: normalized.votes || normalized.votesText || "New",
   };
+}
+
+function findBundledComingSoonMovie(movie) {
+  return (
+    bundledComingSoonById.get(normalizeText(movie.id)) ||
+    bundledComingSoonById.get(normalizeText(movie.movieId)) ||
+    bundledComingSoonById.get(normalizeText(movie.title))
+  );
+}
+
+function shouldUseBundledImage(remoteImage, bundledImage) {
+  return Boolean(
+    bundledImage &&
+    !isFallbackMovieArtwork(bundledImage) &&
+    (!remoteImage || isFallbackMovieArtwork(remoteImage)),
+  );
 }
 
 function buildBannerMovies(list) {

@@ -34,6 +34,7 @@ import {
   theaters,
 } from "@/features/movies/data/movieCatalog";
 import {
+  isFallbackMovieArtwork,
   movieImageFallback,
   normalizeMovieImageUrl,
   normalizeMovieMedia,
@@ -108,6 +109,15 @@ const cinemaImages = [
 const allFilterValue = "All";
 const recommendedPageSize = 6;
 const sortOptions = ["Popularity", "Rating", "A-Z"];
+const bundledComingSoonById = new Map(
+  comingSoonMovies
+    .map(normalizeMovieMedia)
+    .flatMap((movie) =>
+      [movie.id, movie.movieId, movie.title]
+        .filter(Boolean)
+        .map((key) => [normalizeHomeText(key), movie]),
+    ),
+);
 
 function Home() {
   const loadedMovies = Route.useLoaderData();
@@ -124,7 +134,7 @@ function Home() {
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
   const [homeComingSoonMovies, setHomeComingSoonMovies] = useState(() =>
-    comingSoonMovies.map(normalizeMovieMedia),
+    comingSoonMovies.map(normalizeHomeComingSoonMovie),
   );
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
@@ -153,11 +163,11 @@ function Home() {
     requestJson(`/api/shows/coming-soon${query}`, { timeoutMs: 8000 })
       .then((data) => {
         if (active && data.movies?.length) {
-          setHomeComingSoonMovies(data.movies.map(normalizeMovieMedia));
+          setHomeComingSoonMovies(data.movies.map(normalizeHomeComingSoonMovie));
         }
       })
       .catch(() => {
-        if (active) setHomeComingSoonMovies(comingSoonMovies.map(normalizeMovieMedia));
+        if (active) setHomeComingSoonMovies(comingSoonMovies.map(normalizeHomeComingSoonMovie));
       });
 
     return () => {
@@ -1384,6 +1394,31 @@ function buildCityMovieCatalog(catalog, selectedCity, cinemaCatalog) {
     return catalog;
   }
   return listedMovies;
+}
+
+function normalizeHomeComingSoonMovie(movie) {
+  const normalized = normalizeMovieMedia(movie);
+  const bundled =
+    bundledComingSoonById.get(normalizeHomeText(normalized.id)) ||
+    bundledComingSoonById.get(normalizeHomeText(normalized.movieId)) ||
+    bundledComingSoonById.get(normalizeHomeText(normalized.title));
+  return {
+    ...normalized,
+    poster: shouldUseBundledImage(normalized.poster, bundled?.poster)
+      ? bundled.poster
+      : normalized.poster,
+    backdrop: shouldUseBundledImage(normalized.backdrop, bundled?.backdrop)
+      ? bundled.backdrop
+      : normalized.backdrop,
+  };
+}
+
+function shouldUseBundledImage(remoteImage, bundledImage) {
+  return Boolean(
+    bundledImage &&
+    !isFallbackMovieArtwork(bundledImage) &&
+    (!remoteImage || isFallbackMovieArtwork(remoteImage)),
+  );
 }
 
 function CinemaCard({ cinema, image }) {

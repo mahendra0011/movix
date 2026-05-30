@@ -4402,8 +4402,21 @@ const realMovieMedia = {
   },
 };
 
+const movieMediaAliases = {
+  "maa-behen": "madhuri-dixit-and-tripti-dimri-film",
+  bandar: "bobby-deol-film",
+  "hai-jawani-toh-ishq-hona-hai": "varun-dhawan-and-pooja-hegde-film",
+  "governor-the-silent-saviour": "manoj-bajpayee-and-adah-sharma-film",
+  "rao-bahadur": "satya-dev-film",
+  vrushakarma: "naga-chaitanya-and-meenakshi-chaudhary-film",
+  "don-t-trouble-the-trouble": "fahadh-faasil-telugu-film",
+  "dont-trouble-the-trouble": "fahadh-faasil-telugu-film",
+  "visa-vintara-saradaga": "ashok-galla-film",
+};
+
 function getRealMovieMedia(movieId) {
-  const media = realMovieMedia[movieId] ?? null;
+  const resolvedMovieId = resolveMovieMediaId(movieId);
+  const media = realMovieMedia[resolvedMovieId] ?? null;
   if (!media) return null;
   return {
     ...media,
@@ -4413,7 +4426,11 @@ function getRealMovieMedia(movieId) {
 }
 
 function getRealCastAvatar(movieId, name) {
-  return realMovieMedia[movieId]?.cast?.[name] ?? "";
+  return realMovieMedia[resolveMovieMediaId(movieId)]?.cast?.[name] ?? "";
+}
+
+function resolveMovieMediaId(movieId) {
+  return movieMediaAliases[movieId] || movieId;
 }
 
 function isReusableMovieImage(value) {
