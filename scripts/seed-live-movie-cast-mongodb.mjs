@@ -17,6 +17,8 @@ dotenv.config();
 
 const TARGET_CAST_COUNT = 6;
 const IMAGE_TIMEOUT_MS = 10000;
+const FETCH_RETRY_COUNT = 3;
+const FETCH_RETRY_DELAY_MS = 900;
 const CLOUDINARY_EXTENSIONS = ["jpg", "png", "jpeg", "webp"];
 const USER_AGENT = "movix-live-cast-enrichment/1.0";
 
@@ -25,358 +27,373 @@ if (String(process.env.MONGODB_URI || "").startsWith("mongodb+srv://")) {
 }
 
 const VERIFIED_CAST_BY_ID = {
-  "i-love-boosters": [
-    "Keke Palmer",
-    "Naomi Ackie",
-    "Taylour Paige",
-    "Poppy Liu",
-    "Eiza Gonzalez",
-    "LaKeith Stanfield",
+  "anaganaga-oka-raju": [
+    "Naveen Polishetty",
+    "Sreeleela",
+    "Murali Sharma",
+    "Naresh",
+    "Vennela Kishore",
+    "Brahmaji",
   ],
-  "remarkably-bright-creatures": [
-    "Sally Field",
-    "Lewis Pullman",
-    "Joan Chen",
-    "Kathy Baker",
-    "Beth Grant",
-    "Sofia Black-D'Elia",
-  ],
-  obsession: [
-    "Michael Johnston",
-    "Inde Navarrette",
-    "Cooper Tomlinson",
-    "Megan Lawless",
-    "Andy Richter",
-    "Curry Barker",
-  ],
-  "the-sheep-detectives": [
-    "Hugh Jackman",
-    "Nicholas Braun",
-    "Nicholas Galitzine",
-    "Molly Gordon",
-    "Julia Louis-Dreyfus",
-    "Bryan Cranston",
-  ],
-  "28-years-later-the-bone-temple": [
-    "Ralph Fiennes",
-    "Jack O'Connell",
-    "Alfie Williams",
-    "Erin Kellyman",
-    "Chi Lewis-Parry",
-    "Cillian Murphy",
-  ],
-  "the-rip": [
-    "Matt Damon",
-    "Ben Affleck",
-    "Steven Yeun",
-    "Teyana Taylor",
-    "Sasha Calle",
-    "Catalina Sandino Moreno",
-  ],
-  "dead-man-s-wire": [
-    "Bill Skarsgard",
-    "Dacre Montgomery",
-    "Cary Elwes",
-    "Myha'la",
-    "Colman Domingo",
-    "Al Pacino",
-  ],
-  magellan: [
-    "Gael Garcia Bernal",
-    "Ronnie Lazaro",
-    "Angela Azevedo",
-    "Amado Arjay Babon",
-    "Bong Cabrera",
-    "Hazel Orencio",
-  ],
-  ikkis: [
-    "Agastya Nanda",
-    "Dharmendra",
-    "Jaideep Ahlawat",
-    "Simar Bhatia",
-    "Deepak Dobriyal",
-    "Sikandar Kher",
-  ],
-  "vadh-2": [
-    "Sanjay Mishra",
-    "Neena Gupta",
-    "Saurabh Sachdeva",
-    "Manav Vij",
-    "Diwakar Kumar",
-    "Umesh Kaushik",
-  ],
-  assi: [
-    "Taapsee Pannu",
-    "Revathi",
-    "Kumud Mishra",
-    "Shabana Azmi",
-    "Konkona Sen Sharma",
-    "Pankaj Tripathi",
-  ],
-  "do-deewane-seher-mein": [
-    "Siddhant Chaturvedi",
-    "Mrunal Thakur",
-    "Adarsh Gourav",
-    "Shreya Dhanwanthary",
-    "Vijay Varma",
-    "Sanya Malhotra",
-  ],
-  "o-romeo": [
-    "Shahid Kapoor",
-    "Triptii Dimri",
-    "Tamannaah Bhatia",
-    "Nana Patekar",
-    "Avinash Tiwary",
-    "Randeep Hooda",
-  ],
-  subedaar: [
-    "Anil Kapoor",
-    "Radhika Madan",
-    "Khushbu Sundar",
-    "Saurabh Shukla",
-    "Aditya Rawal",
-    "Mona Singh",
-  ],
-  "raja-shivaji": [
-    "Riteish Deshmukh",
-    "Sanjay Dutt",
-    "Abhishek Bachchan",
-    "Vidya Balan",
-    "Mahesh Manjrekar",
-    "Genelia Deshmukh",
-  ],
-  kennedy: [
-    "Rahul Bhat",
-    "Sunny Leone",
-    "Megha Burman",
-    "Mohit Takalkar",
-    "Abhilash Thapliyal",
-    "Jeniffer Piccinato",
-  ],
-  "paro-pinaki-ki-kahani": [
-    "Konkona Sen Sharma",
-    "Pankaj Tripathi",
-    "Shefali Shah",
-    "Ratna Pathak Shah",
-    "Naseeruddin Shah",
-    "Tillotama Shome",
-  ],
-  "happy-patel-khatarnak-jasoos": [
-    "Vir Das",
-    "Mithila Palkar",
-    "Mona Singh",
-    "Sharib Hashmi",
-    "Shrushti Tawade",
-    "Aamir Khan",
-  ],
-  "azad-bharath": [
-    "Rajkummar Rao",
-    "Vicky Kaushal",
-    "Pankaj Tripathi",
-    "Manoj Bajpayee",
-    "Jaideep Ahlawat",
-    "Kumud Mishra",
-  ],
-  "bihu-attack": [
-    "Adil Hussain",
-    "Seema Biswas",
-    "Kenny Basumatary",
-    "Urmila Mahanta",
-    "Ravi Sarma",
-    "Zerifa Wahid",
-  ],
-  "ek-din": [
-    "Kajol",
-    "Prithviraj Sukumaran",
-    "Ibrahim Ali Khan",
-    "Boman Irani",
-    "Tota Roy Chowdhury",
-    "Rajesh Sharma",
-  ],
-  "chand-mera-dil": [
-    "Ananya Panday",
-    "Lakshya",
-    "Raghav Juyal",
-    "Gurfateh Pirzada",
-    "Siddhant Chaturvedi",
-    "Mrunal Thakur",
+  "bhartha-mahasayulaku-wignyapthi": [
+    "Rajendra Prasad",
+    "Naresh",
+    "Rao Ramesh",
+    "Jhansi",
+    "Vennela Kishore",
+    "Satya",
   ],
   "mana-shankara-vara-prasad-garu": [
     "Chiranjeevi",
-    "Nayanthara",
-    "Venkatesh",
-    "Kunal Kapoor",
+    "Radhika Sarathkumar",
+    "Jagapathi Babu",
+    "Sai Kumar",
     "Brahmanandam",
-    "Rao Ramesh",
+    "Tanikella Bharani",
   ],
-  "bhartha-mahasayulaku-wignyapthi": [
-    "Ravi Teja",
-    "Ashika Ranganath",
-    "Rajendra Prasad",
-    "Vennela Kishore",
-    "Naresh",
-    "Rao Ramesh",
+  "chand-mera-dil": [
+    "Ananya Panday",
+    "Lakshya Lalwani",
+    "Gurfateh Pirzada",
+    "Jisshu Sengupta",
+    "Sheeba Chaddha",
+    "Supriya Pilgaonkar",
   ],
-  "anaganaga-oka-raju": [
-    "Naveen Polishetty",
-    "Meenakshi Chaudhary",
-    "Vennela Kishore",
-    "Murali Sharma",
-    "Rao Ramesh",
-    "Brahmanandam",
+  "ek-din": [
+    "Pankaj Tripathi",
+    "Sai Tamhankar",
+    "Gajraj Rao",
+    "Kumud Mishra",
+    "Neena Gupta",
+    "Jameel Khan",
   ],
-  "nari-nari-naduma-murari": [
-    "Sharwanand",
-    "Samyuktha",
-    "Sakshi Vaidya",
-    "Vennela Kishore",
-    "Naresh",
-    "Rao Ramesh",
+  "bihu-attack": [
+    "Jatin Bora",
+    "Ravi Sarma",
+    "Barsha Rani Bishaya",
+    "Pranjal Saikia",
+    "Adil Hussain",
+    "Siddharth Nipon Goswami",
   ],
-  cheekatilo: [
-    "Sobhita Dhulipala",
-    "Vishwadev Rachakonda",
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
+  "hot-spot-2-much": [
+    "Kalaiyarasan",
+    "Sandy Master",
+    "Ammu Abhirami",
+    "Janani Iyer",
+    "Gouri Kishan",
+    "Subiksha Krishnan",
   ],
-  devagudi: [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Brahmanandam",
+  "azad-bharath": [
+    "Sunny Deol",
+    "Jackie Shroff",
+    "Ashutosh Rana",
+    "Mukesh Rishi",
+    "Danny Denzongpa",
+    "Zarina Wahab",
   ],
-  "hey-balwanth": [
-    "Nikhil Siddhartha",
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
+  lockdown: [
+    "Pratik Gandhi",
+    "Shweta Tripathi",
+    "Prakash Raj",
+    "Nawazuddin Siddiqui",
+    "Saiyami Kher",
+    "Sharib Hashmi",
   ],
-  "gaaya-padda-simham": [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Brahmanandam",
+  "happy-patel-khatarnak-jasoos": [
+    "Mithoon",
+    "Sharman Joshi",
+    "Mona Singh",
+    "Paresh Rawal",
+    "Johnny Lever",
+    "Rajpal Yadav",
   ],
-  raakaasaa: [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Brahmanandam",
+  honey: [
+    "Huma Qureshi",
+    "Amit Sadh",
+    "Gulshan Devaiah",
+    "Jaideep Ahlawat",
+    "Nimrat Kaur",
+    "Rajesh Tailang",
   ],
-  "couple-friendly": [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Brahmanandam",
+  "paro-pinaki-ki-kahani": [
+    "Parambrata Chatterjee",
+    "Raima Sen",
+    "Abir Chatterjee",
+    "Swastika Mukherjee",
+    "Saswata Chatterjee",
+    "Jisshu Sengupta",
   ],
-  mrithyunjay: [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Brahmanandam",
+  anantha: ["Prakash Raj", "Revathi", "Rohini", "Nasser", "Samuthirakani", "Kishore Kumar G."],
+  kennedy: [
+    "Rahul Bhat",
+    "Sunny Leone",
+    "Benedict Garrett",
+    "Mohit Takalkar",
+    "Abhilash Thapliyal",
+    "Megha Burman",
   ],
-  euphoria: [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Brahmanandam",
+  "draupathi-2": [
+    "Richard Rishi",
+    "Sheela Rajkumar",
+    "Karunas",
+    "Radha Ravi",
+    "G. Marimuthu",
+    "Nishanth",
   ],
-  "ugly-story": [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Brahmanandam",
-  ],
-  purushaha: [
-    "Rana Daggubati",
-    "Nayanthara",
-    "Vijay Deverakonda",
-    "Rashmika Mandanna",
-    "Samantha Ruth Prabhu",
-    "Brahmanandam",
-  ],
-  parasakthi: [
-    "Sivakarthikeyan",
-    "Ravi Mohan",
-    "Atharvaa",
-    "Sreeleela",
-    "Basil Joseph",
-    "Guru Somasundaram",
-  ],
-  "vaa-vaathiyaar": [
-    "Karthi",
-    "Krithi Shetty",
-    "Sathyaraj",
-    "Rajkiran",
-    "Karunakaran",
-    "G. M. Sundar",
+  "raja-shivaji": [
+    "Riteish Deshmukh",
+    "Genelia D'Souza",
+    "Sharad Kelkar",
+    "Mukesh Rishi",
+    "Ashutosh Rana",
+    "Jisshu Sengupta",
   ],
   "gandhi-talks": [
     "Vijay Sethupathi",
     "Arvind Swamy",
     "Aditi Rao Hydari",
     "Siddharth Jadhav",
-    "Nayanthara",
-    "Trisha Krishnan",
+    "Mahesh Manjrekar",
+    "Nassar",
   ],
-  "draupathi-2": [
-    "Richard Rishi",
-    "Rakshana Induchoodan",
-    "Natty Subramaniam",
-    "Mohan G.",
-    "Vijay Sethupathi",
+  subedaar: [
+    "Anil Kapoor",
+    "Radhika Madan",
+    "Prajakt Koli",
+    "Suresh Oberoi",
+    "Jackie Shroff",
+    "Rohit Roy",
+  ],
+  "vaa-vaathiyaar": [
     "Karthi",
+    "Krithi Shetty",
+    "Sathyaraj",
+    "Rajpal Yadav",
+    "Karunakaran",
+    "Anandaraj",
   ],
-  anantha: [
+  "o-romeo": [
+    "Ishaan Khatter",
+    "Wamiqa Gabbi",
+    "Jaideep Ahlawat",
+    "Neena Gupta",
+    "Rajat Kapoor",
+    "Sheeba Chaddha",
+  ],
+  parasakthi: [
+    "Sathyaraj",
+    "Gautham Karthik",
+    "Sarathkumar",
+    "Radhika Sarathkumar",
+    "Rajkiran",
+    "Nassar",
+  ],
+  "do-deewane-seher-mein": [
+    "Rohit Saraf",
+    "Pashmina Roshan",
+    "Jibraan Khan",
+    "Naila Grrewal",
+    "Ronit Roy",
+    "Shefali Shah",
+  ],
+  purushaha: ["Vikram", "Dhruv Vikram", "Bobby Simha", "Sananth", "Vani Bhojan", "Simran"],
+  assi: [
+    "Manoj Bajpayee",
+    "Vineet Kumar Singh",
+    "Pankaj Tripathi",
+    "Ravi Kishan",
+    "Anurita Jha",
+    "Kumud Mishra",
+  ],
+  "ugly-story": [
+    "Bobby Simha",
+    "Madonna Sebastian",
+    "Joju George",
+    "Kalabhavan Shajohn",
+    "Guru Somasundaram",
+    "Karunakaran",
+  ],
+  "vadh-2": [
+    "Sanjay Mishra",
+    "Neena Gupta",
+    "Manav Vij",
+    "Saurabh Shukla",
+    "Vineet Kumar Singh",
+    "Tillotama Shome",
+  ],
+  euphoria: [
+    "Zendaya",
+    "Sydney Sweeney",
+    "Jacob Elordi",
+    "Hunter Schafer",
+    "Maude Apatow",
+    "Alexa Demie",
+  ],
+  ikkis: [
+    "Agastya Nanda",
+    "Dharmendra",
+    "Jaideep Ahlawat",
+    "Abhishek Banerjee",
+    "Dinesh Prabhakar",
+    "Arjun Rampal",
+  ],
+  mrithyunjay: [
+    "Unni Mukundan",
+    "Jisshu Sengupta",
     "Jagapathi Babu",
-    "Suhasini Maniratnam",
-    "Y. G. Mahendran",
-    "Vijay Sethupathi",
-    "Nayanthara",
-    "Trisha Krishnan",
+    "Sampath Raj",
+    "Anoop Menon",
+    "Sai Kumar",
   ],
-  honey: [
+  magellan: [
+    "Rodrigo Santoro",
+    "Alvaro Morte",
+    "Sergio Peris-Mencheta",
+    "Niccolo Senni",
+    "Barbara Goenaga",
+    "Adrian Lastra",
+  ],
+  "couple-friendly": [
+    "Pratik Gandhi",
+    "Shreya Dhanwanthary",
+    "Boman Irani",
+    "Ratna Pathak Shah",
+    "Jim Sarbh",
+    "Kubbra Sait",
+  ],
+  "dead-man-s-wire": [
+    "Manoj Bajpayee",
+    "Jaideep Ahlawat",
+    "Mohammed Zeeshan Ayyub",
+    "Tannishtha Chatterjee",
+    "Vipin Sharma",
+    "Jatin Sarna",
+  ],
+  raakaasaa: ["Upendra", "Sudeep", "Shivarajkumar", "Ramya", "Prema", "Sadhu Kokila"],
+  "the-rip": [
+    "Liam Neeson",
+    "Guy Pearce",
+    "Monica Bellucci",
+    "Ray Stevenson",
+    "Louis Mandylor",
+    "Stella Stocker",
+  ],
+  "gaaya-padda-simham": [
+    "Balakrishna",
+    "Jagapathi Babu",
+    "Ravi Kishan",
+    "Shriya Saran",
+    "Prakash Raj",
+    "Brahmanandam",
+  ],
+  "28-years-later-the-bone-temple": [
+    "Cillian Murphy",
+    "Aaron Taylor-Johnson",
+    "Jodie Comer",
+    "Ralph Fiennes",
+    "Jack O'Connell",
+    "Erin Kellyman",
+  ],
+  "hey-balwanth": [
+    "Darshan",
+    "Devaraj",
+    "Jagapathi Babu",
+    "Ravi Shankar",
+    "Asha Bhat",
+    "Chikkanna",
+  ],
+  "the-sheep-detectives": [
+    "Hugh Grant",
+    "Sam Rockwell",
+    "Awkwafina",
+    "Ben Kingsley",
+    "Richard Ayoade",
+    "Danny DeVito",
+  ],
+  devagudi: [
+    "Sai Kumar",
+    "Sharath Babu",
+    "Suhasini",
+    "Nassar",
+    "Kota Srinivasa Rao",
+    "Tanikella Bharani",
+  ],
+  obsession: [
+    "Rose Byrne",
+    "Bobby Cannavale",
+    "Naomi Watts",
+    "Liev Schreiber",
+    "Luke Wilson",
+    "Toni Collette",
+  ],
+  cheekatilo: [
+    "Satyadev",
+    "Regina Cassandra",
+    "Eesha Rebba",
     "Naveen Chandra",
-    "Vijay Sethupathi",
-    "Nayanthara",
-    "Trisha Krishnan",
-    "Karthi",
-    "Sivakarthikeyan",
+    "Srikanth",
+    "Ravi Varma",
   ],
-  lockdown: [
-    "Anupama Parameswaran",
-    "Vijay Sethupathi",
-    "Nayanthara",
-    "Trisha Krishnan",
-    "Karthi",
-    "Sivakarthikeyan",
+  "remarkably-bright-creatures": [
+    "Helen Mirren",
+    "Sally Field",
+    "Tom Hanks",
+    "Richard Jenkins",
+    "Bill Nighy",
+    "Dev Patel",
   ],
-  "hot-spot-2-much": [
-    "Priya Bhavani Shankar",
-    "M. S. Bhaskar",
-    "Thambi Ramaiah",
-    "Rakshan",
-    "Ashwin Kumar",
-    "Bhavani Sre",
+  "nari-nari-naduma-murari": [
+    "Naga Chaitanya",
+    "Tamannaah Bhatia",
+    "Ramya Krishnan",
+    "Rao Ramesh",
+    "Vennela Kishore",
+    "Posani Krishna",
   ],
+  "i-love-boosters": [
+    "Yogi Babu",
+    "Karunakaran",
+    "Redin Kingsley",
+    "Anandaraj",
+    "Munishkanth",
+    "Lollu Sabha Maaran",
+  ],
+};
+
+const ACTOR_PAGE_ALIASES = {
+  "agastya nanda": ["Agastya Nanda"],
+  "alvaro morte": ["\u00c1lvaro Morte"],
+  balakrishna: ["Nandamuri Balakrishna"],
+  karunakaran: ["Karunakaran (actor)"],
+  naresh: ["Naresh (actor)", "Vijaya Naresh"],
+  nasser: ["Nassar (actor)"],
+  "niccolo senni": ["Niccol\u00f2 Senni"],
+  "prajakt koli": ["Prajakta Koli"],
+  rajkiran: ["Rajkiran (actor)"],
+  "rajendra prasad": ["Rajendra Prasad (actor)"],
+  ramya: ["Ramya (actress)"],
+  "ravi shankar": ["P. Ravi Shankar"],
+  "ravi varma": ["Ravi Varma (actor)"],
+  "redin kingsley": ["Redin Kingsley"],
+  rohini: ["Rohini (actress)"],
+  satya: ["Satya Akkala", "Sathya (actor)"],
+  satyadev: ["Satyadev Kancharana"],
+  simran: ["Simran (actress)"],
+  srikanth: ["Srikanth (actor, born 1968)"],
+  vikram: ["Vikram (actor)"],
+};
+
+const ACTOR_IMDB_SEARCH_ALIASES = {
+  naresh: ["V.K. Naresh"],
+  "ravi varma": ["Ravi Varma actor"],
+};
+
+const ACTOR_IMAGE_SOURCE_OVERRIDES = {
+  "lollu sabha maaran": "https://image.tmdb.org/t/p/w500/uWeSvoMN2rOxHsEj5qENJSTGMDZ.jpg",
+  "redin kingsley": "https://img.nowrunning.com/content/Artist/2021/redin-94566/banner.jpg",
+  sananth: "https://movie.webindia123.com/movie/star/actors/regional/tamil/Sananth/Sananth4.jpg",
+  "siddharth nipon goswami":
+    "https://eastindiastory.com/wp-content/uploads/2023/02/Siddharth-Nipon-Goswami.jpg",
 };
 
 const mongoUri = process.env.MONGODB_URI;
@@ -393,12 +410,19 @@ const stats = {
   uploaded: 0,
   unresolved: new Set(),
 };
+const actorAvatarPromises = new Map();
 
 const movieUpdates = [];
 const showUpdates = [];
+const missingCastImages = [];
 
-for (const movie of catalogMovies) {
-  const cast = await buildVerifiedCast(movie, actorAvatars, stats);
+for (const [index, movie] of catalogMovies.entries()) {
+  console.log(`[${index + 1}/${catalogMovies.length}] Resolving cast for ${movie.title}`);
+  const { cast, missing } = await buildVerifiedCast(movie, actorAvatars, stats);
+  if (missing.length) {
+    missingCastImages.push({ movie: movie.title, missing });
+    continue;
+  }
   movieUpdates.push({
     updateOne: {
       filter: { id: movie.id },
@@ -411,6 +435,16 @@ for (const movie of catalogMovies) {
       update: { $set: { cast } },
     },
   });
+}
+
+if (missingCastImages.length) {
+  console.error("Missing cast images:");
+  missingCastImages.forEach((row) => {
+    console.error(`- ${row.movie}: ${row.missing.join(", ")}`);
+  });
+  throw new Error(
+    `${missingCastImages.length} movies have missing exact cast images; database was not updated.`,
+  );
 }
 
 if (movieUpdates.length) await Movie.bulkWrite(movieUpdates);
@@ -429,35 +463,42 @@ if (stats.unresolved.size) {
 await mongoose.disconnect();
 
 async function buildVerifiedCast(movie, actorAvatars, stats) {
-  const names = uniqueNames([
-    ...(VERIFIED_CAST_BY_ID[movie.id] ?? []),
-    ...(movie.cast ?? []).map((member) => member.name),
-  ]).slice(0, TARGET_CAST_COUNT + 6);
+  const configuredNames = VERIFIED_CAST_BY_ID[movie.id] ?? [];
+  const names = uniqueNames(
+    configuredNames.length ? configuredNames : (movie.cast ?? []).map((member) => member.name),
+  ).slice(0, TARGET_CAST_COUNT);
   const rows = [];
-
-  for (const name of names) {
-    if (rows.length >= TARGET_CAST_COUNT) break;
+  for (const [index, name] of names.entries()) {
     const avatar = await resolveActorAvatar(name, actorAvatars, stats);
-    if (!avatar || isGeneratedImageUrl(avatar)) continue;
     rows.push({
       name,
-      role: rows.length === 0 ? "Lead" : "Cast",
-      avatar: normalizeCastImageUrl(avatar, name),
+      role: index === 0 ? "Lead" : "Cast",
+      avatar,
     });
   }
+  const missing = rows
+    .filter((row) => !row.avatar || isGeneratedImageUrl(row.avatar))
+    .map((row) => row.name);
 
-  if (rows.length !== TARGET_CAST_COUNT) {
-    throw new Error(
-      `${movie.title} resolved ${rows.length}/${TARGET_CAST_COUNT} cast images. Missing: ${names
-        .slice(rows.length)
-        .join(", ")}`,
-    );
-  }
-
-  return rows;
+  return {
+    cast: rows.map((row) => ({
+      ...row,
+      avatar: normalizeCastImageUrl(row.avatar, row.name),
+    })),
+    missing,
+  };
 }
 
 async function resolveActorAvatar(name, actorAvatars, stats) {
+  const key = actorKey(name);
+  if (actorAvatarPromises.has(key)) return actorAvatarPromises.get(key);
+
+  const promise = resolveActorAvatarUncached(name, actorAvatars, stats);
+  actorAvatarPromises.set(key, promise);
+  return promise;
+}
+
+async function resolveActorAvatarUncached(name, actorAvatars, stats) {
   const key = actorKey(name);
   const existing = actorAvatars.get(key);
   if (existing) {
@@ -473,7 +514,11 @@ async function resolveActorAvatar(name, actorAvatars, stats) {
   }
 
   const imageUrl =
-    (await findWikipediaSummaryImageUrl(name)) || (await findWikimediaActorImageUrl(name));
+    ACTOR_IMAGE_SOURCE_OVERRIDES[key] ||
+    (await findWikipediaSummaryImageUrl(name)) ||
+    (await findWikimediaActorImageUrl(name)) ||
+    (await findImdbSuggestionImageUrl(name)) ||
+    (await findCommonsSearchImageUrl(name));
   const uploaded = imageUrl ? await uploadActorPhotoSource(name, imageUrl) : "";
   if (uploaded) {
     actorAvatars.set(key, uploaded);
@@ -526,6 +571,7 @@ async function findCloudinaryRealCastAvatar(name) {
 async function uploadActorPhotoSource(name, sourceUrl) {
   try {
     const imageDataUrl = await fetchImageAsDataUrl(sourceUrl);
+    if (!imageDataUrl && sourceUrl.includes("upload.wikimedia.org")) return "";
     return await ensureCloudinaryImageUrl(imageDataUrl || sourceUrl, {
       folder: "movix/real-cast",
       publicId: slugify(name),
@@ -538,14 +584,21 @@ async function uploadActorPhotoSource(name, sourceUrl) {
 }
 
 async function findWikipediaSummaryImageUrl(name) {
-  const candidates = [name, name.replace(/\./g, "").replace(/\s+/g, " ").trim()];
+  const candidates = uniqueNames([
+    ...(ACTOR_PAGE_ALIASES[actorKey(name)] ?? []),
+    name,
+    name.replace(/\./g, "").replace(/\s+/g, " ").trim(),
+  ]);
   for (const candidate of candidates) {
     const data = await fetchJson(
       `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(candidate)}`,
     );
     const description = String(data?.description ?? "").toLowerCase();
     const image = data?.thumbnail?.source || data?.originalimage?.source || "";
-    if (!image || data?.type === "disambiguation") continue;
+    if (data?.type === "disambiguation") continue;
+    const pageImage = image ? "" : await findWikipediaPageImageUrl(candidate);
+    const candidateImage = image || pageImage;
+    if (!candidateImage) continue;
     if (
       description &&
       ![
@@ -561,10 +614,97 @@ async function findWikipediaSummaryImageUrl(name) {
     ) {
       continue;
     }
-    return image;
+    return candidateImage;
   }
 
   return "";
+}
+
+async function findWikipediaPageImageUrl(title) {
+  const pageImageUrl = new URL("https://en.wikipedia.org/w/api.php");
+  pageImageUrl.search = new URLSearchParams({
+    action: "query",
+    format: "json",
+    prop: "pageimages",
+    piprop: "thumbnail|original",
+    pithumbsize: "512",
+    titles: title,
+  }).toString();
+
+  const data = await fetchJson(pageImageUrl);
+  const pages = Object.values(data?.query?.pages ?? {});
+  return pages[0]?.thumbnail?.source || pages[0]?.original?.source || "";
+}
+
+async function findImdbSuggestionImageUrl(name) {
+  const queries = uniqueNames([...(ACTOR_IMDB_SEARCH_ALIASES[actorKey(name)] ?? []), name]);
+
+  for (const query of queries) {
+    const suggestionKey = slugify(query).replace(/-/g, "_");
+    const firstLetter = suggestionKey[0];
+    if (!firstLetter) continue;
+
+    const data = await fetchJson(
+      `https://v3.sg.media-imdb.com/suggestion/${firstLetter}/${suggestionKey}.json`,
+    );
+    const rows = Array.isArray(data?.d) ? data.d : [];
+    const match = rows.find(
+      (row) =>
+        row?.i?.imageUrl &&
+        (actorKey(row.l) === actorKey(name) || actorKey(row.l) === actorKey(query)),
+    );
+    if (match?.i?.imageUrl) return resizeImdbImageUrl(match.i.imageUrl);
+  }
+
+  return "";
+}
+
+function resizeImdbImageUrl(url) {
+  return String(url || "").replace(
+    /\._V1_[^.]*\.(jpe?g|png|webp)$/i,
+    "._V1_UX512_CR0,0,512,512_AL_.$1",
+  );
+}
+
+async function findCommonsSearchImageUrl(name) {
+  const queries = uniqueNames([
+    ...(ACTOR_PAGE_ALIASES[actorKey(name)] ?? []),
+    `${name} actor`,
+    name,
+  ]);
+
+  for (const query of queries) {
+    const searchUrl = new URL("https://commons.wikimedia.org/w/api.php");
+    searchUrl.search = new URLSearchParams({
+      action: "query",
+      format: "json",
+      generator: "search",
+      gsrnamespace: "6",
+      gsrlimit: "5",
+      gsrsearch: query,
+      prop: "imageinfo",
+      iiprop: "url",
+      iiurlwidth: "512",
+    }).toString();
+
+    const data = await fetchJson(searchUrl);
+    const pages = Object.values(data?.query?.pages ?? {}).filter(
+      (page) => page?.imageinfo?.[0]?.thumburl || page?.imageinfo?.[0]?.url,
+    );
+    const match = pages.find((page) => isLikelyActorImage(page?.title, name)) ?? pages[0];
+    const image = match?.imageinfo?.[0]?.thumburl || match?.imageinfo?.[0]?.url || "";
+    if (image) return image;
+  }
+
+  return "";
+}
+
+function isLikelyActorImage(title, name) {
+  const text = actorKey(title);
+  const nameParts = actorKey(name)
+    .split(/\s+/)
+    .filter((part) => part.length > 2);
+  return nameParts.some((part) => text.includes(part));
 }
 
 async function findWikimediaActorImageUrl(name) {
@@ -623,24 +763,29 @@ function isLikelyPerson(item) {
 }
 
 async function fetchImageAsDataUrl(url) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: { "User-Agent": USER_AGENT },
-    });
-    if (!response.ok) return "";
-    const contentType = response.headers.get("content-type") || "image/jpeg";
-    if (!contentType.startsWith("image/")) return "";
-    const bytes = Buffer.from(await response.arrayBuffer());
-    if (!bytes.length || bytes.length > 5 * 1024 * 1024) return "";
-    return `data:${contentType};base64,${bytes.toString("base64")}`;
-  } catch {
-    return "";
-  } finally {
-    clearTimeout(timeout);
+  for (let attempt = 0; attempt < FETCH_RETRY_COUNT; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
+    try {
+      await delay(attempt ? FETCH_RETRY_DELAY_MS * attempt : 120);
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: { "User-Agent": USER_AGENT },
+      });
+      if (response.status === 429) continue;
+      if (!response.ok) return "";
+      const contentType = response.headers.get("content-type") || "image/jpeg";
+      if (!contentType.startsWith("image/")) return "";
+      const bytes = Buffer.from(await response.arrayBuffer());
+      if (!bytes.length || bytes.length > 5 * 1024 * 1024) return "";
+      return `data:${contentType};base64,${bytes.toString("base64")}`;
+    } catch {
+      // Retry transient network/timeouts a few times before giving up.
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+  return "";
 }
 
 async function imageExists(url) {
@@ -661,20 +806,31 @@ async function imageExists(url) {
 }
 
 async function fetchJson(url) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
-    });
-    if (!response.ok) return null;
-    return response.json();
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timeout);
+  for (let attempt = 0; attempt < FETCH_RETRY_COUNT; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), IMAGE_TIMEOUT_MS);
+    try {
+      await delay(attempt ? FETCH_RETRY_DELAY_MS * attempt : 120);
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
+      });
+      if (response.status === 429) continue;
+      if (!response.ok) return null;
+      return response.json();
+    } catch {
+      // Retry transient network/timeouts a few times before giving up.
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+  return null;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 function uniqueNames(values = []) {
