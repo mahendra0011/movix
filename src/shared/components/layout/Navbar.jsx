@@ -320,14 +320,12 @@ function Navbar() {
 
         <Button
           type="button"
-          size="sm"
+          size="icon"
           variant="secondary"
           onClick={toggleTheme}
-          className="gap-2"
           aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
         >
           {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-          <span className="hidden sm:inline">{theme === "light" ? "Dark" : "Light"}</span>
         </Button>
 
         {auth.user ? (
