@@ -113,6 +113,13 @@ const topReviews = [
     text: "Sara Ali Khan is looser and funnier here than I've seen her before. She seems genuinely comfortable in the chaos and it shows.",
     likes: 188,
   },
+  {
+    name: "Aman",
+    rating: "9/10",
+    tags: "",
+    text: "Story simple hai but performances aur pacing movie ko consistently engaging banate hain. Theatre crowd ke saath dekhne me aur maza aata hai.",
+    likes: 172,
+  },
 ];
 
 const MAX_VISIBLE_REVIEWS = 3;
@@ -454,8 +461,15 @@ function MoviePage() {
 
 function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataChange }) {
   const reviewSummary = getReviewDisplaySummary(movie, reviewData);
-  const reviews = getVisibleReviews(reviewData);
+  const [visibleReviewCount, setVisibleReviewCount] = useState(MAX_VISIBLE_REVIEWS);
+  const allReviews = getVisibleReviews(reviewData, Number.POSITIVE_INFINITY);
+  const reviews = allReviews.slice(0, visibleReviewCount);
+  const hiddenReviewCount = Math.max(0, allReviews.length - reviews.length);
   const castMembers = getMovieCast(movie);
+
+  useEffect(() => {
+    setVisibleReviewCount(MAX_VISIBLE_REVIEWS);
+  }, [movie.id, reviewData?.source, reviewData?.reviews?.length]);
 
   return (
     <div className="mx-auto mt-10 grid max-w-[1560px] gap-10 px-4 sm:px-5 lg:px-6">
@@ -475,7 +489,26 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
         <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           <div className="grid gap-3">
             {reviews.length ? (
-              reviews.map((review) => <ReviewCard key={review.id || review.name} review={review} />)
+              <>
+                {reviews.map((review) => (
+                  <ReviewCard key={review.id || review.name} review={review} />
+                ))}
+                {hiddenReviewCount > 0 && (
+                  <div className="flex justify-center pt-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setVisibleReviewCount((count) =>
+                          Math.min(count + MAX_VISIBLE_REVIEWS, allReviews.length),
+                        )
+                      }
+                      className="rounded-lg border border-border/70 bg-card px-5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
+                    >
+                      See all reviews
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <article className="rounded-lg border border-dashed border-border/70 bg-card p-6 text-center">
                 <MessageCircle className="mx-auto h-8 w-8 text-primary" />
@@ -650,7 +683,6 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
   const auth = useSelector((state) => state.auth);
   const [rating, setRating] = useState(userReview?.rating || 9);
   const [text, setText] = useState(userReview?.text || "");
-  const [selectedTags, setSelectedTags] = useState(userReview?.tags || ["#GreatActing"]);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
   const isSignedIn = Boolean(auth.token && auth.user);
@@ -658,16 +690,7 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
   useEffect(() => {
     setRating(userReview?.rating || 9);
     setText(userReview?.text || "");
-    setSelectedTags(userReview?.tags?.length ? userReview.tags : ["#GreatActing"]);
   }, [userReview]);
-
-  const toggleTag = (tag) => {
-    setSelectedTags((current) =>
-      current.includes(tag)
-        ? current.filter((item) => item !== tag)
-        : [...current, tag].slice(0, 5),
-    );
-  };
 
   const submitReview = async (event) => {
     event.preventDefault();
@@ -682,7 +705,7 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
       const data = await createMovieReview(movie.id, {
         rating,
         text,
-        tags: selectedTags,
+        tags: [],
       });
       onReviewDataChange(data);
       setStatus({
@@ -749,26 +772,6 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
             {value}
           </button>
         ))}
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        {reviewTags.slice(0, 6).map(([tag]) => {
-          const active = selectedTags.includes(tag);
-          return (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => toggleTag(tag)}
-              className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
-                active
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border/70 bg-background text-muted-foreground hover:border-primary/50"
-              }`}
-            >
-              {tag}
-            </button>
-          );
-        })}
       </div>
 
       <label className="mt-4 block">
@@ -944,9 +947,7 @@ function buildDetailHighlights(summary) {
 function buildFallbackReviewData(movie) {
   return {
     source: "fallback",
-    reviews: topReviews
-      .slice(0, MAX_VISIBLE_REVIEWS)
-      .map((review, index) => normalizeReview(review, index, movie.id)),
+    reviews: topReviews.map((review, index) => normalizeReview(review, index, movie.id)),
     topTags: reviewTags.map(([tag, count]) => ({ tag, count })),
     summary: {
       average: Number(movie.rating || 0),
@@ -1007,11 +1008,12 @@ function getReviewTags(reviewData) {
   return normalized.length ? normalized : reviewTags.map(([tag, count]) => ({ tag, count }));
 }
 
-function getVisibleReviews(reviewData) {
-  return (reviewData?.reviews ?? [])
+function getVisibleReviews(reviewData, limit = MAX_VISIBLE_REVIEWS) {
+  const reviews = (reviewData?.reviews ?? [])
     .map((review, index) => normalizeReview(review, index, review.movieId))
-    .filter((review) => review.text)
-    .slice(0, MAX_VISIBLE_REVIEWS);
+    .filter((review) => review.text);
+
+  return Number.isFinite(limit) ? reviews.slice(0, limit) : reviews;
 }
 
 function normalizeReview(review, index = 0, movieId = "") {
