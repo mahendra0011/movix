@@ -483,24 +483,21 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
   return (
     <div className="mx-auto grid max-w-[1560px] gap-6 px-4 py-6 sm:px-5 lg:px-6">
       <section className="rounded-lg border border-border/70 bg-card p-5 shadow-xl shadow-foreground/5">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_1.45fr] lg:items-center">
-          <div>
-            <SectionHeader icon={Info} title="About the movie" />
-            <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
-              {movie.description || detailAboutText}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {movie.genres.slice(0, 4).map((genre) => (
-                <span
-                  key={genre}
-                  className="rounded-md border border-border/70 bg-background px-4 py-1.5 text-xs font-semibold text-foreground"
-                >
-                  {genre}
-                </span>
-              ))}
-            </div>
+        <div>
+          <SectionHeader icon={Info} title="About the movie" />
+          <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
+            {movie.description || detailAboutText}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {movie.genres.slice(0, 4).map((genre) => (
+              <span
+                key={genre}
+                className="rounded-md border border-border/70 bg-background px-4 py-1.5 text-xs font-semibold text-foreground"
+              >
+                {genre}
+              </span>
+            ))}
           </div>
-          <DetailsStatsPanel movie={movie} summary={reviewSummary} />
         </div>
       </section>
 
@@ -601,53 +598,6 @@ function SectionTitleBar({ title, actionLabel, icon: Icon }) {
         </button>
       )}
     </div>
-  );
-}
-
-function DetailsStatsPanel({ movie, summary }) {
-  const stats = [
-    {
-      icon: Heart,
-      label: "Audience Love",
-      value: `${formatRatingScore(summary.average || movie.rating)}/10`,
-      tone: "bg-emerald-500/12 text-emerald-600",
-    },
-    {
-      icon: MessageCircle,
-      label: "Review Volume",
-      value: titleCaseCountLabel(summary.countLabel),
-      tone: "bg-violet-500/12 text-violet-600",
-    },
-    {
-      icon: BadgePercent,
-      label: "Offers Live",
-      value: "5 Cards",
-      tone: "bg-orange-400/14 text-orange-600",
-    },
-    {
-      icon: Users,
-      label: "Popular With",
-      value: "Couples & Groups",
-      tone: "bg-sky-500/12 text-sky-600",
-    },
-  ];
-
-  return (
-    <aside className="rounded-lg border border-border/70 bg-background p-4 shadow-lg shadow-foreground/5">
-      <div className="grid divide-y divide-border/60 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
-        {stats.map(({ icon: Icon, label, value, tone }) => (
-          <div key={label} className="flex items-center gap-3 px-4 py-3 first:pl-0 last:pr-0">
-            <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${tone}`}>
-              <Icon className="h-4 w-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="mt-1 truncate text-sm font-extrabold">{value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </aside>
   );
 }
 
@@ -1191,12 +1141,6 @@ function formatReviewCount(count) {
   if (value >= 1000000) return `${trimCompactNumber(value / 1000000)}M reviews`;
   if (value >= 1000) return `${trimCompactNumber(value / 1000)}K reviews`;
   return `${value} ${value === 1 ? "review" : "reviews"}`;
-}
-
-function titleCaseCountLabel(label) {
-  return String(label || "0 Reviews").replace(/\breviews?\b/i, (value) =>
-    value === "review" ? "Review" : "Reviews",
-  );
 }
 
 function trimCompactNumber(value) {
