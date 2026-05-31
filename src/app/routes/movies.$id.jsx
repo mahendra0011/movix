@@ -15,6 +15,7 @@ import {
   Moon,
   Play,
   Search,
+  Send,
   Share2,
   SlidersHorizontal,
   Star,
@@ -485,16 +486,46 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
       <CastShowcase castMembers={castMembers} variant="compact" />
 
       <section>
-        <SectionTitleBar title="Audience reviews" />
-        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-amber-400/15 text-amber-600">
+              <Star className="h-5 w-5 fill-amber-400 text-amber-500" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase text-muted-foreground">Real voices</p>
+              <h2 className="mt-0.5 text-xl font-bold tracking-tight">Audience reviews</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {reviewSummary.countLabel} se curated reactions
+              </p>
+            </div>
+          </div>
+          <div className="flex w-full items-center justify-between gap-3 rounded-lg border border-border/70 bg-card px-4 py-3 shadow-sm sm:w-auto">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <Star className="h-4 w-4 fill-primary text-primary" />
+                <span className="text-lg font-bold">
+                  {formatRatingScore(reviewSummary.average)}/10
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground">Audience rating</p>
+            </div>
+            <span className="h-9 w-px bg-border" />
+            <div className="text-right">
+              <p className="text-lg font-bold">{reviews.length}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">Showing now</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <div className="grid gap-3">
             {reviews.length ? (
               <>
-                {reviews.map((review) => (
-                  <ReviewCard key={review.id || review.name} review={review} />
+                {reviews.map((review, index) => (
+                  <ReviewCard key={review.id || review.name} review={review} index={index} />
                 ))}
                 {hiddenReviewCount > 0 && (
-                  <div className="flex justify-center pt-1">
+                  <div className="flex justify-center pt-2">
                     <button
                       type="button"
                       onClick={() =>
@@ -502,9 +533,10 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
                           Math.min(count + MAX_VISIBLE_REVIEWS, allReviews.length),
                         )
                       }
-                      className="rounded-lg border border-border/70 bg-card px-5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
+                      className="inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-5 py-2.5 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-primary hover:text-primary-foreground"
                     >
                       See all reviews
+                      <ChevronDown className="h-4 w-4" />
                     </button>
                   </div>
                 )}
@@ -725,9 +757,9 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
 
   if (!isSignedIn) {
     return (
-      <article className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
+      <article className="rounded-lg border border-primary/20 bg-card p-5 shadow-md shadow-foreground/5 lg:sticky lg:top-24">
         <div className="flex items-start gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
             <MessageCircle className="h-5 w-5" />
           </div>
           <div>
@@ -747,13 +779,24 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
   return (
     <form
       onSubmit={submitReview}
-      className="rounded-lg border border-primary/20 bg-card p-4 shadow-sm"
+      className="rounded-lg border border-primary/25 bg-card p-5 shadow-md shadow-foreground/5 lg:sticky lg:top-24"
     >
-      <div>
-        <p className="text-sm font-semibold">{userReview ? "Update your review" : "Rate movie"}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {auth.user?.name || auth.user?.email} ke naam se publish hoga.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold">
+            {userReview ? "Update your review" : "Rate this movie"}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {auth.user?.name || auth.user?.email} ke naam se publish hoga.
+          </p>
+        </div>
+        <div className="rounded-lg bg-primary/10 px-3 py-2 text-right text-primary">
+          <div className="flex items-center gap-1 text-lg font-bold">
+            <Star className="h-4 w-4 fill-primary" />
+            {rating}
+          </div>
+          <p className="text-[11px] font-semibold">/10</p>
+        </div>
       </div>
 
       <div className="mt-4 grid grid-cols-5 gap-1.5">
@@ -764,8 +807,8 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
             onClick={() => setRating(value)}
             className={`h-9 rounded-md border text-sm font-semibold transition-colors ${
               rating === value
-                ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                : "border-border/70 bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                : "border-border/70 bg-background text-muted-foreground hover:border-primary/50 hover:bg-primary/5 hover:text-foreground"
             }`}
             aria-label={`Rate ${value} out of 10`}
           >
@@ -782,14 +825,15 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
           rows={4}
           maxLength={1000}
           placeholder="Movie ke acting, story, music ya overall experience ke baare me likho..."
-          className="min-h-28 w-full resize-none rounded-md border border-border/70 bg-background px-3 py-2 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
+          className="min-h-32 w-full resize-none rounded-lg border border-border/70 bg-background px-3 py-2.5 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
         />
       </label>
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <span className="text-xs text-muted-foreground">{text.length}/1000</span>
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" disabled={submitting} className="gap-2">
           {submitting ? "Saving..." : userReview ? "Update review" : "Publish review"}
+          <Send className="h-4 w-4" />
         </Button>
       </div>
 
@@ -808,29 +852,46 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
   );
 }
 
-function ReviewCard({ review }) {
+function ReviewCard({ review, index = 0 }) {
   const ratingLabel =
     review.ratingLabel || `${formatRatingScore(Number.parseFloat(review.rating) || 0)}/10`;
   const helpfulCount = review.helpfulCount ?? review.likes ?? 0;
   const reviewerName = review.name || review.userName || "Movie fan";
+  const accentStyles = [
+    "bg-primary/10 text-primary",
+    "bg-amber-400/15 text-amber-700",
+    "bg-sky-500/12 text-sky-700",
+  ];
+  const accentStyle = accentStyles[index % accentStyles.length];
 
   return (
-    <article className="rounded-lg border border-border/60 bg-card p-4 shadow-sm transition-colors hover:border-primary/40">
+    <article className="group rounded-lg border border-border/60 bg-card p-4 shadow-sm shadow-foreground/5 transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="font-semibold">{reviewerName}</p>
-          <p className="text-xs text-muted-foreground">
-            {review.verifiedBooking === false ? "Reviewed" : "Booked on"}
-          </p>
+        <div className="flex min-w-0 items-start gap-3">
+          <div
+            className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm font-bold ${accentStyle}`}
+          >
+            {initials(reviewerName)}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate font-semibold">{reviewerName}</p>
+            <p className="mt-0.5 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Ticket className="h-3.5 w-3.5 text-primary" />
+              {review.verifiedBooking === false ? "Reviewed" : "Verified booking"}
+            </p>
+          </div>
         </div>
-        <span className="rounded-md bg-primary/10 px-2 py-1 text-sm font-bold text-primary">
+        <span className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1.5 text-sm font-bold text-primary">
+          <Star className="h-3.5 w-3.5 fill-primary" />
           {ratingLabel}
         </span>
       </div>
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{review.text}</p>
-      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
-          <ThumbsUp className="h-3.5 w-3.5" />
+      <p className="mt-4 border-l-2 border-primary/30 pl-3 text-sm leading-relaxed text-muted-foreground">
+        {review.text}
+      </p>
+      <div className="mt-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-muted/60 px-2 py-1">
+          <ThumbsUp className="h-3.5 w-3.5 text-primary" />
           {helpfulCount}
         </span>
         <span>{formatReviewAge(review.createdAt)}</span>
