@@ -118,6 +118,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214740/movix/real-cast/aparshakti-khurana.jpg",
   "arjan bajwa":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/arjan-bajwa.jpg",
+  "arjun das":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780225268/movix/real-cast/arjun-das.jpg",
   "arjun kapoor":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145386/movix/real-cast/arjun-kapoor.jpg",
   "arjun sarja":
@@ -228,6 +230,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/charlize-theron.jpg",
   "chemban vinod":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214374/movix/real-cast/chemban-vinod.jpg",
+  chetan:
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780225279/movix/real-cast/chetan.jpg",
   "chin han":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215053/movix/real-cast/chin-han.jpg",
   chiranjeevi:
@@ -622,6 +626,8 @@ const requestedCastAvatars = {
   "kali reis": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/kali-reis.jpg",
   "kalidas jayaram":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/kalidas-jayaram.jpg",
+  "kalyan dasari":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780225259/movix/real-cast/kalyan-dasari.jpg",
   "kamal haasan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141025/movix/real-cast/kamal-haasan.jpg",
   kanchana:
@@ -855,6 +861,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214798/movix/real-cast/nabha-natesh.jpg",
   "naga chaitanya":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/naga-chaitanya.jpg",
+  "naga mahesh":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780225274/movix/real-cast/naga-mahesh.webp",
   nagarjuna:
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223299/movix/real-cast/nagarjuna.jpg",
   nani: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141366/movix/real-cast/nani.png",
@@ -871,6 +879,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138221/movix/real-cast/naveen-chandra.jpg",
   "naveen polishetty":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140880/movix/real-cast/naveen-polishetty.jpg",
+  "nawab shah":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780225270/movix/real-cast/nawab-shah.jpg",
   "nawazuddin siddiqui":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138195/movix/real-cast/nawazuddin-siddiqui.jpg",
   nayanthara:
@@ -1099,6 +1109,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215150/movix/real-cast/rose-byrne.jpg",
   "roshan mathew":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223169/movix/real-cast/roshan-mathew.jpg",
+  "roshan meka":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780225265/movix/real-cast/roshan-meka.jpg",
   "rukmini vasanth":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140951/movix/real-cast/rukmini-vasanth.jpg",
   rupaul:
@@ -1179,6 +1191,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/shah-rukh-khan.jpg",
   "shahid kapoor":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140867/movix/real-cast/shahid-kapoor.jpg",
+  "shanaya kapoor":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780225263/movix/real-cast/shanaya-kapoor.jpg",
   "sharon duncan brewster":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sharon-duncan-brewster.jpg",
   "sharvari wagh":
@@ -1280,6 +1294,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137587/movix/real-cast/sunny-deol.jpg",
   "supriya pathak":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223120/movix/real-cast/supriya-pathak.jpg",
+  "supriya yarlagadda":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780225276/movix/real-cast/supriya-yarlagadda.jpg",
   "suresh oberoi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/suresh-oberoi.jpg",
   suriya:
@@ -1304,6 +1320,8 @@ const requestedCastAvatars = {
   "taylor john smith":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/taylor-john-smith.jpg",
   "teja sajja": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/teja-sajja.jpg",
+  "temper vamsi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780225273/movix/real-cast/temper-vamsi.jpg",
   "temuera morrison":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214910/movix/real-cast/temuera-morrison.webp",
   "thalapathy vijay":
