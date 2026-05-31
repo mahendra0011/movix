@@ -60,10 +60,11 @@ async function seedMovies() {
   await Movie.bulkWrite(
     catalogMovies.map((movie, index) => {
       const payload = normalizeMovieSeed(movie, index);
+      const { cast, ...movieFields } = payload;
       return {
         updateOne: {
           filter: { id: movie.id },
-          update: { $set: payload },
+          update: { $set: movieFields, $setOnInsert: { cast } },
           upsert: true,
         },
       };

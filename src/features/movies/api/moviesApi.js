@@ -3,7 +3,11 @@ import {
   getMovie as getFallbackMovie,
   movies as fallbackMovies,
 } from "@/features/movies/data/movieCatalog";
-import { isFallbackMovieArtwork, normalizeMovieMedia } from "@/features/movies/services/movieMedia";
+import {
+  isFallbackMovieArtwork,
+  isGeneratedImageUrl,
+  normalizeMovieMedia,
+} from "@/features/movies/services/movieMedia";
 
 const PUBLIC_MOVIE_TIMEOUT_MS = 8000;
 const SHOULD_FETCH_PUBLIC_MOVIES = true;
@@ -45,7 +49,7 @@ function mergeRemoteMovieWithFallback(remoteMovie, id) {
     isFallbackMovieArtwork(remote.backdrop) && fallback?.backdrop
       ? fallback.backdrop
       : remote.backdrop;
-  const cast = remote.cast?.length >= (fallback?.cast?.length ?? 0) ? remote.cast : fallback?.cast;
+  const cast = selectBestCast(remote.cast, fallback?.cast);
 
   return normalizeMovieMedia({
     ...fallback,
@@ -54,6 +58,21 @@ function mergeRemoteMovieWithFallback(remoteMovie, id) {
     backdrop,
     cast,
   });
+}
+
+function selectBestCast(remoteCast = [], fallbackCast = []) {
+  const verifiedRemoteCast = remoteCast.filter(hasRealCastAvatar);
+  const verifiedFallbackCast = (fallbackCast ?? []).filter(hasRealCastAvatar);
+  if (verifiedRemoteCast.length >= 6) return verifiedRemoteCast.slice(0, 6);
+  if (verifiedFallbackCast.length > verifiedRemoteCast.length) {
+    return verifiedFallbackCast.slice(0, 6);
+  }
+  return remoteCast.length ? remoteCast.slice(0, 6) : fallbackCast?.slice(0, 6);
+}
+
+function hasRealCastAvatar(member) {
+  const avatar = String(member?.avatar ?? "");
+  return avatar.startsWith("https://res.cloudinary.com/") && !isGeneratedImageUrl(avatar);
 }
 
 async function fetchMovies(options = {}) {

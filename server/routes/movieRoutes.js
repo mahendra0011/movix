@@ -13,6 +13,7 @@ import { notifyMovieRelease } from "../services/notificationEvents.js";
 import { movies } from "../../src/features/movies/data/movieCatalog.js";
 import {
   isFallbackMovieArtwork,
+  isGeneratedImageUrl,
   normalizeCastImageUrl,
   normalizeMovieImageUrl,
 } from "../../src/features/movies/services/movieMedia.js";
@@ -197,14 +198,28 @@ function mergeCatalogMovieMedia(movie) {
   );
   const cast = normalizeCastInput(movie.cast);
   const catalogCast = normalizeCastInput(catalogMovie.cast);
+  const bestCast = selectBestMovieCast(cast, catalogCast);
 
   return {
     ...catalogMovie,
     ...movie,
     poster: isFallbackMovieArtwork(poster) ? catalogPoster : poster,
     backdrop: isFallbackMovieArtwork(backdrop) ? catalogBackdrop : backdrop,
-    cast: cast.length >= catalogCast.length ? cast : catalogCast,
+    cast: bestCast,
   };
+}
+
+function selectBestMovieCast(movieCast = [], catalogCast = []) {
+  const verifiedMovieCast = movieCast.filter(hasRealCastAvatar);
+  const verifiedCatalogCast = catalogCast.filter(hasRealCastAvatar);
+  if (verifiedMovieCast.length >= 6) return verifiedMovieCast.slice(0, 6);
+  if (verifiedCatalogCast.length > verifiedMovieCast.length) return verifiedCatalogCast.slice(0, 6);
+  return movieCast.length ? movieCast.slice(0, 6) : catalogCast.slice(0, 6);
+}
+
+function hasRealCastAvatar(member) {
+  const avatar = String(member?.avatar ?? "");
+  return avatar.startsWith("https://res.cloudinary.com/") && !isGeneratedImageUrl(avatar);
 }
 
 function mergeMovieLists(...lists) {
