@@ -8,14 +8,18 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Gift,
   Heart,
   Info,
   MessageCircle,
   Moon,
   Play,
   Search,
+  Send,
   Share2,
+  ShieldCheck,
   SlidersHorizontal,
+  Sparkles,
   Star,
   Sunrise,
   ThumbsUp,
@@ -28,12 +32,9 @@ import {
   fetchMovieReviews,
   fetchMovies,
 } from "@/features/movies/api/moviesApi";
+import { CastShowcase } from "@/features/movies/components/CastShowcase";
 import { movies as catalogMovies, theaters, showTimes } from "@/features/movies/data/movieCatalog";
-import {
-  castAvatarFallback,
-  movieImageFallback,
-  normalizeMovieImageUrl,
-} from "@/features/movies/services/movieMedia";
+import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/services/movieMedia";
 import { buildCatalogTheaterListings } from "@/features/movies/services/showSchedule";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
@@ -270,59 +271,64 @@ function MoviePage() {
   };
 
   return (
-    <div className="pb-20">
-      <section className="relative overflow-hidden border-b border-border/60 bg-background">
+    <div className="bg-muted/30 pb-16">
+      <section className="relative overflow-hidden bg-slate-950 text-white">
         <img
           src={normalizeMovieImageUrl(movie.backdrop || movie.poster, movie.title, "backdrop")}
           alt=""
           aria-hidden="true"
-          className="absolute inset-y-0 right-0 h-full w-full object-cover opacity-20 md:w-[72%] md:opacity-25"
+          className="absolute inset-0 h-full w-full object-cover opacity-55"
           onError={(event) => {
             event.currentTarget.src = movieImageFallback(movie.title, "backdrop");
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-background/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/78 to-slate-950/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/25 to-transparent" />
 
         <div className="relative mx-auto max-w-[1560px] px-4 py-8 sm:px-5 md:py-10 lg:px-6">
-          <div className="grid gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[240px_minmax(0,1fr)_280px] lg:items-center">
-            <div className="mx-auto w-full max-w-[220px] overflow-hidden rounded-lg border border-border/70 bg-card shadow-lg shadow-black/10 md:mx-0 md:max-w-none">
-              <img
-                src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
-                alt={movie.title}
-                className="aspect-[2/3] w-full object-cover"
-                onError={(event) => {
-                  event.currentTarget.src = movieImageFallback(movie.title, "poster");
-                }}
-              />
+          <div className="grid gap-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-8 lg:grid-cols-[230px_minmax(0,1fr)_260px] lg:items-center">
+            <div className="mx-auto w-full max-w-[220px] overflow-hidden rounded-lg border border-white/35 bg-white/10 shadow-2xl shadow-black/40 md:mx-0 md:max-w-none">
+              <div className="relative">
+                <img
+                  src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
+                  alt={movie.title}
+                  className="aspect-[2/3] w-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.src = movieImageFallback(movie.title, "poster");
+                  }}
+                />
+                <span className="absolute left-2 top-2 rounded-md bg-primary px-2.5 py-1 text-xs font-extrabold text-primary-foreground shadow-lg">
+                  In Cinemas Now
+                </span>
+              </div>
               <a
                 href={trailerSearchUrl(movie.title)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex h-11 items-center justify-center gap-2 border-t border-border/60 bg-card text-sm font-semibold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                className="flex h-11 items-center justify-center gap-2 bg-white text-sm font-extrabold text-slate-950 transition-colors hover:bg-primary hover:text-primary-foreground"
               >
                 <Play className="h-4 w-4" /> Watch trailer
               </a>
             </div>
 
             <div>
-              <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                <Ticket className="h-4 w-4" />
-                In cinemas now
+              <div className="inline-flex items-center gap-2 text-sm font-extrabold text-amber-300">
+                <Star className="h-4 w-4 fill-amber-300 text-amber-300" />
+                Prime Original
               </div>
-              <h1 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
+              <h1 className="mt-3 max-w-4xl text-4xl font-extrabold tracking-tight md:text-6xl">
                 {movie.title}
               </h1>
 
-              <div className="mt-4 flex flex-wrap items-center gap-4">
+              <div className="mt-4 flex flex-wrap items-center gap-4 text-white">
                 <div className="inline-flex items-center gap-2">
-                  <Star className="h-5 w-5 fill-primary text-primary" />
+                  <Star className="h-5 w-5 fill-amber-300 text-amber-300" />
                   <span className="text-lg font-bold">
                     {formatRatingScore(reviewSummary.average || movie.rating)}/10
                   </span>
                 </div>
-                <span className="text-sm text-muted-foreground">{movie.votes} votes</span>
-                <span className="hidden h-5 w-px bg-border sm:block" />
+                <span className="text-sm font-semibold text-white/85">{movie.votes} votes</span>
+                <span className="hidden h-5 w-px bg-white/40 sm:block" />
                 <span className="text-sm font-medium">{reviewSummary.countLabel}</span>
               </div>
 
@@ -330,20 +336,20 @@ function MoviePage() {
                 {movie.format.map((format) => (
                   <span
                     key={format}
-                    className="rounded-md border border-border/60 bg-card px-3 py-1.5 font-semibold shadow-sm"
+                    className="rounded-full border border-white/35 bg-white/10 px-3 py-1.5 font-bold text-white shadow-sm backdrop-blur"
                   >
                     {format}
                   </span>
                 ))}
-                <span className="rounded-md border border-border/60 bg-card px-3 py-1.5 font-semibold shadow-sm">
+                <span className="rounded-full border border-white/35 bg-white/10 px-3 py-1.5 font-bold text-white shadow-sm backdrop-blur">
                   {movie.language}
                 </span>
-                <span className="rounded-md border border-border/60 bg-card px-3 py-1.5 font-semibold shadow-sm">
+                <span className="rounded-full border border-white/35 bg-white/10 px-3 py-1.5 font-bold text-white shadow-sm backdrop-blur">
                   {movie.certificate}
                 </span>
               </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <div className="mt-6 flex flex-wrap items-center gap-4 text-sm font-medium text-white/90">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-4 w-4" /> {movie.duration}
                 </span>
@@ -360,7 +366,7 @@ function MoviePage() {
                     setBookingMode(true);
                     window.location.hash = "showtimes";
                   }}
-                  className="gap-2"
+                  className="gap-2 font-extrabold shadow-xl shadow-primary/20"
                 >
                   <Ticket className="h-4 w-4" />
                   Book tickets
@@ -382,15 +388,25 @@ function MoviePage() {
                     <Play className="h-4 w-4" /> Trailer
                   </a>
                 </Button>
-                <Button size="lg" variant="ghost" className="gap-2" onClick={addToWatchlist}>
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className="gap-2 border border-white/25 bg-black/25 text-white hover:bg-white hover:text-slate-950"
+                  onClick={addToWatchlist}
+                >
                   <Heart className="h-4 w-4" /> Watchlist
                 </Button>
-                <Button size="lg" variant="ghost" className="gap-2" onClick={shareMovie}>
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className="gap-2 border border-white/25 bg-black/25 text-white hover:bg-white hover:text-slate-950"
+                  onClick={shareMovie}
+                >
                   <Share2 className="h-4 w-4" /> Share
                 </Button>
               </div>
               {message && (
-                <p className="mt-4 rounded-md bg-primary/10 px-3 py-2 text-sm text-primary">
+                <p className="mt-4 rounded-md border border-primary/30 bg-primary/15 px-3 py-2 text-sm font-medium text-primary-foreground">
                   {message}
                 </p>
               )}
@@ -400,15 +416,15 @@ function MoviePage() {
               {pageHighlights.map(({ label, value, icon: Icon }) => (
                 <div
                   key={label}
-                  className="rounded-lg border border-border/60 bg-card/95 p-4 shadow-lg shadow-black/5 backdrop-blur"
+                  className="rounded-lg border border-white/35 bg-slate-950/40 p-4 shadow-xl shadow-black/30 backdrop-blur"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/20 text-primary">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">{label}</p>
-                      <p className="mt-1 text-sm font-semibold">{value}</p>
+                      <p className="text-xs font-medium text-white/75">{label}</p>
+                      <p className="mt-1 text-sm font-extrabold text-white">{value}</p>
                     </div>
                   </div>
                 </div>
@@ -460,41 +476,41 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
   const castMembers = getMovieCast(movie);
 
   return (
-    <div className="mx-auto mt-10 grid max-w-[1560px] gap-10 px-4 sm:px-5 lg:px-6">
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-        <div>
-          <SectionHeader icon={Info} eyebrow="Story" title="About the movie" />
-          <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
-            {movie.description || detailAboutText}
-          </p>
+    <div className="mx-auto grid max-w-[1560px] gap-6 px-4 py-6 sm:px-5 lg:px-6">
+      <section className="rounded-lg border border-border/70 bg-card p-5 shadow-xl shadow-foreground/5">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_1.45fr] lg:items-center">
+          <div>
+            <SectionHeader icon={Info} title="About the movie" />
+            <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
+              {movie.description || detailAboutText}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {movie.genres.slice(0, 4).map((genre) => (
+                <span
+                  key={genre}
+                  className="rounded-md border border-border/70 bg-background px-4 py-1.5 text-xs font-semibold text-foreground"
+                >
+                  {genre}
+                </span>
+              ))}
+            </div>
+          </div>
+          <DetailsStatsPanel movie={movie} summary={reviewSummary} />
         </div>
-        <DetailsStatsPanel movie={movie} summary={reviewSummary} />
       </section>
 
       <OfferSlider />
 
-      <section aria-label="Cast" data-cast>
-        <SectionTitleBar title="Cast" actionLabel="View all" />
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-          {castMembers.map((member) => (
-            <ProfileBubble
-              key={`${member.name}-${member.role}`}
-              name={member.name}
-              role={member.role}
-              avatar={member.avatar}
-            />
-          ))}
-        </div>
-      </section>
+      <CastShowcase castMembers={castMembers} variant="compact" />
 
       <section>
-        <SectionTitleBar title="Audience reviews" />
-        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-          <div className="grid gap-3">
+        <SectionTitleBar icon={Star} title="Audience reviews" />
+        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
+          <div className="overflow-hidden rounded-lg border border-border/70 bg-card shadow-sm">
             {reviews.length ? (
               reviews.map((review) => <ReviewCard key={review.id || review.name} review={review} />)
             ) : (
-              <article className="rounded-lg border border-dashed border-border/70 bg-card p-6 text-center">
+              <article className="p-6 text-center">
                 <MessageCircle className="mx-auto h-8 w-8 text-primary" />
                 <h3 className="mt-3 font-semibold">No audience reviews yet</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -502,38 +518,36 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
                 </p>
               </article>
             )}
+            {reviews.length ? (
+              <div className="border-t border-border/60 px-4 py-3 text-center">
+                <button
+                  type="button"
+                  className="h-10 rounded-md border border-border/70 bg-background px-12 text-sm font-bold shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
+                >
+                  See all reviews
+                </button>
+              </div>
+            ) : null}
           </div>
 
           <ReviewComposer
             movie={movie}
+            summary={reviewSummary}
             userReview={reviewData?.userReview}
             onReviewDataChange={onReviewDataChange}
           />
         </div>
       </section>
 
-      <section>
-        <SectionTitleBar title="Critic reviews" actionLabel="See all" />
-        <article className="mt-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold">Pati Patni Aur Woh Do</p>
-              <p className="mt-1 text-xs text-muted-foreground">News 18</p>
-            </div>
-            <span className="rounded-md bg-primary/10 px-2 py-1 text-sm font-bold text-primary">
-              7/10
-            </span>
-          </div>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            It works best when you surrender to its logic-defying energy and go along for the ride.
-          </p>
-        </article>
-      </section>
-
       {recommendations.length > 0 && (
         <section>
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight">You might also like</h2>
+            <div className="flex items-center gap-3">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-lime-400/20 text-lime-600">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <h2 className="text-xl font-extrabold tracking-tight">You might also like</h2>
+            </div>
             <Link to="/" className="text-sm font-semibold text-primary hover:underline">
               View all
             </Link>
@@ -556,17 +570,26 @@ function SectionHeader({ icon: Icon, eyebrow, title }) {
         <Icon className="h-4 w-4" />
       </div>
       <div>
-        <p className="text-xs font-semibold uppercase text-muted-foreground">{eyebrow}</p>
-        <h2 className="mt-0.5 text-xl font-bold tracking-tight">{title}</h2>
+        {eyebrow ? (
+          <p className="text-xs font-semibold uppercase text-muted-foreground">{eyebrow}</p>
+        ) : null}
+        <h2 className="mt-0.5 text-xl font-extrabold tracking-tight">{title}</h2>
       </div>
     </div>
   );
 }
 
-function SectionTitleBar({ title, actionLabel }) {
+function SectionTitleBar({ title, actionLabel, icon: Icon }) {
   return (
     <div className="flex w-full items-center justify-between gap-3">
-      <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+      <div className="flex min-w-0 items-center gap-3">
+        {Icon ? (
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-amber-300/20 text-amber-500">
+            <Icon className="h-5 w-5 fill-current" />
+          </div>
+        ) : null}
+        <h2 className="text-xl font-extrabold tracking-tight">{title}</h2>
+      </div>
       {actionLabel && (
         <button type="button" className="text-sm font-semibold text-primary hover:underline">
           {actionLabel}
@@ -579,25 +602,42 @@ function SectionTitleBar({ title, actionLabel }) {
 function DetailsStatsPanel({ movie, summary }) {
   const stats = [
     {
-      icon: Star,
-      label: "Audience love",
+      icon: Heart,
+      label: "Audience Love",
       value: `${formatRatingScore(summary.average || movie.rating)}/10`,
+      tone: "bg-emerald-500/12 text-emerald-600",
     },
-    { icon: MessageCircle, label: "Review volume", value: summary.countLabel },
-    { icon: Users, label: "Popular with", value: "Couples & groups" },
+    {
+      icon: MessageCircle,
+      label: "Review Volume",
+      value: titleCaseCountLabel(summary.countLabel),
+      tone: "bg-violet-500/12 text-violet-600",
+    },
+    {
+      icon: BadgePercent,
+      label: "Offers Live",
+      value: "5 Cards",
+      tone: "bg-orange-400/14 text-orange-600",
+    },
+    {
+      icon: Users,
+      label: "Popular With",
+      value: "Couples & Groups",
+      tone: "bg-sky-500/12 text-sky-600",
+    },
   ];
 
   return (
-    <aside className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
-      <div className="divide-y divide-border/60">
-        {stats.map(({ icon: Icon, label, value }) => (
-          <div key={label} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+    <aside className="rounded-lg border border-border/70 bg-background p-4 shadow-lg shadow-foreground/5">
+      <div className="grid divide-y divide-border/60 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+        {stats.map(({ icon: Icon, label, value, tone }) => (
+          <div key={label} className="flex items-center gap-3 px-4 py-3 first:pl-0 last:pr-0">
+            <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${tone}`}>
               <Icon className="h-4 w-4" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="mt-1 text-sm font-semibold">{value}</p>
+              <p className="mt-1 truncate text-sm font-extrabold">{value}</p>
             </div>
           </div>
         ))}
@@ -618,12 +658,20 @@ function OfferSlider() {
   return (
     <section className="min-w-0">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <SectionTitleBar title="Top offers for you" actionLabel="View all" />
-        <div className="hidden gap-2 sm:flex">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
+            <Gift className="h-5 w-5" />
+          </div>
+          <h2 className="text-xl font-extrabold tracking-tight">Top offers for you</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <button type="button" className="hidden text-sm font-semibold text-primary sm:block">
+            View all
+          </button>
           <button
             type="button"
             onClick={() => slideOffers(-1)}
-            className="grid h-9 w-9 place-items-center rounded-md border border-border/60 bg-card text-muted-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
+            className="grid h-9 w-9 place-items-center rounded-md border border-border/60 bg-card text-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
             aria-label="Slide offers left"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -631,7 +679,7 @@ function OfferSlider() {
           <button
             type="button"
             onClick={() => slideOffers(1)}
-            className="grid h-9 w-9 place-items-center rounded-md border border-border/60 bg-card text-muted-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
+            className="grid h-9 w-9 place-items-center rounded-md border border-border/60 bg-card text-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
             aria-label="Slide offers right"
           >
             <ChevronRight className="h-4 w-4" />
@@ -645,8 +693,8 @@ function OfferSlider() {
           data-offer-slider="true"
           className="flex w-full min-w-0 snap-x gap-3 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {detailOffers.map((offer) => (
-            <OfferCard key={offer} offer={offer} />
+          {detailOffers.map((offer, index) => (
+            <OfferCard key={offer} offer={offer} index={index} />
           ))}
         </div>
       </div>
@@ -654,18 +702,27 @@ function OfferSlider() {
   );
 }
 
-function OfferCard({ offer }) {
+function OfferCard({ offer, index }) {
+  const visuals = [
+    { icon: Ticket, tone: "bg-blue-500/12 text-blue-600" },
+    { icon: BadgePercent, tone: "bg-pink-500/12 text-pink-600" },
+    { icon: Gift, tone: "bg-amber-400/18 text-amber-700" },
+    { icon: BadgePercent, tone: "bg-sky-500/12 text-sky-600" },
+  ];
+  const visual = visuals[index % visuals.length];
+  const Icon = visual.icon;
+
   return (
     <button
       type="button"
-      className="group min-h-28 w-[78vw] shrink-0 snap-start rounded-lg border border-border/60 bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-primary/5 sm:w-80 lg:w-[22rem] xl:w-[24rem]"
+      className="group min-h-28 w-[82vw] shrink-0 snap-start rounded-lg border border-border/60 bg-card p-4 text-left shadow-md shadow-foreground/5 transition-colors hover:border-primary/50 hover:bg-primary/5 sm:w-80 lg:w-[22rem] xl:w-[23.5rem]"
     >
       <div className="flex items-center gap-3">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-          <BadgePercent className="h-5 w-5" />
+        <div className={`grid h-14 w-14 shrink-0 place-items-center rounded-lg ${visual.tone}`}>
+          <Icon className="h-7 w-7" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold leading-5">{offer}</p>
+          <p className="line-clamp-2 text-sm font-extrabold leading-5">{offer}</p>
           <p className="mt-1 text-xs text-muted-foreground group-hover:text-primary">
             Tap to view details
           </p>
@@ -676,35 +733,7 @@ function OfferCard({ offer }) {
   );
 }
 
-function ProfileBubble({ name, role, avatar }) {
-  const imageSrc = avatar || castAvatarFallback(name);
-  const fallbackSrc = castAvatarFallback(name);
-
-  return (
-    <div className="rounded-lg border border-border/60 bg-card p-4 text-center shadow-sm transition-transform hover:-translate-y-0.5">
-      <div className="relative mx-auto grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-primary/15 ring-1 ring-primary/20">
-        <span className="text-sm font-bold text-foreground">{initials(name)}</span>
-        <img
-          src={imageSrc}
-          alt={name}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover"
-          onError={(event) => {
-            if (event.currentTarget.src !== fallbackSrc) {
-              event.currentTarget.src = fallbackSrc;
-              return;
-            }
-            event.currentTarget.style.display = "none";
-          }}
-        />
-      </div>
-      <p className="mt-2 text-sm font-medium">{name}</p>
-      <p className="text-xs text-muted-foreground">{role}</p>
-    </div>
-  );
-}
-
-function ReviewComposer({ movie, userReview, onReviewDataChange }) {
+function ReviewComposer({ movie, summary, userReview, onReviewDataChange }) {
   const auth = useSelector((state) => state.auth);
   const [rating, setRating] = useState(userReview?.rating || 9);
   const [text, setText] = useState(userReview?.text || "");
@@ -760,16 +789,18 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
 
   if (!isSignedIn) {
     return (
-      <article className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-            <MessageCircle className="h-5 w-5" />
-          </div>
+      <article className="rounded-lg border border-border/70 bg-card p-5 shadow-xl shadow-foreground/5">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-semibold">Write a review</h3>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Rating aur review add karne ke liye sign in karo.
-            </p>
+            <h3 className="text-lg font-extrabold">Rate this movie</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Sign in to publish your review.</p>
+          </div>
+          <div className="text-right">
+            <div className="inline-flex items-center gap-1 text-2xl font-extrabold">
+              <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+              {formatRatingScore(summary?.average || movie.rating)}
+            </div>
+            <p className="text-xs text-muted-foreground">/10</p>
           </div>
         </div>
         <Button asChild className="mt-4 w-full">
@@ -782,13 +813,22 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
   return (
     <form
       onSubmit={submitReview}
-      className="rounded-lg border border-primary/20 bg-card p-4 shadow-sm"
+      className="rounded-lg border border-border/70 bg-card p-5 shadow-xl shadow-foreground/5"
     >
-      <div>
-        <p className="text-sm font-semibold">{userReview ? "Update your review" : "Rate movie"}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {auth.user?.name || auth.user?.email} ke naam se publish hoga.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-extrabold">Rate this movie</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Based on {summary?.countLabel || "audience reviews"}
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="inline-flex items-center gap-1 text-2xl font-extrabold">
+            <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+            {formatRatingScore(summary?.average || movie.rating)}
+          </div>
+          <p className="text-xs text-muted-foreground">/10</p>
+        </div>
       </div>
 
       <div className="mt-4 grid grid-cols-5 gap-1.5">
@@ -808,6 +848,7 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
           </button>
         ))}
       </div>
+      <p className="mt-2 text-center text-xs text-muted-foreground">Select your rating</p>
 
       <div className="mt-4 flex flex-wrap gap-1.5">
         {reviewTags.slice(0, 6).map(([tag]) => {
@@ -836,15 +877,16 @@ function ReviewComposer({ movie, userReview, onReviewDataChange }) {
           onChange={(event) => setText(event.target.value)}
           rows={4}
           maxLength={1000}
-          placeholder="Movie ke acting, story, music ya overall experience ke baare me likho..."
+          placeholder="Write your review..."
           className="min-h-28 w-full resize-none rounded-md border border-border/70 bg-background px-3 py-2 text-sm leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
         />
       </label>
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <span className="text-xs text-muted-foreground">{text.length}/1000</span>
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" disabled={submitting} className="gap-2">
           {submitting ? "Saving..." : userReview ? "Update review" : "Publish review"}
+          {!submitting && <Send className="h-4 w-4" />}
         </Button>
       </div>
 
@@ -868,27 +910,48 @@ function ReviewCard({ review }) {
     review.ratingLabel || `${formatRatingScore(Number.parseFloat(review.rating) || 0)}/10`;
   const helpfulCount = review.helpfulCount ?? review.likes ?? 0;
   const reviewerName = review.name || review.userName || "Movie fan";
+  const starCount = Math.max(1, Math.min(5, Math.round(Number(review.rating || 0) / 2)));
 
   return (
-    <article className="rounded-lg border border-border/60 bg-card p-4 shadow-sm transition-colors hover:border-primary/40">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="font-semibold">{reviewerName}</p>
-          <p className="text-xs text-muted-foreground">
-            {review.verifiedBooking === false ? "Reviewed" : "Booked on"}
-          </p>
+    <article className="border-b border-border/60 p-4 transition-colors hover:bg-primary/5">
+      <div className="grid gap-3 sm:grid-cols-[44px_minmax(0,1fr)_auto]">
+        <div className="grid h-11 w-11 place-items-center rounded-full bg-primary/15 text-sm font-extrabold text-primary">
+          {initials(reviewerName)}
         </div>
-        <span className="rounded-md bg-primary/10 px-2 py-1 text-sm font-bold text-primary">
-          {ratingLabel}
-        </span>
-      </div>
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{review.text}</p>
-      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
-          <ThumbsUp className="h-3.5 w-3.5" />
-          {helpfulCount}
-        </span>
-        <span>{formatReviewAge(review.createdAt)}</span>
+
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-extrabold">{reviewerName}</p>
+            {review.verifiedBooking !== false && (
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-primary">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Verified
+              </span>
+            )}
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-foreground/85">{review.text}</p>
+          <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <ThumbsUp className="h-3.5 w-3.5" />
+              {helpfulCount}
+            </span>
+            <span>{formatReviewAge(review.createdAt)}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 sm:flex-col sm:items-end">
+          <div className="flex items-center gap-0.5 text-primary">
+            {Array.from({ length: 5 }, (_, index) => (
+              <Star
+                key={index}
+                className={`h-4 w-4 ${index < starCount ? "fill-current" : "text-muted-foreground/30"}`}
+              />
+            ))}
+          </div>
+          <span className="rounded-md bg-primary/10 px-3 py-1 text-sm font-extrabold text-primary">
+            {ratingLabel}
+          </span>
+        </div>
       </div>
     </article>
   );
@@ -901,14 +964,14 @@ function SuggestionCard({ movie }) {
       params={{ id: movie.id }}
       className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
     >
-      <div className="relative aspect-[2/3] bg-muted">
-        {movie.poster ? (
+      <div className="relative aspect-[16/9] bg-muted">
+        {movie.poster || movie.backdrop ? (
           <img
-            src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
+            src={normalizeMovieImageUrl(movie.backdrop || movie.poster, movie.title, "backdrop")}
             alt={movie.title}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
             onError={(event) => {
-              event.currentTarget.src = movieImageFallback(movie.title, "poster");
+              event.currentTarget.src = movieImageFallback(movie.title, "backdrop");
             }}
           />
         ) : (
@@ -923,9 +986,9 @@ function SuggestionCard({ movie }) {
         </span>
       </div>
       <div className="p-3">
-        <p className="min-h-10 text-sm font-semibold leading-5 text-foreground">{movie.title}</p>
+        <p className="truncate text-sm font-extrabold leading-5 text-foreground">{movie.title}</p>
         <p className="mt-1 truncate text-xs text-muted-foreground">
-          {(movie.genres ?? []).slice(0, 2).join(", ") || movie.language}
+          {(movie.genres ?? []).slice(0, 2).join(" - ") || movie.language}
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
           <span className="rounded-md border border-border/70 px-2 py-0.5">
@@ -982,8 +1045,7 @@ function getMovieCast(movie) {
       role: String(member?.role ?? "Actor").trim() || "Actor",
       avatar: String(member?.avatar ?? "").trim(),
     }))
-    .filter((member) => member.name)
-    .slice(0, 6);
+    .filter((member) => member.name);
 
   return cast.length ? cast : detailCast.map((name) => ({ name, role: "Actor", avatar: "" }));
 }
@@ -1124,6 +1186,12 @@ function formatReviewCount(count) {
   if (value >= 1000000) return `${trimCompactNumber(value / 1000000)}M reviews`;
   if (value >= 1000) return `${trimCompactNumber(value / 1000)}K reviews`;
   return `${value} ${value === 1 ? "review" : "reviews"}`;
+}
+
+function titleCaseCountLabel(label) {
+  return String(label || "0 Reviews").replace(/\breviews?\b/i, (value) =>
+    value === "review" ? "Review" : "Reviews",
+  );
 }
 
 function trimCompactNumber(value) {

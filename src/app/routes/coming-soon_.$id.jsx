@@ -15,12 +15,12 @@ import {
   Ticket,
   Users,
 } from "lucide-react";
+import { CastShowcase } from "@/features/movies/components/CastShowcase";
 import { comingSoonMovies as fallbackMovies } from "@/features/movies/data/movieCatalog";
 import {
   castAvatarFallback,
   isGeneratedImageUrl,
   movieImageFallback,
-  normalizeCastImageUrl,
   normalizeMovieImageUrl,
   normalizeMovieMedia,
 } from "@/features/movies/services/movieMedia";
@@ -209,28 +209,7 @@ function ComingSoonDetailPage() {
           <ReleasePanel movie={movie} castCount={castMembers.length} />
         </section>
 
-        <section aria-label="Cast">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight">Cast</h2>
-            <span className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary">
-              {castMembers.length} members
-            </span>
-          </div>
-          {castMembers.length ? (
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-              {castMembers.map((member) => (
-                <CastCard key={`${member.name}-${member.role}`} member={member} />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-4 rounded-lg border border-dashed border-border/70 bg-card p-6">
-              <p className="text-sm font-semibold">Cast announcement pending</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Verified cast photos will appear here after the distributor confirms them.
-              </p>
-            </div>
-          )}
-        </section>
+        <CastShowcase castMembers={castMembers} />
 
         <section className="grid gap-4 md:grid-cols-3">
           <InfoBand
@@ -308,34 +287,6 @@ function ReleasePanel({ movie, castCount }) {
         ))}
       </div>
     </aside>
-  );
-}
-
-function CastCard({ member }) {
-  const fallbackSrc = castAvatarFallback(member.name);
-  const imageSrc = normalizeCastImageUrl(member.avatar, member.name);
-
-  return (
-    <article className="rounded-lg border border-border/60 bg-card p-4 text-center shadow-sm transition-transform hover:-translate-y-0.5">
-      <div className="relative mx-auto grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-primary/15 ring-1 ring-primary/20">
-        <span className="text-sm font-bold text-foreground">{initials(member.name)}</span>
-        <img
-          src={imageSrc}
-          alt={member.name}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover"
-          onError={(event) => {
-            if (event.currentTarget.src !== fallbackSrc) {
-              event.currentTarget.src = fallbackSrc;
-              return;
-            }
-            event.currentTarget.style.display = "none";
-          }}
-        />
-      </div>
-      <p className="mt-3 text-sm font-semibold">{member.name}</p>
-      <p className="text-xs text-muted-foreground">{member.role || "Cast"}</p>
-    </article>
   );
 }
 
@@ -517,17 +468,6 @@ function formatReleaseMonth(value) {
 
 function trailerSearchUrl(title) {
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} official trailer`)}`;
-}
-
-function initials(value) {
-  return (
-    String(value || "Cast")
-      .split(/\s+/)
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "C"
-  );
 }
 
 export { Route };
