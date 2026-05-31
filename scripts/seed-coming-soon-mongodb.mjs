@@ -51,6 +51,7 @@ const theaterPool = catalogTheaters.slice(0, THEATER_POOL_SIZE);
 await ensureTheaters(theaterPool, owner._id);
 
 const operations = [];
+const expectedShowIds = [];
 const uploadedAvatarNames = new Set();
 const unresolvedAvatarNames = new Set();
 
@@ -72,6 +73,7 @@ for (const [movieIndex, movie] of comingSoonMovies.entries()) {
   operations.push(
     ...theaters.map((theater, theaterIndex) => {
       const id = `coming-soon-${movie.id}-${theater.id}-${theaterIndex + 1}`;
+      expectedShowIds.push(id);
       const screenId = `${theater.id}-coming-soon`;
       return {
         updateOne: {
@@ -127,9 +129,16 @@ for (let index = 0; index < operations.length; index += 250) {
   await Show.bulkWrite(operations.slice(index, index + 250));
 }
 
+const staleShows = await Show.deleteMany({
+  id: { $nin: expectedShowIds },
+  listingType: "coming-soon",
+  movieId: { $in: comingSoonMovies.map((movie) => movie.id) },
+});
+
 console.log(
   `Seeded ${comingSoonMovies.length} coming-soon movies and ${operations.length} listings with catalog cast rows.`,
 );
+console.log(`Removed ${staleShows.deletedCount} stale coming-soon listings for catalog movies.`);
 console.log(
   `Verified movie cast lookup: enriched ${verifiedMovieCastByTitle.size} titles from Wikidata.`,
 );
@@ -240,8 +249,11 @@ async function ensureTheaters(theaters, ownerId) {
 }
 
 async function buildCast(movie, actorAvatars, verifiedMovieCastByTitle, stats) {
-  const verifiedCast = verifiedMovieCastByTitle.get(movieTitleKey(movie.title)) ?? [];
-  const cast = uniqueCast([...(movie.cast ?? []), ...verifiedCast]);
+  const catalogCast = uniqueCast(movie.cast ?? []);
+  const verifiedCast = catalogCast.length
+    ? []
+    : (verifiedMovieCastByTitle.get(movieTitleKey(movie.title)) ?? []);
+  const cast = catalogCast.length ? catalogCast : uniqueCast(verifiedCast);
   const rows = [];
 
   for (const [index, member] of cast.slice(0, TARGET_CAST_COUNT).entries()) {

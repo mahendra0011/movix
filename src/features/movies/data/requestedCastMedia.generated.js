@@ -7,6 +7,7 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214555/movix/real-cast/abhay-verma.jpg",
   "abhimanyu singh":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/abhimanyu-singh.jpg",
+  abhirami: "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/abhirami.jpg",
   "abhishek bachchan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/abhishek-bachchan.jpg",
   "abhishek banerjee":
@@ -23,6 +24,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/aditya-roy-kapur.jpg",
   "adivi sesh":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138217/movix/real-cast/adivi-sesh.png",
+  "adrian lester":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/adrian-lester.jpg",
   "adriana barraza":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/adriana-barraza.jpg",
   "aftab shivdasani":
@@ -37,6 +40,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214397/movix/real-cast/akashdeep-sabir.jpg",
   "akshay kumar":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140958/movix/real-cast/akshay-kumar.jpg",
+  "akshay oberoi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/akshay-oberoi.jpg",
   "akshaye khanna":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/akshaye-khanna.jpg",
   "al pacino":
@@ -52,6 +57,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141011/movix/real-cast/ali-fazal.jpg",
   "alia bhatt":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138223/movix/real-cast/alia-bhatt.jpg",
+  "allison janney":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/allison-janney.jpg",
   "allu arjun":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141025/movix/real-cast/allu-arjun.jpg",
   "alok nath": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/alok-nath.jpg",
@@ -59,15 +66,20 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/alycia-debnam-carey.jpg",
   "alyssa sutherland":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214661/movix/real-cast/alyssa-sutherland.jpg",
+  "amelia eve": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/amelia-eve.jpg",
   "amitabh bachchan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140860/movix/real-cast/amitabh-bachchan.jpg",
   "amrita rao": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/amrita-rao.jpg",
   "amritha aiyer":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216039/movix/real-cast/amritha-aiyer.jpg",
+  "anand bharathi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/anand-bharathi.jpg",
   "anasuya bharadwaj":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/anasuya-bharadwaj.jpg",
   "andrew garfield":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/andrew-garfield.jpg",
+  "andrew koji":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/andrew-koji.jpg",
   "andy serkis":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/andy-serkis.jpg",
   "angela bassett":
@@ -90,6 +102,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214279/movix/real-cast/anthony-anderson.jpg",
   "anthony hopkins":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214550/movix/real-cast/anthony-hopkins.jpg",
+  "anthony mackie":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/anthony-mackie.jpg",
   "antonio banderas":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214983/movix/real-cast/antonio-banderas.jpg",
   "antony perumbavoor":
@@ -108,6 +122,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145386/movix/real-cast/arjun-kapoor.jpg",
   "arjun sarja":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/arjun-sarja.jpg",
+  "arnas fedaravicius":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/arnas-fedaravicius.jpg",
   "arshad warsi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140990/movix/real-cast/arshad-warsi.jpg",
   "arshia zeinali":
@@ -120,10 +136,14 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/asha-sarath.jpg",
   "ashika ranganath":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140878/movix/real-cast/ashika-ranganath.jpg",
+  "ashok galla":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/ashok-galla.jpg",
   "ashutosh rana":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/ashutosh-rana.jpg",
   "atul kulkarni":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214346/movix/real-cast/atul-kulkarni.jpg",
+  "aunjanue ellis":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/aunjanue-ellis.jpg",
   "austin abrams":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/austin-abrams.jpg",
   "austin butler":
@@ -135,24 +155,34 @@ const requestedCastAvatars = {
   awkwafina: "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/awkwafina.jpg",
   "ayushmann khurrana":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138225/movix/real-cast/ayushmann-khurrana.jpg",
+  "bahar beihaghi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/bahar-beihaghi.jpg",
   "bahar pars":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214579/movix/real-cast/bahar-pars.webp",
+  "bala parasar":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/bala-parasar.jpg",
   "bam margera":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214489/movix/real-cast/bam-margera.jpg",
   "banita sandhu":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/banita-sandhu.jpg",
   "barry keoghan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214890/movix/real-cast/barry-keoghan.jpg",
+  "becca tilley":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/becca-tilley.jpg",
   "ben affleck":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140856/movix/real-cast/ben-affleck.jpg",
   "benedict cumberbatch":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214453/movix/real-cast/benedict-cumberbatch.jpg",
   "benedict wong":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/benedict-wong.jpg",
+  "bhavani sre":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/bhavani-sre.jpg",
   "bhavna pani":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/bhavna-pani.jpg",
   "bhumi pednekar":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214737/movix/real-cast/bhumi-pednekar.jpg",
+  "biju menon":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223169/movix/real-cast/biju-menon.jpg",
   "bill hader":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214939/movix/real-cast/bill-hader.jpg",
   "bill skarsgard":
@@ -168,8 +198,12 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214973/movix/real-cast/bowen-yang.jpg",
   "bradley cooper":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214552/movix/real-cast/bradley-cooper.webp",
+  "brady wagner":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/brady-wagner.jpg",
+  brahmaji: "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/brahmaji.jpg",
   brahmanandam:
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140937/movix/real-cast/brahmanandam.png",
+  "brian le": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/brian-le.jpg",
   "brooke lynn hytes":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214308/movix/real-cast/brooke-lynn-hytes.jpg",
   "bruce campbell":
@@ -208,15 +242,31 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/chris-pratt.jpg",
   "christoph waltz":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214465/movix/real-cast/christoph-waltz.jpg",
+  "chunky panday":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/chunky-panday.jpg",
   "cillian murphy":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/cillian-murphy.jpg",
   "claire foy": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/claire-foy.jpg",
   "cliff curtis":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/cliff-curtis.jpg",
+  "clive russell":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/clive-russell.jpg",
+  "cody cameron":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/cody-cameron.jpg",
+  "cody rhodes":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/cody-rhodes.jpg",
   "colin farrell":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214844/movix/real-cast/colin-farrell.jpg",
+  "colin firth":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/colin-firth.jpg",
+  "colin hanks":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/colin-hanks.jpg",
   "colin jost":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214756/movix/real-cast/colin-jost.jpg",
+  "colman domingo":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/colman-domingo.jpg",
+  "conan o brien":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/conan-o-brien.jpg",
   "connie nielsen":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216829/movix/real-cast/connie-nielsen.jpg",
   "courteney cox":
@@ -229,12 +279,22 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141016/movix/real-cast/dan-stevens.jpg",
   "danny mcbride":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215067/movix/real-cast/danny-mcbride.jpg",
+  "dave england":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/dave-england.jpg",
+  "dave sheridan":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/dave-sheridan.jpg",
   "david arquette":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/david-arquette.png",
   "david corenswet":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215006/movix/real-cast/david-corenswet.jpg",
+  "david dastmalchian":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/david-dastmalchian.jpg",
   "david harewood":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214469/movix/real-cast/david-harewood.webp",
+  "david krumholtz":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/david-krumholtz.jpg",
+  "deepa thomas":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/deepa-thomas.jpg",
   "deepak dobriyal":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/deepak-dobriyal.jpg",
   "deepika padukone":
@@ -251,6 +311,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214205/movix/real-cast/dharna-durga.webp",
   "dheekshith shetty":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/dheekshith-shetty.jpg",
+  dheena:
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223174/movix/real-cast/dheena.jpg",
   "diana penty":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214434/movix/real-cast/diana-penty.jpg",
   "dianne wiest":
@@ -283,22 +345,31 @@ const requestedCastAvatars = {
   "dwayne johnson":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141013/movix/real-cast/dwayne-johnson.jpg",
   "ed harris": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/ed-harris.jpg",
+  "eddie marsan":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/eddie-marsan.jpg",
   "eddie murphy":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141013/movix/real-cast/eddie-murphy.jpg",
   "ehren mcghehey":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214492/movix/real-cast/ehren-mcghehey.webp",
   "elliot page":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/elliot-page.jpg",
+  "emily beecham":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/emily-beecham.jpg",
   "emily blunt":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141041/movix/real-cast/emily-blunt.jpg",
+  "emma myers": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/emma-myers.jpg",
   "emraan hashmi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141007/movix/real-cast/emraan-hashmi.jpg",
   "eric bauza":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214714/movix/real-cast/eric-bauza.jpg",
+  "errol shand":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/errol-shand.jpg",
+  "esha gupta": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/esha-gupta.jpg",
   "esther anil":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/esther-anil.jpg",
   "ethan embry":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/ethan-embry.jpg",
+  "eve hewson": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/eve-hewson.jpg",
   "eve ridley":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215359/movix/real-cast/eve-ridley.jpg",
   "fahadh faasil":
@@ -320,15 +391,21 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214514/movix/real-cast/gal-gadot.webp",
   "gary oldman":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214547/movix/real-cast/gary-oldman.jpg",
+  "gautami kapoor":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223124/movix/real-cast/gautami-kapoor.jpg",
   "gautham vasudev menon":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/gautham-vasudev-menon.jpg",
   gauthami: "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/gauthami.jpg",
+  "geetanjali kulkarni":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/geetanjali-kulkarni.jpg",
   "george maryan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/george-maryan.jpg",
   "getup srinu":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/getup-srinu.jpg",
   "giancarlo esposito":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214909/movix/real-cast/giancarlo-esposito.webp",
+  "gil perez abraham":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/gil-perez-abraham.jpg",
   "ginger minj":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214285/movix/real-cast/ginger-minj.jpg",
   "glen powell":
@@ -339,11 +416,18 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/govardhan-asrani.jpg",
   "gracy singh":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/gracy-singh.jpg",
+  "greta lee": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/greta-lee.jpg",
+  "gulshan devaiah":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/gulshan-devaiah.jpg",
   "guy pearce": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/guy-pearce.jpg",
   "gwyneth paltrow":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216229/movix/real-cast/gwyneth-paltrow.jpg",
+  "harish uthaman":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/harish-uthaman.jpg",
   "harshita gaur":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214826/movix/real-cast/harshita-gaur.jpg",
+  "harshita ramchandani":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/harshita-ramchandani.jpg",
   "harshvardhan rane":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141026/movix/real-cast/harshvardhan-rane.jpg",
   "hayley atwell":
@@ -358,6 +442,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/henry-cavill.jpg",
   "hidetaka yoshioka":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216329/movix/real-cast/hidetaka-yoshioka.jpg",
+  "himesh patel":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/himesh-patel.jpg",
   "hrithik roshan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141018/movix/real-cast/hrithik-roshan.jpg",
   "hugh jackman":
@@ -366,6 +452,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/hugh-keays-byrne.jpg",
   "huma qureshi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/huma-qureshi.jpg",
+  "hunter doohan":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/hunter-doohan.jpg",
   "ian mcshane":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/ian-mcshane.jpg",
   "idris elba":
@@ -375,10 +463,18 @@ const requestedCastAvatars = {
   "indrajith sukumaran":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/indrajith-sukumaran.jpg",
   "isabel may": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/isabel-may.jpg",
+  "isabella nefar":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/isabella-nefar.jpg",
   "isha chawla":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/isha-chawla.jpg",
+  "ishita dutta":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/ishita-dutta.jpg",
+  "island austin":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/island-austin.jpg",
   "ismael cruz cordova":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214843/movix/real-cast/ismael-cruz-cordova.jpg",
+  "jaaved jaaferi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jaaved-jaaferi.jpg",
   "jack black":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215088/movix/real-cast/jack-black.jpg",
   "jack o connell":
@@ -399,10 +495,14 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138212/movix/real-cast/jagapathi-babu.jpg",
   "jaideep ahlawat":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jaideep-ahlawat.jpg",
+  "james ortiz":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/james-ortiz.jpg",
   "jane levy":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214607/movix/real-cast/jane-levy.jpg",
   "janhvi kapoor":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141027/movix/real-cast/janhvi-kapoor.jpg",
+  "jasmin savoy brown":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jasmin-savoy-brown.jpg",
   "jason momoa":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jason-momoa.jpg",
   "jason statham":
@@ -419,8 +519,12 @@ const requestedCastAvatars = {
   "javier botet":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216268/movix/real-cast/javier-botet.jpg",
   jayaram: "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jayaram.jpg",
+  "jayme lawson":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jayme-lawson.jpg",
   "jean claude van damme":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215167/movix/real-cast/jean-claude-van-damme.webp",
+  "jeeja yanin":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jeeja-yanin.jpg",
   "jeff bergman":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214727/movix/real-cast/jeff-bergman.jpg",
   "jeffrey wright":
@@ -429,6 +533,10 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jennifer-connelly.jpg",
   "jensen ackles":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jensen-ackles.jpg",
+  "jeremy allen white":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jeremy-allen-white.jpg",
+  "jesse plemons":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jesse-plemons.jpg",
   "jessica gunning":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jessica-gunning.jpg",
   "jessica henwick":
@@ -439,10 +547,15 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216016/movix/real-cast/jimmy-sheirgill.jpg",
   "jisshu sengupta":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jisshu-sengupta.jpg",
+  "jitendra joshi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jitendra-joshi.jpg",
   "joan cusack":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215360/movix/real-cast/joan-cusack.jpg",
   "jodie comer":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jodie-comer.jpg",
+  "joe taslim": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/joe-taslim.jpg",
+  "joey iwanaga":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/joey-iwanaga.jpg",
   "joey king": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/joey-king.jpg",
   "john abraham":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141359/movix/real-cast/john-abraham.jpg",
@@ -459,27 +572,41 @@ const requestedCastAvatars = {
   "john ratzenberger":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214932/movix/real-cast/john-ratzenberger.webp",
   "john tui": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/john-tui.jpg",
+  "johnno wilson":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/johnno-wilson.jpg",
   "johnny knoxville":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141039/movix/real-cast/johnny-knoxville.jpg",
   "johnny lever":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214800/movix/real-cast/johnny-lever.jpg",
   "joju george":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214379/movix/real-cast/joju-george.jpg",
+  "jon abrahams":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jon-abrahams.jpg",
+  "jon bernthal":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jon-bernthal.jpg",
   "jon favreau":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214867/movix/real-cast/jon-favreau.jpg",
   "jon hamm": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jon-hamm.jpg",
   "jonathan groff":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jonathan-groff.jpg",
+  "jonno davies":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jonno-davies.jpg",
+  "jonny coyne":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/jonny-coyne.jpg",
   "joseph gordon levitt":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/joseph-gordon-levitt.jpg",
   "joseph quinn":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/joseph-quinn.jpg",
+  "joseph zada":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/joseph-zada.jpg",
   "josh brolin":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/josh-brolin.jpg",
   "josh gad":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215065/movix/real-cast/josh-gad.jpg",
   "josh hartnett":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/josh-hartnett.jpg",
+  "josh o connor":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/josh-o-connor.jpg",
   "jr ntr":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141021/movix/real-cast/jr-ntr.jpg",
   "juhi chawla":
@@ -497,8 +624,11 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/kalidas-jayaram.jpg",
   "kamal haasan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141025/movix/real-cast/kamal-haasan.jpg",
+  kanchana:
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223705/movix/real-cast/kanchana.jpg",
   "kangana ranaut":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216029/movix/real-cast/kangana-ranaut.jpg",
+  "karan deol": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/karan-deol.jpg",
   "kareena kapoor":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/kareena-kapoor.jpg",
   "karen gillan":
@@ -516,6 +646,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214911/movix/real-cast/katee-sackhoff.jpg",
   "katrina kaif":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/katrina-kaif.jpg",
+  "kayadu lohar":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223747/movix/real-cast/kayadu-lohar.jpg",
   "keana marie":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214416/movix/real-cast/keana-marie.jpg",
   "keanu reeves":
@@ -526,8 +658,11 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138186/movix/real-cast/keke-palmer.jpg",
   "kelly macdonald":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214468/movix/real-cast/kelly-macdonald.jpg",
+  "kelvin harrison jr":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/kelvin-harrison-jr.jpg",
   "ken jeong":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214759/movix/real-cast/ken-jeong.jpg",
+  "ken leung": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/ken-leung.jpg",
   "keri russell":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216271/movix/real-cast/keri-russell.jpg",
   "kevin hart":
@@ -542,6 +677,7 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137476/movix/real-cast/krithi-shetty.jpg",
   "kriti sanon":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140971/movix/real-cast/kriti-sanon.jpg",
+  "kubra sait": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/kubra-sait.jpg",
   "kumud mishra":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/kumud-mishra.jpg",
   "kunal kapoor":
@@ -554,8 +690,11 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216227/movix/real-cast/lance-reddick.jpg",
   "lara dutta":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215312/movix/real-cast/lara-dutta.jpg",
+  "lara wolf": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/lara-wolf.jpg",
   "latrice royale":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214299/movix/real-cast/latrice-royale.jpg",
+  "laura gordon":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/laura-gordon.jpg",
   "laurence fishburne":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/laurence-fishburne.jpg",
   "lee pace": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/lee-pace.jpg",
@@ -565,24 +704,40 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/leila-george.jpg",
   "leonardo dicaprio":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/leonardo-dicaprio.jpg",
+  "letitia wright":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/letitia-wright.jpg",
   "lewis tan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215044/movix/real-cast/lewis-tan.jpg",
   "lily sullivan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214629/movix/real-cast/lily-sullivan.webp",
   "lin shaye":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141017/movix/real-cast/lin-shaye.jpg",
+  "lionel boyce":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/lionel-boyce.jpg",
+  "liza colon zayas":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/liza-colon-zayas.jpg",
   "louis partridge":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/louis-partridge.jpg",
+  "luciane buchanan":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/luciane-buchanan.jpg",
+  "lupita nyong o":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/lupita-nyong-o.jpg",
+  "madhu shalini":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223227/movix/real-cast/madhu-shalini.jpg",
   "madhuri dixit":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/madhuri-dixit.jpg",
   "mahershala ali":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mahershala-ali.jpg",
   "mahesh babu":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mahesh-babu.jpg",
+  "maisie richardson sellers":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/maisie-richardson-sellers.jpg",
   "maisie williams":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/maisie-williams.jpg",
   "malavika mohanan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215110/movix/real-cast/malavika-mohanan.webp",
+  "mamitha baiju":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223234/movix/real-cast/mamitha-baiju.jpg",
   "maniesh paul":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214229/movix/real-cast/maniesh-paul.jpg",
   "manjot singh":
@@ -593,6 +748,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/manoj-bajpayee.jpg",
   "manoj joshi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/manoj-joshi.jpg",
+  "marcia marcia marcia":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/marcia-marcia-marcia.jpg",
   "margaret qualley":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/margaret-qualley.jpg",
   "marisa tomei":
@@ -603,6 +760,10 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214505/movix/real-cast/mark-wahlberg.jpg",
   "marlon wayans":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214269/movix/real-cast/marlon-wayans.jpg",
+  "mary louise parker":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mary-louise-parker.jpg",
+  "mason gooding":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mason-gooding.jpg",
   "matt berry":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214953/movix/real-cast/matt-berry.jpg",
   "matt damon":
@@ -611,19 +772,31 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/matthew-modine.jpg",
   "matthias schoenaerts":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215020/movix/real-cast/matthias-schoenaerts.jpg",
+  "maude davey":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/maude-davey.jpg",
   "mawra hocane":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mawra-hocane.jpg",
+  "max minghella":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/max-minghella.jpg",
+  "maya da costa":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/maya-da-costa.jpg",
+  "maya hawke": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/maya-hawke.jpg",
   "maya rudolph":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215084/movix/real-cast/maya-rudolph.jpg",
   "mckenna grace":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mckenna-grace.jpg",
+  "medha rana": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/medha-rana.jpg",
   "meenakshi chaudhary":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137340/movix/real-cast/meenakshi-chaudhary.jpg",
+  "meezaan jafri":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223124/movix/real-cast/meezaan-jafri.jpg",
   "mehcad brooks":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215042/movix/real-cast/mehcad-brooks.jpg",
   "meng er zhang":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/meng-er-zhang.jpg",
   "mia goth": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mia-goth.jpg",
+  "mia rodgers":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223744/movix/real-cast/mia-rodgers.webp",
   "michael caine":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/michael-caine.jpg",
   "michael pena":
@@ -654,9 +827,12 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216007/movix/real-cast/mithoon.jpg",
   "mithun chakraborty":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215212/movix/real-cast/mithun-chakraborty.jpg",
+  "mohan babu": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mohan-babu.jpg",
   mohanlal:
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140966/movix/real-cast/mohanlal.jpg",
   "mona singh": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mona-singh.jpg",
+  "mrunal jadhav":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/mrunal-jadhav.jpg",
   "mrunal thakur":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140866/movix/real-cast/mrunal-thakur.jpg",
   "mukesh rishi":
@@ -669,11 +845,21 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/murali-sharma.jpg",
   "murli sharma":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/murli-sharma.jpg",
+  "murray bartlett":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/murray-bartlett.jpg",
+  "myra molloy":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223660/movix/real-cast/myra-molloy.jpg",
   mysskin:
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216756/movix/real-cast/mysskin.jpg",
   "nabha natesh":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214798/movix/real-cast/nabha-natesh.jpg",
+  "naga chaitanya":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/naga-chaitanya.jpg",
+  nagarjuna:
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223299/movix/real-cast/nagarjuna.jpg",
   nani: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141366/movix/real-cast/nani.png",
+  "naomi ackie":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/naomi-ackie.jpg",
   narain: "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/narain.jpg",
   "naseeruddin shah":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/naseeruddin-shah.jpg",
@@ -693,6 +879,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214364/movix/real-cast/nazriya-nazim.jpg",
   "neena gupta":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140863/movix/real-cast/neena-gupta.jpg",
+  "neeru bajwa":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223120/movix/real-cast/neeru-bajwa.jpg",
   "neetu kapoor":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214231/movix/real-cast/neetu-kapoor.jpg",
   "neil patrick harris":
@@ -713,22 +901,29 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214617/movix/real-cast/nika-king.webp",
   "nikhil siddharth":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/nikhil-siddhartha.jpg",
+  "nikhil siddhartha":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/nikhil-siddhartha.jpg",
   "nikita dutta":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/nikita-dutta.jpg",
   "noah centineo":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141021/movix/real-cast/noah-centineo.jpg",
+  "noah jupe": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/noah-jupe.jpg",
   "nonso anozie":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/nonso-anozie.jpg",
   "nora fatehi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214686/movix/real-cast/nora-fatehi.webp",
   "nushrratt bharuccha":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/nushrratt-bharuccha.jpg",
+  "omid abtahi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/omid-abtahi.jpg",
   "oscar isaac":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138189/movix/real-cast/oscar-isaac.jpg",
   "owen wilson":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/owen-wilson.jpg",
   "p j byrne":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214714/movix/real-cast/p-j-byrne.jpg",
+  "paalin kabak":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/paalin-kabak.jpg",
   "pallavi sharda":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215349/movix/real-cast/pallavi-sharda.jpg",
   "pankaj tripathi":
@@ -773,12 +968,20 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140952/movix/real-cast/prakash-raj.jpg",
   "pramod shetty":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/pramod-shetty.jpg",
+  "pranay vaka":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/pranay-vaka.jpg",
+  "prateik babbar":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223231/movix/real-cast/prateik-babbar.jpg",
   "pratik gandhi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215005/movix/real-cast/pratik-gandhi.jpg",
   "preeti jhangiani":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/preeti-jhangiani.jpg",
+  "preity mukhundhan":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/preity-mukhundhan.jpg",
   "preity zinta":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140978/movix/real-cast/preity-zinta.jpg",
+  "preston lacy":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/preston-lacy.jpg",
   "prithviraj sukumaran":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141504/movix/real-cast/prithviraj-sukumaran.jpg",
   "priya bhavani shankar":
@@ -788,6 +991,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/priyanka-arul-mohan.jpg",
   "priyanka chopra":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/priyanka-chopra.jpg",
+  "priyanka chopra jonas":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223179/movix/real-cast/priyanka-chopra-jonas.jpg",
   "priyanka mohan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214388/movix/real-cast/priyanka-mohan.jpg",
   "pulkit samrat":
@@ -798,6 +1003,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214942/movix/real-cast/quinta-brunson.jpg",
   "r madhavan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138231/movix/real-cast/r-madhavan.jpg",
+  "rachel bloom":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/rachel-bloom.jpg",
   "rachel brosnahan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215022/movix/real-cast/rachel-brosnahan.jpg",
   "rachel house":
@@ -806,8 +1013,18 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216224/movix/real-cast/rachel-weisz.jpg",
   "rachel zegler":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215141/movix/real-cast/rachel-zegler.jpg",
+  "raghav juyal":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/raghav-juyal.jpg",
+  "ragini dwivedi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223166/movix/real-cast/ragini-dwivedi.jpg",
   "rahul verma":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214413/movix/real-cast/rahul-verma.jpg",
+  "rahul vijay":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/rahul-vijay.jpg",
+  "raj b shetty":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/raj-b-shetty.jpg",
+  "rajat kapoor":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/rajat-kapoor.jpg",
   "rajesh sharma":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214781/movix/real-cast/rajesh-sharma.jpg",
   rajinikanth:
@@ -858,6 +1075,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137214/movix/real-cast/revathi.jpg",
   "richa chadha":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/richa-chadha.jpg",
+  "riddhi kumar":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/riddhi-kumar.jpg",
   "rishab shetty":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140944/movix/real-cast/rishab-shetty.jpg",
   "riteish deshmukh":
@@ -872,8 +1091,14 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141011/movix/real-cast/robert-pattinson.jpg",
   "rodrigo santoro":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/rodrigo-santoro.jpg",
+  "roland moller":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/roland-moller.jpg",
+  "roman reigns":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/roman-reigns.jpg",
   "rose byrne":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215150/movix/real-cast/rose-byrne.jpg",
+  "roshan mathew":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223169/movix/real-cast/roshan-mathew.jpg",
   "rukmini vasanth":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140951/movix/real-cast/rukmini-vasanth.jpg",
   rupaul:
@@ -884,8 +1109,11 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214505/movix/real-cast/ryan-reynolds.jpg",
   "ryunosuke kamiki":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138246/movix/real-cast/ryunosuke-kamiki.jpg",
+  "s j suryah": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/s-j-suryah.jpg",
+  "saba azad": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/saba-azad.jpg",
   "sachin khedekar":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214347/movix/real-cast/sachin-khedekar.jpg",
+  "sadie sink": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sadie-sink.jpg",
   "sai kumar":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214389/movix/real-cast/sai-kumar.jpg",
   "sai pallavi":
@@ -898,12 +1126,16 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141018/movix/real-cast/salman-khan.jpg",
   "sam rockwell":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sam-rockwell.jpg",
+  "sam spruell":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sam-spruell.jpg",
   "sam worthington":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141510/movix/real-cast/sam-worthington.jpg",
   "samantha ruth prabhu":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140876/movix/real-cast/samantha-ruth-prabhu.jpg",
   "samara weaving":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214650/movix/real-cast/samara-weaving.jpg",
+  "sampoornesh babu":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sampoornesh-babu.jpg",
   samuthirakani:
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215309/movix/real-cast/samuthirakani.jpg",
   samyuktha:
@@ -920,6 +1152,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138196/movix/real-cast/sanjay-mishra.jpg",
   "sanya malhotra":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sanya-malhotra.jpg",
+  "sapna pabbi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sapna-pabbi.jpg",
   "sapthami gowda":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sapthami-gowda.jpg",
   "sara ali khan":
@@ -927,10 +1161,16 @@ const requestedCastAvatars = {
   sathyaraj: "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sathyaraj.jpg",
   "satish kaushik":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214319/movix/real-cast/satish-kaushik.jpg",
+  "satya akkala":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/satya-akkala.jpg",
+  "satyadev kancharana":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/satyadev-kancharana.jpg",
   "saurabh shukla":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/saurabh-shukla.jpg",
   "scott adkins":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215180/movix/real-cast/scott-adkins.webp",
+  "scott eastwood":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/scott-eastwood.jpg",
   "sebastian stan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sebastian-stan.jpg",
   "shabana azmi":
@@ -939,24 +1179,32 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/shah-rukh-khan.jpg",
   "shahid kapoor":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140867/movix/real-cast/shahid-kapoor.jpg",
+  "sharon duncan brewster":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sharon-duncan-brewster.jpg",
   "sharvari wagh":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140969/movix/real-cast/sharvari-wagh.png",
   sharwanand:
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140889/movix/real-cast/sharwanand.jpg",
   "shawn wayans":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214280/movix/real-cast/shawn-wayans.jpg",
+  "sheeba chaddha":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sheeba-chaddha.jpg",
   "shia labeouf":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/shia-labeouf.jpg",
   "shine tom chacko":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/shine-tom-chacko.jpg",
   "shiva rajkumar":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/shiva-rajkumar.jpg",
+  "shivathmika rajashekar":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223658/movix/real-cast/shivathmika-rajashekar.jpg",
   "shraddha kapoor":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141025/movix/real-cast/shraddha-kapoor.jpg",
   "shreya saran":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214823/movix/real-cast/shreya-saran.jpg",
   "shreyas talpade":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216675/movix/real-cast/shreyas-talpade.jpg",
+  "shriya saran":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/shriya-saran.jpg",
   "shruti haasan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214577/movix/real-cast/shruti-haasan.jpg",
   "shweta tripathi":
@@ -984,12 +1232,22 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sonakshi-sinha.jpg",
   "sonali kulkarni":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sonali-kulkarni.jpg",
+  "sonam bajwa":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sonam-bajwa.jpg",
   soori: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216218/movix/real-cast/soori.jpg",
   "soubin shahir":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214365/movix/real-cast/soubin-shahir.jpg",
+  "souheila yacoub":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/souheila-yacoub.jpg",
+  "sparsh shrivastava":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sparsh-shrivastava.jpg",
   sreeleela:
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140893/movix/real-cast/sreeleela.png",
+  "sri gouri priya reddy":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/sri-gouri-priya-reddy.jpg",
   srikanth: "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/srikanth.jpg",
+  "srikanth meka":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223311/movix/real-cast/srikanth-meka.jpg",
   "srinidhi shetty":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/srinidhi-shetty.jpg",
   "srinivas reddy":
@@ -1002,6 +1260,9 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/stephen-lang.jpg",
   "steve o":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214489/movix/real-cast/steve-o.png",
+  "stockard channing":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/stockard-channing.jpg",
+  subbaraju: "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/subbaraju.jpg",
   sudeep:
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140956/movix/real-cast/sudeep.jpg",
   "sudesh berry":
@@ -1017,6 +1278,8 @@ const requestedCastAvatars = {
   sunil: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214238/movix/real-cast/sunil.jpg",
   "sunny deol":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780137587/movix/real-cast/sunny-deol.jpg",
+  "supriya pathak":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223120/movix/real-cast/supriya-pathak.jpg",
   "suresh oberoi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/suresh-oberoi.jpg",
   suriya:
@@ -1034,8 +1297,12 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214771/movix/real-cast/tahir-raj-bhasin.jpg",
   "tamannaah bhatia":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/tamannaah-bhatia.jpg",
+  "tandi wright":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/tandi-wright.jpg",
   "tara sutaria":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/tara-sutaria.jpg",
+  "taylor john smith":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/taylor-john-smith.jpg",
   "teja sajja": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/teja-sajja.jpg",
   "temuera morrison":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214910/movix/real-cast/temuera-morrison.webp",
@@ -1053,6 +1320,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141012/movix/real-cast/tim-allen.jpg",
   "timothee chalamet":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141367/movix/real-cast/timothee-chalamet.jpg",
+  "tisca chopra":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780223234/movix/real-cast/tisca-chopra.jpg",
   "tom blyth":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215127/movix/real-cast/tom-blyth.jpg",
   "tom cruise":
@@ -1063,6 +1332,10 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214506/movix/real-cast/tom-hardy.jpg",
   "tom holland":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141010/movix/real-cast/tom-holland.jpg",
+  "tom rhys harries":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/tom-rhys-harries.jpg",
+  "tone bell": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/tone-bell.jpg",
+  "tony hale": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/tony-hale.jpg",
   "tovino thomas":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780145391/movix/real-cast/tovino-thomas.jpg",
   "triptii dimri":
@@ -1087,6 +1360,8 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140943/movix/real-cast/varun-dhawan.jpg",
   "varun sharma":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141024/movix/real-cast/varun-sharma.jpg",
+  "vedang raina":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/vedang-raina.jpg",
   venkatesh:
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140875/movix/real-cast/venkatesh.jpg",
   "vennela kishore":
@@ -1099,20 +1374,27 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214665/movix/real-cast/vidyut-jammwal.jpg",
   "vijay deverakonda":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780138204/movix/real-cast/vijay-deverakonda.jpg",
+  "vijay raaz": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/vijay-raaz.jpg",
   "vijay sethupathi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140899/movix/real-cast/vijay-sethupathi.jpg",
   "vijay varma":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/vijay-varma.jpg",
+  "vikas muppala":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/vikas-muppala.jpg",
   "vin diesel":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141033/movix/real-cast/vin-diesel.jpg",
   "ving rhames":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780216147/movix/real-cast/ving-rhames.jpg",
   "viola davis":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215145/movix/real-cast/viola-davis.jpg",
+  "vishaal singh rathore":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/vishaal-singh-rathore.jpg",
   "vishal jethwa":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214773/movix/real-cast/vishal-jethwa.jpg",
   "vishwak sen":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214347/movix/real-cast/vishwak-sen.jpg",
+  "viva harsha":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/viva-harsha.jpg",
   "vivek oberoi":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/vivek-oberoi.jpg",
   "wallace shawn":
@@ -1131,17 +1413,24 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214712/movix/real-cast/will-forte.jpg",
   "willem dafoe":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214470/movix/real-cast/willem-dafoe.jpg",
+  "wyatt russell":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/wyatt-russell.jpg",
+  "xie miao": "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/xie-miao.jpg",
   "xochitl gomez":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214954/movix/real-cast/xochitl-gomez.jpg",
   "yahya abdul mateen ii":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/yahya-abdul-mateen-ii.jpg",
   yash: "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780140941/movix/real-cast/yash.jpg",
+  "yayan ruhian":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/yayan-ruhian.jpg",
   "yogi babu":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780215128/movix/real-cast/yogi-babu.jpg",
   "zach cherry":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/zach-cherry.jpg",
   "zahrah s khan":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/zahrah-s-khan.jpg",
+  "zar amir ebrahimi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/movix/real-cast/zar-amir-ebrahimi.jpg",
   "zarina wahab":
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780214320/movix/real-cast/zarina-wahab.jpg",
   zendaya:

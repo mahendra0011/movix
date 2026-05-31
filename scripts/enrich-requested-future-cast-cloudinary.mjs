@@ -22,11 +22,15 @@ const CLOUDINARY_ONLY = process.env.CLOUDINARY_ONLY === "1";
 const REWRITE_ONLY = process.env.REWRITE_ONLY === "1";
 const USER_AGENT = "movix-requested-future-cast-enrichment/1.0";
 const actorAliases = {
+  [castKey("Arjun Das")]: "Arjun Das (actor)",
   [castKey("Bill Skarsgard")]: "Bill Skarsgard",
+  [castKey("Chetan")]: "Chetan (actor)",
   [castKey("Jr. NTR")]: "N. T. Rama Rao Jr.",
   [castKey("Meng'er Zhang")]: "Meng'er Zhang",
+  [castKey("Nagarjuna")]: "Nagarjuna (actor)",
   [castKey("R. Madhavan")]: "R Madhavan",
   [castKey("Silambarasan TR")]: "Silambarasan",
+  [castKey("Srikanth Meka")]: "Srikanth (Telugu actor)",
   [castKey("Thalapathy Vijay")]: "Vijay (actor)",
 };
 

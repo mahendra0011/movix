@@ -514,7 +514,7 @@ async function writeRequestedCastMedia(value) {
       .filter(([, avatar]) => isUsableCastAvatar(avatar))
       .sort(([left], [right]) => left.localeCompare(right)),
   );
-  const body = `const requestedCastAvatars = ${JSON.stringify(ordered, null, 2)};\n\nfunction getRequestedCastAvatar(name) {\n  return requestedCastAvatars[castKey(name)] || "";\n}\n\nfunction castKey(value) {\n  return String(value || "")\n    .normalize("NFKD")\n    .replace(/[\\u0300-\\u036f]/g, "")\n    .trim()\n    .toLowerCase();\n}\n\nexport { getRequestedCastAvatar, requestedCastAvatars };\n`;
+  const body = `const requestedCastAvatars = ${JSON.stringify(ordered, null, 2)};\n\nfunction getRequestedCastAvatar(name) {\n  return requestedCastAvatars[castKey(name)] || "";\n}\n\nfunction castKey(value) {\n  return String(value || "")\n    .normalize("NFKD")\n    .replace(/[\\u0300-\\u036f]/g, "")\n    .replace(/[^a-z0-9]+/gi, " ")\n    .replace(/\\s+/g, " ")\n    .trim()\n    .toLowerCase();\n}\n\nexport { getRequestedCastAvatar, requestedCastAvatars };\n`;
   await writeFile(OUTPUT_FILE, body, "utf8");
 }
 
@@ -562,6 +562,8 @@ function castKey(value) {
   return String(value || "")
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/gi, " ")
+    .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
 }
