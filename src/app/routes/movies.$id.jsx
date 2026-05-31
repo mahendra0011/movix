@@ -575,7 +575,7 @@ function OfferSlider() {
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
             <Gift className="h-5 w-5" />
           </div>
-          <h2 className="text-xl font-extrabold tracking-tight">Top offers for you</h2>
+          <h2 className="text-xl font-bold tracking-tight">Top offers for you</h2>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" className="hidden text-sm font-semibold text-primary sm:block">
@@ -635,7 +635,7 @@ function OfferCard({ offer, index }) {
           <Icon className="h-7 w-7" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-sm font-extrabold leading-5">{offer}</p>
+          <p className="line-clamp-2 text-sm font-semibold leading-5">{offer}</p>
           <p className="mt-1 text-xs text-muted-foreground group-hover:text-primary">
             Tap to view details
           </p>

@@ -32,13 +32,13 @@ function CastShowcase({
             <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
               <Users className="h-5 w-5" />
             </div>
-            <h2 className="text-xl font-extrabold tracking-tight">{title}:</h2>
+            <h2 className="text-xl font-bold tracking-tight">{title}</h2>
           </div>
           {showViewAction && (
             <button
               type="button"
               onClick={() => setShowAll((current) => !current)}
-              className="text-sm font-bold text-primary hover:underline"
+              className="text-sm font-semibold text-primary hover:underline"
             >
               {showAll ? "Show less" : "View all"}
             </button>
@@ -194,13 +194,13 @@ function CompactCastCard({ member, isLead }) {
 
   return (
     <article className="w-[164px] shrink-0 snap-start rounded-lg border border-border/70 bg-card p-3 text-center shadow-md shadow-foreground/5 transition-transform hover:-translate-y-1 sm:w-[176px]">
-      <div className="relative mx-auto h-24 w-24 overflow-hidden rounded-full bg-primary/12 ring-4 ring-primary/15">
-        <span className="absolute inset-0 grid place-items-center text-sm font-bold text-muted-foreground">
-          {initials(name)}
-        </span>
+      <div
+        data-initials={initials(name)}
+        className="relative mx-auto h-24 w-24 overflow-hidden rounded-full bg-primary/12 ring-4 ring-primary/15 before:absolute before:inset-0 before:grid before:place-items-center before:text-sm before:font-semibold before:text-muted-foreground before:content-[attr(data-initials)]"
+      >
         <img
           src={imageSrc}
-          alt={name}
+          alt=""
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover"
           onError={(event) => {
@@ -212,7 +212,7 @@ function CompactCastCard({ member, isLead }) {
           }}
         />
       </div>
-      <h3 className="mt-3 line-clamp-2 min-h-10 text-sm font-extrabold leading-5">{name}</h3>
+      <h3 className="mt-3 line-clamp-2 min-h-10 text-sm font-semibold leading-5">{name}</h3>
       <p className="text-xs text-muted-foreground">{role}</p>
     </article>
   );
@@ -226,13 +226,13 @@ function CastShowcaseCard({ member, isLead }) {
 
   return (
     <article className="group w-[72vw] max-w-[220px] shrink-0 snap-start overflow-hidden rounded-lg border border-border/70 bg-card text-left shadow-sm transition-transform hover:-translate-y-1 sm:w-[190px] lg:w-[200px] xl:w-[210px]">
-      <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-        <span className="absolute inset-0 grid place-items-center text-lg font-bold text-muted-foreground">
-          {initials(name)}
-        </span>
+      <div
+        data-initials={initials(name)}
+        className="relative aspect-[3/4] overflow-hidden bg-muted before:absolute before:inset-0 before:grid before:place-items-center before:text-lg before:font-semibold before:text-muted-foreground before:content-[attr(data-initials)]"
+      >
         <img
           src={imageSrc}
-          alt={name}
+          alt=""
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           onError={(event) => {
@@ -252,7 +252,7 @@ function CastShowcaseCard({ member, isLead }) {
         </span>
       </div>
       <div className="min-h-32 p-4">
-        <h3 className="line-clamp-2 text-base font-extrabold leading-6 text-foreground">{name}</h3>
+        <h3 className="line-clamp-2 text-base font-bold leading-6 text-foreground">{name}</h3>
         <p className="mt-2 text-sm text-muted-foreground">{role}</p>
         <span className="mt-5 block h-0.5 w-8 rounded-full bg-primary" />
       </div>
