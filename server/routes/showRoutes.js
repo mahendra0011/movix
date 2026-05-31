@@ -542,9 +542,12 @@ function mergeComingSoonMovie(current = {}, next = {}, key) {
 }
 
 function selectBestCast(current = [], next = []) {
-  const currentCast = verifiedCastList(current);
-  const nextCast = verifiedCastList(next);
-  return nextCast.length >= currentCast.length ? nextCast : currentCast;
+  const currentVerifiedCount = verifiedCastList(current).length;
+  const nextVerifiedCount = verifiedCastList(next).length;
+  if (nextVerifiedCount !== currentVerifiedCount) {
+    return nextVerifiedCount > currentVerifiedCount ? next : current;
+  }
+  return next.length >= current.length ? next : current;
 }
 
 function verifiedCastList(cast = []) {
@@ -560,7 +563,6 @@ function normalizeCastList(cast = []) {
       const name = String(member?.name ?? member ?? "").trim();
       if (!name) return null;
       const avatar = normalizeCastImageUrl(member?.avatar, name);
-      if (isGeneratedImageUrl(avatar)) return null;
       return {
         name,
         role: String(member?.role ?? "Actor").trim() || "Actor",

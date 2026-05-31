@@ -1,8 +1,11 @@
 import { castAvatarFallback, movieImageFallback } from "../services/movieMedia.js";
 import { extraComingSoonMovieSeeds } from "./extraMovieCatalog.js";
 import { getRealCastAvatar, getRealMovieMedia } from "./realMovieMedia.generated.js";
+import { getRequestedCastAvatar } from "./requestedCastMedia.generated.js";
+import { requestedFutureComingSoonMovieSeeds } from "./requestedFutureMovieSeeds.js";
+import { requestedComingSoonMovieSeeds } from "./requestedUpcomingMovieSeeds.js";
 
-const movieSeeds = [
+const baseMovieSeeds = [
   m(
     "Ramayana: Part 1",
     ["Ranbir Kapoor", "Sai Pallavi", "Yash"],
@@ -748,10 +751,25 @@ const movieSeeds = [
     "English",
     "2026+",
   ),
-  ...extraComingSoonMovieSeeds,
 ];
 
 const TARGET_CAST_COUNT = 6;
+const requestedCatalogMovieSeeds = [
+  ...requestedComingSoonMovieSeeds,
+  ...requestedFutureComingSoonMovieSeeds,
+];
+
+const requestedMovieSeedKeys = new Set([
+  ...requestedCatalogMovieSeeds.map((seed) => titleDedupeKey(seed.title)),
+  titleDedupeKey("Salaar: Part 2 - Shouryaanga Parvam"),
+  titleDedupeKey("Batman: The Brave and the Bold"),
+]);
+
+const movieSeeds = [
+  ...baseMovieSeeds.filter((seed) => !requestedMovieSeedKeys.has(titleDedupeKey(seed.title))),
+  ...requestedCatalogMovieSeeds,
+  ...extraComingSoonMovieSeeds,
+];
 
 const upcomingMovies = uniqueByTitle(movieSeeds.filter(hasPublicMovieTitle)).map(buildMovie);
 const upcomingMovieIds = upcomingMovies.map((movie) => movie.id);
@@ -781,7 +799,8 @@ function buildMovie(seed, index) {
     cast: expandCast(seed).map((name, castIndex) => ({
       name,
       role: castIndex === 0 ? "Lead" : "Cast",
-      avatar: getRealCastAvatar(id, name) || castAvatarFallback(name),
+      avatar:
+        getRealCastAvatar(id, name) || getRequestedCastAvatar(name) || castAvatarFallback(name),
     })),
     format: formatsFor(seed),
     certificate: certificateFor(seed),
@@ -869,6 +888,14 @@ function normalizeKey(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase();
+}
+
+function titleDedupeKey(value) {
+  return normalizeKey(value)
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export { upcomingMovieIds, upcomingMovies };

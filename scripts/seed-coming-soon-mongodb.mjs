@@ -128,7 +128,7 @@ for (let index = 0; index < operations.length; index += 250) {
 }
 
 console.log(
-  `Seeded ${comingSoonMovies.length} coming-soon movies and ${operations.length} listings with verified cast only.`,
+  `Seeded ${comingSoonMovies.length} coming-soon movies and ${operations.length} listings with catalog cast rows.`,
 );
 console.log(
   `Verified movie cast lookup: enriched ${verifiedMovieCastByTitle.size} titles from Wikidata.`,
@@ -245,8 +245,8 @@ async function buildCast(movie, actorAvatars, verifiedMovieCastByTitle, stats) {
   const rows = [];
 
   for (const [index, member] of cast.slice(0, TARGET_CAST_COUNT).entries()) {
-    const avatar = await resolveActorAvatar(member, actorAvatars, stats);
-    if (!avatar || isGeneratedAvatar(avatar)) continue;
+    const resolvedAvatar = await resolveActorAvatar(member, actorAvatars, stats);
+    const avatar = resolvedAvatar || member.avatar || castAvatarFallback(member.name);
 
     rows.push({
       name: member.name,
