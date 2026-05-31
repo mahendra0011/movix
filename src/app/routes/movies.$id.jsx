@@ -586,7 +586,7 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
               View all
             </Link>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {recommendations.map((recommendedMovie) => (
               <SuggestionCard key={recommendedMovie.id} movie={recommendedMovie} />
             ))}
@@ -969,7 +969,7 @@ function buildMovieRecommendations(movie, list = []) {
       }
       return Number(left.sortOrder || 0) - Number(right.sortOrder || 0);
     })
-    .slice(0, 4);
+    .slice(0, 6);
 }
 
 function uniqueMovies(list) {
