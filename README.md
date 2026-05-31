@@ -55,7 +55,6 @@ BookMyScreen/
   scripts/
     create-spa-route-fallbacks.mjs
     migrate-images-cloudinary.mjs
-    media enrichment helpers
 ```
 
 ## Requirements
@@ -74,6 +73,7 @@ Create a `.env` file from `.env.example`.
 ```bash
 cp .env.example .env
 ```
+
 API_PORT=4000
 CLIENT_ORIGIN=http://localhost:5173
 MONGODB_URI=mongodb://127.0.0.1:27017/movix
@@ -93,7 +93,6 @@ CLOUDINARY_API_SECRET=
 ADMIN_EMAIL=
 ADMIN_PASSWORD=change-this-password
 VITE_API_URL=http://localhost:4000
-
 
 ## Local Development
 
