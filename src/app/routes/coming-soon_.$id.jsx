@@ -209,7 +209,7 @@ function ComingSoonDetailPage() {
           <ReleasePanel movie={movie} castCount={castMembers.length} />
         </section>
 
-        <CastShowcase castMembers={castMembers} />
+        <CastShowcase castMembers={castMembers} variant="compact" />
 
         <section className="grid gap-4 md:grid-cols-3">
           <InfoBand
