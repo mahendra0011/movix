@@ -91,21 +91,53 @@ function localRegister(input) {
   }
 
   const users = readLocalUsers();
-  if (users.some((user) => normalizeEmail(user.email) === email)) {
-    throwLocalError("Email is already registered.", 409);
-  }
-
   if (role === "theater-owner" && !isOwnerApplicationComplete(input?.ownerApplication)) {
     throwLocalError("Complete theater owner application is required.", 400);
   }
 
-  const user = {
+  const existingIndex = users.findIndex((user) => normalizeEmail(user.email) === email);
+  if (existingIndex !== -1) {
+    if (users[existingIndex].verified) {
+      throwLocalError("Email is already registered.", 409);
+    }
+    users[existingIndex] = buildLocalUser({
+      id: users[existingIndex].id,
+      input,
+      name,
+      email,
+      password,
+      role,
+      verified: false,
+    });
+    writeLocalUsers(users);
+    return Promise.resolve({
+      ...issueLocalOtp(email, "verify-account"),
+      message: "Account is pending email verification. OTP sent again to your email.",
+    });
+  }
+
+  const user = buildLocalUser({
     id: `local_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
+    input,
     name,
     email,
     password,
     role,
     verified: false,
+  });
+
+  writeLocalUsers([...users, user]);
+  return Promise.resolve(issueLocalOtp(email, "verify-account"));
+}
+
+function buildLocalUser({ id, input, name, email, password, role, verified }) {
+  const user = {
+    id,
+    name,
+    email,
+    password,
+    role,
+    verified,
     ownerStatus: role === "theater-owner" ? "Pending" : "Approved",
   };
 
@@ -119,8 +151,7 @@ function localRegister(input) {
     user.ownerApplication = application;
   }
 
-  writeLocalUsers([...users, user]);
-  return Promise.resolve(issueLocalOtp(email, "verify-account"));
+  return user;
 }
 
 function localLogin(input) {

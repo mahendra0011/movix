@@ -86,6 +86,49 @@ async function findUserByEmail(email) {
   return isMongoReady() ? User.findOne({ email }) : findMemoryUser(email);
 }
 
+function isDuplicateEmailError(error) {
+  return Boolean(error?.code === 11000 && error?.keyPattern?.email);
+}
+
+function applyPendingRegistration(user, payload) {
+  user.name = payload.name;
+  user.email = payload.email;
+  user.passwordHash = payload.passwordHash;
+  user.role = payload.safeRole;
+  user.ownerStatus = payload.safeOwnerStatus;
+  user.ownerApplication = payload.safeRole === "theater-owner" ? payload.application : undefined;
+  user.verified = false;
+  return user;
+}
+
+async function sendPendingRegistrationOtp(user, payload, response) {
+  if (user.blocked || user.status === "Blocked") {
+    response.status(403).json({ error: "This account is blocked by admin." });
+    return true;
+  }
+
+  if (user.verified) {
+    response.status(409).json({ error: "Email is already registered." });
+    return true;
+  }
+
+  applyPendingRegistration(user, payload);
+  const result = await issueOtp(user, "verify-account");
+  response.status(200).json({
+    ...result,
+    message: "Account is pending email verification. OTP sent again to your email.",
+  });
+  return true;
+}
+
+async function rollbackNewRegistration(user, email) {
+  if (isMongoReady()) {
+    if (user?._id) await User.deleteOne({ _id: user._id, verified: false });
+    return;
+  }
+  memoryUsers.delete(email);
+}
+
 async function ensureDefaultAdminUser() {
   const existing = await findUserByEmail(env.adminEmail);
   if (existing) return existing;
@@ -154,8 +197,9 @@ router.post(
   asyncHandler(async (request, response) => {
     const { name, email, password, role = "user", ownerApplication } = request.body;
     const normalizedEmail = normalizeEmail(email);
+    const normalizedName = cleanText(name);
 
-    if (!name || !normalizedEmail || !password) {
+    if (!normalizedName || !normalizedEmail || !password) {
       response.status(400).json({ error: "Name, email, and password are required." });
       return;
     }
@@ -170,9 +214,21 @@ router.post(
     const passwordHash = await bcrypt.hash(String(password), 10);
     const application =
       safeRole === "theater-owner"
-        ? sanitizeOwnerApplication(ownerApplication, { name, email: normalizedEmail })
+        ? sanitizeOwnerApplication(ownerApplication, {
+            name: normalizedName,
+            email: normalizedEmail,
+          })
         : undefined;
+    const registrationPayload = {
+      name: normalizedName,
+      email: normalizedEmail,
+      passwordHash,
+      safeRole,
+      safeOwnerStatus,
+      application,
+    };
     let user;
+    let createdUser = false;
 
     if (safeRole === "theater-owner" && !isOwnerApplicationComplete(application)) {
       response.status(400).json({ error: "Complete theater owner application is required." });
@@ -180,27 +236,37 @@ router.post(
     }
 
     if (isMongoReady()) {
-      const exists = await User.findOne({ email: normalizedEmail }).lean();
+      const exists = await User.findOne({ email: normalizedEmail });
       if (exists) {
-        response.status(409).json({ error: "Email is already registered." });
+        await sendPendingRegistrationOtp(exists, registrationPayload, response);
         return;
       }
-      user = await User.create({
-        name,
-        email: normalizedEmail,
-        passwordHash,
-        role: safeRole,
-        ownerStatus: safeOwnerStatus,
-        ownerApplication: application,
-      });
+      try {
+        user = await User.create({
+          name: normalizedName,
+          email: normalizedEmail,
+          passwordHash,
+          role: safeRole,
+          ownerStatus: safeOwnerStatus,
+          ownerApplication: application,
+        });
+        createdUser = true;
+      } catch (error) {
+        if (!isDuplicateEmailError(error)) throw error;
+        const existing = await User.findOne({ email: normalizedEmail });
+        if (!existing) throw error;
+        await sendPendingRegistrationOtp(existing, registrationPayload, response);
+        return;
+      }
     } else {
-      if (findMemoryUser(normalizedEmail)) {
-        response.status(409).json({ error: "Email is already registered." });
+      const existing = findMemoryUser(normalizedEmail);
+      if (existing) {
+        await sendPendingRegistrationOtp(existing, registrationPayload, response);
         return;
       }
       user = {
         id: `mem_${Date.now().toString(36)}`,
-        name,
+        name: normalizedName,
         email: normalizedEmail,
         passwordHash,
         role: safeRole,
@@ -209,6 +275,15 @@ router.post(
         verified: false,
       };
       memoryUsers.set(normalizedEmail, user);
+      createdUser = true;
+    }
+
+    let result;
+    try {
+      result = await issueOtp(user, "verify-account");
+    } catch (error) {
+      if (createdUser) await rollbackNewRegistration(user, normalizedEmail);
+      throw error;
     }
 
     if (safeRole === "theater-owner") {
@@ -217,12 +292,12 @@ router.post(
         role: "admin",
         type: "owner-application",
         title: "New theater owner application",
-        message: `${application.theaterName || name} from ${application.city || "a new city"} needs review.`,
+        message: `${application.theaterName || normalizedName} from ${application.city || "a new city"} needs review.`,
         href: "/admin",
       });
     }
 
-    response.status(201).json(await issueOtp(user, "verify-account"));
+    response.status(201).json(result);
   }),
 );
 

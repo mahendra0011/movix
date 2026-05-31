@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   ArrowRight,
@@ -78,6 +78,8 @@ function AuthPage() {
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
   const [authReady, setAuthReady] = useState(false);
+  const submitInFlightRef = useRef(false);
+  const resendInFlightRef = useRef(false);
 
   useEffect(() => {
     if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
@@ -143,8 +145,10 @@ function AuthPage() {
   };
 
   const startOtpStep = (result, email) => {
-    setPendingEmail(result.email || email);
+    const nextEmail = normalizeEmail(result.email || email);
+    setPendingEmail(nextEmail);
     setOtpStep(true);
+    setForm((current) => ({ ...current, email: nextEmail, otp: "" }));
     setNotice({ tone: "success", text: result.message || "OTP sent to your email." });
   };
 
@@ -155,20 +159,22 @@ function AuthPage() {
 
   const submit = async (event) => {
     event.preventDefault();
-    if (isSubmitDisabled) return;
+    if (submitInFlightRef.current || isSubmitDisabled) return;
 
+    submitInFlightRef.current = true;
     setBusy(true);
     setNotice(null);
     try {
+      const email = normalizeEmail(form.email);
       if (mode === "forgot") {
         if (!otpStep) {
-          const result = await forgotPassword(form.email);
-          startOtpStep(result, form.email);
+          const result = await forgotPassword(email);
+          startOtpStep(result, email);
           return;
         }
 
         const result = await resetPassword({
-          email: pendingEmail || form.email,
+          email: pendingEmail || email,
           otp: form.otp,
           password: form.password,
         });
@@ -189,14 +195,14 @@ function AuthPage() {
       }
 
       if (otpStep) {
-        const result = await verifyOtp({ email: pendingEmail || form.email, otp: form.otp });
+        const result = await verifyOtp({ email: pendingEmail || email, otp: form.otp });
         await completeSignIn(result);
         return;
       }
 
       if (mode === "login") {
-        const result = await login({ email: form.email, password: form.password });
-        if (result.requiresOtp) startOtpStep(result, form.email);
+        const result = await login({ email, password: form.password });
+        if (result.requiresOtp) startOtpStep(result, email);
         else await completeSignIn(result);
       } else {
         if (form.role === "theater-owner" && !ownerApplicationStep) {
@@ -210,7 +216,7 @@ function AuthPage() {
 
         const result = await register({
           name: form.name,
-          email: form.email,
+          email,
           password: form.password,
           role: form.role,
           ownerApplication:
@@ -218,38 +224,40 @@ function AuthPage() {
               ? {
                   ...form.ownerApplication,
                   ownerName: form.name,
-                  ownerEmail: form.email,
+                  ownerEmail: email,
                 }
               : undefined,
         });
-        if (result.requiresOtp) startOtpStep(result, form.email);
+        if (result.requiresOtp) startOtpStep(result, email);
         else await completeSignIn(result);
       }
     } catch (error) {
-      setNotice({ tone: "error", text: error.response?.data?.error ?? "Request failed." });
+      setNotice({ tone: "error", text: authErrorMessage(error, mode) });
     } finally {
+      submitInFlightRef.current = false;
       setBusy(false);
     }
   };
 
   const resendOtp = async () => {
-    const email = pendingEmail || form.email;
+    if (resendInFlightRef.current || busy) return;
+
+    const email = normalizeEmail(pendingEmail || form.email);
     if (!email) {
       setNotice({ tone: "error", text: "Enter your email first." });
       return;
     }
 
+    resendInFlightRef.current = true;
     setBusy(true);
     setNotice(null);
     try {
-      const result =
-        mode === "forgot"
-          ? await forgotPassword(email)
-          : await login({ email, password: form.password });
+      const result = await resendCurrentOtp({ mode, form, email });
       setNotice({ tone: "success", text: result.message ?? "OTP sent to your email." });
     } catch (error) {
-      setNotice({ tone: "error", text: error.response?.data?.error ?? "Could not send OTP." });
+      setNotice({ tone: "error", text: authErrorMessage(error, mode, "Could not send OTP.") });
     } finally {
+      resendInFlightRef.current = false;
       setBusy(false);
     }
   };
@@ -735,6 +743,41 @@ function submitLabel(mode, otpStep, busy, ownerApplicationStep, role) {
   }
   if (mode === "register" && ownerApplicationStep) return "Submit application";
   return mode === "register" ? "Create account" : "Sign in";
+}
+
+function normalizeEmail(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function authErrorMessage(error, mode, fallback = "Request failed.") {
+  const message = error?.response?.data?.error || fallback;
+  if (mode === "register" && /email is already registered/i.test(message)) {
+    return "This email is already registered. Sign in instead or use forgot password.";
+  }
+  return message;
+}
+
+function resendCurrentOtp({ mode, form, email }) {
+  if (mode === "forgot") return forgotPassword(email);
+  if (mode === "register") {
+    return register({
+      name: form.name,
+      email,
+      password: form.password,
+      role: form.role,
+      ownerApplication:
+        form.role === "theater-owner"
+          ? {
+              ...form.ownerApplication,
+              ownerName: form.name,
+              ownerEmail: email,
+            }
+          : undefined,
+    });
+  }
+  return login({ email, password: form.password });
 }
 
 function SegmentButton({ active, children, onClick }) {
