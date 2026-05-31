@@ -1,5 +1,6 @@
 import { castAvatarFallback, movieImageFallback } from "../services/movieMedia.js";
 import { getRealCastAvatar, getRealMovieMedia } from "./realMovieMedia.generated.js";
+import { getRequestedCastAvatar } from "./requestedCastMedia.generated.js";
 
 const TARGET_CAST_COUNT = 6;
 
@@ -21,20 +22,20 @@ const releasedCastOverrides = {
     "Kathy Baker",
   ],
   Obsession: [
-    "Dove Cameron",
-    "Avan Jogia",
-    "Kira Goldberg",
-    "RJ Cyler",
-    "Tommy Dorfman",
-    "Julia Fox",
+    "Michael Johnston",
+    "Inde Navarrette",
+    "Cooper Tomlinson",
+    "Megan Lawless",
+    "Andy Richter",
+    "Haley Fitzgerald",
   ],
   "The Sheep Detectives": [
-    "Sam Edwards",
-    "Ben Whitehead",
-    "John Sparkes",
-    "Justin Fletcher",
-    "Kate Harbour",
-    "Richard Webber",
+    "Hugh Jackman",
+    "Emma Thompson",
+    "Nicholas Braun",
+    "Nicholas Galitzine",
+    "Molly Gordon",
+    "Hong Chau",
   ],
   "28 Years Later: The Bone Temple": [
     "Ralph Fiennes",
@@ -890,7 +891,7 @@ function buildReleasedMovie(item, index) {
   const cast = expandCast(item).map((name, castIndex) => ({
     name,
     role: castIndex === 0 ? "Lead" : "Cast",
-    avatar: getRealCastAvatar(id, name) || castAvatarFallback(name),
+    avatar: getRealCastAvatar(id, name) || getRequestedCastAvatar(name) || castAvatarFallback(name),
   }));
 
   return {
