@@ -45,7 +45,7 @@ const bundledComingSoonById = new Map(
 );
 
 const Route = createFileRoute("/coming-soon")({
-  loader: () => fetchComingSoonMovies(),
+  loader: () => fetchComingSoonMovies(readPreferredCity()),
   validateSearch: (search) => ({
     q: typeof search.q === "string" ? search.q : "",
     genre: typeof search.genre === "string" ? search.genre : allFilterValue,
@@ -62,6 +62,7 @@ function ComingSoonPage() {
   const initialSearch = Route.useSearch();
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
   const [comingSoonMovies, setComingSoonMovies] = useState(loadedMovies);
+  const [loadedCity, setLoadedCity] = useState(readPreferredCity);
   const [searchTerm, setSearchTerm] = useState(initialSearch.q || "");
   const [activeGenre, setActiveGenre] = useState(initialSearch.genre || allFilterValue);
   const [activeLanguage, setActiveLanguage] = useState(initialSearch.language || allFilterValue);
@@ -87,14 +88,19 @@ function ComingSoonPage() {
   }, [initialSearch]);
 
   useEffect(() => {
+    if (normalizeText(selectedCity) === normalizeText(loadedCity)) return undefined;
+
     let active = true;
     fetchComingSoonMovies(selectedCity).then((movies) => {
-      if (active) setComingSoonMovies(movies);
+      if (active) {
+        setComingSoonMovies(movies);
+        setLoadedCity(selectedCity);
+      }
     });
     return () => {
       active = false;
     };
-  }, [selectedCity]);
+  }, [loadedCity, selectedCity]);
 
   const cityVisibleMovies = useMemo(
     () =>
@@ -561,7 +567,7 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
 
   return (
     <article className="group overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
-      <Link to="/coming-soon/$id" params={{ id: detailId }} className="block">
+      <Link to="/coming-soon/$id" params={{ id: detailId }} preload="intent" className="block">
         <div className="relative aspect-[2/3] overflow-hidden bg-muted">
           <img
             src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
@@ -591,7 +597,12 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
       </Link>
 
       <div className="p-3.5">
-        <Link to="/coming-soon/$id" params={{ id: detailId }} className="block hover:text-primary">
+        <Link
+          to="/coming-soon/$id"
+          params={{ id: detailId }}
+          preload="intent"
+          className="block hover:text-primary"
+        >
           <h3 className="line-clamp-2 min-h-11 text-[15px] font-extrabold leading-[22px]">
             {movie.title}
           </h3>
@@ -628,7 +639,7 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
           variant="ghost"
           className="mt-2 h-9 w-full rounded-full text-xs"
         >
-          <Link to="/coming-soon/$id" params={{ id: detailId }}>
+          <Link to="/coming-soon/$id" params={{ id: detailId }} preload="intent">
             View details
           </Link>
         </Button>

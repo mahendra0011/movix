@@ -25,6 +25,7 @@ import {
   normalizeMovieMedia,
 } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
+import { readPreferredCity } from "@/shared/services/cityPreference";
 import { requestJson } from "@/shared/services/httpClient";
 
 const bundledComingSoonById = new Map(
@@ -39,7 +40,7 @@ const bundledComingSoonById = new Map(
 
 const Route = createFileRoute("/coming-soon_/$id")({
   loader: async ({ params }) => {
-    const movie = await fetchComingSoonMovie(params.id);
+    const movie = await fetchComingSoonMovie(params.id, readPreferredCity());
     if (!movie) throw notFound();
     return { movie };
   },
@@ -354,9 +355,10 @@ function InfoBand({ icon: Icon, title, text }) {
   );
 }
 
-async function fetchComingSoonMovie(id) {
+async function fetchComingSoonMovie(id, city = "") {
+  const query = city ? `?city=${encodeURIComponent(city)}` : "";
   try {
-    const data = await requestJson(`/api/shows/coming-soon/${encodeURIComponent(id)}`, {
+    const data = await requestJson(`/api/shows/coming-soon/${encodeURIComponent(id)}${query}`, {
       timeoutMs: 8000,
     });
     if (data.movie) return normalizeComingSoonMovie(data.movie);

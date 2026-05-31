@@ -1074,7 +1074,7 @@ function MovieCardLink({ movie, className, children }) {
   if (isComingSoonMovie(movie)) {
     const detailId = movie.movieId || movie.id;
     return (
-      <Link to="/coming-soon/$id" params={{ id: detailId }} className={className}>
+      <Link to="/coming-soon/$id" params={{ id: detailId }} preload="intent" className={className}>
         {children}
       </Link>
     );

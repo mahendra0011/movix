@@ -27,6 +27,11 @@ const catalogMovieIds = catalogMovies.map((movie) => movie.id);
 const catalogMovieIdSet = new Set(catalogMovieIds);
 const catalogMovieById = new Map(catalogMovies.map((movie) => [movie.id, movie]));
 const comingSoonMovieById = new Map(comingSoonMovies.map((movie) => [movie.id, movie]));
+const COMING_SOON_CACHE_TTL_MS = 60_000;
+const COMING_SOON_SHOW_FIELDS =
+  "movieId movie poster backdrop duration genres releaseDate description cast theaterId date language format certificate bookingOpensAt trailerUrl notes";
+const COMING_SOON_THEATER_FIELDS = "id name city approved";
+const comingSoonResponseCache = new Map();
 const comingSoonTitleCorrections = new Map(
   [
     ["Madhuri Dixit & Tripti Dimri Film", "Maa Behen"],
@@ -161,26 +166,47 @@ router.get(
   "/coming-soon",
   asyncHandler(async (request, response) => {
     const city = String(request.query.city ?? "").trim();
-
-    if (!isMongoReady()) {
-      response.json({ movies: generatedComingSoonMovies(city) });
+    const cacheKey = `coming-soon:list:${normalizeText(city)}`;
+    const cachedPayload = readComingSoonCache(cacheKey);
+    if (cachedPayload) {
+      response.json(cachedPayload);
       return;
     }
 
-    const shows = await Show.find(ownerScopedShowFilter({ listingType: "coming-soon" })).lean();
+    if (!isMongoReady()) {
+      const payload = { movies: generatedComingSoonMovies(city) };
+      writeComingSoonCache(cacheKey, payload);
+      cacheComingSoonDetails(city, payload.movies);
+      response.json(payload);
+      return;
+    }
+
+    const shows = await Show.find(ownerScopedShowFilter({ listingType: "coming-soon" }))
+      .select(COMING_SOON_SHOW_FIELDS)
+      .lean();
     const theaterIds = [...new Set(shows.map((show) => show.theaterId).filter(Boolean))];
-    const theaterFilter = { id: { $in: theaterIds }, approved: true };
-    if (city) theaterFilter.city = new RegExp(`^${escapeRegExp(city)}$`, "i");
-
-    const theaters = await Theater.find(theaterFilter).lean();
+    const theaters = await Theater.find({ id: { $in: theaterIds }, approved: true })
+      .select(COMING_SOON_THEATER_FIELDS)
+      .lean();
     const theaterById = new Map(theaters.map((theater) => [theater.id, theater]));
+    const cityTheaterById = city
+      ? new Map(
+          theaters
+            .filter((theater) => normalizeText(theater.city) === normalizeText(city))
+            .map((theater) => [theater.id, theater]),
+        )
+      : theaterById;
+    const generatedMovies = generatedComingSoonMovies(city);
+    const allMongoMovies = groupComingSoonShows(shows, theaterById);
+    const cityMongoMovies = city ? groupComingSoonShows(shows, cityTheaterById) : allMongoMovies;
+    const cityMovies = mergeComingSoonMovies(generatedMovies, cityMongoMovies);
 
-    response.json({
-      movies: mergeComingSoonMovies(
-        generatedComingSoonMovies(city),
-        groupComingSoonShows(shows, theaterById),
-      ),
-    });
+    const payload = {
+      movies: enrichComingSoonMovies(cityMovies, allMongoMovies),
+    };
+    writeComingSoonCache(cacheKey, payload);
+    cacheComingSoonDetails(city, payload.movies);
+    response.json(payload);
   }),
 );
 
@@ -232,20 +258,48 @@ router.get(
 
 async function findComingSoonMovie(movieId, city = "") {
   const key = normalizeComingSoonLookupKey(movieId);
-  let movies = generatedComingSoonMovies(city);
+  const cacheKey = `coming-soon:detail:${normalizeText(city)}:${key}`;
+  const cachedMovie = readComingSoonCache(cacheKey);
+  if (cachedMovie) return cachedMovie;
+
+  const generatedMovie =
+    generatedComingSoonMovies(city).find((movie) => matchesComingSoonMovie(movie, key)) ?? null;
 
   if (isMongoReady()) {
-    const shows = await Show.find(ownerScopedShowFilter({ listingType: "coming-soon" })).lean();
+    const shows = await Show.find(
+      ownerScopedShowFilter({ listingType: "coming-soon", movieId: key }),
+    )
+      .select(COMING_SOON_SHOW_FIELDS)
+      .lean();
     const theaterIds = [...new Set(shows.map((show) => show.theaterId).filter(Boolean))];
-    const theaterFilter = { id: { $in: theaterIds }, approved: true };
-    if (city) theaterFilter.city = new RegExp(`^${escapeRegExp(city)}$`, "i");
-
-    const theaters = await Theater.find(theaterFilter).lean();
+    const theaters = await Theater.find({ id: { $in: theaterIds }, approved: true })
+      .select(COMING_SOON_THEATER_FIELDS)
+      .lean();
     const theaterById = new Map(theaters.map((theater) => [theater.id, theater]));
-    movies = mergeComingSoonMovies(movies, groupComingSoonShows(shows, theaterById));
+    const cityTheaterById = city
+      ? new Map(
+          theaters
+            .filter((theater) => normalizeText(theater.city) === normalizeText(city))
+            .map((theater) => [theater.id, theater]),
+        )
+      : theaterById;
+    const allMongoMovies = groupComingSoonShows(shows, theaterById);
+    const cityMongoMovies = city ? groupComingSoonShows(shows, cityTheaterById) : allMongoMovies;
+    const cityMovies = mergeComingSoonMovies(
+      generatedMovie ? [generatedMovie] : [],
+      cityMongoMovies,
+    );
+    const movies = enrichComingSoonMovies(
+      cityMovies.length ? cityMovies : allMongoMovies,
+      allMongoMovies,
+    );
+    const movie = movies.find((item) => matchesComingSoonMovie(item, key)) ?? generatedMovie;
+    writeComingSoonCache(cacheKey, movie);
+    return movie;
   }
 
-  return movies.find((movie) => matchesComingSoonMovie(movie, key)) ?? null;
+  writeComingSoonCache(cacheKey, generatedMovie);
+  return generatedMovie;
 }
 
 function matchesComingSoonMovie(movie, key) {
@@ -253,6 +307,40 @@ function matchesComingSoonMovie(movie, key) {
     .filter(Boolean)
     .map(normalizeComingSoonLookupKey)
     .includes(key);
+}
+
+function readComingSoonCache(key) {
+  const cached = comingSoonResponseCache.get(key);
+  if (!cached) return null;
+  if (Date.now() > cached.expiresAt) {
+    comingSoonResponseCache.delete(key);
+    return null;
+  }
+  return cached.value;
+}
+
+function writeComingSoonCache(key, value) {
+  if (!key || !value) return;
+  comingSoonResponseCache.set(key, {
+    expiresAt: Date.now() + COMING_SOON_CACHE_TTL_MS,
+    value,
+  });
+}
+
+function cacheComingSoonDetails(city, movies = []) {
+  const cityKeys = [...new Set([normalizeText(city), ""])];
+
+  movies.forEach((movie) => {
+    [movie.id, movie.movieId, movie.title]
+      .filter(Boolean)
+      .map(normalizeComingSoonLookupKey)
+      .filter(Boolean)
+      .forEach((key) => {
+        cityKeys.forEach((cityKey) => {
+          writeComingSoonCache(`coming-soon:detail:${cityKey}:${key}`, movie);
+        });
+      });
+  });
 }
 
 function normalizeComingSoonLookupKey(value) {
@@ -411,11 +499,29 @@ function groupComingSoonShows(shows, theaterById) {
 function mergeComingSoonMovies(...lists) {
   const byId = new Map();
   lists.flat().forEach((movie) => {
-    const key = movie.movieId || movie.id;
+    const key = comingSoonMovieKey(movie);
     if (!key) return;
     byId.set(key, mergeComingSoonMovie(byId.get(key), movie, key));
   });
   return [...byId.values()];
+}
+
+function enrichComingSoonMovies(movies = [], enrichmentMovies = []) {
+  const enrichmentById = new Map();
+  enrichmentMovies.forEach((movie) => {
+    const key = comingSoonMovieKey(movie);
+    if (key) enrichmentById.set(key, movie);
+  });
+
+  return movies.map((movie) => {
+    const key = comingSoonMovieKey(movie);
+    const enrichment = enrichmentById.get(key);
+    return enrichment ? mergeComingSoonMovie(enrichment, movie, key) : movie;
+  });
+}
+
+function comingSoonMovieKey(movie = {}) {
+  return movie.movieId || movie.id;
 }
 
 function mergeComingSoonMovie(current = {}, next = {}, key) {

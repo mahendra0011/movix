@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import dns from "node:dns";
+import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { env } from "../config/env.js";
 import { Booking } from "../models/Booking.js";
@@ -23,6 +24,18 @@ const SHOW_SEED_MOVIES_PER_THEATER = 12;
 const catalogMovieIds = catalogMovies.map((movie) => movie.id);
 const catalogMovieIdSet = new Set(catalogMovieIds);
 const catalogTheaterIds = catalogTheaters.map((theater) => theater.id);
+const showSeedVersion = crypto
+  .createHash("sha1")
+  .update(
+    JSON.stringify({
+      movies: catalogMovieIds,
+      theaters: catalogTheaterIds,
+      plans: catalogTheaters.map((theater) => theater.showPlan ?? null),
+      showTimes: catalogShowTimes,
+      moviesPerTheater: SHOW_SEED_MOVIES_PER_THEATER,
+    }),
+  )
+  .digest("hex");
 
 if (String(env.mongoUri || "").startsWith("mongodb+srv://")) {
   dns.setServers(["8.8.8.8", "1.1.1.1"]);
@@ -80,9 +93,16 @@ async function seedTheaters() {
   console.log(`MongoDB theater catalog ready with ${catalogTheaters.length} theaters.`);
 }
 
-async function seedShows() {
+async function seedShows({ force = false } = {}) {
   if (!catalogMovies.length) {
     console.log("MongoDB released show seed is empty; owner live shows stay untouched.");
+    return;
+  }
+
+  const seedMetadata = mongoose.connection.db.collection("app_metadata");
+  const existingSeed = await seedMetadata.findOne({ _id: "show-catalog-seed" });
+  if (!force && existingSeed?.version === showSeedVersion) {
+    console.log(`MongoDB show catalog already synced with ${existingSeed.count} shows.`);
     return;
   }
 
@@ -102,6 +122,17 @@ async function seedShows() {
     await Show.bulkWrite(operations.slice(index, index + SHOW_WRITE_BATCH_SIZE));
   }
   const removedCount = removedNonCatalog.deletedCount + removedStaleCatalog.deletedCount;
+  await seedMetadata.updateOne(
+    { _id: "show-catalog-seed" },
+    {
+      $set: {
+        version: showSeedVersion,
+        count: operations.length,
+        syncedAt: new Date(),
+      },
+    },
+    { upsert: true },
+  );
   console.log(
     `MongoDB show catalog synced with ${operations.length} shows${
       removedCount ? `; removed ${removedCount} stale/non-catalog shows` : ""
@@ -141,9 +172,21 @@ async function seedReviews({ force = false } = {}) {
 async function seedCatalog(options = {}) {
   await seedMovies(options);
   await seedTheaters(options);
-  await seedShows(options);
+  if (options.deferShows) {
+    runDeferredShowSeed(options);
+  } else {
+    await seedShows(options);
+  }
   await seedBookings(options);
   await seedReviews(options);
+}
+
+function runDeferredShowSeed(options = {}) {
+  console.log("MongoDB show catalog sync started in background.");
+  void seedShows(options).catch((error) => {
+    console.error("MongoDB show catalog background sync failed.");
+    console.error(error);
+  });
 }
 
 async function ensureDefaultAdminUser() {
@@ -208,7 +251,7 @@ async function connectDatabase() {
     mongoReady = true;
     await ensureCollections();
     await ensureDefaultAdminUser();
-    await seedCatalog();
+    await seedCatalog({ deferShows: true });
     console.log(`MongoDB connected to database "${mongoose.connection.name}".`);
     return true;
   } catch (error) {
