@@ -62,13 +62,7 @@ const requestedUpcomingMovieRows = [
     "10 Jun 2026",
     "Hindi",
   ],
-  [
-    "Scary Movie 6",
-    "Comedy - Horror",
-    [],
-    "12 Jun 2026",
-    "English",
-  ],
+  ["Scary Movie 6", "Comedy - Horror", [], "12 Jun 2026", "English"],
   [
     "Stop! That! Train!",
     "Action - Comedy",
@@ -101,12 +95,7 @@ const requestedUpcomingMovieRows = [
   [
     "Vrushakarma",
     "Action - Adventure - Thriller",
-    [
-      "Naga Chaitanya",
-      "Meenakshi Chaudhary",
-      "Sparsh Shrivastava",
-      "Jayaram",
-    ],
+    ["Naga Chaitanya", "Meenakshi Chaudhary", "Sparsh Shrivastava", "Jayaram"],
     "12 Jun 2026",
     "Telugu",
   ],
@@ -138,13 +127,7 @@ const requestedUpcomingMovieRows = [
     "19 Jun 2026",
     "English",
   ],
-  [
-    "Cocktail 2",
-    "Romance - Comedy - Drama",
-    [],
-    "19 Jun 2026",
-    "Hindi",
-  ],
+  ["Cocktail 2", "Romance - Comedy - Drama", [], "19 Jun 2026", "Hindi"],
   [
     "The Death of Robin Hood",
     "Drama - Adventure",
@@ -180,22 +163,11 @@ const requestedUpcomingMovieRows = [
     "27 Jun 2026",
     "English",
   ],
-  [
-    "Spirit",
-    "Action - Crime - Drama",
-    ["Prabhas"],
-    "28 Jun 2026",
-    "Telugu",
-  ],
+  ["Spirit", "Action - Crime - Drama", ["Prabhas"], "28 Jun 2026", "Telugu"],
   [
     "Enola Holmes 3",
     "Mystery - Adventure",
-    [
-      "Millie Bobby Brown",
-      "Louis Partridge",
-      "Henry Cavill",
-      "Helena Bonham Carter",
-    ],
+    ["Millie Bobby Brown", "Louis Partridge", "Henry Cavill", "Helena Bonham Carter"],
     "01 Jul 2026",
     "English",
   ],
@@ -209,21 +181,11 @@ const requestedUpcomingMovieRows = [
   [
     "King",
     "Action - Thriller",
-    [
-      "Shah Rukh Khan",
-      "Suhana Khan",
-      "Abhishek Bachchan",
-    ],
+    ["Shah Rukh Khan", "Suhana Khan", "Abhishek Bachchan"],
     "04 Jul 2026",
     "Hindi",
   ],
-  [
-    "Toxic",
-    "Action - Crime",
-    ["Yash", "Nayanthara", "Kiara Advani"],
-    "10 Jul 2026",
-    "Kannada",
-  ],
+  ["Toxic", "Action - Crime", ["Yash", "Nayanthara", "Kiara Advani"], "10 Jul 2026", "Kannada"],
   [
     "Reading Lolita in Tehran",
     "Drama",
@@ -238,13 +200,7 @@ const requestedUpcomingMovieRows = [
     "10 Jul 2026",
     "English",
   ],
-  [
-    "The Odyssey",
-    "Epic - Adventure - Drama",
-    [],
-    "17 Jul 2026",
-    "English",
-  ],
+  ["The Odyssey", "Epic - Adventure - Drama", [], "17 Jul 2026", "English"],
   [
     "Evil Dead Burn",
     "Horror - Thriller",
@@ -287,22 +243,11 @@ const requestedUpcomingMovieRows = [
     "14 Aug 2026",
     "English",
   ],
-  [
-    "Naagzilla",
-    "Action - Horror - Fantasy",
-    ["Kartik Aaryan"],
-    "14 Aug 2026",
-    "Hindi",
-  ],
+  ["Naagzilla", "Action - Horror - Fantasy", ["Kartik Aaryan"], "14 Aug 2026", "Hindi"],
   [
     "Jailer 2",
     "Action - Thriller",
-    [
-      "Rajinikanth",
-      "Ramya Krishnan",
-      "Yogi Babu",
-      "Shiva Rajkumar",
-    ],
+    ["Rajinikanth", "Ramya Krishnan", "Yogi Babu", "Shiva Rajkumar"],
     "21 Aug 2026",
     "Tamil",
   ],
@@ -337,10 +282,7 @@ const requestedUpcomingMovieRows = [
   [
     "Pati Patni Aur Woh Do",
     "Comedy - Romance",
-    [
-      "Ayushmann Khurrana",
-      "Wamiqa Gabbi",
-    ],
+    ["Ayushmann Khurrana", "Wamiqa Gabbi"],
     "02 Sept 2026",
     "Hindi",
   ],
@@ -376,34 +318,18 @@ const requestedUpcomingMovieRows = [
   [
     "Dhamaal 4",
     "Comedy",
-    [
-      "Ajay Devgn",
-      "Riteish Deshmukh",
-      "Arshad Warsi",
-      "Sanjay Mishra",
-      "Jaaved Jaaferi",
-    ],
+    ["Ajay Devgn", "Riteish Deshmukh", "Arshad Warsi", "Sanjay Mishra", "Jaaved Jaaferi"],
     "14 Sept 2026",
     "Hindi",
   ],
   [
     "Practical Magic 2",
     "Fantasy - Drama",
-    [
-      "Sandra Bullock",
-      "Nicole Kidman",
-    ],
+    ["Sandra Bullock", "Nicole Kidman"],
     "18 Sept 2026",
     "English",
   ],
-  [
-    "Awarapan 2",
-    "Thriller - Drama",
-    [
-    [],
-    "20 Sept 2026",
-    "Hindi",
-  ],
+  ["Awarapan 2", "Thriller - Drama", [], "20 Sept 2026", "Hindi"],
   [
     "Resident Evil (New)",
     "Action - Horror",
@@ -414,13 +340,7 @@ const requestedUpcomingMovieRows = [
   [
     "Welcome to the Jungle",
     "Comedy - Adventure",
-    [
-      "Akshay Kumar",
-      "Suniel Shetty",
-      "Arshad Warsi",
-      "Jacqueline Fernandez",
-      "Disha Patani",
-    ],
+    ["Akshay Kumar", "Suniel Shetty", "Arshad Warsi", "Jacqueline Fernandez", "Disha Patani"],
     "26 Sept 2026",
     "Hindi",
   ],
@@ -445,39 +365,16 @@ const requestedUpcomingMovieRows = [
     "02 Oct 2026",
     "English",
   ],
-  [
-    "The Paradise",
-    "Fantasy - Drama",
-    ["Nani"],
-    "02 Oct 2026",
-    "Telugu",
-  ],
+  ["The Paradise", "Fantasy - Drama", ["Nani"], "02 Oct 2026", "Telugu"],
   [
     "Avengers: Doomsday",
     "Superhero - Action - Sci-Fi",
-    [
-      "Robert Downey Jr.",
-      "Pedro Pascal",
-      "Vanessa Kirby",
-      "Joseph Quinn",
-    ],
+    ["Robert Downey Jr.", "Pedro Pascal", "Vanessa Kirby", "Joseph Quinn"],
     "08 Oct 2026",
     "English",
   ],
-  [
-    "Clayface",
-    "Superhero - Action",
-    [],
-    "09 Oct 2026",
-    "English",
-  ],
-  [
-    "Spider-Man 4",
-    "Superhero - Action",
-    ["Tom Holland", "Zendaya"],
-    "14 Oct 2026",
-    "English",
-  ],
+  ["Clayface", "Superhero - Action", [], "09 Oct 2026", "English"],
+  ["Spider-Man 4", "Superhero - Action", ["Tom Holland", "Zendaya"], "14 Oct 2026", "English"],
   [
     "Wildwood",
     "Adventure - Fantasy",
@@ -495,12 +392,7 @@ const requestedUpcomingMovieRows = [
   [
     "The Batman Part II",
     "Action - Crime - Thriller",
-    [
-      "Robert Pattinson",
-      "Jeffrey Wright",
-      "Andy Serkis",
-      "Colin Farrell",
-    ],
+    ["Robert Pattinson", "Jeffrey Wright", "Andy Serkis", "Colin Farrell"],
     "20 Oct 2026",
     "English",
   ],
@@ -543,11 +435,7 @@ const requestedUpcomingMovieRows = [
   [
     "Supergirl: Woman of Tomorrow",
     "Superhero - Cosmic",
-    [
-      "Milly Alcock",
-      "Matthias Schoenaerts",
-      "Eve Ridley",
-    ],
+    ["Milly Alcock", "Matthias Schoenaerts", "Eve Ridley"],
     "19 Nov 2026",
     "English",
   ],
@@ -561,10 +449,7 @@ const requestedUpcomingMovieRows = [
   [
     "Project Hail Mary",
     "Sci-Fi - Adventure",
-    [
-      "Ryan Gosling",
-      "Sandra Hüller",
-    ],
+    ["Ryan Gosling", "Sandra Hüller"],
     "01 Dec 2026",
     "English",
   ],
@@ -627,50 +512,14 @@ const requestedUpcomingMovieRows = [
   [
     "Vishwambhara",
     "Fantasy - Action",
-    [
-      "Chiranjeevi",
-      "Trisha Krishnan",
-      "Kunal Kapoor",
-      "Ashika Ranganath",
-    ],
+    ["Chiranjeevi", "Trisha Krishnan", "Kunal Kapoor", "Ashika Ranganath"],
     "",
     "Telugu",
   ],
-  [
-    "The Hunger Games: Sunrise on the Reaping",
-    "Dystopian - Action",
-    [
-    [],
-    "",
-    "English",
-  ],
-  [
-    "Insidious: Out of the Further",
-    "Horror - Supernatural",
-    [
-    ["Lin Shaye"],
-    "",
-    "English",
-  ],
-  [
-    "Street Fighter",
-    "Action - Game Adaptation",
-    [
-    [],
-    "",
-    "English",
-  ],
-  [
-    "Scream 7",
-    "Horror - Slasher",
-    [
-      "Neve Campbell",
-      "Courteney Cox",
-      "Isabel May",
-    ],
-    "",
-    "English",
-  ],
+  ["The Hunger Games: Sunrise on the Reaping", "Dystopian - Action", [], "", "English"],
+  ["Insidious: Out of the Further", "Horror - Supernatural", ["Lin Shaye"], "", "English"],
+  ["Street Fighter", "Action - Game Adaptation", [], "", "English"],
+  ["Scream 7", "Horror - Slasher", ["Neve Campbell", "Courteney Cox", "Isabel May"], "", "English"],
   ["Kick 2", "Action - Thriller", ["Salman Khan"], "", "Hindi"],
 ];
 
