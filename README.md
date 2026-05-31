@@ -74,30 +74,26 @@ Create a `.env` file from `.env.example`.
 ```bash
 cp .env.example .env
 ```
+API_PORT=4000
+CLIENT_ORIGIN=http://localhost:5173
+MONGODB_URI=mongodb://127.0.0.1:27017/movix
+MONGODB_DB=movix
+ALLOW_MEMORY_STORE=false
+JWT_SECRET=change-me-in-production
+BRAVO_API_KEY=
+BRAVO_FROM_EMAIL=
+BRAVO_FROM_NAME=movix
+PAYMENT_PROVIDER=local
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+CLOUDINARY_URL=cloudinary://your_api_key:your_api_secret@your_cloud_name
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+ADMIN_EMAIL=
+ADMIN_PASSWORD=change-this-password
+VITE_API_URL=http://localhost:4000
 
-Main variables:
-
-| Variable                                | Purpose                                                    |
-| --------------------------------------- | ---------------------------------------------------------- |
-| `API_PORT`                              | Local API port, default `4000`                             |
-| `CLIENT_ORIGIN`                         | Frontend URL allowed by CORS                               |
-| `MONGODB_URI`                           | MongoDB connection string                                  |
-| `MONGODB_DB`                            | Database name, usually `movix`                             |
-| `ALLOW_MEMORY_STORE`                    | Set `true` only for temporary local demos                  |
-| `JWT_SECRET`                            | Secret used to sign auth tokens                            |
-| `ADMIN_EMAIL`                           | Admin account email                                        |
-| `ADMIN_PASSWORD`                        | Admin account password for initial admin setup             |
-| `VITE_API_URL`                          | Frontend API base URL                                      |
-| `CLOUDINARY_URL`                        | Cloudinary URL form: `cloudinary://key:secret@cloud_name`  |
-| `CLOUDINARY_CLOUD_NAME`                 | Cloudinary cloud name, optional if `CLOUDINARY_URL` is set |
-| `CLOUDINARY_API_KEY`                    | Cloudinary API key, optional if `CLOUDINARY_URL` is set    |
-| `CLOUDINARY_API_SECRET`                 | Cloudinary API secret, optional if `CLOUDINARY_URL` is set |
-| `PAYMENT_PROVIDER`                      | Use `local` or `razorpay`                                  |
-| `RAZORPAY_KEY_ID`                       | Razorpay key id                                            |
-| `RAZORPAY_KEY_SECRET`                   | Razorpay key secret                                        |
-| `BRAVO_API_KEY` / `BREVO_API_KEY`       | Transactional email API key                                |
-| `BRAVO_FROM_EMAIL` / `BREVO_FROM_EMAIL` | Sender email                                               |
-| `BRAVO_FROM_NAME` / `BREVO_FROM_NAME`   | Sender name                                                |
 
 ## Local Development
 
