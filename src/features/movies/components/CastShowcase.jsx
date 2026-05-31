@@ -15,7 +15,7 @@ function CastShowcase({
   const hasMore = castMembers.length > 6;
   const visibleCast = showAll ? castMembers : castMembers.slice(0, 6);
   const canSlide = visibleCast.length > 3;
-  const showViewAction = variant === "compact" ? castMembers.length >= 6 : hasMore;
+  const showViewAction = hasMore;
 
   const slideCast = (direction) => {
     sliderRef.current?.scrollBy({

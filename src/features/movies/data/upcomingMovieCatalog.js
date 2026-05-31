@@ -135,14 +135,7 @@ const baseMovieSeeds = [
     "Hindi",
     "2026",
   ),
-  m(
-    "Awarapan 2",
-    [],
-    "Bollywood / Sequel Thriller",
-    ["Thriller", "Drama"],
-    "Hindi",
-    "2026",
-  ),
+  m("Awarapan 2", [], "Bollywood / Sequel Thriller", ["Thriller", "Drama"], "Hindi", "2026"),
   m(
     "Welcome to the Jungle",
     ["Akshay Kumar", "Suniel Shetty"],

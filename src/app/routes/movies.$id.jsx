@@ -561,7 +561,7 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
       </section>
 
       <section>
-        <SectionTitleBar title="Critic reviews" actionLabel="See all" />
+        <SectionTitleBar title="Critic reviews" />
         <article className="mt-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -582,7 +582,7 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
         <section>
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-xl font-bold tracking-tight">You might also like</h2>
-            <Link to="/" className="text-sm font-semibold text-primary hover:underline">
+            <Link to="/movies/" className="text-sm font-semibold text-primary hover:underline">
               View all
             </Link>
           </div>
@@ -929,7 +929,9 @@ function SuggestionCard({ movie }) {
         </span>
       </div>
       <div className="p-3">
-        <p className="min-h-10 text-sm font-semibold leading-5 text-foreground">{movie.title}</p>
+        <p className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-foreground">
+          {movie.title}
+        </p>
         <p className="mt-1 truncate text-xs text-muted-foreground">
           {(movie.genres ?? []).slice(0, 2).join(", ") || movie.language}
         </p>
