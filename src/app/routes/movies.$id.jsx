@@ -305,7 +305,7 @@ function MoviePage() {
                 href={trailerSearchUrl(movie.title)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex h-11 items-center justify-center gap-2 bg-white text-sm font-extrabold text-slate-950 transition-colors hover:bg-primary hover:text-primary-foreground"
+                className="flex h-11 items-center justify-center gap-2 bg-primary text-sm font-extrabold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <Play className="h-4 w-4" /> Watch trailer
               </a>
@@ -383,7 +383,12 @@ function MoviePage() {
                     Movie details
                   </Button>
                 )}
-                <Button size="lg" variant="secondary" className="gap-2" asChild>
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className="gap-2 border border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                  asChild
+                >
                   <a href={trailerSearchUrl(movie.title)} target="_blank" rel="noreferrer">
                     <Play className="h-4 w-4" /> Trailer
                   </a>
@@ -391,7 +396,7 @@ function MoviePage() {
                 <Button
                   size="lg"
                   variant="ghost"
-                  className="gap-2 border border-white/25 bg-black/25 text-white hover:bg-white hover:text-slate-950"
+                  className="gap-2 border border-white/25 bg-black/25 text-white hover:bg-white/20 hover:text-white"
                   onClick={addToWatchlist}
                 >
                   <Heart className="h-4 w-4" /> Watchlist
@@ -399,7 +404,7 @@ function MoviePage() {
                 <Button
                   size="lg"
                   variant="ghost"
-                  className="gap-2 border border-white/25 bg-black/25 text-white hover:bg-white hover:text-slate-950"
+                  className="gap-2 border border-white/25 bg-black/25 text-white hover:bg-white/20 hover:text-white"
                   onClick={shareMovie}
                 >
                   <Share2 className="h-4 w-4" /> Share
