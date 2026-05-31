@@ -48,7 +48,7 @@ const baseMovieSeeds = [
   ),
   m(
     "Toxic",
-    ["Yash", "Kareena Kapoor"],
+    ["Yash", "Nayanthara", "Kiara Advani"],
     "South / Pan-India Action",
     ["Action", "Crime"],
     "Kannada",
@@ -64,7 +64,7 @@ const baseMovieSeeds = [
   ),
   m(
     "Drishyam 3",
-    ["Mohanlal", "Ajay Devgn"],
+    ["Ajay Devgn", "Tabu", "Shriya Saran"],
     "Crime Thriller",
     ["Crime", "Thriller", "Drama"],
     "Hindi",
@@ -113,7 +113,7 @@ const baseMovieSeeds = [
   ),
   m(
     "Pati Patni Aur Woh Do",
-    ["Ayushmann Khurrana", "Sara Ali Khan"],
+    ["Ayushmann Khurrana", "Wamiqa Gabbi"],
     "Bollywood / Comedy",
     ["Comedy", "Romance"],
     "Hindi",
@@ -137,7 +137,7 @@ const baseMovieSeeds = [
   ),
   m(
     "Awarapan 2",
-    ["Emraan Hashmi"],
+    [],
     "Bollywood / Sequel Thriller",
     ["Thriller", "Drama"],
     "Hindi",
@@ -145,7 +145,7 @@ const baseMovieSeeds = [
   ),
   m(
     "Welcome to the Jungle",
-    ["Akshay Kumar", "Sanjay Dutt", "Suniel Shetty"],
+    ["Akshay Kumar", "Suniel Shetty"],
     "Bollywood / Ensemble Comedy",
     ["Comedy", "Adventure"],
     "Hindi",
