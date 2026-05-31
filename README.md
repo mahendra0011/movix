@@ -1,112 +1,201 @@
-# movix
+# Movix
 
-Movie ticket booking platform built with HTML, CSS, Tailwind CSS, JavaScript, React, ReactBits-style components, Node, Express, MongoDB, Socket.IO booked-seat and notification updates, Razorpay-ready payments, and Brevo HTTP API email hooks.
+Movix is a full-stack movie ticket booking platform for browsing movies, discovering coming-soon releases, selecting seats, booking tickets, managing theaters, and running admin/owner workflows.
 
-This project is JavaScript-only. It does not use TypeScript or Bun.
+The app uses MongoDB for application data and Cloudinary for media assets. Movie posters, backdrops, and cast photos are stored as Cloudinary URLs in MongoDB, so the frontend can render media directly from saved records.
 
-## Folder structure
+## Features
+
+- Movie discovery, search, wishlist, and coming-soon pages
+- Movie detail pages with posters, backdrops, trailers, cast, reviews, and show listings
+- Theater and show browsing by city
+- Seat selection with real-time booked-seat updates through Socket.IO
+- Booking confirmation with QR code, PDF ticket, and invoice support
+- JWT authentication with login, register, email OTP verification, and password reset
+- User dashboard for profile and booking history
+- Owner dashboard for theater/show management workflows
+- Admin dashboard with users, theaters, revenue, occupancy, and system status
+- Razorpay-ready payment integration
+- Brevo/Bravo email hooks for transactional email
+- Cloudinary upload/migration support for app media
+
+## Tech Stack
+
+- **Frontend:** React 18, Vite, TanStack Router, TanStack Query, Redux Toolkit
+- **UI:** Tailwind CSS, Radix UI, Lucide React, custom ReactBits-style components
+- **Backend:** Node.js, Express, Socket.IO
+- **Database:** MongoDB with Mongoose
+- **Media:** Cloudinary
+- **Auth:** JWT, bcrypt
+- **Payments:** Razorpay-ready API flow
+- **Tickets:** PDFKit and QR code generation
+
+## Project Structure
 
 ```text
-server/                 Express and MongoDB API
-  config/               Environment config
-  middleware/           JWT auth and async helpers
-  models/               MongoDB/Mongoose models
-  routes/               Auth, movies, shows, bookings, payments, admin APIs
-  services/             Email, ticket/QR/PDF, and booking helpers
-  sockets/              Socket.IO booked-seat and notification updates
-src/
-  app/                  TanStack Router app routes and generated route tree
-  features/
-    booking/            Booking API client, seat layout, and booking domain data
-    movies/             Movie API client, catalog data, and movie components
-  shared/
-    components/         Layout, ReactBits-style components, and reusable UI
-    hooks/              Shared React hooks
-    lib/                Shared utilities and error helpers
-    services/           Cross-feature browser services
-  router.jsx            React router setup
-  server.js             TanStack Start server entry
-  start.js              TanStack Start app entry
-  styles.css            Tailwind CSS and global styles
+BookMyScreen/
+  server/
+    config/             Environment parsing and validation
+    data/               Static review seed helpers used by the API
+    middleware/         Auth, async handling, rate limiting, headers
+    models/             Mongoose models
+    routes/             Auth, movies, shows, bookings, payments, admin, owner APIs
+    services/           Database, email, Cloudinary, tickets, seats, notifications
+    sockets/            Socket.IO seat and notification channels
+    index.js            Express API entry
+
+  src/
+    app/                TanStack Router routes and app store
+    features/           Feature modules for auth, movies, booking, owner, admin
+    shared/             Shared UI, hooks, utilities, services
+    main.jsx            Static Vite client entry
+    router.jsx          Router setup
+    styles.css          Tailwind and global styles
+
+  scripts/
+    create-spa-route-fallbacks.mjs
+    migrate-images-cloudinary.mjs
+    media enrichment helpers
 ```
 
-## Run locally
+## Requirements
 
-1. Install dependencies:
+- Node.js `22.12.0` or compatible Node 22+
+- npm
+- MongoDB database
+- Cloudinary account for real media upload/storage
 
-   ```bash
-   npm install
-   ```
+The expected Node version is also pinned in `.node-version`.
 
-2. Copy `.env.example` to `.env` and add your MongoDB, Razorpay, and Brevo/Bravo API key credentials.
+## Environment Variables
 
-3. Start the API:
+Create a `.env` file from `.env.example`.
 
-   ```bash
-   npm run dev:api
-   ```
+```bash
+cp .env.example .env
+```
 
-4. Start the React app in another terminal:
+Main variables:
 
-   ```bash
-   npm run dev
-   ```
+| Variable                                | Purpose                                                    |
+| --------------------------------------- | ---------------------------------------------------------- |
+| `API_PORT`                              | Local API port, default `4000`                             |
+| `CLIENT_ORIGIN`                         | Frontend URL allowed by CORS                               |
+| `MONGODB_URI`                           | MongoDB connection string                                  |
+| `MONGODB_DB`                            | Database name, usually `movix`                             |
+| `ALLOW_MEMORY_STORE`                    | Set `true` only for temporary local demos                  |
+| `JWT_SECRET`                            | Secret used to sign auth tokens                            |
+| `ADMIN_EMAIL`                           | Admin account email                                        |
+| `ADMIN_PASSWORD`                        | Admin account password for initial admin setup             |
+| `VITE_API_URL`                          | Frontend API base URL                                      |
+| `CLOUDINARY_URL`                        | Cloudinary URL form: `cloudinary://key:secret@cloud_name`  |
+| `CLOUDINARY_CLOUD_NAME`                 | Cloudinary cloud name, optional if `CLOUDINARY_URL` is set |
+| `CLOUDINARY_API_KEY`                    | Cloudinary API key, optional if `CLOUDINARY_URL` is set    |
+| `CLOUDINARY_API_SECRET`                 | Cloudinary API secret, optional if `CLOUDINARY_URL` is set |
+| `PAYMENT_PROVIDER`                      | Use `local` or `razorpay`                                  |
+| `RAZORPAY_KEY_ID`                       | Razorpay key id                                            |
+| `RAZORPAY_KEY_SECRET`                   | Razorpay key secret                                        |
+| `BRAVO_API_KEY` / `BREVO_API_KEY`       | Transactional email API key                                |
+| `BRAVO_FROM_EMAIL` / `BREVO_FROM_EMAIL` | Sender email                                               |
+| `BRAVO_FROM_NAME` / `BREVO_FROM_NAME`   | Sender name                                                |
 
-The API can run in local mode without external credentials, then switches to MongoDB, Razorpay, and Brevo when those environment variables are configured.
+## Local Development
 
-## Production deployment on Render
+Install dependencies:
 
-Create one Render Web Service for the API and one Render Static Site for the React frontend, or use the included `render.yaml` blueprint.
+```bash
+npm install
+```
 
-### Backend API service
+Start the API:
 
-- Service type: Web Service
-- Runtime: Node
-- Build Command: `npm ci`
-- Start Command: `npm run start:api`
-- Health Check Path: `/api/health`
-- Required environment variables:
-  - `MONGODB_URI`: MongoDB Atlas connection string
-  - `MONGODB_DB`: `movix`
-  - `JWT_SECRET`: strong generated secret
-  - `CLIENT_ORIGIN`: deployed frontend URL, for example `https://movix-web.onrender.com`
-  - `ADMIN_EMAIL`: first admin email
-  - `ADMIN_PASSWORD`: strong first admin password
-- Optional production integrations:
-  - `ALLOW_MEMORY_STORE`: set to `true` only for temporary demos without MongoDB
-  - `PAYMENT_PROVIDER`: `razorpay`
-  - `RAZORPAY_KEY_ID`
-  - `RAZORPAY_KEY_SECRET`
-  - `BRAVO_API_KEY` or `BREVO_API_KEY`
-  - `BRAVO_FROM_EMAIL` or `BREVO_FROM_EMAIL`
-  - `BRAVO_FROM_NAME` or `BREVO_FROM_NAME`
+```bash
+npm run dev:api
+```
 
-### Frontend static site
+Start the frontend in another terminal:
 
-- Service type: Static Site
-- Build Command: `npm ci --include=dev && npm run build`
-- Publish Directory: `dist`
-- Redirects/Rewrites rule: source `/*`, destination `/index.html`, action `Rewrite`
-- Required environment variables:
-  - `VITE_API_URL`: deployed API URL, for example `https://movix-api.onrender.com`
+```bash
+npm run dev
+```
 
-Socket.IO uses `VITE_API_URL`, so no separate frontend socket URL is required.
+Default local URLs:
 
-Render Web Services must bind to the port from `PORT`. The API reads `PORT` first. The frontend is a static SPA, so it does not need a start command.
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:4000`
+- Health check: `http://localhost:4000/api/health`
 
-In `NODE_ENV=production`, the API refuses to start without `CLIENT_ORIGIN`, `JWT_SECRET`, and a persistent `MONGODB_URI` unless `ALLOW_MEMORY_STORE=true` is explicitly set. This keeps auth, bookings, seats, and owner/admin data from silently running on disposable memory storage.
+## Available Scripts
 
-### Fix for "Publish directory does not exist"
+| Command                      | Description                             |
+| ---------------------------- | --------------------------------------- |
+| `npm run dev`                | Start Vite frontend dev server          |
+| `npm run dev:api`            | Start Express API server                |
+| `npm run build`              | Build static frontend into `dist`       |
+| `npm run build:ssr`          | Run Vite SSR build                      |
+| `npm run build:dev`          | Build in development mode               |
+| `npm run renderbuild`        | Render-friendly clean install and build |
+| `npm run start:api`          | Start the Express API                   |
+| `npm run preview`            | Preview the built frontend              |
+| `npm run migrate:cloudinary` | Upload/migrate image URLs to Cloudinary |
+| `npm run lint`               | Run ESLint                              |
+| `npm run format`             | Format project files with Prettier      |
 
-Do not put `npm run web`, `npm run preview`, or any other command in Render's Publish Directory field. That field must be a folder path. For this project, use `dist`.
+## Data And Media Flow
 
-Do not use `HOST=0.0.0.0 npm run start:web` in Render for the frontend. Render Static Site does not need a start command, and Render's command validator rejects shell-style environment assignments with `=`.
+- MongoDB stores users, theaters, movies, shows, bookings, reviews, and cast records.
+- Cloudinary stores image files such as posters, backdrops, cast photos, and uploaded media.
+- MongoDB records store Cloudinary URLs, not image binaries.
+- The frontend reads movie/show/cast data from the API, then renders Cloudinary URLs from those records.
 
-## Full-stack features
+This means Cloudinary can hold the images, but MongoDB still needs the matching URL saved in each movie/show/cast document.
 
-- JWT register/login, email OTP verification, and forgot-password OTP reset
-- Socket.IO booked-seat updates for active show pages and navbar notifications
-- Razorpay order creation and signature verification when payment keys are configured
-- QR code, PDF ticket, and invoice generation
-- Brevo transactional email through the HTTP API using `BRAVO_API_KEY` or `BREVO_API_KEY`
-- Admin dashboard with revenue, occupancy, and live system status
+## Build
+
+Run:
+
+```bash
+npm run build
+```
+
+The static frontend output is generated in:
+
+```text
+dist/
+```
+
+`dist/` is ignored by Git and should be generated during deployment.
+
+## Deployment Notes
+
+The project can be deployed as:
+
+- an Express API service for `server/index.js`
+- a static frontend built from Vite output in `dist`
+
+Recommended frontend build command:
+
+```bash
+npm ci --include=dev && npm run build
+```
+
+Recommended frontend publish directory:
+
+```text
+dist
+```
+
+Recommended backend start command:
+
+```bash
+npm run start:api
+```
+
+In production, provide persistent `MONGODB_URI`, `JWT_SECRET`, and `CLIENT_ORIGIN`. The API intentionally avoids silently using disposable memory storage unless `ALLOW_MEMORY_STORE=true` is explicitly set.
+
+## Notes For Contributors
+
+- This project is JavaScript-only. It does not use TypeScript or Bun.
+- Keep generated folders such as `dist`, `.tanstack`, logs, and temp files out of commits.
+- Keep media in Cloudinary and save only stable Cloudinary URLs in MongoDB.
+- Prefer real verified cast/media data over placeholder or fake values.
