@@ -34,11 +34,17 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-      - key: BRAVO_API_KEY
+      - key: BREVO_API_KEY
         sync: false
-      - key: BRAVO_FROM_EMAIL
+      - key: BREVO_FROM_EMAIL
         sync: false
-      - key: BRAVO_FROM_NAME
+      - key: BREVO_FROM_NAME
+        value: movix
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+      - key: RESEND_FROM_NAME
         value: movix
       - key: ADMIN_EMAIL
         sync: false
