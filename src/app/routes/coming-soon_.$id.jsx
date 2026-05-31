@@ -199,14 +199,13 @@ function ComingSoonDetailPage() {
       </section>
 
       <div className="mx-auto mt-10 grid max-w-[1560px] gap-10 px-4 sm:px-5 lg:px-6">
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        <section>
           <div>
             <SectionHeader icon={Film} eyebrow="Story" title="About the movie" />
-            <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">
+            <p className="mt-3 max-w-5xl text-base leading-7 text-muted-foreground">
               {movie.description || `${movie.title} is part of the upcoming movix slate.`}
             </p>
           </div>
-          <ReleasePanel movie={movie} castCount={castMembers.length} />
         </section>
 
         <CastShowcase castMembers={castMembers} variant="compact" />
@@ -260,33 +259,6 @@ function SectionHeader({ icon: Icon, eyebrow, title }) {
         <h2 className="mt-0.5 text-xl font-bold tracking-tight">{title}</h2>
       </div>
     </div>
-  );
-}
-
-function ReleasePanel({ movie, castCount }) {
-  const rows = [
-    { icon: CalendarDays, label: "Release date", value: movie.releaseDate || "Coming soon" },
-    { icon: Clock, label: "Duration", value: movie.duration || "Runtime TBA" },
-    { icon: Languages, label: "Language", value: getMovieLanguages(movie).join(", ") },
-    { icon: Users, label: "Cast", value: `${castCount} featured members` },
-  ];
-
-  return (
-    <aside className="rounded-lg border border-border/60 bg-card p-4 shadow-sm">
-      <div className="divide-y divide-border/60">
-        {rows.map(({ icon: Icon, label, value }) => (
-          <div key={label} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-              <Icon className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="mt-1 text-sm font-semibold">{value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </aside>
   );
 }
 
