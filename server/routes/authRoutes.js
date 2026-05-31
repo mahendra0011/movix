@@ -78,6 +78,11 @@ function publicUser(user) {
   });
 }
 
+function createSessionPayload(user) {
+  const cleanUser = publicUser(user);
+  return { ok: true, user: cleanUser, token: signToken(cleanUser) };
+}
+
 function findMemoryUser(email) {
   return memoryUsers.get(String(email).toLowerCase());
 }
@@ -322,7 +327,16 @@ router.post(
       return;
     }
 
-    response.json(await issueOtp(user, "login"));
+    if (user.verified) {
+      response.json(createSessionPayload(user));
+      return;
+    }
+
+    const result = await issueOtp(user, "verify-account");
+    response.json({
+      ...result,
+      message: "Email verification pending. OTP sent to your email.",
+    });
   }),
 );
 
@@ -350,6 +364,11 @@ router.post(
     const otp = String(request.body.otp ?? "");
     const user = await findUserByEmail(email);
 
+    if (user?.verified) {
+      response.status(409).json({ error: "Email is already verified. Please sign in." });
+      return;
+    }
+
     if (!(await verifyUserOtp(user, otp))) {
       response.status(400).json({ error: "OTP is invalid or expired." });
       return;
@@ -358,8 +377,7 @@ router.post(
     user.verified = true;
     await clearOtp(user);
 
-    const cleanUser = publicUser(user);
-    response.json({ ok: true, user: cleanUser, token: signToken(cleanUser) });
+    response.json(createSessionPayload(user));
   }),
 );
 

@@ -167,7 +167,15 @@ function localLogin(input) {
     throwLocalError("This user account is blocked by admin.", 403);
   }
 
-  return Promise.resolve(issueLocalOtp(email, "login"));
+  if (user.verified) {
+    const cleanUser = publicLocalUser(user);
+    return Promise.resolve({ ok: true, user: cleanUser, token: createLocalToken(cleanUser) });
+  }
+
+  return Promise.resolve({
+    ...issueLocalOtp(email, "verify-account"),
+    message: "Email verification pending. OTP sent to your email.",
+  });
 }
 
 function localVerifyOtp(input) {
@@ -176,6 +184,10 @@ function localVerifyOtp(input) {
   const users = readLocalUsers();
   const index = users.findIndex((user) => normalizeEmail(user.email) === email);
   const user = users[index];
+
+  if (user?.verified) {
+    throwLocalError("Email is already verified. Please sign in.", 409);
+  }
 
   if (!user || !isLocalOtpValid(email, otp)) {
     throwLocalError("OTP is invalid or expired.");

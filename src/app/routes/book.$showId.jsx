@@ -78,6 +78,7 @@ function BookingPage() {
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const bookingEmail = auth.hydrated ? (auth.user?.email ?? "") : "";
+  const bookingEmailVerified = Boolean(auth.hydrated && auth.user?.verified && bookingEmail);
   const layout = useMemo(
     () =>
       buildSeatLayout({
@@ -377,7 +378,7 @@ function BookingPage() {
       return;
     }
 
-    if (emailVerificationToken) {
+    if (bookingEmailVerified || emailVerificationToken) {
       await handlePay(emailVerificationToken);
       return;
     }
@@ -388,7 +389,7 @@ function BookingPage() {
 
   const handlePay = async (verificationToken = emailVerificationToken) => {
     if (selectedSeats.length === 0) return;
-    if (!verificationToken) {
+    if (!verificationToken && !bookingEmailVerified) {
       setMessage("Verify your ticket email with OTP before payment.");
       return;
     }
@@ -635,7 +636,7 @@ function BookingPage() {
           </div>
           <div className="rounded-lg border border-border/60 bg-card/70 px-3 py-2">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              OTP and ticket will be sent to
+              {bookingEmailVerified ? "Ticket will be sent to" : "OTP and ticket will be sent to"}
             </p>
             <div className="mt-1 flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-primary" />

@@ -730,7 +730,7 @@ function authCopy(mode, otpStep, email, ownerApplicationStep, role) {
 
   return {
     title: "Welcome back",
-    text: "Sign in with email and password, then confirm the OTP sent to your inbox.",
+    text: "Sign in with email and password. New accounts verify email once before booking.",
   };
 }
 

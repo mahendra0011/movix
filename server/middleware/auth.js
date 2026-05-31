@@ -13,9 +13,40 @@ function signToken(user) {
   );
 }
 
-async function requireAuth(request, response, next) {
+function readBearerToken(request) {
   const header = request.headers.authorization ?? "";
-  const token = header.startsWith("Bearer ") ? header.slice(7) : "";
+  return header.startsWith("Bearer ") ? header.slice(7) : "";
+}
+
+async function attachAuthToken(request, token) {
+  const payload = jwt.verify(token, env.jwtSecret);
+  request.auth = payload;
+
+  if (isMongoReady() && payload.sub) {
+    const user = await User.findById(payload.sub).lean();
+    request.user = cleanDocument(user);
+  }
+}
+
+async function loadOptionalAuth(request, _response, next) {
+  const token = readBearerToken(request);
+  if (!token) {
+    next();
+    return;
+  }
+
+  try {
+    await attachAuthToken(request, token);
+  } catch {
+    request.auth = undefined;
+    request.user = undefined;
+  }
+
+  next();
+}
+
+async function requireAuth(request, response, next) {
+  const token = readBearerToken(request);
 
   if (!token) {
     response.status(401).json({ error: "Authentication required." });
@@ -23,14 +54,7 @@ async function requireAuth(request, response, next) {
   }
 
   try {
-    const payload = jwt.verify(token, env.jwtSecret);
-    request.auth = payload;
-
-    if (isMongoReady() && payload.sub) {
-      const user = await User.findById(payload.sub).lean();
-      request.user = cleanDocument(user);
-    }
-
+    await attachAuthToken(request, token);
     next();
   } catch {
     response.status(401).json({ error: "Invalid or expired token." });
@@ -48,4 +72,4 @@ function requireRole(...roles) {
   };
 }
 
-export { requireAuth, requireRole, signToken };
+export { loadOptionalAuth, requireAuth, requireRole, signToken };

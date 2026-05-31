@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { requireAuth, requireRole } from "../middleware/auth.js";
+import { loadOptionalAuth, requireAuth, requireRole } from "../middleware/auth.js";
 import { Booking } from "../models/Booking.js";
 import {
   addMemoryBooking,
@@ -56,6 +56,15 @@ function isVerifiedBookingEmail(email, token) {
   cleanExpiredBookingTokens();
   const entry = bookingEmailTokens.get(String(token ?? ""));
   return Boolean(entry && entry.email === email && entry.expiresAt > Date.now());
+}
+
+function isVerifiedAccountEmail(request, email) {
+  const accountEmail = normalizeEmail(request.user?.email ?? request.auth?.email);
+  if (!accountEmail || accountEmail !== email) return false;
+
+  if (request.user) return Boolean(request.user.verified);
+
+  return Boolean(request.auth?.sub);
 }
 
 function normalizeSeats(seats) {
@@ -198,9 +207,11 @@ function createBookingRoutes({ io, seatHolds }) {
       return;
     }
 
+    const accountEmailVerified = isVerifiedAccountEmail(request, normalizedEmail);
+
     if (
       !isValidEmail(normalizedEmail) ||
-      !isVerifiedBookingEmail(normalizedEmail, emailVerificationToken)
+      (!accountEmailVerified && !isVerifiedBookingEmail(normalizedEmail, emailVerificationToken))
     ) {
       response.status(400).json({ error: "Verify your ticket email with OTP before booking." });
       return;
@@ -242,7 +253,7 @@ function createBookingRoutes({ io, seatHolds }) {
       ? cleanDocument(await Booking.create(booking))
       : addMemoryBooking({ ...booking, createdAt: new Date().toISOString() });
 
-    bookingEmailTokens.delete(emailVerificationToken);
+    if (emailVerificationToken) bookingEmailTokens.delete(emailVerificationToken);
     seatHolds.releaseBookedSeats(showId, seatList);
     const state = await emitSeatState(showId);
     const qrDataUrl = await generateQrDataUrl(saved);
@@ -259,8 +270,8 @@ function createBookingRoutes({ io, seatHolds }) {
     });
   });
 
-  router.post("/book", createBookingHandler);
-  router.post("/bookings", createBookingHandler);
+  router.post("/book", loadOptionalAuth, createBookingHandler);
+  router.post("/bookings", loadOptionalAuth, createBookingHandler);
 
   router.get(
     "/me/bookings",
