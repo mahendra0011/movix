@@ -14,6 +14,7 @@ import {
   Sparkles,
   Star,
   Ticket,
+  Users,
   X,
 } from "lucide-react";
 import { fetchMovies } from "@/features/movies/api/moviesApi";
@@ -145,6 +146,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
       const movieLanguages = getMovieLanguages(movie);
       const movieFormats = getMovieFormats(movie);
       const movieCategories = getMovieCategories(movie);
+      const movieCast = getMovieCastNames(movie);
       const categoryMatch =
         activeCategoryFilter === allFilterValue || movieCategories.includes(activeCategoryFilter);
       const genreMatch = activeGenre === allFilterValue || movieGenres.includes(activeGenre);
@@ -161,6 +163,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
         ...movieGenres,
         ...movieLanguages,
         ...movieFormats,
+        ...movieCast,
       ]
         .join(" ")
         .toLowerCase();
@@ -603,6 +606,8 @@ function ListingFilterMetric({ icon: Icon, title, value, detail, options = [], o
 }
 
 function MovieListingCard({ movie }) {
+  const castNames = getMovieCastNames(movie).slice(0, 3);
+
   return (
     <Link
       to="/movies/$id"
@@ -633,6 +638,12 @@ function MovieListingCard({ movie }) {
         <p className="mt-1.5 truncate text-xs text-muted-foreground">
           {getMovieGenres(movie).slice(0, 3).join(" - ")}
         </p>
+        {castNames.length ? (
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Users className="h-3.5 w-3.5 shrink-0 text-primary" />
+            <span className="truncate">{castNames.join(", ")}</span>
+          </p>
+        ) : null}
         <div className="mt-3 flex items-center justify-between gap-2 text-[11px] font-bold text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <CalendarDays className="h-3.5 w-3.5 text-primary" />
@@ -726,6 +737,20 @@ function getMovieLanguages(movie) {
 
 function getMovieFormats(movie) {
   return toFilterList(movie.formats ?? movie.format);
+}
+
+function getMovieCastNames(movie) {
+  if (!Array.isArray(movie.cast)) return [];
+  const seen = new Set();
+  return movie.cast
+    .map((member) => (typeof member === "string" ? member : member?.name))
+    .map((name) => String(name ?? "").trim())
+    .filter((name) => {
+      const key = normalizeText(name);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 function toFilterList(value) {
