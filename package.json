@@ -18,10 +18,6 @@
     "start:api": "node server/index.js",
     "preview": "vite preview",
     "migrate:cloudinary": "node scripts/migrate-images-cloudinary.mjs",
-    "seed:coming-soon": "node scripts/seed-coming-soon-mongodb.mjs",
-    "seed:live-cast": "node scripts/seed-live-movie-cast-mongodb.mjs",
-    "seed:large": "node scripts/seed-large-mongodb.mjs",
-    "seed:massive": "node scripts/seed-massive-mongodb.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
