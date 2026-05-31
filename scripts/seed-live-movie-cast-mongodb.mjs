@@ -15,7 +15,7 @@ import {
 
 dotenv.config();
 
-const TARGET_CAST_COUNT = 6;
+const MAX_CAST_COUNT = 6;
 const IMAGE_TIMEOUT_MS = 10000;
 const FETCH_RETRY_COUNT = 3;
 const FETCH_RETRY_DELAY_MS = 900;
@@ -27,336 +27,144 @@ if (String(process.env.MONGODB_URI || "").startsWith("mongodb+srv://")) {
 }
 
 const VERIFIED_CAST_BY_ID = {
-  "anaganaga-oka-raju": [
-    "Naveen Polishetty",
-    "Sreeleela",
-    "Murali Sharma",
-    "Naresh",
-    "Vennela Kishore",
-    "Brahmaji",
-  ],
-  "bhartha-mahasayulaku-wignyapthi": [
-    "Rajendra Prasad",
-    "Naresh",
-    "Rao Ramesh",
-    "Jhansi",
-    "Vennela Kishore",
-    "Satya",
-  ],
-  "mana-shankara-vara-prasad-garu": [
-    "Chiranjeevi",
-    "Radhika Sarathkumar",
-    "Jagapathi Babu",
-    "Sai Kumar",
-    "Brahmanandam",
-    "Tanikella Bharani",
-  ],
-  "chand-mera-dil": [
-    "Ananya Panday",
-    "Lakshya Lalwani",
-    "Gurfateh Pirzada",
-    "Jisshu Sengupta",
-    "Sheeba Chaddha",
-    "Supriya Pilgaonkar",
-  ],
-  "ek-din": [
-    "Pankaj Tripathi",
-    "Sai Tamhankar",
-    "Gajraj Rao",
-    "Kumud Mishra",
-    "Neena Gupta",
-    "Jameel Khan",
-  ],
-  "bihu-attack": [
-    "Jatin Bora",
-    "Ravi Sarma",
-    "Barsha Rani Bishaya",
-    "Pranjal Saikia",
-    "Adil Hussain",
-    "Siddharth Nipon Goswami",
-  ],
+  "anaganaga-oka-raju": ["Naveen Polishetty", "Meenakshi Chaudhary"],
+  "bhartha-mahasayulaku-wignyapthi": ["Ravi Teja", "Ashika Ranganath"],
+  "mana-shankara-vara-prasad-garu": ["Chiranjeevi", "Nayanthara"],
+  "chand-mera-dil": ["Lakshya", "Ananya Panday"],
+  "ek-din": ["Sai Pallavi", "Junaid Khan"],
+  "bihu-attack": ["Dev Menaria", "Daisy Shah", "Amiee Misobbah"],
   "hot-spot-2-much": [
-    "Kalaiyarasan",
-    "Sandy Master",
-    "Ammu Abhirami",
-    "Janani Iyer",
-    "Gouri Kishan",
-    "Subiksha Krishnan",
+    "Priya Bhavani Shankar",
+    "M. S. Bhaskar",
+    "Thambi Ramaiah",
+    "Rakshan",
+    "Ashwin Kumar",
+    "Bhavani Sre",
   ],
   "azad-bharath": [
-    "Sunny Deol",
-    "Jackie Shroff",
-    "Ashutosh Rana",
-    "Mukesh Rishi",
-    "Danny Denzongpa",
-    "Zarina Wahab",
-  ],
-  lockdown: [
-    "Pratik Gandhi",
-    "Shweta Tripathi",
-    "Prakash Raj",
-    "Nawazuddin Siddiqui",
-    "Saiyami Kher",
-    "Sharib Hashmi",
-  ],
-  "happy-patel-khatarnak-jasoos": [
-    "Mithoon",
-    "Sharman Joshi",
-    "Mona Singh",
-    "Paresh Rawal",
-    "Johnny Lever",
-    "Rajpal Yadav",
-  ],
-  honey: [
-    "Huma Qureshi",
-    "Amit Sadh",
-    "Gulshan Devaiah",
-    "Jaideep Ahlawat",
-    "Nimrat Kaur",
-    "Rajesh Tailang",
-  ],
-  "paro-pinaki-ki-kahani": [
-    "Parambrata Chatterjee",
-    "Raima Sen",
-    "Abir Chatterjee",
-    "Swastika Mukherjee",
-    "Saswata Chatterjee",
-    "Jisshu Sengupta",
-  ],
-  anantha: ["Prakash Raj", "Revathi", "Rohini", "Nasser", "Samuthirakani", "Kishore Kumar G."],
-  kennedy: [
-    "Rahul Bhat",
-    "Sunny Leone",
-    "Benedict Garrett",
-    "Mohit Takalkar",
-    "Abhilash Thapliyal",
-    "Megha Burman",
-  ],
-  "draupathi-2": [
-    "Richard Rishi",
-    "Sheela Rajkumar",
-    "Karunas",
-    "Radha Ravi",
-    "G. Marimuthu",
-    "Nishanth",
-  ],
-  "raja-shivaji": [
-    "Riteish Deshmukh",
-    "Genelia D'Souza",
-    "Sharad Kelkar",
-    "Mukesh Rishi",
-    "Ashutosh Rana",
-    "Jisshu Sengupta",
-  ],
-  "gandhi-talks": [
-    "Vijay Sethupathi",
-    "Arvind Swamy",
-    "Aditi Rao Hydari",
-    "Siddharth Jadhav",
-    "Mahesh Manjrekar",
-    "Nassar",
-  ],
-  subedaar: [
-    "Anil Kapoor",
-    "Radhika Madan",
-    "Prajakt Koli",
+    "Shreyas Talpade",
+    "Roopa Iyer",
     "Suresh Oberoi",
-    "Jackie Shroff",
-    "Rohit Roy",
+    "Subhash Chandra",
+    "Priyanshu Chatterjee",
   ],
+  lockdown: ["Anupama Parameswaran", "Charle", "Nirosha", "Priya Venkat", "Livingston", "Abhirami"],
+  "happy-patel-khatarnak-jasoos": ["Vir Das", "Mona Singh", "Sharib Hashmi", "Mithila Palkar"],
+  honey: ["Naveen Chandra", "Divya Pillai", "Divi Vadthya", "Raja Ravindra"],
+  "paro-pinaki-ki-kahani": ["Eshita Singh", "Sanjay Bishnoi"],
+  anantha: [
+    "Jagapathi Babu",
+    "Suhasini Maniratnam",
+    "Y. G. Mahendran",
+    "Mohan Raman",
+    "Nizhalgal Ravi",
+  ],
+  kennedy: ["Rahul Bhat", "Sunny Leone", "Abhilash Thapliyal"],
+  "draupathi-2": ["Richard Rishi", "Rakshana Induchoodan", "Natarajan Subramaniam"],
+  "raja-shivaji": ["Salman Khan", "Sanjay Dutt"],
+  "gandhi-talks": ["Vijay Sethupathi", "Arvind Swamy", "Aditi Rao Hydari"],
+  subedaar: ["Anil Kapoor", "Radhika Madan"],
   "vaa-vaathiyaar": [
     "Karthi",
     "Krithi Shetty",
     "Sathyaraj",
-    "Rajpal Yadav",
+    "Rajkiran",
     "Karunakaran",
     "Anandaraj",
   ],
   "o-romeo": [
-    "Ishaan Khatter",
-    "Wamiqa Gabbi",
-    "Jaideep Ahlawat",
-    "Neena Gupta",
-    "Rajat Kapoor",
-    "Sheeba Chaddha",
+    "Shahid Kapoor",
+    "Triptii Dimri",
+    "Tamannaah Bhatia",
+    "Nana Patekar",
+    "Avinash Tiwary",
+    "Vikrant Massey",
   ],
   parasakthi: [
-    "Sathyaraj",
-    "Gautham Karthik",
-    "Sarathkumar",
-    "Radhika Sarathkumar",
-    "Rajkiran",
-    "Nassar",
-  ],
-  "do-deewane-seher-mein": [
-    "Rohit Saraf",
-    "Pashmina Roshan",
-    "Jibraan Khan",
-    "Naila Grrewal",
-    "Ronit Roy",
-    "Shefali Shah",
-  ],
-  purushaha: ["Vikram", "Dhruv Vikram", "Bobby Simha", "Sananth", "Vani Bhojan", "Simran"],
-  assi: [
-    "Manoj Bajpayee",
-    "Vineet Kumar Singh",
-    "Pankaj Tripathi",
-    "Ravi Kishan",
-    "Anurita Jha",
-    "Kumud Mishra",
-  ],
-  "ugly-story": [
-    "Bobby Simha",
-    "Madonna Sebastian",
-    "Joju George",
-    "Kalabhavan Shajohn",
+    "Sivakarthikeyan",
+    "Ravi Mohan",
+    "Atharvaa",
+    "Sreeleela",
+    "Basil Joseph",
     "Guru Somasundaram",
-    "Karunakaran",
   ],
-  "vadh-2": [
-    "Sanjay Mishra",
-    "Neena Gupta",
-    "Manav Vij",
-    "Saurabh Shukla",
-    "Vineet Kumar Singh",
-    "Tillotama Shome",
-  ],
-  euphoria: [
-    "Zendaya",
-    "Sydney Sweeney",
-    "Jacob Elordi",
-    "Hunter Schafer",
-    "Maude Apatow",
-    "Alexa Demie",
-  ],
+  "do-deewane-seher-mein": ["Siddhant Chaturvedi", "Mrunal Thakur"],
+  purushaha: ["Sapthagiri"],
+  assi: ["Mohd. Zeeshan Ayyub"],
+  "ugly-story": ["Avika Gor", "Nandu Vijay Krishna"],
+  "vadh-2": ["Sanjay Mishra", "Neena Gupta"],
+  euphoria: ["Saandip", "Mohammad Anas"],
   ikkis: [
     "Agastya Nanda",
     "Dharmendra",
     "Jaideep Ahlawat",
-    "Abhishek Banerjee",
-    "Dinesh Prabhakar",
-    "Arjun Rampal",
+    "Deepak Dobriyal",
+    "Sikandar Kher",
+    "Rahul Dev",
   ],
-  mrithyunjay: [
-    "Unni Mukundan",
-    "Jisshu Sengupta",
-    "Jagapathi Babu",
-    "Sampath Raj",
-    "Anoop Menon",
-    "Sai Kumar",
-  ],
+  mrithyunjay: ["Sree Vishnu", "Reba Monica John"],
   magellan: [
-    "Rodrigo Santoro",
-    "Alvaro Morte",
-    "Sergio Peris-Mencheta",
-    "Niccolo Senni",
-    "Barbara Goenaga",
-    "Adrian Lastra",
+    "Gael Garcia Bernal",
+    "Rafael Morais",
+    "Brontis Jodorowsky",
+    "Ronnie Lazaro",
+    "Hazel Orencio",
   ],
-  "couple-friendly": [
-    "Pratik Gandhi",
-    "Shreya Dhanwanthary",
-    "Boman Irani",
-    "Ratna Pathak Shah",
-    "Jim Sarbh",
-    "Kubbra Sait",
-  ],
+  "couple-friendly": ["Santosh Sobhan", "Manasa Varanasi"],
   "dead-man-s-wire": [
-    "Manoj Bajpayee",
-    "Jaideep Ahlawat",
-    "Mohammed Zeeshan Ayyub",
-    "Tannishtha Chatterjee",
-    "Vipin Sharma",
-    "Jatin Sarna",
+    "Bill Skarsgard",
+    "Dacre Montgomery",
+    "Cary Elwes",
+    "Myha'la",
+    "Colman Domingo",
+    "Al Pacino",
   ],
-  raakaasaa: ["Upendra", "Sudeep", "Shivarajkumar", "Ramya", "Prema", "Sadhu Kokila"],
+  raakaasaa: ["Nayan Sarika", "Sangeeth Shobhan"],
   "the-rip": [
-    "Liam Neeson",
-    "Guy Pearce",
-    "Monica Bellucci",
-    "Ray Stevenson",
-    "Louis Mandylor",
-    "Stella Stocker",
+    "Matt Damon",
+    "Ben Affleck",
+    "Steven Yeun",
+    "Teyana Taylor",
+    "Sasha Calle",
+    "Catalina Sandino Moreno",
   ],
-  "gaaya-padda-simham": [
-    "Balakrishna",
-    "Jagapathi Babu",
-    "Ravi Kishan",
-    "Shriya Saran",
-    "Prakash Raj",
-    "Brahmanandam",
-  ],
+  "gaaya-padda-simham": ["Tharun Bhascker Dhaassyam", "Faria Abdullah"],
   "28-years-later-the-bone-temple": [
-    "Cillian Murphy",
-    "Aaron Taylor-Johnson",
-    "Jodie Comer",
-    "Ralph Fiennes",
     "Jack O'Connell",
+    "Alfie Williams",
+    "Ralph Fiennes",
+    "Aaron Taylor-Johnson",
+    "Cillian Murphy",
     "Erin Kellyman",
   ],
-  "hey-balwanth": [
-    "Darshan",
-    "Devaraj",
-    "Jagapathi Babu",
-    "Ravi Shankar",
-    "Asha Bhat",
-    "Chikkanna",
-  ],
+  "hey-balwanth": ["Suhas", "Shivani Nagaram"],
   "the-sheep-detectives": [
-    "Hugh Grant",
-    "Sam Rockwell",
-    "Awkwafina",
-    "Ben Kingsley",
-    "Richard Ayoade",
-    "Danny DeVito",
+    "Hugh Jackman",
+    "Brett Goldstein",
+    "Emma Thompson",
+    "Julia Louis-Dreyfus",
+    "Nicholas Braun",
+    "Nicholas Galitzine",
   ],
-  devagudi: [
-    "Sai Kumar",
-    "Sharath Babu",
-    "Suhasini",
-    "Nassar",
-    "Kota Srinivasa Rao",
-    "Tanikella Bharani",
-  ],
-  obsession: [
-    "Rose Byrne",
-    "Bobby Cannavale",
-    "Naomi Watts",
-    "Liev Schreiber",
-    "Luke Wilson",
-    "Toni Collette",
-  ],
-  cheekatilo: [
-    "Satyadev",
-    "Regina Cassandra",
-    "Eesha Rebba",
-    "Naveen Chandra",
-    "Srikanth",
-    "Ravi Varma",
-  ],
+  devagudi: ["Abhinav Shaurya", "Anusri"],
+  obsession: ["Michael Johnston", "Inde Navarrette", "Andy Richter", "Jeff Barker"],
+  cheekatilo: ["Sobhita Dhulipala", "Vishwadev Rachakonda"],
   "remarkably-bright-creatures": [
-    "Helen Mirren",
     "Sally Field",
-    "Tom Hanks",
-    "Richard Jenkins",
-    "Bill Nighy",
-    "Dev Patel",
+    "Lewis Pullman",
+    "Joan Chen",
+    "Kathy Baker",
+    "Beth Grant",
+    "Sofia Black-D'Elia",
   ],
-  "nari-nari-naduma-murari": [
-    "Naga Chaitanya",
-    "Tamannaah Bhatia",
-    "Ramya Krishnan",
-    "Rao Ramesh",
-    "Vennela Kishore",
-    "Posani Krishna",
-  ],
+  "nari-nari-naduma-murari": ["Sharwanand", "Samyuktha", "Sakshi Vaidya"],
   "i-love-boosters": [
-    "Yogi Babu",
-    "Karunakaran",
-    "Redin Kingsley",
-    "Anandaraj",
-    "Munishkanth",
-    "Lollu Sabha Maaran",
+    "Keke Palmer",
+    "LaKeith Stanfield",
+    "Naomi Ackie",
+    "Taylour Paige",
+    "Poppy Liu",
+    "Eiza Gonzalez",
   ],
 };
 
@@ -389,11 +197,32 @@ const ACTOR_IMDB_SEARCH_ALIASES = {
 };
 
 const ACTOR_IMAGE_SOURCE_OVERRIDES = {
+  "abhinav shaurya": "https://nettv4u.com/imagine/07-12-2025/abhinav-shaurya.png",
+  anusri:
+    "https://starzone.ragalahari.com/jan2026/hd/anusri-at-devagudi-trailer-launch/anusri-at-devagudi-trailer-launchthumb.jpg",
+  "dev menaria": "https://wikiwiki.in/wp-content/uploads/2021/10/Dev-Menaria-Actor.jpg",
+  "divi vadthya": "https://southindianactress.in/wp-content/uploads/2026/01/Divi-Vadthya-10.jpg",
+  "eshita singh": "https://in.bmscdn.com/artist/eshita-singh-2039760-1724481633.jpg",
+  "junaid khan":
+    "https://www.hindustantimes.com/ht-img/img/2024/12/30/1600x900/IMG_8182_1735554925751_1735554934664.jpg",
+  livingston: "https://www.filmistreet.com/wp-content/uploads/2015/01/Livingston.jpg",
   "lollu sabha maaran": "https://image.tmdb.org/t/p/w500/uWeSvoMN2rOxHsEj5qENJSTGMDZ.jpg",
+  "mohammad anas":
+    "https://castyou-website.sgp1.digitaloceanspaces.com/2023/08/Mohammad-Anas03063.jpg",
+  "priya venkat": "https://www.gethucinema.com/wp-content/uploads/2024/02/PriyaVenkat-152.jpg",
+  "rakshana induchoodan":
+    "https://www.gethucinema.com/wp-content/uploads/2024/06/Rakshana-Induchoodan-3-Av6QmH194.jpg",
   "redin kingsley": "https://img.nowrunning.com/content/Artist/2021/redin-94566/banner.jpg",
+  "roopa iyer":
+    "https://static.toiimg.com/thumb/imgsize-23456,msid-113320992,width-600,resizemode-4/113320992.jpg",
   sananth: "https://movie.webindia123.com/movie/star/actors/regional/tamil/Sananth/Sananth4.jpg",
+  "sakshi vaidya": "https://southindianactress.in/wp-content/uploads/2023/08/Sakshi-Vaidya-16.jpg",
+  "sangeeth shobhan": "https://www.pinkvilla.com/images/2025-04/1419435820_sangeeth-shobhan-2.jpg",
+  "shivani nagaram":
+    "https://southindianactress.in/wp-content/uploads/2025/08/Shivani-Nagaram-10.jpg",
   "siddharth nipon goswami":
     "https://eastindiastory.com/wp-content/uploads/2023/02/Siddharth-Nipon-Goswami.jpg",
+  "vishwadev rachakonda": "https://nettv4u.com/imagine/26-12-2016/vishwadev-rachakonda.jpg",
 };
 
 const mongoUri = process.env.MONGODB_URI;
@@ -451,7 +280,7 @@ if (movieUpdates.length) await Movie.bulkWrite(movieUpdates);
 if (showUpdates.length) await Show.bulkWrite(showUpdates);
 
 console.log(
-  `Seeded ${movieUpdates.length} live movies with ${TARGET_CAST_COUNT} cast members each.`,
+  `Seeded ${movieUpdates.length} live movies with up to ${MAX_CAST_COUNT} verified cast members each.`,
 );
 console.log(
   `Cast image source: reused ${stats.cloudinaryReused} Cloudinary images, uploaded ${stats.uploaded} internet images.`,
@@ -466,7 +295,7 @@ async function buildVerifiedCast(movie, actorAvatars, stats) {
   const configuredNames = VERIFIED_CAST_BY_ID[movie.id] ?? [];
   const names = uniqueNames(
     configuredNames.length ? configuredNames : (movie.cast ?? []).map((member) => member.name),
-  ).slice(0, TARGET_CAST_COUNT);
+  ).slice(0, MAX_CAST_COUNT);
   const rows = [];
   for (const [index, name] of names.entries()) {
     const avatar = await resolveActorAvatar(name, actorAvatars, stats);
@@ -477,7 +306,9 @@ async function buildVerifiedCast(movie, actorAvatars, stats) {
     });
   }
   const missing = rows
-    .filter((row) => !row.avatar || isGeneratedImageUrl(row.avatar))
+    .filter(
+      (row) => !row.avatar || !isCloudinaryImageUrl(row.avatar) || isGeneratedImageUrl(row.avatar),
+    )
     .map((row) => row.name);
 
   return {
@@ -572,11 +403,12 @@ async function uploadActorPhotoSource(name, sourceUrl) {
   try {
     const imageDataUrl = await fetchImageAsDataUrl(sourceUrl);
     if (!imageDataUrl && sourceUrl.includes("upload.wikimedia.org")) return "";
-    return await ensureCloudinaryImageUrl(imageDataUrl || sourceUrl, {
+    const uploaded = await ensureCloudinaryImageUrl(imageDataUrl || sourceUrl, {
       folder: "movix/real-cast",
       publicId: slugify(name),
       tags: ["live-movie-cast"],
     });
+    return isCloudinaryImageUrl(uploaded) && !isGeneratedImageUrl(uploaded) ? uploaded : "";
   } catch (error) {
     console.warn(`Cloudinary upload failed for ${name}: ${error.message}`);
     return "";
@@ -774,7 +606,11 @@ async function fetchImageAsDataUrl(url) {
       });
       if (response.status === 429) continue;
       if (!response.ok) return "";
-      const contentType = response.headers.get("content-type") || "image/jpeg";
+      const contentType = (response.headers.get("content-type") || "image/jpeg")
+        .split(",")[0]
+        .split(";")[0]
+        .trim()
+        .toLowerCase();
       if (!contentType.startsWith("image/")) return "";
       const bytes = Buffer.from(await response.arrayBuffer());
       if (!bytes.length || bytes.length > 5 * 1024 * 1024) return "";
