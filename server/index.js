@@ -14,6 +14,7 @@ import { showRoutes } from "./routes/showRoutes.js";
 import { theaterRoutes } from "./routes/theaterRoutes.js";
 import { uploadRoutes } from "./routes/uploadRoutes.js";
 import { connectDatabase, isMongoReady } from "./services/database.js";
+import { createSeatHoldStore } from "./services/seatHoldService.js";
 import { createRateLimiter } from "./middleware/rateLimit.js";
 import { requestContext } from "./middleware/requestContext.js";
 import { securityHeaders } from "./middleware/securityHeaders.js";
@@ -62,8 +63,9 @@ app.use(express.json({ limit: "12mb" }));
 
 await connectDatabase();
 
-const { router: bookingRoutes, getBookedSeats } = createBookingRoutes({ io });
-registerSeatSockets(io, { getBookedSeats });
+const seatHolds = createSeatHoldStore();
+const { router: bookingRoutes, getBookedSeats } = createBookingRoutes({ io, seatHolds });
+registerSeatSockets(io, { getBookedSeats, seatHolds });
 registerNotificationSockets(io);
 
 app.get("/api/health", (_request, response) => {
@@ -72,7 +74,7 @@ app.get("/api/health", (_request, response) => {
     service: "movix API",
     database: isMongoReady() ? "MongoDB connected" : "Local memory store",
     socket: "enabled",
-    seats: "Booked-seat sync",
+    seats: "Booked and held-seat sync",
     notifications: "Live notifications enabled",
     email:
       env.brevoApiKey && env.brevoFromEmail ? "Brevo configured" : "Email provider not configured",

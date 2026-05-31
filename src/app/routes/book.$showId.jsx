@@ -100,7 +100,7 @@ function BookingPage() {
     ],
   );
   const [selected, setSelected] = useState([]);
-  const [seatState, setSeatState] = useState({ booked: [] });
+  const [seatState, setSeatState] = useState({ booked: [], held: [], heldByMe: [] });
   const [connection, setConnection] = useState("connecting");
   const [message, setMessage] = useState("");
   const [ticketOtp, setTicketOtp] = useState("");
@@ -111,6 +111,8 @@ function BookingPage() {
   const [otpBusy, setOtpBusy] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const socketRef = useRef(null);
+  const selectedRef = useRef([]);
+  const holdTokenRef = useRef("");
 
   useEffect(() => {
     let active = true;
@@ -119,7 +121,7 @@ function BookingPage() {
     fetchSeatState(showId)
       .then((state) => {
         if (!active) return;
-        setSeatState(state);
+        setSeatState(normalizeLiveSeatState(state));
         setConnection((current) => (current === "connecting" ? "local" : current));
       })
       .catch(() => active && setConnection("offline"));
@@ -133,12 +135,37 @@ function BookingPage() {
         }
 
         socketRef.current = socket;
-        socket.on("connect", () => setConnection("live"));
-        socket.on("disconnect", () => setConnection("offline"));
-        socket.on("seat-state", (state) => setSeatState(state));
-        socket.emit("join-show", { showId }, (result) => {
-          if (result?.state) setSeatState(result.state);
+        const joinShowRoom = () => {
+          socket.emit("join-show", { showId }, (result) => {
+            holdTokenRef.current = result?.holdToken || socket.id || "";
+            if (result?.state) setSeatState(normalizeLiveSeatState(result.state));
+          });
+        };
+        const refreshSelectedHolds = () => {
+          if (selectedRef.current.length === 0) return;
+          socket.emit("hold-seats", { showId, seats: selectedRef.current }, (result) => {
+            holdTokenRef.current = result?.holdToken || socket.id || "";
+            if (result?.state) setSeatState(normalizeLiveSeatState(result.state));
+          });
+        };
+
+        socket.on("connect", () => {
+          setConnection("live");
+          holdTokenRef.current = socket.id || "";
+          joinShowRoom();
+          refreshSelectedHolds();
         });
+        socket.on("disconnect", () => {
+          setConnection("offline");
+          holdTokenRef.current = "";
+        });
+        socket.on("connect_error", () => setConnection("offline"));
+        socket.on("seat-state", (state) => setSeatState(normalizeLiveSeatState(state)));
+        if (socket.connected) {
+          setConnection("live");
+          joinShowRoom();
+          refreshSelectedHolds();
+        }
       })
       .catch(() => setConnection("offline"));
 
@@ -147,12 +174,20 @@ function BookingPage() {
       const socket = socketRef.current;
       socket?.disconnect();
       socketRef.current = null;
+      holdTokenRef.current = "";
     };
   }, [showId]);
 
   const bookedSet = useMemo(() => new Set(seatState.booked ?? []), [seatState.booked]);
+  const heldSet = useMemo(() => new Set(seatState.held ?? []), [seatState.held]);
 
   const selectedSeats = useMemo(() => [...selected].sort(), [selected]);
+  const selectedSet = useMemo(() => new Set(selectedSeats), [selectedSeats]);
+  const heldByMeSet = useMemo(() => new Set(seatState.heldByMe ?? []), [seatState.heldByMe]);
+  const heldByOtherSet = useMemo(() => {
+    const seats = [...heldSet].filter((seat) => !heldByMeSet.has(seat) && !selectedSet.has(seat));
+    return new Set(seats);
+  }, [heldByMeSet, heldSet, selectedSet]);
   const showTierPrice = useMemo(
     () => ({
       platinum: search.platinumPrice,
@@ -168,20 +203,70 @@ function BookingPage() {
   }, 0);
 
   useEffect(() => {
+    selectedRef.current = selectedSeats;
+  }, [selectedSeats]);
+
+  useEffect(() => {
     setSelected((current) => {
-      const next = current.filter((seat) => !bookedSet.has(seat));
+      const next = current.filter((seat) => !bookedSet.has(seat) && !heldByOtherSet.has(seat));
       return next.length === current.length ? current : next;
     });
-  }, [bookedSet]);
+  }, [bookedSet, heldByOtherSet]);
 
-  const toggle = (id) => {
-    if (bookedSet.has(id) || isPaying) return;
+  const emitBookingSocket = (event, payload, { optional = true } = {}) => {
+    const socket = socketRef.current;
+    if (!socket?.connected) return Promise.resolve({ ok: optional });
+
+    return new Promise((resolve) => {
+      socket.timeout(2500).emit(event, payload, (error, result) => {
+        if (error) {
+          resolve({ ok: optional, error });
+          return;
+        }
+        resolve(result ?? { ok: true });
+      });
+    });
+  };
+
+  const holdSeats = async (seats) => {
+    const seatList = [...new Set(seats.map(String).filter(Boolean))];
+    if (seatList.length === 0) return { ok: true };
+
+    const result = await emitBookingSocket(
+      "hold-seats",
+      { showId, seats: seatList },
+      { optional: true },
+    );
+    holdTokenRef.current = result.holdToken || socketRef.current?.id || holdTokenRef.current;
+    if (result.state) setSeatState(normalizeLiveSeatState(result.state));
+    return result;
+  };
+
+  const releaseSeats = (seats) => {
+    const seatList = [...new Set(seats.map(String).filter(Boolean))];
+    if (seatList.length === 0) return;
+
+    emitBookingSocket("release-seats", { showId, seats: seatList }, { optional: true }).then(
+      (result) => {
+        if (result.state) setSeatState(normalizeLiveSeatState(result.state));
+      },
+    );
+  };
+
+  const toggle = async (id) => {
+    if (bookedSet.has(id) || heldByOtherSet.has(id) || isPaying) return;
     if (selected.includes(id)) {
+      releaseSeats([id]);
       setSelected((current) => current.filter((seat) => seat !== id));
       return;
     }
     if (selected.length >= 10) {
       setMessage("You can select up to 10 seats in one booking.");
+      return;
+    }
+    const holdResult = await holdSeats([id]);
+    if (!holdResult.ok) {
+      setMessage(seatConflictMessage(holdResult.conflictSeats));
       return;
     }
     setSelected((current) => [...current, id]);
@@ -286,6 +371,12 @@ function BookingPage() {
       return;
     }
 
+    const holdResult = await holdSeats(selectedSeats);
+    if (!holdResult.ok) {
+      setMessage(seatConflictMessage(holdResult.conflictSeats));
+      return;
+    }
+
     if (emailVerificationToken) {
       await handlePay(emailVerificationToken);
       return;
@@ -301,6 +392,12 @@ function BookingPage() {
       setMessage("Verify your ticket email with OTP before payment.");
       return;
     }
+    const holdResult = await holdSeats(selectedSeats);
+    if (!holdResult.ok) {
+      setMessage(seatConflictMessage(holdResult.conflictSeats));
+      return;
+    }
+
     setIsPaying(true);
     setMessage("Opening secure checkout...");
 
@@ -325,6 +422,7 @@ function BookingPage() {
         total,
         email: bookingEmail,
         emailVerificationToken: verificationToken,
+        holdToken: holdTokenRef.current || socketRef.current?.id || "",
         paymentId: payment.payment.id,
         paymentProvider: payment.payment.provider,
       });
@@ -343,7 +441,11 @@ function BookingPage() {
         },
       });
     } catch (error) {
-      setMessage(error.response?.data?.error ?? "Payment or booking failed. Please try again.");
+      setMessage(
+        error.response?.data?.conflictSeats
+          ? seatConflictMessage(error.response.data.conflictSeats)
+          : (error.response?.data?.error ?? "Payment or booking failed. Please try again."),
+      );
     } finally {
       setIsPaying(false);
     }
@@ -380,6 +482,7 @@ function BookingPage() {
       <div className="mt-6 flex flex-wrap gap-5 text-xs text-muted-foreground">
         <Legend color="bg-card border border-border" label="Available" />
         <Legend color="bg-primary" label="Selected" />
+        <Legend color="bg-amber-400/30 border border-amber-400/50" label="Held" />
         <Legend color="bg-muted-foreground/40" label="Booked" />
         {layout.blockedSet.size > 0 && (
           <Legend color="bg-muted-foreground/20" label="Unavailable" />
@@ -419,20 +522,23 @@ function BookingPage() {
                           const id = `${row}${c}`;
                           const isBooked = bookedSet.has(id);
                           const isBlocked = layout.blockedSet.has(id);
+                          const isHeldByOther = heldByOtherSet.has(id);
                           const isSel = selected.includes(id);
                           const isAisle = layout.aisleAfter > 0 && c === layout.aisleAfter;
                           const stateClass = isBlocked
                             ? "cursor-not-allowed border-transparent bg-muted-foreground/20 text-transparent"
                             : isBooked
                               ? "cursor-not-allowed border-transparent bg-muted-foreground/30 text-transparent"
-                              : isSel
-                                ? "scale-105 border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                                : "border-border/60 bg-card text-muted-foreground hover:border-primary hover:text-foreground";
+                              : isHeldByOther
+                                ? "cursor-not-allowed border-amber-400/50 bg-amber-400/20 text-transparent"
+                                : isSel
+                                  ? "scale-105 border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                                  : "border-border/60 bg-card text-muted-foreground hover:border-primary hover:text-foreground";
 
                           return (
                             <div key={id} className="flex items-center gap-1.5">
                               <button
-                                disabled={isBlocked || isBooked}
+                                disabled={isBlocked || isBooked || isHeldByOther}
                                 onClick={() => toggle(id)}
                                 className={`h-7 w-7 rounded-md border text-[10px] font-medium transition-all ${stateClass}`}
                               >
@@ -571,6 +677,29 @@ function Legend({ color, label }) {
       <span>{label}</span>
     </div>
   );
+}
+
+function normalizeLiveSeatState(state) {
+  return {
+    showId: state?.showId ?? "",
+    booked: normalizeSeatList(state?.booked),
+    held: normalizeSeatList(state?.held),
+    heldByMe: normalizeSeatList(state?.heldByMe),
+  };
+}
+
+function normalizeSeatList(seats) {
+  return Array.isArray(seats)
+    ? [...new Set(seats.map((seat) => String(seat).trim()).filter(Boolean))].sort()
+    : [];
+}
+
+function seatConflictMessage(conflictSeats = []) {
+  const seats = normalizeSeatList(conflictSeats);
+  if (seats.length === 0) return "That seat just became unavailable. Pick another seat.";
+  return `${seats.slice(0, 4).join(", ")} ${
+    seats.length === 1 ? "is" : "are"
+  } already booked or held by another user.`;
 }
 
 export { Route };

@@ -64,7 +64,7 @@ function normalizeSeats(seats) {
     : [];
 }
 
-function createBookingRoutes({ io }) {
+function createBookingRoutes({ io, seatHolds }) {
   const router = Router();
 
   async function getBookedSeats(showId) {
@@ -73,9 +73,22 @@ function createBookingRoutes({ io }) {
     return docs.flatMap((booking) => booking.seats);
   }
 
+  async function buildSeatState(showId, ownerId = "", snapshot) {
+    const bookedSeats = snapshot?.bookedSeats ?? (await getBookedSeats(showId));
+    const heldSeats = snapshot?.heldSeats ?? seatHolds.getHeldSeats(showId);
+    return getSeatState(showId, bookedSeats, heldSeats, ownerId);
+  }
+
   async function emitSeatState(showId) {
-    const state = await getSeatState(showId, await getBookedSeats(showId));
-    io.to(roomName(showId)).emit("seat-state", state);
+    const snapshot = {
+      bookedSeats: await getBookedSeats(showId),
+      heldSeats: seatHolds.getHeldSeats(showId),
+    };
+    const state = await buildSeatState(showId, "", snapshot);
+    const sockets = await io.in(roomName(showId)).fetchSockets();
+    for (const client of sockets) {
+      client.emit("seat-state", await buildSeatState(showId, client.id, snapshot));
+    }
     return state;
   }
 
@@ -105,10 +118,7 @@ function createBookingRoutes({ io }) {
     "/seat-state/:showId",
     asyncHandler(async (request, response) => {
       response.json({
-        state: await getSeatState(
-          request.params.showId,
-          await getBookedSeats(request.params.showId),
-        ),
+        state: await buildSeatState(request.params.showId),
       });
     }),
   );
@@ -174,6 +184,7 @@ function createBookingRoutes({ io }) {
       total,
       email = "",
       emailVerificationToken = "",
+      holdToken = "",
       paymentId = `local_${Date.now().toString(36)}`,
       paymentProvider = "local",
     } = request.body;
@@ -195,12 +206,16 @@ function createBookingRoutes({ io }) {
       return;
     }
 
-    const booked = new Set(await getBookedSeats(showId));
+    const bookedSeats = await getBookedSeats(showId);
+    const booked = new Set(bookedSeats);
     const bookedConflicts = seatList.filter((seat) => booked.has(seat));
-    if (bookedConflicts.length > 0) {
-      response
-        .status(409)
-        .json({ error: "Some seats are already booked.", conflictSeats: bookedConflicts });
+    const heldConflicts = seatHolds.findConflicts(showId, seatList, holdToken, bookedSeats);
+    const conflictSeats = [...new Set([...bookedConflicts, ...heldConflicts])];
+    if (conflictSeats.length > 0) {
+      response.status(409).json({
+        error: "Some seats are already booked or selected by another user.",
+        conflictSeats,
+      });
       return;
     }
 
@@ -228,6 +243,7 @@ function createBookingRoutes({ io }) {
       : addMemoryBooking({ ...booking, createdAt: new Date().toISOString() });
 
     bookingEmailTokens.delete(emailVerificationToken);
+    seatHolds.releaseBookedSeats(showId, seatList);
     const state = await emitSeatState(showId);
     const qrDataUrl = await generateQrDataUrl(saved);
 
