@@ -376,21 +376,13 @@ function Home() {
     recommendedDragRef.current = {
       deltaX: 0,
       direction: null,
+      hasCapture: false,
       key,
       pointerId: event.pointerId,
+      started: false,
       startX: event.clientX,
       width,
     };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    setRecommendedDrag({
-      deltaX: 0,
-      direction: null,
-      isSettling: false,
-      key,
-      settleTo: null,
-      toPage: activeRecommendedPage,
-      width,
-    });
   };
   const moveRecommendedDrag = (event) => {
     const drag = recommendedDragRef.current;
@@ -400,6 +392,14 @@ function Home() {
     const direction = Math.abs(deltaX) < 4 ? null : deltaX < 0 ? "next" : "previous";
     drag.deltaX = deltaX;
     drag.direction = direction;
+    if (!drag.started && !direction) return;
+
+    if (!drag.started) {
+      drag.started = true;
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      drag.hasCapture = true;
+    }
+
     if (Math.abs(deltaX) > 8) event.preventDefault();
 
     setRecommendedDrag((current) =>
@@ -410,15 +410,25 @@ function Home() {
             direction,
             width: drag.width,
           }
-        : current,
+        : {
+            deltaX,
+            direction,
+            isSettling: false,
+            key: drag.key,
+            settleTo: null,
+            toPage: activeRecommendedPage,
+            width: drag.width,
+          },
     );
   };
   const endRecommendedDrag = (event) => {
     const drag = recommendedDragRef.current;
     if (!drag) return;
 
-    event.currentTarget.releasePointerCapture?.(drag.pointerId);
+    if (drag.hasCapture) event.currentTarget.releasePointerCapture?.(drag.pointerId);
     recommendedDragRef.current = null;
+
+    if (!drag.started) return;
 
     const deltaX = drag.deltaX;
     const direction = deltaX < 0 ? "next" : "previous";
@@ -453,7 +463,15 @@ function Home() {
             settleTo: shouldSlide ? "commit" : "cancel",
             toPage,
           }
-        : current,
+        : {
+            deltaX,
+            direction,
+            isSettling: true,
+            key,
+            settleTo: shouldSlide ? "commit" : "cancel",
+            toPage,
+            width: drag.width,
+          },
     );
 
     window.setTimeout(() => {
@@ -466,7 +484,9 @@ function Home() {
   };
   const cancelRecommendedDrag = (event) => {
     if (!recommendedDragRef.current) return;
-    event.currentTarget.releasePointerCapture?.(recommendedDragRef.current.pointerId);
+    if (recommendedDragRef.current.hasCapture) {
+      event.currentTarget.releasePointerCapture?.(recommendedDragRef.current.pointerId);
+    }
     recommendedDragRef.current = null;
     setRecommendedDrag(null);
   };
