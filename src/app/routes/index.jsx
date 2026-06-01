@@ -137,6 +137,7 @@ function Home() {
   const [sortBy, setSortBy] = useState("Popularity");
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [recommendedPage, setRecommendedPage] = useState(0);
+  const [recommendedSlideDirection, setRecommendedSlideDirection] = useState("next");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
@@ -284,9 +285,11 @@ function Home() {
   );
   const canSlideRecommended = recommendedPool.length > recommendedPageSize;
   const showPreviousRecommended = () => {
+    setRecommendedSlideDirection("previous");
     setRecommendedPage((current) => (current === 0 ? recommendedPageCount - 1 : current - 1));
   };
   const showNextRecommended = () => {
+    setRecommendedSlideDirection("next");
     setRecommendedPage((current) => (current + 1) % recommendedPageCount);
   };
   const moviesPageSearch = buildMoviesPageSearch({
@@ -362,6 +365,7 @@ function Home() {
   }, [heroMoviePool.length]);
 
   useEffect(() => {
+    setRecommendedSlideDirection("next");
     setRecommendedPage(0);
   }, [recommendedPool]);
 
@@ -746,10 +750,16 @@ function Home() {
         wide
       >
         {recommended.length ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {recommended.map((movie) => (
-              <CompactMovieCard key={movie.id} movie={movie} prominent />
-            ))}
+          <div className="overflow-hidden pb-2">
+            <div
+              key={`recommended-page-${activeRecommendedPage}-${recommendedSlideDirection}`}
+              data-direction={recommendedSlideDirection}
+              className="recommended-slide-track grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6"
+            >
+              {recommended.map((movie) => (
+                <CompactMovieCard key={movie.id} movie={movie} prominent />
+              ))}
+            </div>
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-border/70 bg-card/70 p-8 text-center">
