@@ -137,7 +137,7 @@ function Home() {
   const [sortBy, setSortBy] = useState("Popularity");
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [recommendedPage, setRecommendedPage] = useState(0);
-  const [recommendedSlideDirection, setRecommendedSlideDirection] = useState("next");
+  const [recommendedTransition, setRecommendedTransition] = useState(null);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
@@ -284,14 +284,61 @@ function Home() {
     recommendedPageSize,
   );
   const canSlideRecommended = recommendedPool.length > recommendedPageSize;
+  const isRecommendedAnimating = Boolean(recommendedTransition);
+  const startRecommendedTransition = (direction) => {
+    if (!canSlideRecommended || isRecommendedAnimating) return;
+
+    const fromPage = activeRecommendedPage;
+    const toPage =
+      direction === "previous"
+        ? fromPage === 0
+          ? recommendedPageCount - 1
+          : fromPage - 1
+        : (fromPage + 1) % recommendedPageCount;
+
+    const key = `${fromPage}-${toPage}-${direction}-${Date.now()}`;
+
+    setRecommendedTransition({
+      direction,
+      fromPage,
+      isSliding: false,
+      key,
+      toPage,
+    });
+    setRecommendedPage(toPage);
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        setRecommendedTransition((current) =>
+          current?.key === key ? { ...current, isSliding: true } : current,
+        );
+      });
+    });
+
+    window.setTimeout(() => {
+      setRecommendedTransition((current) => (current?.key === key ? null : current));
+    }, 720);
+  };
   const showPreviousRecommended = () => {
-    setRecommendedSlideDirection("previous");
-    setRecommendedPage((current) => (current === 0 ? recommendedPageCount - 1 : current - 1));
+    startRecommendedTransition("previous");
   };
   const showNextRecommended = () => {
-    setRecommendedSlideDirection("next");
-    setRecommendedPage((current) => (current + 1) % recommendedPageCount);
+    startRecommendedTransition("next");
   };
+  const recommendedTransitionPanels = recommendedTransition
+    ? {
+        from: getCarouselPageItems(
+          recommendedPool,
+          recommendedTransition.fromPage,
+          recommendedPageSize,
+        ),
+        to: getCarouselPageItems(
+          recommendedPool,
+          recommendedTransition.toPage,
+          recommendedPageSize,
+        ),
+      }
+    : null;
   const moviesPageSearch = buildMoviesPageSearch({
     city: selectedCity,
     genre: activeGenre,
@@ -365,7 +412,7 @@ function Home() {
   }, [heroMoviePool.length]);
 
   useEffect(() => {
-    setRecommendedSlideDirection("next");
+    setRecommendedTransition(null);
     setRecommendedPage(0);
   }, [recommendedPool]);
 
@@ -709,6 +756,7 @@ function Home() {
                   size="icon"
                   variant="ghost"
                   onClick={showPreviousRecommended}
+                  disabled={isRecommendedAnimating}
                   className="h-8 w-8 rounded-full"
                   aria-label="Previous recommended movies"
                 >
@@ -722,6 +770,7 @@ function Home() {
                   size="icon"
                   variant="ghost"
                   onClick={showNextRecommended}
+                  disabled={isRecommendedAnimating}
                   className="h-8 w-8 rounded-full"
                   aria-label="Next recommended movies"
                 >
@@ -750,16 +799,39 @@ function Home() {
         wide
       >
         {recommended.length ? (
-          <div className="overflow-hidden pb-2">
-            <div
-              key={`recommended-page-${activeRecommendedPage}-${recommendedSlideDirection}`}
-              data-direction={recommendedSlideDirection}
-              className="recommended-slide-track grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6"
-            >
-              {recommended.map((movie) => (
-                <CompactMovieCard key={movie.id} movie={movie} prominent />
-              ))}
-            </div>
+          <div className="recommended-carousel-viewport pb-2">
+            {recommendedTransition && recommendedTransitionPanels ? (
+              <div
+                key={recommendedTransition.key}
+                data-direction={recommendedTransition.direction}
+                className="recommended-carousel-track"
+                style={{
+                  transform:
+                    recommendedTransition.direction === "next"
+                      ? `translateX(${recommendedTransition.isSliding ? "-50%" : "0"})`
+                      : `translateX(${recommendedTransition.isSliding ? "0" : "-50%"})`,
+                }}
+                onTransitionEnd={(event) => {
+                  if (event.currentTarget === event.target && event.propertyName === "transform") {
+                    setRecommendedTransition(null);
+                  }
+                }}
+              >
+                {(recommendedTransition.direction === "next"
+                  ? [recommendedTransitionPanels.from, recommendedTransitionPanels.to]
+                  : [recommendedTransitionPanels.to, recommendedTransitionPanels.from]
+                ).map((movies, index) => (
+                  <div
+                    key={`${recommendedTransition.key}-${index}`}
+                    className="recommended-carousel-panel"
+                  >
+                    <RecommendedMovieGrid movies={movies} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <RecommendedMovieGrid movies={recommended} />
+            )}
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-border/70 bg-card/70 p-8 text-center">
@@ -1094,6 +1166,16 @@ function MovieCardLink({ movie, className, children }) {
     <Link to="/movies/$id" params={{ id: movie.id }} className={className}>
       {children}
     </Link>
+  );
+}
+
+function RecommendedMovieGrid({ movies }) {
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      {movies.map((movie) => (
+        <CompactMovieCard key={movie.id} movie={movie} prominent />
+      ))}
+    </div>
   );
 }
 
