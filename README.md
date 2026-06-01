@@ -16,7 +16,7 @@ The app uses MongoDB for application data and Cloudinary for media assets. Movie
 - Owner dashboard for theater/show management workflows
 - Admin dashboard with users, theaters, revenue, occupancy, and system status
 - Razorpay-ready payment integration
-- Brevo/Bravo email hooks for transactional email
+- Brevo or Resend API email hooks for transactional email
 - Cloudinary upload/migration support for app media
 
 ## Tech Stack
@@ -74,15 +74,23 @@ Create a `.env` file from `.env.example`.
 cp .env.example .env
 ```
 
+```env
 API_PORT=4000
 CLIENT_ORIGIN=http://localhost:5173
 MONGODB_URI=mongodb://127.0.0.1:27017/movix
 MONGODB_DB=movix
 ALLOW_MEMORY_STORE=false
 JWT_SECRET=change-me-in-production
-BRAVO_API_KEY=
-BRAVO_FROM_EMAIL=
-BRAVO_FROM_NAME=movix
+EMAIL_PROVIDER=auto
+EMAIL_API_KEY=
+EMAIL_FROM_EMAIL=
+EMAIL_FROM_NAME=movix
+BREVO_API_KEY=
+BREVO_FROM_EMAIL=
+BREVO_FROM_NAME=movix
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
+RESEND_FROM_NAME=movix
 PAYMENT_PROVIDER=local
 RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
@@ -93,6 +101,12 @@ CLOUDINARY_API_SECRET=
 ADMIN_EMAIL=
 ADMIN_PASSWORD=change-this-password
 VITE_API_URL=http://localhost:4000
+```
+
+Set `EMAIL_PROVIDER=brevo` or `EMAIL_PROVIDER=resend` to force one provider. With `auto`,
+the API uses Brevo first when `BREVO_API_KEY` and `BREVO_FROM_EMAIL` are set, otherwise Resend
+when `RESEND_API_KEY` and `RESEND_FROM_EMAIL` are set. The older `BRAVO_*` variable names
+still work as Brevo aliases.
 
 ## Local Development
 

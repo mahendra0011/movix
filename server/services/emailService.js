@@ -1,7 +1,7 @@
 import { env } from "../config/env.js";
 
 const brand = {
-  name: env.brevoFromName || "BookMyScreen",
+  name: getBrandName(),
   primary: "#e11d48",
   primaryDark: "#be123c",
   surface: "#fff1f2",
@@ -12,6 +12,11 @@ const brand = {
   muted: "#64748b",
   border: "#e5e7eb",
 };
+
+function getBrandName() {
+  const provider = resolveEmailProvider();
+  return provider?.fromName || env.emailFromName || "BookMyScreen";
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -116,11 +121,64 @@ function otpBlock(otp) {
 
 async function sendEmail({ to, subject, html }) {
   if (!to) return { sent: false, reason: "missing-recipient" };
-  if (!env.brevoApiKey || !env.brevoFromEmail) {
+
+  const provider = resolveEmailProvider();
+  if (!provider?.configured) {
     console.log(`[email:provider-not-configured] ${subject} -> ${to}`);
-    return { sent: false, reason: "brevo-not-configured" };
+    return { sent: false, reason: provider ? `${provider.id}-not-configured` : "not-configured" };
   }
 
+  return provider.send({ to, subject, html });
+}
+
+function resolveEmailProvider() {
+  const providers = getEmailProviders();
+  if (env.emailProvider && env.emailProvider !== "auto") {
+    return providers.find((provider) => provider.id === env.emailProvider);
+  }
+
+  return providers.find((provider) => provider.configured);
+}
+
+function getEmailProviders() {
+  return [
+    {
+      id: "brevo",
+      label: "Brevo",
+      configured: Boolean(env.brevoApiKey && env.brevoFromEmail),
+      fromName: env.brevoFromName,
+      send: sendBrevoEmail,
+    },
+    {
+      id: "resend",
+      label: "Resend",
+      configured: Boolean(env.resendApiKey && env.resendFromEmail),
+      fromName: env.resendFromName,
+      send: sendResendEmail,
+    },
+  ];
+}
+
+function getEmailProviderStatus() {
+  const provider = resolveEmailProvider();
+  if (!provider) {
+    return {
+      configured: false,
+      provider: "",
+      label: "Email provider not configured",
+    };
+  }
+
+  return {
+    configured: provider.configured,
+    provider: provider.id,
+    label: provider.configured
+      ? `${provider.label} configured`
+      : `${provider.label} provider not configured`,
+  };
+}
+
+async function sendBrevoEmail({ to, subject, html }) {
   let response;
   try {
     response = await fetch(env.brevoApiUrl, {
@@ -152,7 +210,59 @@ async function sendEmail({ to, subject, html }) {
     throw error;
   }
 
-  return { sent: true, provider: "brevo-api", response: await response.json() };
+  return { sent: true, provider: "brevo-api", response: await readJsonResponse(response) };
+}
+
+async function sendResendEmail({ to, subject, html }) {
+  let response;
+  try {
+    response = await fetch(env.resendApiUrl, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${env.resendApiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        from: formatEmailAddress(env.resendFromEmail, env.resendFromName),
+        to: [to],
+        subject,
+        html,
+      }),
+    });
+  } catch (cause) {
+    const error = new Error("Email service failed. Check Resend API key and sender email.");
+    error.status = 502;
+    error.cause = cause;
+    throw error;
+  }
+
+  if (!response.ok) {
+    const body = await response.text();
+    const error = new Error("Email service failed. Check Resend API key and sender email.");
+    error.status = 502;
+    error.cause = new Error(`Resend API email failed: ${response.status} ${body}`);
+    throw error;
+  }
+
+  return { sent: true, provider: "resend-api", response: await readJsonResponse(response) };
+}
+
+function formatEmailAddress(email, name) {
+  const safeName = String(name ?? "")
+    .replace(/[<>"]/g, "")
+    .trim();
+  return safeName ? `${safeName} <${email}>` : email;
+}
+
+async function readJsonResponse(response) {
+  const text = await response.text();
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { raw: text };
+  }
 }
 
 async function sendBookingEmail(booking) {
@@ -282,4 +392,4 @@ async function sendOtpEmail(email, otp, options = {}) {
   });
 }
 
-export { sendBookingEmail, sendEmail, sendNotificationEmail, sendOtpEmail };
+export { getEmailProviderStatus, sendBookingEmail, sendEmail, sendNotificationEmail, sendOtpEmail };

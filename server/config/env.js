@@ -29,9 +29,23 @@ function cleanEnvValue(value) {
     .trim();
 }
 
+function normalizeEmailProvider(value) {
+  const provider = String(value ?? "auto")
+    .trim()
+    .toLowerCase();
+  return ["auto", "brevo", "resend"].includes(provider) ? provider : "auto";
+}
+
 const nodeEnv = readEnv("NODE_ENV") ?? "development";
 const isProduction = nodeEnv === "production";
 const configuredClientOrigin = readEnv("CLIENT_ORIGIN");
+const requestedEmailProvider = normalizeEmailProvider(readEnv("EMAIL_PROVIDER"));
+const genericEmailApiKey = readEnv("EMAIL_API_KEY");
+const genericEmailFromEmail = readEnv("EMAIL_FROM_EMAIL");
+const genericEmailFromName = readEnv("EMAIL_FROM_NAME");
+const brevoFromName =
+  readEnv("BRAVO_FROM_NAME", "BREVO_FROM_NAME") ?? genericEmailFromName ?? "movix";
+const resendFromName = readEnv("RESEND_FROM_NAME") ?? genericEmailFromName ?? brevoFromName;
 
 const env = {
   nodeEnv,
@@ -43,11 +57,25 @@ const env = {
   mongoDb: readEnv("MONGODB_DB") ?? "movix",
   allowMemoryStore: readEnv("ALLOW_MEMORY_STORE") === "true",
   jwtSecret: readEnv("JWT_SECRET") ?? (isProduction ? "" : "movix-dev-secret"),
-  brevoApiKey: readEnv("BRAVO_API_KEY", "BREVO_API_KEY"),
+  emailProvider: requestedEmailProvider,
+  emailFromName: genericEmailFromName ?? brevoFromName ?? resendFromName,
+  brevoApiKey:
+    readEnv("BRAVO_API_KEY", "BREVO_API_KEY") ??
+    (requestedEmailProvider === "brevo" ? genericEmailApiKey : undefined),
   // Brevo names its HTTP transactional email route /smtp/email; this is not SMTP auth.
   brevoApiUrl: readEnv("BREVO_API_URL") ?? "https://api.brevo.com/v3/smtp/email",
-  brevoFromEmail: readEnv("BRAVO_FROM_EMAIL", "BREVO_FROM_EMAIL"),
-  brevoFromName: readEnv("BRAVO_FROM_NAME", "BREVO_FROM_NAME") ?? "movix",
+  brevoFromEmail:
+    readEnv("BRAVO_FROM_EMAIL", "BREVO_FROM_EMAIL") ??
+    (requestedEmailProvider === "brevo" ? genericEmailFromEmail : undefined),
+  brevoFromName,
+  resendApiKey:
+    readEnv("RESEND_API_KEY") ??
+    (requestedEmailProvider === "resend" ? genericEmailApiKey : undefined),
+  resendApiUrl: readEnv("RESEND_API_URL") ?? "https://api.resend.com/emails",
+  resendFromEmail:
+    readEnv("RESEND_FROM_EMAIL") ??
+    (requestedEmailProvider === "resend" ? genericEmailFromEmail : undefined),
+  resendFromName,
   paymentProvider: readEnv("PAYMENT_PROVIDER") ?? "local",
   razorpayKeyId: readEnv("RAZORPAY_KEY_ID"),
   razorpayKeySecret: readEnv("RAZORPAY_KEY_SECRET"),

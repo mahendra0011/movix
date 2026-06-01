@@ -14,6 +14,7 @@ import { showRoutes } from "./routes/showRoutes.js";
 import { theaterRoutes } from "./routes/theaterRoutes.js";
 import { uploadRoutes } from "./routes/uploadRoutes.js";
 import { connectDatabase, isMongoReady } from "./services/database.js";
+import { getEmailProviderStatus } from "./services/emailService.js";
 import { createSeatHoldStore } from "./services/seatHoldService.js";
 import { createRateLimiter } from "./middleware/rateLimit.js";
 import { requestContext } from "./middleware/requestContext.js";
@@ -69,6 +70,8 @@ registerSeatSockets(io, { getBookedSeats, seatHolds });
 registerNotificationSockets(io);
 
 app.get("/api/health", (_request, response) => {
+  const emailStatus = getEmailProviderStatus();
+
   response.json({
     ok: true,
     service: "movix API",
@@ -76,8 +79,7 @@ app.get("/api/health", (_request, response) => {
     socket: "enabled",
     seats: "Booked and held-seat sync",
     notifications: "Live notifications enabled",
-    email:
-      env.brevoApiKey && env.brevoFromEmail ? "Brevo configured" : "Email provider not configured",
+    email: emailStatus.label,
     payment:
       env.paymentProvider === "razorpay" && env.razorpayKeyId && env.razorpayKeySecret
         ? "Razorpay connected"
