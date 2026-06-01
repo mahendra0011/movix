@@ -155,6 +155,7 @@ const releasedCastOverrides = {
     "Jackie Shroff",
     "Mithun Chakraborty",
     "Johny Lever",
+    "Asrani",
   ],
   "Bihu Attack": [
     "R Madhavan",
