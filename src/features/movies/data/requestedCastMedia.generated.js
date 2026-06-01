@@ -1686,8 +1686,38 @@ const requestedCastAvatars = {
     "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780141512/movix/real-cast/zoe-saldana.jpg",
 };
 
+const requestedCastAvatarOverrides = {
+  "avika gor":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780235735/movix/real-cast/avika-gor.jpg",
+  "khushbu sundar":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780235735/movix/real-cast/khushbu-sundar.jpg",
+  "megha burman":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780235735/movix/real-cast/megha-burman.jpg",
+  "mithila palkar":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780235735/movix/real-cast/mithila-palkar.jpg",
+  nandu:
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780235735/movix/real-cast/nandu-vijay-krishna.jpg",
+  "sharib hashmi":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780235735/movix/real-cast/sharib-hashmi.jpg",
+  "vir das":
+    "https://res.cloudinary.com/dfmetzhrk/image/upload/v1780235735/movix/real-cast/vir-das.jpg",
+};
+
+const requestedCastAvatarAliases = {
+  asrani: "govardhan asrani",
+  "johny lever": "johnny lever",
+};
+
 function getRequestedCastAvatar(name) {
-  return requestedCastAvatars[castKey(name)] || "";
+  const key = castKey(name);
+  const aliasKey = requestedCastAvatarAliases[key];
+  return (
+    requestedCastAvatars[key] ||
+    requestedCastAvatarOverrides[key] ||
+    requestedCastAvatars[aliasKey] ||
+    requestedCastAvatarOverrides[aliasKey] ||
+    ""
+  );
 }
 
 function castKey(value) {

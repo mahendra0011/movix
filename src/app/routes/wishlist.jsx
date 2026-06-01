@@ -14,7 +14,7 @@ const Route = createFileRoute("/wishlist")({
 function WishlistPage() {
   const [items, setItems] = useState(readWishlist);
   const recommended = useMemo(
-    () => fallbackMovies.filter((movie) => !items.some((item) => item.id === movie.id)).slice(0, 4),
+    () => fallbackMovies.filter((movie) => !items.some((item) => item.id === movie.id)).slice(0, 6),
     [items],
   );
 
@@ -61,7 +61,7 @@ function WishlistPage() {
 
       <section className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
         {items.length ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {items.map((item) => (
               <WishlistCard key={item.id} item={item} onRemove={() => removeItem(item.id)} />
             ))}
@@ -93,7 +93,7 @@ function WishlistPage() {
             View all
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {recommended.map((movie) => (
             <Link
               key={movie.id}
@@ -126,7 +126,7 @@ function WishlistPage() {
 
 function WishlistCard({ item, onRemove }) {
   return (
-    <article className="group overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg">
+    <article className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg">
       <Link to="/movies/$id" params={{ id: item.id }} className="block">
         <div className="relative aspect-[2/3] overflow-hidden bg-muted">
           {item.image ? (
@@ -146,12 +146,10 @@ function WishlistCard({ item, onRemove }) {
           </span>
         </div>
       </Link>
-      <div className="p-4">
+      <div className="p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="line-clamp-2 min-h-11 text-base font-extrabold leading-6">
-              {item.title}
-            </h3>
+            <h3 className="line-clamp-2 min-h-10 text-sm font-extrabold leading-5">{item.title}</h3>
             <p className="mt-1 truncate text-xs text-muted-foreground">
               {item.venue || "Saved movie"}
             </p>
@@ -171,7 +169,7 @@ function WishlistCard({ item, onRemove }) {
             Saved {formatSavedDate(item.savedAt)}
           </p>
         ) : null}
-        <Button asChild className="mt-4 w-full rounded-full">
+        <Button asChild className="mt-4 h-9 w-full rounded-full text-xs">
           <Link to="/movies/$id" params={{ id: item.id }}>
             Book / view details
           </Link>

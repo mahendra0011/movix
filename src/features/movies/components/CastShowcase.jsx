@@ -201,7 +201,8 @@ function CompactCastCard({ member, isLead }) {
         <img
           src={imageSrc}
           alt=""
-          loading="lazy"
+          loading="eager"
+          decoding="async"
           className="absolute inset-0 h-full w-full object-cover"
           onError={(event) => {
             if (event.currentTarget.src !== fallbackSrc) {
@@ -234,6 +235,7 @@ function CastShowcaseCard({ member, isLead }) {
           src={imageSrc}
           alt=""
           loading="lazy"
+          decoding="async"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           onError={(event) => {
             if (event.currentTarget.src !== fallbackSrc) {

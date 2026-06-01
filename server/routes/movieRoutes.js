@@ -210,11 +210,17 @@ function mergeCatalogMovieMedia(movie) {
 }
 
 function selectBestMovieCast(movieCast = [], catalogCast = []) {
-  const verifiedMovieCast = movieCast.filter(hasRealCastAvatar);
-  const verifiedCatalogCast = catalogCast.filter(hasRealCastAvatar);
-  if (verifiedMovieCast.length >= 6) return verifiedMovieCast.slice(0, 6);
-  if (verifiedCatalogCast.length > verifiedMovieCast.length) return verifiedCatalogCast.slice(0, 6);
-  return movieCast.length ? movieCast.slice(0, 6) : catalogCast.slice(0, 6);
+  const movieVisibleCast = movieCast.slice(0, 6);
+  const catalogVisibleCast = catalogCast.slice(0, 6);
+  const movieRealCount = movieVisibleCast.filter(hasRealCastAvatar).length;
+  const catalogRealCount = catalogVisibleCast.filter(hasRealCastAvatar).length;
+
+  if (!movieVisibleCast.length) return catalogVisibleCast;
+  if (!catalogVisibleCast.length) return movieVisibleCast;
+  if (catalogRealCount >= 4 && catalogRealCount >= movieRealCount - 1) {
+    return catalogVisibleCast;
+  }
+  return catalogRealCount > movieRealCount ? catalogVisibleCast : movieVisibleCast;
 }
 
 function hasRealCastAvatar(member) {

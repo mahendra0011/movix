@@ -61,13 +61,17 @@ function mergeRemoteMovieWithFallback(remoteMovie, id) {
 }
 
 function selectBestCast(remoteCast = [], fallbackCast = []) {
-  const verifiedRemoteCast = remoteCast.filter(hasRealCastAvatar);
-  const verifiedFallbackCast = (fallbackCast ?? []).filter(hasRealCastAvatar);
-  if (verifiedRemoteCast.length >= 6) return verifiedRemoteCast.slice(0, 6);
-  if (verifiedFallbackCast.length > verifiedRemoteCast.length) {
-    return verifiedFallbackCast.slice(0, 6);
+  const remoteVisibleCast = remoteCast.slice(0, 6);
+  const fallbackVisibleCast = (fallbackCast ?? []).slice(0, 6);
+  const remoteRealCount = remoteVisibleCast.filter(hasRealCastAvatar).length;
+  const fallbackRealCount = fallbackVisibleCast.filter(hasRealCastAvatar).length;
+
+  if (!remoteVisibleCast.length) return fallbackVisibleCast;
+  if (!fallbackVisibleCast.length) return remoteVisibleCast;
+  if (fallbackRealCount >= 4 && fallbackRealCount >= remoteRealCount - 1) {
+    return fallbackVisibleCast;
   }
-  return remoteCast.length ? remoteCast.slice(0, 6) : fallbackCast?.slice(0, 6);
+  return fallbackRealCount > remoteRealCount ? fallbackVisibleCast : remoteVisibleCast;
 }
 
 function hasRealCastAvatar(member) {
