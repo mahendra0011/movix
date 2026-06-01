@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BadgePercent,
@@ -110,6 +110,7 @@ const cinemaImages = [
 const allFilterValue = "All";
 const excludedHeroMovieIds = new Set(["i-love-boosters"]);
 const recommendedPageSize = 6;
+const recommendedSlideDurationMs = 640;
 const sortOptions = ["Popularity", "Rating", "A-Z"];
 const homeSearchResultLimit = 120;
 const homeSearchMovieLimit = 24;
@@ -138,9 +139,13 @@ function Home() {
   const [activeHeroSlide, setActiveHeroSlide] = useState(0);
   const [recommendedPage, setRecommendedPage] = useState(0);
   const [recommendedTransition, setRecommendedTransition] = useState(null);
+  const [recommendedDrag, setRecommendedDrag] = useState(null);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [newsletterBusy, setNewsletterBusy] = useState(false);
+  const recommendedCarouselRef = useRef(null);
+  const recommendedDragRef = useRef(null);
+  const recommendedSuppressClickRef = useRef(false);
   const [homeComingSoonMovies, setHomeComingSoonMovies] = useState(() =>
     comingSoonMovies.map(normalizeHomeComingSoonMovie),
   );
@@ -284,17 +289,21 @@ function Home() {
     recommendedPageSize,
   );
   const canSlideRecommended = recommendedPool.length > recommendedPageSize;
-  const isRecommendedAnimating = Boolean(recommendedTransition);
+  const isRecommendedDragging = Boolean(recommendedDrag);
+  const isRecommendedAnimating = Boolean(recommendedTransition || recommendedDrag);
+  const getRecommendedViewportWidth = () =>
+    Math.max(1, Math.round(recommendedCarouselRef.current?.getBoundingClientRect().width || 1));
+  const getRecommendedPageForDirection = (page, direction) =>
+    direction === "previous"
+      ? page === 0
+        ? recommendedPageCount - 1
+        : page - 1
+      : (page + 1) % recommendedPageCount;
   const startRecommendedTransition = (direction) => {
     if (!canSlideRecommended || isRecommendedAnimating) return;
 
     const fromPage = activeRecommendedPage;
-    const toPage =
-      direction === "previous"
-        ? fromPage === 0
-          ? recommendedPageCount - 1
-          : fromPage - 1
-        : (fromPage + 1) % recommendedPageCount;
+    const toPage = getRecommendedPageForDirection(fromPage, direction);
 
     const key = `${fromPage}-${toPage}-${direction}-${Date.now()}`;
 
@@ -304,6 +313,7 @@ function Home() {
       isSliding: false,
       key,
       toPage,
+      width: getRecommendedViewportWidth(),
     });
     setRecommendedPage(toPage);
 
@@ -317,7 +327,7 @@ function Home() {
 
     window.setTimeout(() => {
       setRecommendedTransition((current) => (current?.key === key ? null : current));
-    }, 720);
+    }, recommendedSlideDurationMs + 100);
   };
   const showPreviousRecommended = () => {
     startRecommendedTransition("previous");
@@ -339,6 +349,133 @@ function Home() {
         ),
       }
     : null;
+  const recommendedDragPanels = recommendedDrag?.direction
+    ? {
+        from: getCarouselPageItems(recommendedPool, activeRecommendedPage, recommendedPageSize),
+        to: getCarouselPageItems(
+          recommendedPool,
+          getRecommendedPageForDirection(activeRecommendedPage, recommendedDrag.direction),
+          recommendedPageSize,
+        ),
+      }
+    : null;
+  const recommendedDragTransform = recommendedDrag?.direction
+    ? getRecommendedDragTransform(recommendedDrag)
+    : "";
+  const beginRecommendedDrag = (event) => {
+    if (
+      !canSlideRecommended ||
+      isRecommendedAnimating ||
+      (event.pointerType === "mouse" && event.button !== 0)
+    ) {
+      return;
+    }
+
+    const width = getRecommendedViewportWidth();
+    const key = `drag-${activeRecommendedPage}-${Date.now()}`;
+    recommendedDragRef.current = {
+      deltaX: 0,
+      direction: null,
+      key,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      width,
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setRecommendedDrag({
+      deltaX: 0,
+      direction: null,
+      isSettling: false,
+      key,
+      settleTo: null,
+      toPage: activeRecommendedPage,
+      width,
+    });
+  };
+  const moveRecommendedDrag = (event) => {
+    const drag = recommendedDragRef.current;
+    if (!drag || recommendedDrag?.isSettling) return;
+
+    const deltaX = clampNumber(event.clientX - drag.startX, -drag.width, drag.width);
+    const direction = Math.abs(deltaX) < 4 ? null : deltaX < 0 ? "next" : "previous";
+    drag.deltaX = deltaX;
+    drag.direction = direction;
+    if (Math.abs(deltaX) > 8) event.preventDefault();
+
+    setRecommendedDrag((current) =>
+      current
+        ? {
+            ...current,
+            deltaX,
+            direction,
+            width: drag.width,
+          }
+        : current,
+    );
+  };
+  const endRecommendedDrag = (event) => {
+    const drag = recommendedDragRef.current;
+    if (!drag) return;
+
+    event.currentTarget.releasePointerCapture?.(drag.pointerId);
+    recommendedDragRef.current = null;
+
+    const deltaX = drag.deltaX;
+    const direction = deltaX < 0 ? "next" : "previous";
+    const dragDirection = drag.direction;
+    const threshold = Math.min(150, Math.max(72, drag.width * 0.18));
+    const shouldSlide = Math.abs(deltaX) >= threshold;
+    const shouldSuppressClick = Math.abs(deltaX) > 8;
+
+    if (shouldSuppressClick) {
+      recommendedSuppressClickRef.current = true;
+      window.setTimeout(() => {
+        recommendedSuppressClickRef.current = false;
+      }, 160);
+    }
+
+    if (!dragDirection) {
+      setRecommendedDrag(null);
+      return;
+    }
+
+    const toPage = shouldSlide
+      ? getRecommendedPageForDirection(activeRecommendedPage, direction)
+      : activeRecommendedPage;
+    const key = drag.key;
+
+    setRecommendedDrag((current) =>
+      current
+        ? {
+            ...current,
+            direction,
+            isSettling: true,
+            settleTo: shouldSlide ? "commit" : "cancel",
+            toPage,
+          }
+        : current,
+    );
+
+    window.setTimeout(() => {
+      setRecommendedDrag((current) => {
+        if (current?.key !== key) return current;
+        if (current.settleTo === "commit") setRecommendedPage(current.toPage);
+        return null;
+      });
+    }, recommendedSlideDurationMs + 100);
+  };
+  const cancelRecommendedDrag = (event) => {
+    if (!recommendedDragRef.current) return;
+    event.currentTarget.releasePointerCapture?.(recommendedDragRef.current.pointerId);
+    recommendedDragRef.current = null;
+    setRecommendedDrag(null);
+  };
+  const stopRecommendedDragClick = (event) => {
+    if (!recommendedSuppressClickRef.current) return;
+    recommendedSuppressClickRef.current = false;
+    event.preventDefault();
+    event.stopPropagation();
+  };
   const moviesPageSearch = buildMoviesPageSearch({
     city: selectedCity,
     genre: activeGenre,
@@ -799,7 +936,16 @@ function Home() {
         wide
       >
         {recommended.length ? (
-          <div className="recommended-carousel-viewport pb-2">
+          <div
+            ref={recommendedCarouselRef}
+            data-dragging={isRecommendedDragging ? "true" : "false"}
+            className="recommended-carousel-viewport pb-2"
+            onClickCapture={stopRecommendedDragClick}
+            onPointerCancel={cancelRecommendedDrag}
+            onPointerDown={beginRecommendedDrag}
+            onPointerMove={moveRecommendedDrag}
+            onPointerUp={endRecommendedDrag}
+          >
             {recommendedTransition && recommendedTransitionPanels ? (
               <div
                 key={recommendedTransition.key}
@@ -808,8 +954,12 @@ function Home() {
                 style={{
                   transform:
                     recommendedTransition.direction === "next"
-                      ? `translateX(${recommendedTransition.isSliding ? "-50%" : "0"})`
-                      : `translateX(${recommendedTransition.isSliding ? "0" : "-50%"})`,
+                      ? `translateX(${
+                          recommendedTransition.isSliding ? -recommendedTransition.width : 0
+                        }px)`
+                      : `translateX(${
+                          recommendedTransition.isSliding ? 0 : -recommendedTransition.width
+                        }px)`,
                 }}
                 onTransitionEnd={(event) => {
                   if (event.currentTarget === event.target && event.propertyName === "transform") {
@@ -823,6 +973,36 @@ function Home() {
                 ).map((movies, index) => (
                   <div
                     key={`${recommendedTransition.key}-${index}`}
+                    className="recommended-carousel-panel"
+                  >
+                    <RecommendedMovieGrid movies={movies} />
+                  </div>
+                ))}
+              </div>
+            ) : recommendedDrag?.direction && recommendedDragPanels ? (
+              <div
+                key={recommendedDrag.key}
+                data-direction={recommendedDrag.direction}
+                className="recommended-carousel-track"
+                style={{
+                  transform: recommendedDragTransform,
+                  transition: recommendedDrag.isSettling ? undefined : "none",
+                }}
+                onTransitionEnd={(event) => {
+                  if (event.currentTarget === event.target && event.propertyName === "transform") {
+                    if (recommendedDrag.settleTo === "commit") {
+                      setRecommendedPage(recommendedDrag.toPage);
+                    }
+                    setRecommendedDrag(null);
+                  }
+                }}
+              >
+                {(recommendedDrag.direction === "next"
+                  ? [recommendedDragPanels.from, recommendedDragPanels.to]
+                  : [recommendedDragPanels.to, recommendedDragPanels.from]
+                ).map((movies, index) => (
+                  <div
+                    key={`${recommendedDrag.key}-${index}`}
                     className="recommended-carousel-panel"
                   >
                     <RecommendedMovieGrid movies={movies} />
@@ -1195,6 +1375,7 @@ function CompactMovieCard({ movie, prominent = false }) {
         <img
           src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
           alt={movie.title}
+          draggable={false}
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           onError={(event) => {
@@ -1515,6 +1696,29 @@ function getCarouselPageItems(list, page, pageSize) {
   if (list.length <= pageSize) return list;
   const start = (page * pageSize) % list.length;
   return Array.from({ length: pageSize }, (_, index) => list[(start + index) % list.length]);
+}
+
+function getRecommendedDragTransform(drag) {
+  const width = drag.width || 1;
+  if (drag.direction === "next") {
+    const x = drag.isSettling
+      ? drag.settleTo === "commit"
+        ? -width
+        : 0
+      : clampNumber(drag.deltaX, -width, 0);
+    return `translateX(${x}px)`;
+  }
+
+  const x = drag.isSettling
+    ? drag.settleTo === "commit"
+      ? 0
+      : -width
+    : -width + clampNumber(drag.deltaX, 0, width);
+  return `translateX(${x}px)`;
+}
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
 function buildMoviesPageSearch({ city, genre, language, format, sort }) {

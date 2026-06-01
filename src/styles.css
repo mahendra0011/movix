@@ -222,7 +222,20 @@
   }
 
   .recommended-carousel-viewport {
+    cursor: grab;
     overflow: hidden;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .recommended-carousel-viewport[data-dragging="true"] {
+    cursor: grabbing;
+  }
+
+  .recommended-carousel-viewport a,
+  .recommended-carousel-viewport img {
+    -webkit-user-drag: none;
+    user-select: none;
   }
 
   .recommended-carousel-track {
