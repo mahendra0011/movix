@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -16,17 +16,15 @@ import {
   WalletCards,
   X,
 } from "lucide-react";
-import { fetchMyBookings } from "@/features/booking/api/bookingsApi";
+import { useGetMyBookingsQuery } from "@/features/booking/api/bookingApiEndpoints";
 import { movies } from "@/features/movies/data/movieCatalog";
 import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/services/movieMedia";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
-import { apiUrl } from "@/shared/services/httpClient";
-
-const Route = createFileRoute("/dashboard")({
-  component: UserDashboard,
-});
+import { SkeletonList } from "@/shared/components/ui/skeleton";
+import { apiUrl } from "@/features/api/baseApi";
+import { usePageMeta } from "@/shared/hooks/usePageMeta";
 
 function UserDashboard() {
   const dispatch = useDispatch();
@@ -34,9 +32,18 @@ function UserDashboard() {
   const auth = useSelector((state) => state.auth);
   const accountRole = auth.user?.role;
   const accountEmail = auth.user?.email;
-  const [bookings, setBookings] = useState([]);
   const [shortlist, setShortlist] = useState([]);
-  const [loadState, setLoadState] = useState("idle");
+  const {
+    data: bookingsData,
+    isLoading,
+    error,
+  } = useGetMyBookingsQuery(undefined, {
+    skip: !auth.hydrated || accountRole !== "user",
+  });
+  const bookings = bookingsData ?? [];
+  const isError = Boolean(error);
+
+  usePageMeta({ title: "Dashboard" });
 
   useEffect(() => {
     if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
@@ -44,36 +51,15 @@ function UserDashboard() {
 
   useEffect(() => {
     if (!auth.hydrated) return;
-    if (accountRole === "admin") navigate({ to: "/admin", replace: true });
-    if (accountRole === "theater-owner") navigate({ to: "/owner", replace: true });
+    if (accountRole === "admin") navigate("/admin", { replace: true });
+    if (accountRole === "theater-owner") navigate("/owner", { replace: true });
   }, [accountRole, auth.hydrated, navigate]);
 
   useEffect(() => {
-    if (!auth.hydrated || !accountEmail || accountRole !== "user") return undefined;
-    let active = true;
-    setLoadState("loading");
-
-    fetchMyBookings()
-      .then((items) => {
-        if (!active) return;
-        setBookings(items);
-        setLoadState("ready");
-      })
-      .catch((error) => {
-        if (!active) return;
-        if ([401, 403].includes(error.response?.status)) {
-          dispatch(logout());
-          return;
-        }
-
-        setBookings([]);
-        setLoadState("error");
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [accountEmail, accountRole, auth.hydrated, dispatch]);
+    if (error && [401, 403].includes(error.status)) {
+      dispatch(logout());
+    }
+  }, [error, dispatch]);
 
   useEffect(() => {
     if (!auth.hydrated || !accountEmail || accountRole !== "user") return;
@@ -186,7 +172,7 @@ function UserDashboard() {
           </div>
 
           <SpotlightCard className="rounded-lg p-5">
-            <div className="flex items-start gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               <div className="grid h-12 w-12 place-items-center rounded-lg bg-primary/15 text-primary">
                 <MailCheck className="h-6 w-6" />
               </div>
@@ -202,7 +188,7 @@ function UserDashboard() {
         </div>
       </section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
+      <section className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {stats.map((stat) => (
           <UserMetric key={stat.label} {...stat} />
         ))}
@@ -214,7 +200,7 @@ function UserDashboard() {
             icon={Ticket}
             title="My tickets"
             subtitle={
-              loadState === "loading"
+              isLoading
                 ? "Loading your confirmed bookings"
                 : "Real bookings linked to your account email"
             }
@@ -264,8 +250,10 @@ function UserDashboard() {
                   </table>
                 </div>
               </div>
+            ) : isLoading ? (
+              <SkeletonList count={3} />
             ) : (
-              <EmptyTicketState loadState={loadState} />
+              <EmptyTicketState isLoading={isLoading} isError={isError} />
             )}
           </div>
         </SpotlightCard>
@@ -280,8 +268,7 @@ function UserDashboard() {
             {recommendations.map((movie) => (
               <Link
                 key={movie.id}
-                to="/movies/$id"
-                params={{ id: movie.id }}
+                to={"/movies/" + movie.id}
                 className="group grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-lg border border-border/60 bg-background/35 p-2 transition-colors hover:border-primary/50"
               >
                 <img
@@ -404,11 +391,10 @@ function PanelHeader({ icon: Icon, title, subtitle }) {
   );
 }
 
-function EmptyTicketState({ loadState }) {
-  const text =
-    loadState === "error"
-      ? "Could not load tickets right now. Try again after the API is running."
-      : "Bookings made with your account email will appear here with ticket and invoice downloads.";
+function EmptyTicketState({ isLoading, isError }) {
+  const text = isError
+    ? "Could not load tickets right now. Try again after the API is running."
+    : "Bookings made with your account email will appear here with ticket and invoice downloads.";
 
   return (
     <div className="grid min-h-72 place-items-center rounded-lg border border-dashed border-border/70 p-6 text-center">
@@ -459,4 +445,4 @@ function writeShortlist(items) {
   window.localStorage.setItem("movix-shortlist", JSON.stringify(items));
 }
 
-export { Route };
+export { UserDashboard };
