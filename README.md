@@ -1,60 +1,74 @@
 # Movix
 
-Movix is a full-stack movie ticket booking platform for browsing movies, discovering coming-soon releases, selecting seats, booking tickets, managing theaters, and running admin/owner workflows.
+Movix is a full-stack movie ticket booking platform for browsing movies, discovering coming-soon releases, selecting seats, booking tickets, managing theaters, and running admin/owner workflows. The app supports QR-based entry verification, PWA offline access, Google OAuth login, and background email job queues.
 
 The app uses MongoDB for application data and Cloudinary for media assets. Movie posters, backdrops, and cast photos are stored as Cloudinary URLs in MongoDB, so the frontend can render media directly from saved records.
 
 ## Features
 
-- Movie discovery, search, wishlist, and coming-soon pages
-- Movie detail pages with posters, backdrops, trailers, cast, reviews, and show listings
-- Theater and show browsing by city
-- Seat selection with real-time booked-seat updates through Socket.IO
-- Booking confirmation with QR code, PDF ticket, and invoice support
-- JWT authentication with login, register, email OTP verification, and password reset
-- User dashboard for profile and booking history
-- Owner dashboard for theater/show management workflows
-- Admin dashboard with users, theaters, revenue, occupancy, and system status
-- Razorpay-ready payment integration
-- Brevo or Resend API email hooks for transactional email
-- Cloudinary upload/migration support for app media
+- **Movie discovery** — Browse, search, wishlist, and coming-soon pages with genre/language filters
+- **Movie detail pages** — Posters, backdrops, trailers, cast section, reviews, and show listings
+- **Theater and show browsing** — Filter by city, view amenities and cancellation policies
+- **Seat selection** — Real-time booked-seat updates through Socket.IO with hold timeout
+- **Booking confirmation** — QR code, PDF ticket, and invoice support
+- **QR entry verification** — Owner dashboard QR scanner with camera or manual input, duplicate check, and scan stats
+- **Authentication** — JWT with login, register, email OTP verification, password reset, and Google OAuth
+- **User dashboard** — Profile management and booking history with cancel action
+- **Owner dashboard** — Theater/show management, screen seat maps, QR scanning, revenue analytics
+- **Admin dashboard** — Users, theaters, revenue, occupancy, system status, and audit logs
+- **Payments** — Razorpay-ready integration with local test checkout fallback
+- **Email** — Brevo or Resend provider with background job queue for transactional emails
+- **Media** — Cloudinary upload/migration support with validation and size limits
+- **PWA support** — Service worker, offline fallback page, install prompt with manifest and icons
+- **Security** — Helmet CSP headers, HTTPS redirect, mongo-sanitize, XSS protection, structured logging
+- **API versioning** — Routes mounted under both `/api` and `/api/v1` prefixes
 
 ## Tech Stack
 
-- **Frontend:** React 18, Vite, TanStack Router, TanStack Query, Redux Toolkit
+- **Frontend:** React 18, Vite, TanStack Router, Redux Toolkit
 - **UI:** Tailwind CSS, Radix UI, Lucide React, custom ReactBits-style components
-- **Backend:** Node.js, Express, Socket.IO
+- **Backend:** Node.js, Express, Socket.IO, Morgan, Helmet
 - **Database:** MongoDB with Mongoose
 - **Media:** Cloudinary
-- **Auth:** JWT, bcrypt
+- **Auth:** JWT, bcrypt, Google OAuth
 - **Payments:** Razorpay-ready API flow
 - **Tickets:** PDFKit and QR code generation
+- **Email:** Brevo / Resend with job queue
+- **QR scanning:** html5-qrcode library
 
 ## Project Structure
 
 ```text
-BookMyScreen/
+movix/
   server/
     config/             Environment parsing and validation
     data/               Static review seed helpers used by the API
-    middleware/         Auth, async handling, rate limiting, headers
-    models/             Mongoose models
-    routes/             Auth, movies, shows, bookings, payments, admin, owner APIs
-    services/           Database, email, Cloudinary, tickets, seats, notifications
+    middleware/         Auth, rate limiting, sanitize, validate, request context
+    models/             Mongoose models (User, Booking, Show, AuditLog, etc.)
+    routes/             Auth, movies, shows, bookings, payments, admin, owner, upload, Google OAuth
+    services/           Database, email, Cloudinary, tickets, seats, notifications, audit, job queue, logger
     sockets/            Socket.IO seat and notification channels
     index.js            Express API entry
 
   src/
-    app/                TanStack Router routes and app store
-    features/           Feature modules for auth, movies, booking, owner, admin
-    shared/             Shared UI, hooks, utilities, services
+    app/                TanStack Router routes, root layout, app store
+    features/           Feature modules for auth, movies, booking, owner, admin, offers, city, ui
+    shared/             Shared UI, hooks, utilities, services, error boundaries
     main.jsx            Static Vite client entry
-    router.jsx          Router setup
     styles.css          Tailwind and global styles
+
+  public/
+    favicon.svg         Browser tab icon
+    manifest.json       PWA manifest
+    offline.html        Offline fallback page
+    sw.js               Service worker
+    icons/              PWA icons (192px, 512px)
 
   scripts/
     create-spa-route-fallbacks.mjs
+    generate-sitemap.mjs
     migrate-images-cloudinary.mjs
+    seed-admin.mjs
 ```
 
 ## Requirements
