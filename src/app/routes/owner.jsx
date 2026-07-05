@@ -1,11 +1,12 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   BadgeIndianRupee,
   Building2,
   CalendarClock,
   CheckCircle2,
+  Camera,
   CreditCard,
   Film,
   Gauge,
@@ -19,6 +20,7 @@ import {
   QrCode,
   RefreshCcw,
   Save,
+  ScanLine,
   ShieldCheck,
   Ticket,
   Trash2,
@@ -35,16 +37,12 @@ import {
   normalizeCastImageUrl,
   normalizeMovieImageUrl,
 } from "@/features/movies/services/movieMedia";
-import { fetchOwnerWorkspace, saveOwnerWorkspace } from "@/features/owner/api/ownerApi";
+import { fetchOwnerWorkspace, fetchScanStats, saveOwnerWorkspace, verifyTicketByQr } from "@/features/owner/api/ownerApi";
 import { SpotlightCard } from "@/shared/components/reactbits/SpotlightCard";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { TrendAreaChart, VerticalBars } from "@/shared/components/ui/lightweight-chart";
-import { requestJson } from "@/shared/services/httpClient";
-
-const Route = createFileRoute("/owner")({
-  component: OwnerDashboard,
-});
+import { baseRequest } from "@/features/api/baseApi";
 
 const screenSeeds = [
   {
@@ -168,6 +166,7 @@ const ownerPanelTabs = [
   { id: "timings", label: "Timings", icon: CalendarClock },
   { id: "screens", label: "Screens", icon: Monitor },
   { id: "bookings", label: "Bookings", icon: Ticket },
+  { id: "scan", label: "Scan QR", icon: ScanLine },
   { id: "refunds", label: "Refunds", icon: RefreshCcw },
   { id: "revenue", label: "Revenue", icon: BadgeIndianRupee },
 ];
@@ -199,8 +198,8 @@ function OwnerDashboard() {
 
   useEffect(() => {
     if (!auth.hydrated || !auth.user) return;
-    if (auth.user.role === "admin") navigate({ to: "/admin", replace: true });
-    if (auth.user.role === "user") navigate({ to: "/dashboard", replace: true });
+    if (auth.user.role === "admin") navigate("/admin", { replace: true });
+    if (auth.user.role === "user") navigate("/dashboard", { replace: true });
     if (auth.user.role === "theater-owner") setOwnerApproval(getOwnerApprovalFromUser(auth.user));
   }, [auth.hydrated, auth.user, navigate]);
 
@@ -299,37 +298,6 @@ function OwnerDashboard() {
 
     return Object.entries(map).map(([movie, value]) => ({ movie, value }));
   }, [ownerBookings]);
-
-  const metrics = [
-    {
-      label: "Track earnings",
-      value: formatCurrency(totals.earnings),
-      text: `${totals.bookings} confirmed bookings`,
-      icon: BadgeIndianRupee,
-      tone: "primary",
-    },
-    {
-      label: "Listed movies",
-      value: totals.movies.toLocaleString(),
-      text: `${totals.bookings} bookings from owner cinemas`,
-      icon: Film,
-      tone: "cyan",
-    },
-    {
-      label: "Occupancy",
-      value: `${totals.occupancy}%`,
-      text: `${totals.seatsSold} seats sold today`,
-      icon: Gauge,
-      tone: "amber",
-    },
-    {
-      label: "Screen capacity",
-      value: totals.capacity.toLocaleString(),
-      text: `${ownerScreens.length} active screens`,
-      icon: Monitor,
-      tone: "emerald",
-    },
-  ];
 
   const applyWorkspace = (workspace) => {
     setCinemaProfile(workspace.cinemaProfile ?? defaultCinemaProfile);
@@ -626,55 +594,40 @@ function OwnerDashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-[1560px] px-4 py-8 pb-20 sm:px-5 lg:px-6">
-      <section className="cinema-grid overflow-hidden rounded-lg border border-border/60 bg-card/75 shadow-2xl shadow-black/20">
-        <div className="grid gap-6 p-6 lg:grid-cols-[1.2fr_0.8fr] lg:p-8">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
-              <Building2 className="h-4 w-4" />
-              Theater owner dashboard
-            </div>
-            <h1 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
-              Theater owner panel
-            </h1>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button onClick={() => setActiveTab("screens")} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add screen
-              </Button>
-              <Button variant="secondary" onClick={() => dispatch(logout())} className="gap-2">
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </Button>
-            </div>
+    <div className="mx-auto max-w-[1560px] px-4 py-4 pb-20 sm:px-5 lg:px-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/70 px-4 py-3 shadow-sm sm:px-5 sm:gap-4">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary sm:h-10 sm:w-10">
+            <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-
-          <SpotlightCard className="rounded-lg p-5">
-            <PanelHeader
-              icon={CheckCircle2}
-              title="Cinema status"
-              subtitle="Live cinema workspace"
-              action={ownerApproval.status}
-            />
-            <div className="mt-5 grid gap-3">
-              <SnapshotRow label="Owner" value={auth.user.name || "Theater owner"} />
-              <SnapshotRow label="City" value={cinemaProfile.city || "City not set"} />
-              <SnapshotRow label="Location" value={cinemaProfile.area || "Area not set"} />
-              <SnapshotRow label="Screens" value={ownerScreens.length.toLocaleString()} />
-              <SnapshotRow label="Listed movies" value={listedMovies.length.toLocaleString()} />
-              <SnapshotRow label="Seats available" value={totals.capacity.toLocaleString()} />
-            </div>
-          </SpotlightCard>
+          <div className="min-w-0">
+            <h1 className="text-base font-bold tracking-tight sm:text-lg">Theater owner panel</h1>
+            <p className="truncate text-xs text-muted-foreground">
+              {auth.user.name || "Owner"} &middot; {cinemaProfile.city || "No city"} &middot;{" "}
+              {ownerScreens.length} screen{ownerScreens.length !== 1 ? "s" : ""} &middot;{" "}
+              {listedMovies.length} movie{listedMovies.length !== 1 ? "s" : ""}
+            </p>
+          </div>
         </div>
-      </section>
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          <StatusPill status={ownerApproval.status} />
+          <Button size="sm" onClick={() => setActiveTab("screens")} className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Add screen</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => dispatch(logout())}
+            className="gap-1.5"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Sign out</span>
+          </Button>
+        </div>
+      </div>
 
-      <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((metric) => (
-          <Metric key={metric.label} {...metric} />
-        ))}
-      </section>
-
-      <div className="mt-6 flex gap-2 overflow-x-auto rounded-lg border border-border/60 bg-card/50 p-1">
+      <div className="flex gap-2 overflow-x-auto rounded-lg border border-border/60 bg-card/50 p-1 surface-rise">
         {ownerPanelTabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -753,6 +706,8 @@ function OwnerDashboard() {
         <BookingsTab bookings={ownerBookings} totals={totals} screens={ownerScreens} />
       )}
 
+      {activeTab === "scan" && <QrScanTab />}
+
       {activeTab === "refunds" && <RefundsTab refundCases={ownerRefundCases} totals={totals} />}
 
       {activeTab === "revenue" && (
@@ -768,63 +723,217 @@ function OwnerDashboard() {
 }
 
 function OverviewTab({ earningsTrend, screens, popularMovies, listedMovies, totals }) {
-  return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={BadgeIndianRupee}
-          title="Track earnings"
-          subtitle="Daily paid bookings and revenue"
-          action={formatCurrency(totals.earnings)}
-        />
-        <div className="mt-5 h-80">
-          <TrendAreaChart data={earningsTrend} valueKey="earnings" formatValue={formatCurrency} />
-        </div>
-      </SpotlightCard>
+  const topMovies = [...(listedMovies.length ? listedMovies : popularMovies)].slice(0, 6);
 
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader icon={Gauge} title="Occupancy rates" subtitle="Screen-wise occupancy" />
-        <div className="mt-5 h-80">
-          <VerticalBars
-            data={screens}
-            labelKey="name"
-            valueKey="occupancy"
-            formatValue={(value) => `${value}%`}
+  return (
+    <section className="mt-6 space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 stat-stagger">
+        <SpotlightCard className="relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+          <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Total revenue
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight">
+                {formatCurrency(totals.earnings)}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {totals.bookings} confirmed bookings
+              </p>
+            </div>
+            <div className="stat-pulse grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+              <BadgeIndianRupee className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-primary to-cyan-400 transition-all"
+              style={{
+                width: `${Math.min(100, (totals.bookings / Math.max(totals.bookings, 50)) * 100)}%`,
+              }}
+            />
+          </div>
+        </SpotlightCard>
+
+        <SpotlightCard className="relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+          <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-emerald-500/10 blur-2xl" />
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Seats sold
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight">
+                {totals.seatsSold.toLocaleString()}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {totals.capacity.toLocaleString()} total capacity
+              </p>
+            </div>
+            <div className="stat-pulse grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-emerald-500">
+              <Ticket className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all"
+              style={{
+                width: `${Math.min(100, totals.capacity ? (totals.seatsSold / totals.capacity) * 100 : 0)}%`,
+              }}
+            />
+          </div>
+        </SpotlightCard>
+
+        <SpotlightCard className="relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+          <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-500/10 blur-2xl" />
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Occupancy
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight">{totals.occupancy}%</p>
+              <p className="mt-1 text-xs text-muted-foreground">{screens.length} active screens</p>
+            </div>
+            <div className="stat-pulse grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-500">
+              <Gauge className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all"
+              style={{ width: `${totals.occupancy}%` }}
+            />
+          </div>
+        </SpotlightCard>
+
+        <SpotlightCard className="relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+          <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-sky-500/10 blur-2xl" />
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Shows
+              </p>
+              <p className="mt-2 text-2xl font-bold tracking-tight">
+                {totals.shows.toLocaleString()}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{totals.movies} movies listed</p>
+            </div>
+            <div className="stat-pulse grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sky-500/15 text-sky-500">
+              <Film className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-500 transition-all"
+              style={{
+                width: `${Math.min(100, (totals.shows / Math.max(totals.shows, 30)) * 100)}%`,
+              }}
+            />
+          </div>
+        </SpotlightCard>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+        <SpotlightCard className="relative overflow-hidden rounded-xl p-5">
+          <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-primary/5 blur-3xl" />
+          <div className="relative">
+            <PanelHeader
+              icon={BadgeIndianRupee}
+              title="Track earnings"
+              subtitle="Daily paid bookings and revenue"
+              action={formatCurrency(totals.earnings)}
+            />
+          </div>
+          <div className="relative mt-5 h-60 sm:h-72">
+            <TrendAreaChart data={earningsTrend} valueKey="earnings" formatValue={formatCurrency} />
+          </div>
+        </SpotlightCard>
+
+        <SpotlightCard className="relative overflow-hidden rounded-xl p-5">
+          <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-amber-500/5 blur-3xl" />
+          <div className="relative">
+            <PanelHeader icon={Gauge} title="Occupancy rates" subtitle="Screen-wise occupancy" />
+          </div>
+          <div className="relative mt-5 h-60 sm:h-72">
+            <VerticalBars
+              data={screens}
+              labelKey="name"
+              valueKey="occupancy"
+              formatValue={(value) => `${value}%`}
+            />
+          </div>
+        </SpotlightCard>
+      </div>
+
+      <SpotlightCard className="relative overflow-hidden rounded-xl p-5">
+        <div className="pointer-events-none absolute -left-8 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl" />
+        <div className="relative">
+          <PanelHeader
+            icon={Film}
+            title="My listed movies"
+            subtitle="Only movies listed by this theater owner"
+            action={`${listedMovies.length} movies`}
           />
         </div>
-      </SpotlightCard>
-
-      <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
-        <PanelHeader
-          icon={Film}
-          title="My listed movies"
-          subtitle="Only movies listed by this theater owner"
-          action={`${listedMovies.length} movies`}
-        />
-        {listedMovies.length || popularMovies.length ? (
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
-            {(listedMovies.length ? listedMovies : popularMovies).map((movie) => (
-              <div
-                key={movie.movieId ?? movie.movie}
-                className="rounded-lg border border-border/60 bg-background/35 p-4"
-              >
-                <p className="text-sm font-semibold">{movie.title ?? movie.movie}</p>
-                <p className="mt-2 text-2xl font-bold">
-                  {movie.revenue !== undefined
-                    ? formatCurrency(movie.revenue)
-                    : formatCurrency(movie.value)}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {movie.showCount
-                    ? `${movie.showCount} owner listings`
-                    : "Confirmed ticket revenue"}
-                </p>
-              </div>
-            ))}
+        {topMovies.length > 0 ? (
+          <div className="relative mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 offer-stagger">
+            {topMovies.map((movie, index) => {
+              const gradients = [
+                "from-violet-500/10 via-fuchsia-500/5 to-transparent",
+                "from-blue-500/10 via-cyan-500/5 to-transparent",
+                "from-emerald-500/10 via-teal-500/5 to-transparent",
+                "from-amber-500/10 via-orange-500/5 to-transparent",
+                "from-rose-500/10 via-pink-500/5 to-transparent",
+                "from-sky-500/10 via-indigo-500/5 to-transparent",
+              ];
+              const borderColors = [
+                "border-violet-500/20 hover:border-violet-500/40",
+                "border-blue-500/20 hover:border-blue-500/40",
+                "border-emerald-500/20 hover:border-emerald-500/40",
+                "border-amber-500/20 hover:border-amber-500/40",
+                "border-rose-500/20 hover:border-rose-500/40",
+                "border-sky-500/20 hover:border-sky-500/40",
+              ];
+              const g = gradients[index % gradients.length];
+              const b = borderColors[index % borderColors.length];
+              return (
+                <div
+                  key={movie.movieId ?? movie.movie}
+                  className={`group relative overflow-hidden rounded-xl border ${b} bg-gradient-to-br ${g} p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg`}
+                >
+                  <div className="relative flex items-start gap-3">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                      <Film className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold leading-5 line-clamp-1">
+                        {movie.title ?? movie.movie}
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="text-lg font-bold tracking-tight">
+                          {movie.revenue !== undefined
+                            ? formatCurrency(movie.revenue)
+                            : formatCurrency(movie.value)}
+                        </span>
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                          #{index + 1}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {movie.showCount
+                          ? `${movie.showCount} owner listings`
+                          : "Confirmed ticket revenue"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <div className="mt-5 rounded-lg border border-dashed border-border/70 p-6 text-center">
-            <p className="text-sm font-semibold">No owner-listed movies yet</p>
+          <div className="relative mt-5 rounded-xl border border-dashed border-border/70 p-8 text-center">
+            <Film className="mx-auto h-10 w-10 text-muted-foreground/30" />
+            <p className="mt-3 text-sm font-semibold">No owner-listed movies yet</p>
             <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
               Movies appear here from confirmed bookings and approved cinema activity.
             </p>
@@ -913,8 +1022,10 @@ function OwnerMoviesTab({
   };
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
-      <SpotlightCard className="rounded-lg p-5">
+    <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[0.85fr_1.15fr] surface-rise">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-8 -left-8 h-28 w-28 rounded-full bg-cyan-500/8 blur-3xl" />
         <PanelHeader
           icon={Film}
           title="Add movie details"
@@ -1067,7 +1178,7 @@ function OwnerMoviesTab({
               {castRows.map((member, index) => (
                 <div
                   key={`${index}-${member.name || "cast"}`}
-                  className="grid gap-3 rounded-lg border border-border/60 bg-background/40 p-3 md:grid-cols-[76px_1fr_1fr_auto]"
+                  className="grid grid-cols-1 gap-3 rounded-lg border border-border/60 bg-background/40 p-3 sm:grid-cols-[76px_1fr_1fr_auto] md:grid-cols-[76px_1fr_1fr_auto]"
                 >
                   <CastPhotoControl
                     member={member}
@@ -1152,7 +1263,8 @@ function OwnerMoviesTab({
         </form>
       </SpotlightCard>
 
-      <SpotlightCard className="rounded-lg p-5">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-10 top-1/2 h-32 w-32 -translate-y-1/2 rounded-full bg-primary/8 blur-3xl" />
         <PanelHeader
           icon={Film}
           title="Movie list"
@@ -1161,7 +1273,7 @@ function OwnerMoviesTab({
         />
 
         {listedMovies.length ? (
-          <div className="mt-5 grid gap-4">
+          <div className="mt-5 grid gap-4 offer-stagger">
             {listedMovies.map((movie) => (
               <div
                 key={movie.movieId}
@@ -1288,8 +1400,10 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
   };
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-      <SpotlightCard className="rounded-lg p-5">
+    <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[1.05fr_0.95fr] surface-rise">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-emerald-500/8 blur-3xl" />
         <PanelHeader
           icon={MapPin}
           title="Cinema location"
@@ -1394,7 +1508,8 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
         </form>
       </SpotlightCard>
 
-      <SpotlightCard className="rounded-lg p-5">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-500/10 blur-2xl" />
         <PanelHeader icon={Building2} title="Public preview" subtitle="Cinema card for users" />
         <div className="mt-5 rounded-lg border border-border/60 bg-background/35 p-5">
           {previewImage && (
@@ -1465,8 +1580,10 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
   );
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
-      <SpotlightCard className="rounded-lg p-5">
+    <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[0.85fr_1.15fr] surface-rise">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-sky-500/8 blur-3xl" />
         <PanelHeader icon={Monitor} title="Add screen" subtitle="Create a screen with capacity" />
         <form onSubmit={onAddScreen} className="mt-5 grid gap-3">
           <Input value={screenForm.name} onChange={update("name")} placeholder="Screen name" />
@@ -1554,7 +1671,8 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
         </form>
       </SpotlightCard>
 
-      <SpotlightCard className="rounded-lg p-5">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-500/10 blur-2xl" />
         <PanelHeader
           icon={Building2}
           title="Screen inventory"
@@ -1568,7 +1686,7 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
           <SnapshotRow label="Blocked seats" value={blockedSeats.toLocaleString()} />
         </div>
 
-        <div className="mt-5 grid gap-4">
+        <div className="mt-5 grid gap-4 offer-stagger">
           {screens.map((screen) => {
             const layout = buildSeatLayout(screen.seatLayout);
             return (
@@ -1599,7 +1717,7 @@ function ScreensTab({ screenForm, screens, onFormChange, onAddScreen, onRemoveSc
                   </Button>
                 </div>
 
-                <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
+                <div className="mt-4 grid gap-4 grid-cols-1 lg:grid-cols-[1fr_0.9fr]">
                   <div className="overflow-x-auto rounded-lg border border-border/60 bg-card/30 p-3">
                     <SeatMiniMap layout={layout} />
                   </div>
@@ -1727,8 +1845,10 @@ function MovieTimingsTab({
   const previewTiming = buildPreviewTiming(showForm, selectedMovie);
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-      <SpotlightCard className="rounded-lg p-5">
+    <section className="mt-6 grid gap-4 xl:grid-cols-[1.15fr_0.85fr] surface-rise">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-emerald-500/8 blur-3xl" />
         <PanelHeader
           icon={CalendarClock}
           title="Movie timing and day"
@@ -1879,7 +1999,8 @@ function MovieTimingsTab({
         </form>
       </SpotlightCard>
 
-      <SpotlightCard className="rounded-lg p-5">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-sky-500/10 blur-2xl" />
         <PanelHeader icon={Film} title="Timing preview" subtitle="Customer-facing booking slot" />
         <TimingPreview timing={previewTiming} />
       </SpotlightCard>
@@ -1996,7 +2117,7 @@ function ImageUploadField({
     <div>
       <span className="text-xs font-medium uppercase text-muted-foreground">{label}</span>
       <div className="mt-2 grid gap-3 rounded-lg border border-border/60 bg-background/40 p-3">
-        <div className="grid grid-cols-[88px_1fr] gap-3">
+        <div className="grid grid-cols-[80px_1fr] gap-3 sm:grid-cols-[88px_1fr]">
           <div
             className={`grid place-items-center overflow-hidden rounded-md bg-muted ${previewClassName}`}
           >
@@ -2180,8 +2301,10 @@ function RefundsTab({ refundCases, totals }) {
   const pendingCount = refundCases.filter((refund) => refund.status !== "Refunded").length;
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-      <SpotlightCard className="rounded-lg p-5">
+    <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[0.8fr_1.2fr] surface-rise">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-amber-500/8 blur-3xl" />
         <PanelHeader
           icon={RefreshCcw}
           title="Refund queue"
@@ -2196,13 +2319,14 @@ function RefundsTab({ refundCases, totals }) {
         </div>
       </SpotlightCard>
 
-      <SpotlightCard className="rounded-lg p-5">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-rose-500/10 blur-2xl" />
         <PanelHeader
           icon={CreditCard}
           title="Cancelled ticket details"
           subtitle="Customer, email, ticket and payment trail"
         />
-        <div className="mt-5 grid gap-3">
+        <div className="mt-5 grid gap-3 offer-stagger">
           {refundCases.map((refund) => (
             <div
               key={refund.ref}
@@ -2269,14 +2393,17 @@ function RevenueTab({ bookings, listedMovies, earningsTrend, totals }) {
   const settlement = revenue - commission;
 
   return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-      <SpotlightCard className="rounded-lg p-5">
+    <section className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[1.25fr_0.75fr] surface-rise">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-emerald-500/8 blur-3xl" />
         <PanelHeader
           icon={BadgeIndianRupee}
           title="Revenue analytics"
           subtitle="Filter by period and movie"
           action={formatCurrency(revenue)}
         />
+
         <div className="mt-5 flex flex-wrap gap-3">
           <select
             value={period}
@@ -2309,7 +2436,8 @@ function RevenueTab({ bookings, listedMovies, earningsTrend, totals }) {
         </div>
       </SpotlightCard>
 
-      <SpotlightCard className="rounded-lg p-5">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-500/10 blur-2xl" />
         <PanelHeader
           icon={CreditCard}
           title="Settlement details"
@@ -2330,7 +2458,8 @@ function RevenueTab({ bookings, listedMovies, earningsTrend, totals }) {
         </div>
       </SpotlightCard>
 
-      <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
+      <SpotlightCard className="relative overflow-hidden rounded-lg p-5 xl:col-span-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="pointer-events-none absolute -left-8 top-1/2 h-32 w-32 -translate-y-1/2 rounded-full bg-primary/8 blur-3xl" />
         <PanelHeader icon={Ticket} title="Revenue ledger" subtitle="Paid booking details" />
         <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
           <div className="overflow-x-auto">
@@ -2374,6 +2503,9 @@ function RevenueTab({ bookings, listedMovies, earningsTrend, totals }) {
 
 function BookingsTab({ bookings, totals, screens }) {
   const [selectedRef, setSelectedRef] = useState(bookings[0]?.ref ?? "");
+  const [showScanner, setShowScanner] = useState(false);
+  const [scannerResult, setScannerResult] = useState(null);
+  const [scanError, setScanError] = useState("");
   const selectedBooking = bookings.find((booking) => booking.ref === selectedRef) ?? bookings[0];
   const selectedScreen =
     screens.find((screen) => screen.name === selectedBooking?.screen) ??
@@ -2392,137 +2524,396 @@ function BookingsTab({ bookings, totals, screens }) {
     }
   }, [bookings, selectedRef]);
 
-  return (
-    <section className="mt-6 grid gap-4 xl:grid-cols-[0.75fr_1.25fr]">
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={Ticket}
-          title="Booking control"
-          subtitle="Customer tickets, emails, seats and payment status"
-        />
-        <div className="mt-5 grid gap-3">
-          <SnapshotRow label="Total tickets" value={displayTotals.totalBookings.toLocaleString()} />
-          <SnapshotRow label="Confirmed" value={displayTotals.bookings.toLocaleString()} />
-          <SnapshotRow label="Refund queue" value={displayTotals.refunds.toLocaleString()} />
-          <SnapshotRow label="Seats sold" value={displayTotals.seatsSold.toLocaleString()} />
-          <SnapshotRow label="Revenue" value={formatCurrency(displayTotals.earnings)} />
-          <SnapshotRow
-            label="Average order"
-            value={formatCurrency(
-              displayTotals.bookings ? displayTotals.earnings / displayTotals.bookings : 0,
-            )}
-          />
-        </div>
-      </SpotlightCard>
+  const handleScan = useCallback((decodedText) => {
+    try {
+      const data = JSON.parse(decodedText);
+      const ref = data.ref;
+      if (ref) {
+        setSelectedRef(ref);
+        setScannerResult(data);
+        setScanError("");
+        setShowScanner(false);
+      } else {
+        setScanError("QR code does not contain a valid ticket reference.");
+      }
+    } catch {
+      setScanError("Could not read this QR code. Try a different ticket.");
+    }
+  }, []);
 
-      <SpotlightCard className="rounded-lg p-5">
-        <PanelHeader
-          icon={Users}
-          title="Booking list"
-          subtitle="Click a booking to inspect ticket"
-        />
-        <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[960px] text-left text-sm">
-              <thead className="bg-muted/40 text-xs text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Reference</th>
-                  <th className="px-4 py-3 font-medium">Customer</th>
-                  <th className="px-4 py-3 font-medium">Email</th>
-                  <th className="px-4 py-3 font-medium">Movie</th>
-                  <th className="px-4 py-3 font-medium">Timing</th>
-                  <th className="px-4 py-3 font-medium">Seats</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {bookings.map((booking) => (
-                  <tr
-                    key={booking.ref}
-                    onClick={() => setSelectedRef(booking.ref)}
-                    className={`cursor-pointer transition-colors ${
-                      selectedBooking?.ref === booking.ref
-                        ? "bg-primary/10"
-                        : "bg-card/20 hover:bg-muted/30"
-                    }`}
-                  >
-                    <td className="px-4 py-3 font-mono text-xs text-primary">{booking.ref}</td>
-                    <td className="px-4 py-3 font-medium">{booking.customer}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {booking.email || "Not available"}
-                    </td>
-                    <td className="px-4 py-3">{booking.movie}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {booking.screen} - {booking.time}
-                    </td>
-                    <td className="px-4 py-3">{booking.seats.join(", ")}</td>
-                    <td className="px-4 py-3">
-                      <StatusPill status={booking.ticketStatus || "Confirmed"} />
-                    </td>
-                    <td className="px-4 py-3 font-semibold">{formatCurrency(booking.total)}</td>
-                  </tr>
-                ))}
-                {!bookings.length && (
-                  <tr className="bg-card/20">
-                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                      No customer bookings for this cinema yet.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+  return (
+    <section className="mt-6 space-y-4 surface-rise">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/60 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/12 text-primary">
+            <ScanLine className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold">Gate ticket scanner</p>
+            <p className="text-xs text-muted-foreground">
+              {showScanner ? "Point camera at customer QR code" : "Scan QR to verify ticket"}
+            </p>
           </div>
         </div>
-      </SpotlightCard>
+        <Button
+          size="sm"
+          variant={showScanner ? "secondary" : "default"}
+          onClick={() => {
+            setShowScanner((v) => !v);
+            setScanError("");
+            setScannerResult(null);
+          }}
+          className="gap-2"
+        >
+          <Camera className="h-4 w-4" />
+          {showScanner ? "Close scanner" : "Scan ticket"}
+        </Button>
+      </div>
 
-      {selectedBooking ? (
-        <SpotlightCard className="rounded-lg p-5 xl:col-span-2">
+      {showScanner && <QrTicketScanner onScan={handleScan} onError={setScanError} />}
+
+      {scanError && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {scanError}
+        </div>
+      )}
+
+      {scannerResult && (
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+          <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            Ticket scanned: {scannerResult.movie || "Movie"} &middot; {scannerResult.theater}{" "}
+            &middot; {scannerResult.time}
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[0.75fr_1.25fr]">
+        <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+          <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-sky-500/8 blur-3xl" />
           <PanelHeader
-            icon={QrCode}
-            title="Booked seat and ticket details"
-            subtitle="Selected customer, highlighted seats and ticket audit"
-            action={selectedBooking.ticketStatus || "Confirmed"}
+            icon={Ticket}
+            title="Booking control"
+            subtitle="Customer tickets, emails, seats and payment status"
           />
-          <div className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="overflow-x-auto rounded-lg border border-border/60 bg-background/35 p-4">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="font-semibold">{selectedScreen?.name || "Screen"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Blue seats are booked by {selectedBooking.customer || "customer"}
-                  </p>
-                </div>
-                <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                  {formatSeatList(selectedBooking.seats)}
-                </span>
-              </div>
-              <SeatMiniMap layout={selectedLayout} bookedSeats={selectedBooking.seats ?? []} />
-            </div>
+          <div className="mt-5 grid gap-3">
+            <SnapshotRow
+              label="Total tickets"
+              value={displayTotals.totalBookings.toLocaleString()}
+            />
+            <SnapshotRow label="Confirmed" value={displayTotals.bookings.toLocaleString()} />
+            <SnapshotRow label="Refund queue" value={displayTotals.refunds.toLocaleString()} />
+            <SnapshotRow label="Seats sold" value={displayTotals.seatsSold.toLocaleString()} />
+            <SnapshotRow label="Revenue" value={formatCurrency(displayTotals.earnings)} />
+            <SnapshotRow
+              label="Average order"
+              value={formatCurrency(
+                displayTotals.bookings ? displayTotals.earnings / displayTotals.bookings : 0,
+              )}
+            />
+          </div>
+        </SpotlightCard>
 
-            <div className="grid gap-3">
-              <SnapshotRow label="Booked user" value={selectedBooking.customer || "Customer"} />
-              <SnapshotRow label="Email" value={selectedBooking.email || "Not available"} />
-              <SnapshotRow label="Phone" value={selectedBooking.phone || "Not available"} />
-              <SnapshotRow label="Movie" value={selectedBooking.movie || "Movie"} />
-              <SnapshotRow
-                label="Timing"
-                value={`${selectedBooking.screen || "Screen"} - ${selectedBooking.time || "Time"}`}
-              />
-              <SnapshotRow label="Seats" value={formatSeatList(selectedBooking.seats)} />
-              <SnapshotRow label="Ticket ref" value={selectedBooking.ref || "No ref"} />
-              <SnapshotRow
-                label="Payment"
-                value={`${selectedBooking.paymentStatus || "Paid"} - ${formatCurrency(
-                  selectedBooking.total,
-                )}`}
-              />
-              <SnapshotRow label="Booked at" value={selectedBooking.bookedAt || "Today"} />
+        <SpotlightCard className="relative overflow-hidden rounded-lg p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+          <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-amber-500/10 blur-2xl" />
+          <PanelHeader
+            icon={Users}
+            title="Booking list"
+            subtitle="Click a booking to inspect ticket"
+          />
+          <div className="mt-5 overflow-hidden rounded-lg border border-border/60">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[960px] text-left text-sm">
+                <thead className="bg-muted/40 text-xs text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Reference</th>
+                    <th className="px-4 py-3 font-medium">Customer</th>
+                    <th className="px-4 py-3 font-medium">Email</th>
+                    <th className="px-4 py-3 font-medium">Movie</th>
+                    <th className="px-4 py-3 font-medium">Timing</th>
+                    <th className="px-4 py-3 font-medium">Seats</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {bookings.map((booking) => (
+                    <tr
+                      key={booking.ref}
+                      onClick={() => setSelectedRef(booking.ref)}
+                      className={`cursor-pointer transition-colors ${
+                        selectedBooking?.ref === booking.ref
+                          ? "bg-primary/10"
+                          : "bg-card/20 hover:bg-muted/30"
+                      }`}
+                    >
+                      <td className="px-4 py-3 font-mono text-xs text-primary">{booking.ref}</td>
+                      <td className="px-4 py-3 font-medium">{booking.customer}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {booking.email || "Not available"}
+                      </td>
+                      <td className="px-4 py-3">{booking.movie}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {booking.screen} - {booking.time}
+                      </td>
+                      <td className="px-4 py-3">{booking.seats.join(", ")}</td>
+                      <td className="px-4 py-3">
+                        <StatusPill status={booking.ticketStatus || "Confirmed"} />
+                      </td>
+                      <td className="px-4 py-3 font-semibold">{formatCurrency(booking.total)}</td>
+                    </tr>
+                  ))}
+                  {!bookings.length && (
+                    <tr className="bg-card/20">
+                      <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                        No customer bookings for this cinema yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </SpotlightCard>
-      ) : null}
+
+        {selectedBooking ? (
+          <SpotlightCard className="relative overflow-hidden rounded-lg p-5 xl:col-span-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+            <div className="pointer-events-none absolute -right-10 top-1/2 h-32 w-32 -translate-y-1/2 rounded-full bg-primary/8 blur-3xl" />
+            <PanelHeader
+              icon={QrCode}
+              title="Booked seat and ticket details"
+              subtitle="Selected customer, highlighted seats and ticket audit"
+              action={selectedBooking.ticketStatus || "Confirmed"}
+            />
+            <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="overflow-x-auto rounded-lg border border-border/60 bg-background/35 p-4">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold">{selectedScreen?.name || "Screen"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Blue seats are booked by {selectedBooking.customer || "customer"}
+                    </p>
+                  </div>
+                  <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+                    {formatSeatList(selectedBooking.seats)}
+                  </span>
+                </div>
+                <SeatMiniMap layout={selectedLayout} bookedSeats={selectedBooking.seats ?? []} />
+              </div>
+
+              <div className="grid gap-3">
+                <SnapshotRow label="Booked user" value={selectedBooking.customer || "Customer"} />
+                <SnapshotRow label="Email" value={selectedBooking.email || "Not available"} />
+                <SnapshotRow label="Phone" value={selectedBooking.phone || "Not available"} />
+                <SnapshotRow label="Movie" value={selectedBooking.movie || "Movie"} />
+                <SnapshotRow
+                  label="Timing"
+                  value={`${selectedBooking.screen || "Screen"} - ${selectedBooking.time || "Time"}`}
+                />
+                <SnapshotRow label="Seats" value={formatSeatList(selectedBooking.seats)} />
+                <SnapshotRow label="Ticket ref" value={selectedBooking.ref || "No ref"} />
+                <SnapshotRow
+                  label="Payment"
+                  value={`${selectedBooking.paymentStatus || "Paid"} - ${formatCurrency(
+                    selectedBooking.total,
+                  )}`}
+                />
+                <SnapshotRow label="Booked at" value={selectedBooking.bookedAt || "Today"} />
+              </div>
+            </div>
+          </SpotlightCard>
+        ) : null}
+      </div>
     </section>
+  );
+}
+
+// ─── QR Scan Tab ────────────────────────────────────────────────────
+function QrScanTab() {
+  const [scanResult, setScanResult] = useState(null);
+  const [scanError, setScanError] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [manualInput, setManualInput] = useState("");
+  const [showManual, setShowManual] = useState(false);
+  const [stats, setStats] = useState(null);
+  useEffect(() => {
+    fetchScanStats().then(setStats).catch(() => {});
+  }, []);
+  const handleScan = useCallback(async (decodedText) => {
+    setVerifying(true);
+    setScanError("");
+    setScanResult(null);
+    try {
+      const result = await verifyTicketByQr(decodedText);
+      setScanResult(result);
+      fetchScanStats().then(setStats).catch(() => {});
+    } catch (error) {
+      const errData = error.response?.data;
+      if (errData) {
+        setScanResult(errData);
+        setScanError(errData.alreadyVerified ? "Already verified." : errData.message || "Failed.");
+      } else {
+        setScanError(error.message || "Connection failed.");
+      }
+    } finally {
+      setVerifying(false);
+    }
+  }, []);
+  const handleManualVerify = async () => {
+    if (!manualInput.trim()) { setScanError("Enter QR data."); return; }
+    await handleScan(manualInput.trim());
+  };
+  const handleReset = () => {
+    setScanResult(null); setScanError(""); setManualInput(""); setVerifying(false);
+  };
+  const handleScannerError = (message) => { setScanError(message); };
+  return (
+    <section className="mt-6 space-y-6">
+      {stats && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-border/60 bg-card p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Today verified</p>
+            <p className="mt-1 text-2xl font-bold">{stats.todayVerified}</p>
+          </div>
+          <div className="rounded-lg border border-border/60 bg-card p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total verified</p>
+            <p className="mt-1 text-2xl font-bold">{stats.totalVerified}</p>
+          </div>
+          <div className="rounded-lg border border-border/60 bg-card p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pending entry</p>
+            <p className="mt-1 text-2xl font-bold">{stats.pendingVerification}</p>
+          </div>
+        </div>
+      )}
+      <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+        <div className="rounded-lg border border-border/60 bg-card p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold">Scan QR Code</h3>
+              <p className="text-xs text-muted-foreground">Point camera at the ticket QR code</p>
+            </div>
+            <ScanLine className="h-5 w-5 text-primary" />
+          </div>
+          <div className="mt-4">
+            <QrTicketScanner onScan={handleScan} onError={handleScannerError} />
+          </div>
+          <div className="mt-3 flex items-center justify-between">
+            <button type="button" onClick={() => setShowManual(p => !p)}
+              className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
+              {showManual ? "Hide" : "Or paste QR data manually"}
+            </button>
+            {scanResult && (
+              <button type="button" onClick={handleReset}
+                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
+                Scan another
+              </button>
+            )}
+          </div>
+          {showManual && (
+            <div className="mt-3 flex gap-2">
+              <input type="text" value={manualInput} onChange={e => setManualInput(e.target.value)}
+                placeholder="Paste QR text or booking ref..."
+                className="h-10 flex-1 rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring" />
+              <button onClick={handleManualVerify} disabled={verifying || !manualInput.trim()}
+                className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50">
+                {verifying ? "..." : "Verify"}
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="rounded-lg border border-border/60 bg-card p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Verification Result</h3>
+            {verifying && <span className="text-xs text-muted-foreground">Verifying...</span>}
+          </div>
+          <div className="mt-4">
+            {!scanResult && !scanError && !verifying && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <QrCode className="h-12 w-12 text-muted-foreground/40" />
+                <p className="mt-3 text-sm text-muted-foreground">Scan a ticket QR code to verify entry</p>
+              </div>
+            )}
+            {scanError && !scanResult?.verified && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center dark:border-red-800 dark:bg-red-950/30">
+                <X className="mx-auto h-8 w-8 text-red-500" />
+                <p className="mt-2 font-semibold text-red-600 dark:text-red-400">Invalid Ticket</p>
+                <p className="mt-1 text-sm text-red-500">{scanError}</p>
+              </div>
+            )}
+            {scanResult?.verified && (
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-center dark:border-emerald-800 dark:bg-emerald-950/30">
+                <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-500" />
+                <p className="mt-2 font-semibold text-emerald-600 dark:text-emerald-400">Entry Verified ✓</p>
+                <p className="mt-1 text-sm text-emerald-500">{scanResult.message}</p>
+              </div>
+            )}
+            {scanResult?.booking && (
+              <div className="mt-4 space-y-2 rounded-lg border border-border/60 bg-muted/50 p-4 text-sm">
+                <h4 className="font-semibold text-foreground">{scanResult.booking.movie}</h4>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-muted-foreground">
+                  <span>Ref:</span><span className="font-mono text-foreground">{scanResult.booking.ref}</span>
+                  <span>Theater:</span><span className="text-foreground">{scanResult.booking.theater}</span>
+                  <span>Screen:</span><span className="text-foreground">{scanResult.booking.screen}</span>
+                  <span>Time:</span><span className="text-foreground">{scanResult.booking.time}</span>
+                  <span>Seats:</span><span className="text-foreground">{scanResult.booking.seats?.join(", ")}</span>
+                  {scanResult.booking.total && (<><span>Total:</span><span className="text-foreground">Rs {scanResult.booking.total}</span></>)}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function QrTicketScanner({ onScan, onError }) {
+  const scannerRef = useRef(null);
+  const [scanning, setScanning] = useState(false);
+
+  useEffect(() => {
+    let html5QrCode = null;
+    let mounted = true;
+
+    import("html5-qrcode")
+      .then(({ Html5Qrcode }) => {
+        if (!mounted) return;
+        html5QrCode = new Html5Qrcode("qr-scanner-container");
+        html5QrCode
+          .start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 220, height: 220 } },
+            (decodedText) => {
+              if (mounted && !scanning) {
+                setScanning(true);
+                onScan(decodedText);
+                html5QrCode?.stop().catch(() => {});
+              }
+            },
+            () => {},
+          )
+          .catch(() => {
+            if (mounted) onError("Camera access denied or unavailable. Grant camera permission.");
+          });
+      })
+      .catch(() => {
+        if (mounted) onError("QR scanner library failed to load.");
+      });
+
+    return () => {
+      mounted = false;
+      html5QrCode?.stop().catch(() => {});
+    };
+  }, [onScan, onError]);
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-card p-4">
+      <div id="qr-scanner-container" className="mx-auto max-w-sm overflow-hidden rounded-lg" />
+      <p className="mt-3 text-center text-xs text-muted-foreground">
+        Hold QR code steady in front of camera
+      </p>
+    </div>
   );
 }
 
@@ -2591,35 +2982,11 @@ function OwnerApprovalState({ application, status, user, onLogout }) {
   );
 }
 
-function Metric({ icon: Icon, label, value, text, tone }) {
-  const toneClass = {
-    primary: "bg-primary/15 text-primary",
-    emerald: "bg-emerald-500/15 text-emerald-300",
-    amber: "bg-amber-500/15 text-amber-300",
-    cyan: "bg-cyan-500/15 text-cyan-300",
-  }[tone];
-
-  return (
-    <SpotlightCard className="rounded-lg p-5 transition-transform hover:-translate-y-0.5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase text-muted-foreground">{label}</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{text}</p>
-        </div>
-        <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-lg ${toneClass}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-    </SpotlightCard>
-  );
-}
-
 function PanelHeader({ icon: Icon, title, subtitle, action }) {
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="flex min-w-0 items-start gap-3">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
+        <div className="stat-pulse grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
@@ -2750,13 +3117,13 @@ function normalizeCastRows(input = [], fallback = []) {
 
 async function uploadImageFile(file, options = {}) {
   const dataUrl = await readImageFile(file);
-  const result = await requestJson("/api/uploads/image", {
+  const result = await baseRequest("/api/uploads/image", {
     method: "POST",
     timeoutMs: 30000,
-    body: JSON.stringify({
+    body: {
       file: dataUrl,
       folder: options.folder,
-    }),
+    },
   });
 
   return result.image?.secureUrl || result.image?.url || "";
@@ -3030,4 +3397,4 @@ function formatDateLabel(value) {
   });
 }
 
-export { Route };
+export { OwnerDashboard };
