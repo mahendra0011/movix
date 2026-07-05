@@ -2,6 +2,7 @@ import { env } from "../config/env.js";
 import { sendNotificationEmail } from "./emailService.js";
 import { publishNotification } from "./notificationHub.js";
 import { listSubscriberEmails, normalizeEmail } from "./subscriberStore.js";
+import { logger } from "../services/logger.js";
 
 const reminderTimers = new Map();
 
@@ -23,7 +24,7 @@ async function notifySubscriptionCreated(email) {
     actionLabel: "Explore movies",
     footer:
       "You subscribed from movix. New release and trailer emails are sent only for important catalog updates.",
-  }).catch((error) => console.warn("Subscriber welcome email failed:", error.message));
+  }).catch((error) => logger.warn("Subscriber welcome email failed: %s", error.message));
 }
 
 async function notifyMovieRelease(movie, options = {}) {
@@ -138,7 +139,7 @@ function notifyBookingStatusChange(booking, event = {}) {
       message,
       actionHref: clientHref(href),
       actionLabel: "View ticket",
-    }).catch((error) => console.warn("Booking update email failed:", error.message));
+    }).catch((error) => logger.warn("Booking update email failed: %s", error.message));
   }
 
   publishNotification({
