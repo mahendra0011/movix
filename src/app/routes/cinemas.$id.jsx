@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, useParams, useLoaderData } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
@@ -18,21 +18,20 @@ import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/se
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { buildCatalogCinemaSchedule } from "@/features/movies/services/showSchedule";
-import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
+import { baseRequest, HAS_CONFIGURED_API_URL } from "@/features/api/baseApi";
 
 const dateOptions = buildDateOptions();
 const allFilterValue = "All";
 const priceOptions = ["Any price", "Under Rs 250", "Rs 250 - 350", "Rs 350+"];
 const timeOptions = ["Any time", "Morning", "Afternoon", "Evening", "Night"];
 
-const Route = createFileRoute("/cinemas/$id")({
-  loader: () => fetchMovies(),
-  component: CinemaDetailPage,
-});
+async function cinemaLoader() {
+  return fetchMovies();
+}
 
 function CinemaDetailPage() {
-  const catalog = Route.useLoaderData();
-  const { id } = Route.useParams();
+  const catalog = useLoaderData();
+  const { id } = useParams();
   const movieCatalog = catalog.length ? catalog : fallbackMovies;
   const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
   const [remoteShows, setRemoteShows] = useState([]);
@@ -46,7 +45,7 @@ function CinemaDetailPage() {
     if (!HAS_CONFIGURED_API_URL) return undefined;
     let active = true;
 
-    requestJson("/api/theaters", { timeoutMs: 2500 })
+    baseRequest("/api/theaters", { timeoutMs: 2500 })
       .then((data) => {
         if (active && data.theaters?.length) setCinemaCatalog(data.theaters);
       })
@@ -62,7 +61,7 @@ function CinemaDetailPage() {
   useEffect(() => {
     let active = true;
 
-    requestJson(
+    baseRequest(
       `/api/shows?theaterId=${encodeURIComponent(id)}&date=${encodeURIComponent(activeDate)}`,
       { timeoutMs: 8000 },
     )
@@ -345,7 +344,7 @@ function CinemaFilterSelect({ icon: Icon, label, value, options, onChange }) {
 function CinemaMovieRow({ item, cinema, activeDateLabel }) {
   return (
     <article className="grid gap-5 border-b border-border/60 p-5 last:border-b-0 lg:grid-cols-[92px_1fr]">
-      <Link to="/movies/$id" params={{ id: item.movie.id }} className="group hidden lg:block">
+      <Link to={"/movies/" + item.movie.id} className="group hidden lg:block">
         <img
           src={normalizeMovieImageUrl(item.movie.poster, item.movie.title, "poster")}
           alt={item.movie.title}
@@ -360,8 +359,7 @@ function CinemaMovieRow({ item, cinema, activeDateLabel }) {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <Link
-              to="/movies/$id"
-              params={{ id: item.movie.id }}
+              to={"/movies/" + item.movie.id}
               className="text-lg font-extrabold tracking-tight hover:text-primary"
             >
               {item.movie.title}
@@ -413,30 +411,30 @@ function ShowTimeButton({ show, cinema, movie, activeDateLabel }) {
     );
   }
 
+  const showSearch = {
+    time: show.label,
+    date: activeDateLabel,
+    theater: cinema.name,
+    movie: movie.title,
+    movieId: movie.id,
+    theaterId: cinema.id,
+    screen: show.screen,
+    platinumPrice: show.price.platinum,
+    silverPrice: show.price.silver,
+    goldPrice: show.price.gold,
+    vipPrice: show.price.vip,
+    seatRows: show.seatLayout.rowCount,
+    seatCols: show.seatLayout.seatsPerRow,
+    platinumRows: show.seatLayout.platinumRows,
+    silverRows: show.seatLayout.silverRows,
+    vipRows: show.seatLayout.vipRows,
+    aisleAfter: show.seatLayout.aisleAfter,
+    blockedSeats: show.seatLayout.blockedSeats.join(","),
+  };
+
   return (
     <Link
-      to="/book/$showId"
-      params={{ showId: show.id }}
-      search={{
-        time: show.label,
-        date: activeDateLabel,
-        theater: cinema.name,
-        movie: movie.title,
-        movieId: movie.id,
-        theaterId: cinema.id,
-        screen: show.screen,
-        platinumPrice: show.price.platinum,
-        silverPrice: show.price.silver,
-        goldPrice: show.price.gold,
-        vipPrice: show.price.vip,
-        seatRows: show.seatLayout.rowCount,
-        seatCols: show.seatLayout.seatsPerRow,
-        platinumRows: show.seatLayout.platinumRows,
-        silverRows: show.seatLayout.silverRows,
-        vipRows: show.seatLayout.vipRows,
-        aisleAfter: show.seatLayout.aisleAfter,
-        blockedSeats: show.seatLayout.blockedSeats.join(","),
-      }}
+      to={"/book/" + show.id + "?" + new URLSearchParams(showSearch).toString()}
       className={`group relative inline-flex flex-col rounded-lg border px-4 py-2 text-xs font-medium transition-colors ${cls}`}
     >
       {content}
@@ -664,4 +662,4 @@ function normalizeText(value) {
     .toLowerCase();
 }
 
-export { Route };
+export { CinemaDetailPage, cinemaLoader };
