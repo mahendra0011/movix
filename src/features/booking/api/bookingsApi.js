@@ -1,4 +1,5 @@
-import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
+import { baseRequest, HAS_CONFIGURED_API_URL } from "@/features/api/baseApi";
+import QRCode from "qrcode";
 
 const LOCAL_BOOKINGS_KEY = "movix-local-bookings";
 const LOCAL_SEAT_STATE_KEY = "movix-local-seat-state";
@@ -9,10 +10,10 @@ const ACTION_TIMEOUT_MS = 2500;
 async function createBooking(input) {
   return withRemoteFallback(
     () =>
-      requestJson("/api/bookings", {
+      baseRequest("/api/bookings", {
         method: "POST",
         timeoutMs: ACTION_TIMEOUT_MS,
-        body: JSON.stringify(input),
+        body: input,
       }),
     () => localCreateBooking(input),
   );
@@ -22,7 +23,7 @@ async function fetchSeatState(showId) {
   if (!shouldUseRemoteBooking()) return localFetchSeatState(showId).state;
 
   try {
-    const data = await requestJson(`/api/seat-state/${encodeURIComponent(showId)}`, {
+    const data = await baseRequest(`/api/seat-state/${encodeURIComponent(showId)}`, {
       timeoutMs: ACTION_TIMEOUT_MS,
     });
     return data.state;
@@ -34,7 +35,7 @@ async function fetchSeatState(showId) {
 async function fetchMyBookings() {
   return withRemoteFallback(
     async () => {
-      const data = await requestJson("/api/me/bookings", { timeoutMs: ACTION_TIMEOUT_MS });
+      const data = await baseRequest("/api/me/bookings", { timeoutMs: ACTION_TIMEOUT_MS });
       return data.bookings ?? [];
     },
     () => readLocalBookings(),
@@ -44,10 +45,10 @@ async function fetchMyBookings() {
 async function sendTicketOtp(email) {
   return withRemoteFallback(
     () =>
-      requestJson("/api/ticket-otp", {
+      baseRequest("/api/ticket-otp", {
         method: "POST",
         timeoutMs: ACTION_TIMEOUT_MS,
-        body: JSON.stringify({ email }),
+        body: { email },
       }),
     () => localSendTicketOtp(email),
   );
@@ -56,10 +57,10 @@ async function sendTicketOtp(email) {
 async function verifyTicketOtp(input) {
   return withRemoteFallback(
     () =>
-      requestJson("/api/ticket-otp/verify", {
+      baseRequest("/api/ticket-otp/verify", {
         method: "POST",
         timeoutMs: ACTION_TIMEOUT_MS,
-        body: JSON.stringify(input),
+        body: input,
       }),
     () => localVerifyTicketOtp(input),
   );
@@ -68,15 +69,15 @@ async function verifyTicketOtp(input) {
 async function createPaymentIntent(amount) {
   return withRemoteFallback(
     () =>
-      requestJson("/api/payments/intent", {
+      baseRequest("/api/payments/intent", {
         method: "POST",
         timeoutMs: ACTION_TIMEOUT_MS,
-        body: JSON.stringify({ amount }),
+        body: { amount },
       }),
     () => ({
       payment: {
         id: `demo-pay-${Date.now().toString(36)}`,
-        provider: "demo",
+        provider: "local",
         amount,
       },
     }),
@@ -86,15 +87,15 @@ async function createPaymentIntent(amount) {
 async function confirmPayment(payment) {
   return withRemoteFallback(
     () =>
-      requestJson("/api/payments/confirm", {
+      baseRequest("/api/payments/confirm", {
         method: "POST",
         timeoutMs: ACTION_TIMEOUT_MS,
-        body: JSON.stringify(payment),
+        body: payment,
       }),
     () => ({
       payment: {
         id: payment?.paymentId || payment?.id || `demo-paid-${Date.now().toString(36)}`,
-        provider: payment?.provider || "demo",
+        provider: payment?.provider || "local",
       },
     }),
   );
@@ -155,7 +156,7 @@ function localVerifyTicketOtp(input) {
   });
 }
 
-function localCreateBooking(input) {
+async function localCreateBooking(input) {
   const showId = normalizeShowId(input?.showId);
   const seats = normalizeSeats(input?.seats);
   if (seats.length === 0) throwLocalError("Select at least one seat.");
@@ -187,18 +188,29 @@ function localCreateBooking(input) {
     total: Number(input?.total || 0),
     email: normalizeEmail(input?.email),
     paymentId: input?.paymentId,
-    paymentProvider: input?.paymentProvider || "demo",
+    paymentProvider: input?.paymentProvider || "local",
     bookedAt: new Date().toISOString(),
   };
   const bookings = [booking, ...readLocalBookings()];
   writeJson(LOCAL_BOOKINGS_KEY, bookings.slice(0, 100));
 
-  return Promise.resolve({
+  const qrPayload = JSON.stringify({
+    ref: booking.ref,
+    movie: booking.movie,
+    theater: booking.theater,
+    time: booking.time,
+    seats: booking.seats,
+    total: booking.total,
+  });
+  const qrDataUrl = await QRCode.toDataURL(qrPayload, { margin: 1, width: 220 }).catch(() => "");
+
+  return {
     ok: true,
     booking,
+    qrDataUrl,
     ticketUrl: "",
     invoiceUrl: "",
-  });
+  };
 }
 
 function normalizeSeatState(state) {
