@@ -1,4 +1,4 @@
-import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
+import { baseRequest, HAS_CONFIGURED_API_URL } from "@/features/api/baseApi";
 import {
   mapOwnerApplicationForAdmin,
   deleteOwnerApplication,
@@ -36,7 +36,7 @@ async function fetchAdminSummary() {
         database: "Static local",
         socket: "Static preview",
         seats: "Booked-seat sync",
-        payment: "Test checkout",
+        payment: "Demo payment",
       },
       charts: {
         revenueTrend: buildRevenueTrend(bookings),
@@ -47,7 +47,7 @@ async function fetchAdminSummary() {
     };
   }
 
-  const data = await requestJson("/api/admin/summary");
+  const data = await baseRequest("/api/admin/summary");
   return data;
 }
 
@@ -60,17 +60,17 @@ async function fetchTheaterApplications() {
     };
   }
 
-  return requestJson("/api/admin/theater-applications");
+  return baseRequest("/api/admin/theater-applications");
 }
 
 async function fetchAdminTheaters() {
   if (shouldUseLocalAdminFallback()) return { theaters: [] };
-  return requestJson("/api/theaters");
+  return baseRequest("/api/theaters");
 }
 
 async function fetchAdminUsers() {
   if (shouldUseLocalAdminFallback()) return { users: readLocalUsers() };
-  return requestJson("/api/admin/users");
+  return baseRequest("/api/admin/users");
 }
 
 async function updateTheaterApplicationStatus(id, status) {
@@ -79,9 +79,9 @@ async function updateTheaterApplicationStatus(id, status) {
     return { theater: updated ? mapOwnerApplicationForAdmin(updated) : null };
   }
 
-  return requestJson(`/api/admin/theater-applications/${id}`, {
+  return baseRequest(`/api/admin/theater-applications/${id}`, {
     method: "PATCH",
-    body: JSON.stringify({ status }),
+    body: { status },
   });
 }
 
@@ -90,7 +90,7 @@ async function deleteTheaterApplication(id) {
     return { theater: deleteOwnerApplication(id) };
   }
 
-  return requestJson(`/api/admin/theater-applications/${id}`, {
+  return baseRequest(`/api/admin/theater-applications/${id}`, {
     method: "DELETE",
   });
 }
@@ -98,7 +98,7 @@ async function deleteTheaterApplication(id) {
 async function deleteAdminTheater(id) {
   if (shouldUseLocalAdminFallback()) return { theater: null };
 
-  return requestJson(`/api/admin/theaters/${encodeURIComponent(id)}`, {
+  return baseRequest(`/api/admin/theaters/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }
@@ -115,9 +115,9 @@ async function updateAdminUser(id, input) {
     return { user: nextUsers.find((user) => String(user.id || user.email) === String(id)) };
   }
 
-  return requestJson(`/api/admin/users/${encodeURIComponent(id)}`, {
+  return baseRequest(`/api/admin/users/${encodeURIComponent(id)}`, {
     method: "PATCH",
-    body: JSON.stringify(input),
+    body: input,
   });
 }
 
@@ -129,7 +129,7 @@ async function deleteAdminUser(id) {
     return { ok: true };
   }
 
-  return requestJson(`/api/admin/users/${encodeURIComponent(id)}`, {
+  return baseRequest(`/api/admin/users/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }
