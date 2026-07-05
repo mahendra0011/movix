@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/shared/services/httpClient";
+import { API_BASE_URL } from "@/features/api/baseApi";
 
 function readAuthToken() {
   if (typeof window === "undefined") return "";
