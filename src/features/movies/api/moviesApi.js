@@ -1,4 +1,4 @@
-import { requestJson } from "@/shared/services/httpClient";
+import { baseRequest } from "@/features/api/baseApi";
 import {
   getMovie as getFallbackMovie,
   movies as fallbackMovies,
@@ -88,7 +88,7 @@ async function fetchMovies(options = {}) {
   }
 
   const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
-  moviesRequest = requestJson("/api/movies", { timeoutMs })
+  moviesRequest = baseRequest("/api/movies", { timeoutMs })
     .then((data) => {
       moviesCache = normalizePublicMovies(data.movies ?? []);
       return moviesCache;
@@ -111,7 +111,7 @@ async function fetchMovie(id, options = {}) {
 
   const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
   try {
-    const data = await requestJson(`/api/movies/${encodeURIComponent(id)}`, { timeoutMs });
+    const data = await baseRequest(`/api/movies/${encodeURIComponent(id)}`, { timeoutMs });
     return normalizePublicMovie(data.movie, id);
   } catch {
     return normalizePublicMovie(null, id);
@@ -121,30 +121,30 @@ async function fetchMovie(id, options = {}) {
 async function fetchMovieReviews(id, options = {}) {
   const timeoutMs = options.timeoutMs ?? PUBLIC_MOVIE_TIMEOUT_MS;
   try {
-    return await requestJson(`/api/movies/${encodeURIComponent(id)}/reviews`, { timeoutMs });
+    return await baseRequest(`/api/movies/${encodeURIComponent(id)}/reviews`, { timeoutMs });
   } catch {
     return null;
   }
 }
 
 async function createMovieReview(id, input) {
-  return requestJson(`/api/movies/${encodeURIComponent(id)}/reviews`, {
+  return baseRequest(`/api/movies/${encodeURIComponent(id)}/reviews`, {
     method: "POST",
-    body: JSON.stringify(input),
+    body: input,
   });
 }
 
 async function createMovie(input) {
-  const data = await requestJson("/api/movies", {
+  const data = await baseRequest("/api/movies", {
     method: "POST",
-    body: JSON.stringify(input),
+    body: input,
   });
   moviesCache = null;
   return normalizeMovieMedia(data.movie);
 }
 
 async function deleteMovie(id) {
-  const data = await requestJson(`/api/movies/${encodeURIComponent(id)}`, {
+  const data = await baseRequest(`/api/movies/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
   moviesCache = null;
