@@ -1,7 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { Clock3, Mail, Radio, Ticket, WifiOff } from "lucide-react";
+import { Clock3, Mail, Radio, Ticket, Wallet, WifiOff } from "lucide-react";
 import {
   confirmPayment,
   createBooking,
@@ -23,30 +23,6 @@ import {
 } from "@/shared/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/shared/components/ui/input-otp";
 
-const Route = createFileRoute("/book/$showId")({
-  component: BookingPage,
-  validateSearch: (s) => ({
-    time: typeof s.time === "string" ? s.time : "",
-    date: typeof s.date === "string" ? s.date : "",
-    theater: typeof s.theater === "string" ? s.theater : "",
-    movie: typeof s.movie === "string" ? s.movie : "",
-    movieId: typeof s.movieId === "string" ? s.movieId : "",
-    theaterId: typeof s.theaterId === "string" ? s.theaterId : "",
-    screen: typeof s.screen === "string" ? s.screen : "Screen 3",
-    platinumPrice: parseSearchPrice(s.platinumPrice, tierPrice.platinum),
-    silverPrice: parseSearchPrice(s.silverPrice, tierPrice.silver),
-    goldPrice: parseSearchPrice(s.goldPrice, tierPrice.gold),
-    vipPrice: parseSearchPrice(s.vipPrice, tierPrice.vip),
-    seatRows: parseSearchInteger(s.seatRows, undefined),
-    seatCols: parseSearchInteger(s.seatCols, undefined),
-    platinumRows: parseSearchInteger(s.platinumRows, undefined),
-    silverRows: parseSearchInteger(s.silverRows, undefined),
-    vipRows: parseSearchInteger(s.vipRows, undefined),
-    aisleAfter: parseSearchInteger(s.aisleAfter, undefined),
-    blockedSeats: typeof s.blockedSeats === "string" ? s.blockedSeats : "",
-  }),
-});
-
 function parseSearchPrice(value, fallback) {
   const amount = Number(value);
   return Number.isFinite(amount) && amount > 0 ? amount : fallback;
@@ -57,24 +33,30 @@ function parseSearchInteger(value, fallback) {
   return Number.isFinite(amount) ? Math.round(amount) : fallback;
 }
 
-function loadCheckoutScript(src) {
-  if (typeof window === "undefined") return Promise.reject(new Error("Checkout is unavailable."));
-  const existing = document.querySelector(`script[src="${src}"]`);
-  if (existing) return Promise.resolve();
-
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = src;
-    script.async = true;
-    script.onload = resolve;
-    script.onerror = () => reject(new Error("Payment checkout failed to load."));
-    document.body.appendChild(script);
-  });
-}
-
 function BookingPage() {
-  const search = Route.useSearch();
-  const { showId } = Route.useParams();
+  const [searchParams] = useSearchParams();
+  const raw = Object.fromEntries(searchParams);
+  const search = {
+    time: raw.time || "",
+    date: raw.date || "",
+    theater: raw.theater || "",
+    movie: raw.movie || "",
+    movieId: raw.movieId || "",
+    theaterId: raw.theaterId || "",
+    screen: raw.screen || "Screen 3",
+    platinumPrice: parseSearchPrice(raw.platinumPrice, tierPrice.platinum),
+    silverPrice: parseSearchPrice(raw.silverPrice, tierPrice.silver),
+    goldPrice: parseSearchPrice(raw.goldPrice, tierPrice.gold),
+    vipPrice: parseSearchPrice(raw.vipPrice, tierPrice.vip),
+    seatRows: parseSearchInteger(raw.seatRows),
+    seatCols: parseSearchInteger(raw.seatCols),
+    platinumRows: parseSearchInteger(raw.platinumRows),
+    silverRows: parseSearchInteger(raw.silverRows),
+    vipRows: parseSearchInteger(raw.vipRows),
+    aisleAfter: parseSearchInteger(raw.aisleAfter),
+    blockedSeats: raw.blockedSeats || "",
+  };
+  const { showId } = useParams();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const bookingEmail = auth.hydrated ? (auth.user?.email ?? "") : "";
@@ -324,42 +306,6 @@ function BookingPage() {
     }
   };
 
-  const openRazorpayCheckout = async (payment) => {
-    await loadCheckoutScript("https://checkout.razorpay.com/v1/checkout.js");
-    if (!window.Razorpay) throw new Error("Razorpay checkout is unavailable.");
-
-    return new Promise((resolve, reject) => {
-      const checkout = new window.Razorpay({
-        key: payment.keyId,
-        amount: payment.amountMinor,
-        currency: payment.currency,
-        name: "movix",
-        description: `${search.movie || "Movie"} tickets`,
-        order_id: payment.orderId,
-        prefill: { email: bookingEmail },
-        theme: { color: "#e4475b" },
-        handler: async (response) => {
-          try {
-            resolve(
-              await confirmPayment({
-                provider: "razorpay",
-                orderId: response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-              }),
-            );
-          } catch (error) {
-            reject(error);
-          }
-        },
-        modal: {
-          ondismiss: () => reject(new Error("Payment was cancelled.")),
-        },
-      });
-      checkout.open();
-    });
-  };
-
   const startCheckout = async () => {
     if (selectedSeats.length === 0) return;
     if (!auth.hydrated) {
@@ -368,7 +314,7 @@ function BookingPage() {
     }
     if (!bookingEmail) {
       setMessage("Login first so OTP can be sent to your account email.");
-      navigate({ to: "/auth" });
+      navigate("/auth");
       return;
     }
 
@@ -404,13 +350,10 @@ function BookingPage() {
 
     try {
       const intent = await createPaymentIntent(total);
-      const payment =
-        intent.payment.provider === "razorpay"
-          ? await openRazorpayCheckout(intent.payment)
-          : await confirmPayment({
-              paymentId: intent.payment.id,
-              provider: intent.payment.provider,
-            });
+      const payment = await confirmPayment({
+        paymentId: intent.payment.id,
+        provider: intent.payment.provider,
+      });
       const result = await createBooking({
         showId,
         movieId: search.movieId || search.movie || "movie",
@@ -428,19 +371,21 @@ function BookingPage() {
         paymentProvider: payment.payment.provider,
       });
       const booking = result.booking;
-      await navigate({
-        to: "/confirmation",
-        search: {
-          ref: booking.ref,
-          seats: booking.seats.join(","),
-          total: booking.total,
-          movie: booking.movie,
-          theater: booking.theater,
-          time: booking.time,
-          ticketUrl: result.ticketUrl,
-          invoiceUrl: result.invoiceUrl,
-        },
-      });
+      const qrCode = result.qrDataUrl || "";
+      await navigate(
+        "/confirmation?" +
+          new URLSearchParams({
+            ref: booking.ref,
+            seats: booking.seats.join(","),
+            total: String(booking.total),
+            movie: booking.movie,
+            theater: booking.theater,
+            time: booking.time,
+            ticketUrl: result.ticketUrl || "",
+            invoiceUrl: result.invoiceUrl || "",
+            qr: qrCode,
+          }).toString(),
+      );
     } catch (error) {
       setMessage(
         error.response?.data?.conflictSeats
@@ -665,6 +610,10 @@ function BookingPage() {
               {isPaying ? "Confirming..." : `Pay Rs ${total || 0}`}
             </Button>
           </div>
+          <div className="flex items-center gap-1.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+            <Wallet className="h-3.5 w-3.5 text-primary" />
+            Demo payment &mdash; no real charges
+          </div>
         </div>
       </div>
     </div>
@@ -703,4 +652,4 @@ function seatConflictMessage(conflictSeats = []) {
   } already booked or held by another user.`;
 }
 
-export { Route };
+export { BookingPage };
