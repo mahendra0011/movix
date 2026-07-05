@@ -18,7 +18,7 @@ const bookingSchema = new mongoose.Schema(
     paymentId: { type: String, default: "" },
     paymentProvider: {
       type: String,
-      enum: ["local", "razorpay", "stripe", "paytm"],
+      enum: ["local"],
       default: "local",
     },
     paymentStatus: {
@@ -27,6 +27,8 @@ const bookingSchema = new mongoose.Schema(
       default: "paid",
     },
     status: { type: String, enum: ["confirmed", "held", "cancelled"], default: "confirmed" },
+    entryVerified: { type: Boolean, default: false },
+    verifiedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );
