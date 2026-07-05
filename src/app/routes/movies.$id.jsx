@@ -1,4 +1,5 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { Link, useParams, useLoaderData } from "react-router-dom";
+import { usePageMeta } from "@/shared/hooks/usePageMeta";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
@@ -36,7 +37,7 @@ import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/se
 import { buildCatalogTheaterListings } from "@/features/movies/services/showSchedule";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
-import { requestJson } from "@/shared/services/httpClient";
+import { baseRequest } from "@/features/api/baseApi";
 import {
   readPreferredCity,
   subscribePreferredCity,
@@ -125,17 +126,23 @@ const topReviews = [
 
 const MAX_VISIBLE_REVIEWS = 3;
 
-const Route = createFileRoute("/movies/$id")({
-  component: MoviePage,
-  loader: async ({ params }) => {
-    const movie = await fetchMovie(params.id);
-    if (!movie) throw notFound();
-    return { movie };
-  },
-});
+async function movieLoader({ params }) {
+  if (!params) {
+    console.error("movieLoader: params is undefined");
+    throw new Response("Movie not found", { status: 404 });
+  }
+  if (!params?.id) throw new Response("Not Found", { status: 404 });
+  const movie = await fetchMovie(params.id);
+  if (!movie) throw new Response("Not Found", { status: 404 });
+  return { movie };
+}
 
 function MoviePage() {
-  const { movie } = Route.useLoaderData();
+  const { movie } = useLoaderData();
+  usePageMeta({
+    title: movie?.title,
+    description: movie?.shortDescription || movie?.description,
+  });
   const [message, setMessage] = useState("");
   const [activeDate, setActiveDate] = useState(dateOptions[0]?.key ?? "");
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
@@ -206,7 +213,7 @@ function MoviePage() {
   useEffect(() => {
     let active = true;
 
-    requestJson(
+    baseRequest(
       `/api/shows/${encodeURIComponent(movie.id)}?city=${encodeURIComponent(
         selectedCity,
       )}&date=${encodeURIComponent(activeDate)}`,
@@ -561,7 +568,7 @@ function MovieDetailsContent({ movie, reviewData, recommendations, onReviewDataC
       </section>
 
       <section>
-        <SectionTitleBar title="Critic reviews" />
+        <SectionTitleBar icon={Info} title="Critic reviews" />
         <article className="mt-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -611,10 +618,17 @@ function SectionHeader({ icon: Icon, eyebrow, title }) {
   );
 }
 
-function SectionTitleBar({ title, actionLabel }) {
+function SectionTitleBar({ icon: Icon, title, actionLabel }) {
   return (
     <div className="flex w-full items-center justify-between gap-3">
-      <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+      <div className="flex items-center gap-3">
+        {Icon && (
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+            <Icon className="h-4 w-4" />
+          </div>
+        )}
+        <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+      </div>
       {actionLabel && (
         <button type="button" className="text-sm font-semibold text-primary hover:underline">
           {actionLabel}
@@ -903,8 +917,7 @@ function ReviewCard({ review, index = 0 }) {
 function SuggestionCard({ movie }) {
   return (
     <Link
-      to="/movies/$id"
-      params={{ id: movie.id }}
+      to={"/movies/" + movie.id}
       className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
     >
       <div className="relative aspect-[2/3] bg-muted">
@@ -1368,28 +1381,7 @@ function CinemaShowCard({ cinema, movie, activeDateLabel }) {
             ) : (
               <Link
                 key={show.id}
-                to="/book/$showId"
-                params={{ showId: show.id }}
-                search={{
-                  time: show.label,
-                  date: activeDateLabel,
-                  theater: cinema.name,
-                  movie: movie.title,
-                  movieId: movie.id,
-                  theaterId: cinema.id,
-                  screen: show.screen,
-                  platinumPrice: show.price.platinum,
-                  silverPrice: show.price.silver,
-                  goldPrice: show.price.gold,
-                  vipPrice: show.price.vip,
-                  seatRows: show.seatLayout?.rowCount,
-                  seatCols: show.seatLayout?.seatsPerRow,
-                  platinumRows: show.seatLayout?.platinumRows,
-                  silverRows: show.seatLayout?.silverRows,
-                  vipRows: show.seatLayout?.vipRows,
-                  aisleAfter: show.seatLayout?.aisleAfter,
-                  blockedSeats: show.seatLayout?.blockedSeats?.join(","),
-                }}
+                to={`/book/${show.id}?time=${encodeURIComponent(show.label)}&date=${encodeURIComponent(activeDateLabel)}&theater=${encodeURIComponent(cinema.name)}&movie=${encodeURIComponent(movie.title)}&movieId=${encodeURIComponent(movie.id)}&theaterId=${encodeURIComponent(cinema.id)}&screen=${encodeURIComponent(show.screen)}&platinumPrice=${encodeURIComponent(show.price.platinum)}&silverPrice=${encodeURIComponent(show.price.silver)}&goldPrice=${encodeURIComponent(show.price.gold)}&vipPrice=${encodeURIComponent(show.price.vip)}&seatRows=${encodeURIComponent(show.seatLayout?.rowCount ?? "")}&seatCols=${encodeURIComponent(show.seatLayout?.seatsPerRow ?? "")}&platinumRows=${encodeURIComponent(show.seatLayout?.platinumRows ?? "")}&silverRows=${encodeURIComponent(show.seatLayout?.silverRows ?? "")}&vipRows=${encodeURIComponent(show.seatLayout?.vipRows ?? "")}&aisleAfter=${encodeURIComponent(show.seatLayout?.aisleAfter ?? "")}&blockedSeats=${encodeURIComponent(show.seatLayout?.blockedSeats?.join(",") ?? "")}`}
                 className={`inline-flex flex-col rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${cls}`}
               >
                 {content}
@@ -1679,4 +1671,4 @@ function saveShortlistItem(item) {
   window.localStorage.setItem(key, JSON.stringify(next));
 }
 
-export { Route };
+export { MoviePage, movieLoader };
