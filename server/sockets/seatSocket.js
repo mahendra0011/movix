@@ -75,7 +75,7 @@ function registerSeatSockets(io, { getBookedSeats, seatHolds }) {
       const affectedShows = seatHolds.releaseOwner(socket.id);
       for (const showId of affectedShows) {
         emitSeatState(showId).catch((error) =>
-          console.warn("Seat state emit failed after disconnect:", error.message),
+          logger.warn("Seat state emit failed after disconnect: %s", error.message),
         );
       }
     });
