@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, useLoaderData, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { usePageMeta } from "@/shared/hooks/usePageMeta";
 import {
   ArrowLeft,
   BadgePercent,
@@ -22,7 +23,7 @@ import { movies as fallbackMovies, theaters } from "@/features/movies/data/movie
 import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { requestJson } from "@/shared/services/httpClient";
+import { baseRequest } from "@/features/api/baseApi";
 import {
   readPreferredCity,
   subscribePreferredCity,
@@ -53,15 +54,11 @@ function validateMoviesSearch(search) {
   };
 }
 
-const Route = createFileRoute("/movies/")({
-  loader: () => fetchMovies(),
-  validateSearch: validateMoviesSearch,
-  component: MoviesListing,
-});
-
 function MoviesListing() {
-  const loadedMovies = Route.useLoaderData();
-  const initialSearch = Route.useSearch();
+  usePageMeta({ title: "Movies" });
+  const loadedMovies = useLoaderData();
+  const [searchParams] = useSearchParams();
+  const initialSearch = validateMoviesSearch(Object.fromEntries(searchParams));
   return <MoviesListingView loadedMovies={loadedMovies} initialSearch={initialSearch} />;
 }
 
@@ -96,7 +93,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
   useEffect(() => {
     let active = true;
 
-    requestJson("/api/theaters", { timeoutMs: 8000 })
+    baseRequest("/api/theaters", { timeoutMs: 8000 })
       .then((data) => {
         if (active && data.theaters?.length) setCinemaCatalog(data.theaters);
       })
@@ -334,7 +331,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
             </div>
             {featured ? (
               <Button asChild className="mt-5 h-11 gap-2 px-7 shadow-lg shadow-primary/20">
-                <Link to="/movies/$id" params={{ id: featured.id }}>
+                <Link to={"/movies/" + featured.id}>
                   <Ticket className="h-4 w-4" />
                   Book Tickets
                 </Link>
@@ -344,8 +341,7 @@ function MoviesListingView({ loadedMovies = [], initialSearch = {} }) {
 
           {featured ? (
             <Link
-              to="/movies/$id"
-              params={{ id: featured.id }}
+              to={"/movies/" + featured.id}
               className="group hidden overflow-hidden rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur transition-transform hover:-translate-y-1 dark:border-white/15 dark:bg-white/8 lg:block"
             >
               <div className="relative">
@@ -610,8 +606,7 @@ function MovieListingCard({ movie }) {
 
   return (
     <Link
-      to="/movies/$id"
-      params={{ id: movie.id }}
+      to={"/movies/" + movie.id}
       className="group overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl"
     >
       <div className="relative aspect-[2/3] overflow-hidden bg-muted">
@@ -794,5 +789,8 @@ function normalizeText(value) {
     .toLowerCase();
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
-export { MoviesListingView, Route, validateMoviesSearch };
+async function moviesLoader() {
+  return fetchMovies();
+}
+
+export { MoviesListingView, MoviesListing, validateMoviesSearch, moviesLoader };
