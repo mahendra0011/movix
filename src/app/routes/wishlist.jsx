@@ -1,17 +1,16 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { CalendarDays, Film, Heart, Search, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { movies as fallbackMovies } from "@/features/movies/data/movieCatalog";
 import { movieImageFallback, normalizeMovieImageUrl } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
+import { EmptyState } from "@/shared/components/ui/empty-state";
+import { usePageMeta } from "@/shared/hooks/usePageMeta";
 
 const SHORTLIST_STORAGE_KEY = "movix-shortlist";
 
-const Route = createFileRoute("/wishlist")({
-  component: WishlistPage,
-});
-
 function WishlistPage() {
+  usePageMeta({ title: "Wishlist" });
   const [items, setItems] = useState(readWishlist);
   const recommended = useMemo(
     () => fallbackMovies.filter((movie) => !items.some((item) => item.id === movie.id)).slice(0, 6),
@@ -50,7 +49,7 @@ function WishlistPage() {
               </p>
             </div>
             <Button asChild className="gap-2 rounded-full">
-              <Link to="/movies/" search={{}}>
+              <Link to="/movies">
                 <Search className="h-4 w-4" />
                 Browse movies
               </Link>
@@ -67,19 +66,19 @@ function WishlistPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-border/70 bg-card/75 p-10 text-center shadow-sm">
-            <Heart className="mx-auto h-9 w-9 text-primary" />
-            <h2 className="mt-4 text-xl font-bold">Wishlist empty hai</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Movie detail page par Watchlist dabao, phir saved movie yahan show hogi.
-            </p>
-            <Button asChild className="mt-5 rounded-full">
-              <Link to="/movies/" search={{}}>
-                <Film className="h-4 w-4" />
-                Go to movies
-              </Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={Heart}
+            title="Wishlist empty hai"
+            description="Movie detail page par Watchlist dabao, phir saved movie yahan show hogi."
+            action={
+              <Button asChild className="mt-2 rounded-full">
+                <Link to="/movies">
+                  <Film className="h-4 w-4" />
+                  Go to movies
+                </Link>
+              </Button>
+            }
+          />
         )}
       </section>
 
@@ -89,7 +88,7 @@ function WishlistPage() {
             <h2 className="text-xl font-extrabold tracking-tight">More movies to save</h2>
             <p className="text-xs text-muted-foreground">Quick picks from the current catalog</p>
           </div>
-          <Link to="/movies/" search={{}} className="text-sm font-semibold text-primary">
+          <Link to="/movies" className="text-sm font-semibold text-primary">
             View all
           </Link>
         </div>
@@ -97,8 +96,7 @@ function WishlistPage() {
           {recommended.map((movie) => (
             <Link
               key={movie.id}
-              to="/movies/$id"
-              params={{ id: movie.id }}
+              to={"/movies/" + movie.id}
               className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
             >
               <img
@@ -127,7 +125,7 @@ function WishlistPage() {
 function WishlistCard({ item, onRemove }) {
   return (
     <article className="group overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg">
-      <Link to="/movies/$id" params={{ id: item.id }} className="block">
+      <Link to={"/movies/" + item.id} className="block">
         <div className="relative aspect-[2/3] overflow-hidden bg-muted">
           {item.image ? (
             <img
@@ -170,9 +168,7 @@ function WishlistCard({ item, onRemove }) {
           </p>
         ) : null}
         <Button asChild className="mt-4 h-9 w-full rounded-full text-xs">
-          <Link to="/movies/$id" params={{ id: item.id }}>
-            Book / view details
-          </Link>
+          <Link to={"/movies/" + item.id}>Book / view details</Link>
         </Button>
       </div>
     </article>
@@ -203,4 +199,4 @@ function formatSavedDate(value) {
   });
 }
 
-export { Route };
+export { WishlistPage };
