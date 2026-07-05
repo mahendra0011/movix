@@ -676,4 +676,146 @@ function formatTimeLabel(value) {
   return `${hour12.toString().padStart(2, "0")}:${minute} ${suffix}`;
 }
 
+
+// ─── QR Ticket Verification ────────────────────────────────────────
+
+router.post(
+  "/verify-ticket",
+  asyncHandler(async (request, response) => {
+    const owner = await requireMongoOwner(request, response);
+    if (!owner) return;
+
+    const { qrData } = request.body;
+    if (!qrData) {
+      response.status(400).json({ verified: false, message: "QR data is required." });
+      return;
+    }
+
+    let parsedData;
+    try {
+      parsedData = typeof qrData === "string" ? JSON.parse(qrData) : qrData;
+    } catch {
+      response.status(400).json({ verified: false, message: "Invalid QR code format." });
+      return;
+    }
+
+    const ref = parsedData.ref;
+    if (!ref) {
+      response.status(400).json({ verified: false, message: "Invalid ticket reference in QR." });
+      return;
+    }
+
+    let booking;
+    if (isMongoReady()) {
+      booking = await Booking.findOne({ ref });
+    } else {
+      response.status(503).json({ verified: false, message: "Database required for ticket verification." });
+      return;
+    }
+
+    if (!booking) {
+      response.status(404).json({ verified: false, message: "Ticket not found." });
+      return;
+    }
+
+    if (booking.status === "cancelled") {
+      response.status(400).json({ verified: false, message: "This ticket has been cancelled." });
+      return;
+    }
+
+    if (booking.entryVerified) {
+      return response.status(400).json({
+        verified: false,
+        alreadyVerified: true,
+        message: "Entry already verified for this ticket.",
+        booking: {
+          ref: booking.ref,
+          movie: booking.movie,
+          theater: booking.theater,
+          screen: booking.screen,
+          time: booking.time,
+          seats: booking.seats,
+          verifiedAt: booking.verifiedAt,
+        },
+      });
+    }
+
+    const theater = await Theater.findById(owner.theaterId || owner.ownerTheaterId).lean();
+    if (theater && booking.theaterId && booking.theaterId !== String(theater.id)) {
+      response.status(403).json({ verified: false, message: "This ticket is not for your theater." });
+      return;
+    }
+
+    booking.entryVerified = true;
+    booking.verifiedAt = new Date();
+    await booking.save();
+
+    response.json({
+      verified: true,
+      message: "✅ Entry verified successfully!",
+      booking: {
+        ref: booking.ref,
+        movie: booking.movie,
+        theater: booking.theater,
+        screen: booking.screen,
+        time: booking.time,
+        seats: booking.seats,
+        total: booking.total,
+        verifiedAt: booking.verifiedAt,
+      },
+    });
+  }),
+);
+
+router.get(
+  "/scan-stats",
+  asyncHandler(async (request, response) => {
+    const owner = await requireMongoOwner(request, response);
+    if (!owner) return;
+
+    let stats = {
+      todayVerified: 0,
+      totalVerified: 0,
+      pendingVerification: 0,
+      todayScans: 0,
+    };
+
+    if (isMongoReady()) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const theater = await Theater.findById(owner.theaterId || owner.ownerTheaterId).lean();
+      const theaterId = theater?.id || owner.theaterId || "";
+
+      const matchFilter = theaterId ? { theaterId } : {};
+
+      const [totalVerified, todayVerified, pendingBookings] = await Promise.all([
+        Booking.countDocuments({ ...matchFilter, entryVerified: true }),
+        Booking.countDocuments({
+          ...matchFilter,
+          entryVerified: true,
+          verifiedAt: { $gte: today, $lt: tomorrow },
+        }),
+        Booking.countDocuments({
+          ...matchFilter,
+          status: "confirmed",
+          entryVerified: { $ne: true },
+        }),
+      ]);
+
+      stats = {
+        todayVerified,
+        totalVerified,
+        pendingVerification: pendingBookings,
+        todayScans: todayVerified,
+      };
+    }
+
+    response.json({ stats });
+  }),
+);
+
+
 export { router as ownerRoutes };
