@@ -1,4 +1,5 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { Link, useParams, useLoaderData } from "react-router-dom";
+import { usePageMeta } from "@/shared/hooks/usePageMeta";
 import { useMemo, useState } from "react";
 import {
   ArrowLeft,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { CastShowcase } from "@/features/movies/components/CastShowcase";
 import { comingSoonMovies as fallbackMovies } from "@/features/movies/data/movieCatalog";
+import { readPreferredCity } from "@/shared/services/cityPreference";
 import {
   castAvatarFallback,
   isGeneratedImageUrl,
@@ -25,8 +27,7 @@ import {
   normalizeMovieMedia,
 } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
-import { readPreferredCity } from "@/shared/services/cityPreference";
-import { requestJson } from "@/shared/services/httpClient";
+import { baseRequest } from "@/features/api/baseApi";
 
 const bundledComingSoonById = new Map(
   fallbackMovies
@@ -38,17 +39,12 @@ const bundledComingSoonById = new Map(
     ),
 );
 
-const Route = createFileRoute("/coming-soon_/$id")({
-  loader: async ({ params }) => {
-    const movie = await fetchComingSoonMovie(params.id, readPreferredCity());
-    if (!movie) throw notFound();
-    return { movie };
-  },
-  component: ComingSoonDetailPage,
-});
-
 function ComingSoonDetailPage() {
-  const { movie } = Route.useLoaderData();
+  const { movie } = useLoaderData();
+  usePageMeta({
+    title: movie?.title,
+    description: movie?.shortDescription || movie?.description,
+  });
   const [notified, setNotified] = useState(false);
   const [message, setMessage] = useState("");
   const castMembers = useMemo(() => getSixCastMembers(movie), [movie]);
@@ -281,7 +277,7 @@ function InfoBand({ icon: Icon, title, text }) {
 async function fetchComingSoonMovie(id, city = "") {
   const query = city ? `?city=${encodeURIComponent(city)}` : "";
   try {
-    const data = await requestJson(`/api/shows/coming-soon/${encodeURIComponent(id)}${query}`, {
+    const data = await baseRequest(`/api/shows/coming-soon/${encodeURIComponent(id)}${query}`, {
       timeoutMs: 8000,
     });
     if (data.movie) return normalizeComingSoonMovie(data.movie);
@@ -442,4 +438,11 @@ function trailerSearchUrl(title) {
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} official trailer`)}`;
 }
 
-export { Route };
+async function comingSoonDetailLoader({ params }) {
+  if (!params?.id) throw new Response("Not Found", { status: 404 });
+  const movie = await fetchComingSoonMovie(params.id, readPreferredCity());
+  if (!movie) throw new Response("Not Found", { status: 404 });
+  return { movie };
+}
+
+export { ComingSoonDetailPage, comingSoonDetailLoader };
