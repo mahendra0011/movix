@@ -1,5 +1,6 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
+  BadgePercent,
   Bell,
   Building2,
   CalendarDays,
@@ -17,16 +18,13 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hydrateAuth, logout, readStoredAuth } from "@/features/auth/authSlice";
+import { setCity } from "@/features/city/citySlice";
+import { toggleTheme } from "@/features/ui/uiSlice";
 import { theaters } from "@/features/movies/data/movieCatalog";
 import { CitySelect } from "@/shared/components/location/CitySelect";
 import { Button } from "@/shared/components/ui/button";
 import { SearchBox } from "@/shared/components/ui/search-box";
 import { createNotificationSocket } from "@/shared/services/socketClient";
-import {
-  readPreferredCity,
-  subscribePreferredCity,
-  writePreferredCity,
-} from "@/shared/services/cityPreference";
 import {
   readHomeSearchQuery,
   subscribeHomeSearchQuery,
@@ -38,6 +36,7 @@ const navItems = [
   { label: "Home", to: "/", icon: Home, exact: true },
   { label: "Movies", to: "/movies/", icon: Film },
   { label: "Coming Soon", to: "/coming-soon", icon: CalendarDays },
+  { label: "Offers", to: "/offers", icon: BadgePercent, highlight: true },
   { label: "Wishlist", to: "/wishlist", icon: Heart },
 ];
 
@@ -47,27 +46,14 @@ const panelLinks = [
   { label: "Admin Panel", to: "/admin", icon: LayoutDashboard, roles: ["admin"] },
 ];
 
-const THEME_STORAGE_KEY = "movix-theme";
 const MAX_NAV_NOTIFICATIONS = 8;
-
-function applyTheme(theme) {
-  if (typeof document === "undefined") return;
-  document.documentElement.classList.toggle("light", theme === "light");
-  document.documentElement.classList.toggle("dark", theme === "dark");
-  document.documentElement.style.colorScheme = theme;
-}
-
-function readTheme() {
-  if (typeof window === "undefined") return "light";
-  return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
-}
 
 function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
-  const [theme, setTheme] = useState("light");
-  const [selectedCity, setSelectedCity] = useState(readPreferredCity);
+  const theme = useSelector((state) => state.ui.theme);
+  const selectedCity = useSelector((state) => state.city.selectedCity);
   const [searchValue, setSearchValue] = useState(readHomeSearchQuery);
   const [notifications, setNotifications] = useState([]);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -95,13 +81,6 @@ function Navbar() {
     if (!auth.hydrated) dispatch(hydrateAuth(readStoredAuth()));
   }, [auth.hydrated, dispatch]);
 
-  useEffect(() => {
-    const storedTheme = readTheme();
-    setTheme(storedTheme);
-    applyTheme(storedTheme);
-  }, []);
-
-  useEffect(() => subscribePreferredCity(setSelectedCity), []);
   useEffect(() => subscribeHomeSearchQuery(setSearchValue), []);
 
   useEffect(() => {
@@ -163,9 +142,7 @@ function Navbar() {
     writeHomeSearchQuery(nextSearch);
     setSearchValue(nextSearch);
     if (!nextSearch || window.location.pathname === "/") return;
-    void navigate({
-      to: "/",
-    });
+    void navigate("/");
   };
 
   const updateLiveSearch = (event) => {
@@ -173,25 +150,16 @@ function Navbar() {
     setSearchValue(nextSearch);
     writeHomeSearchQuery(nextSearch);
     if (!nextSearch.trim() || window.location.pathname === "/") return;
-    void navigate({ to: "/" });
+    void navigate("/");
   };
 
-  const toggleTheme = () => {
-    const nextTheme = theme === "light" ? "dark" : "light";
-    setTheme(nextTheme);
-    applyTheme(nextTheme);
-    window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
-  };
-
-  const changeCity = (nextCity) => {
-    setSelectedCity(nextCity);
-    writePreferredCity(nextCity);
-  };
+  const handleToggleTheme = () => dispatch(toggleTheme());
+  const changeCity = (nextCity) => dispatch(setCity(nextCity));
 
   const handleLogout = () => {
     dispatch(logout());
     setNotificationOpen(false);
-    void navigate({ to: "/auth" });
+    void navigate("/auth");
   };
 
   return (
@@ -322,7 +290,7 @@ function Navbar() {
           type="button"
           size="icon"
           variant="secondary"
-          onClick={toggleTheme}
+          onClick={handleToggleTheme}
           aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
         >
           {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
@@ -395,19 +363,29 @@ function Navbar() {
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link
+              <NavLink
                 key={item.label}
-                to={item.to}
-                search={item.to === "/movies/" ? { city: selectedCity } : undefined}
-                activeOptions={{ exact: item.exact }}
-                activeProps={{ className: "text-primary [&>span]:scale-x-100" }}
-                inactiveProps={{ className: "text-muted-foreground" }}
-                className="group relative inline-flex min-h-9 shrink-0 items-center gap-2 text-sm font-semibold transition-colors hover:text-primary"
+                to={
+                  item.to === "/movies/"
+                    ? `/movies/?city=${encodeURIComponent(selectedCity)}`
+                    : item.to
+                }
+                end={item.exact}
+                className={({ isActive }) =>
+                  `group relative inline-flex min-h-9 shrink-0 items-center gap-2 text-sm font-semibold transition-colors hover:text-primary ${
+                    isActive ? "text-primary [&>span]:scale-x-100" : "text-muted-foreground"
+                  }`
+                }
               >
                 <Icon className="h-4 w-4" />
                 {item.label}
+                {item.highlight && (
+                  <span className="ml-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none text-primary">
+                    Live
+                  </span>
+                )}
                 <span className="absolute inset-x-0 -bottom-2 h-0.5 scale-x-0 rounded-full bg-primary transition-transform group-hover:scale-x-100" />
-              </Link>
+              </NavLink>
             );
           })}
         </div>
