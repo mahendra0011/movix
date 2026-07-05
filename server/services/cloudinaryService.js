@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import axios from "axios";
 import { env } from "../config/env.js";
 
 const DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpe?g|webp);base64,/i;
@@ -63,59 +64,42 @@ async function uploadImageToCloudinary(file, options = {}) {
   }
   body.append("signature", signCloudinaryParams(params, config.apiSecret));
 
-  const response = await fetchWithTimeout(
-    `https://api.cloudinary.com/v1_1/${config.cloudName}/image/upload`,
-    {
-      method: "POST",
+  let response;
+  try {
+    response = await axios.post(
+      `https://api.cloudinary.com/v1_1/${config.cloudName}/image/upload`,
       body,
-    },
-    CLOUDINARY_UPLOAD_TIMEOUT_MS,
-  );
-  const payload = await withTimeout(
-    response.json().catch(() => ({})),
-    CLOUDINARY_UPLOAD_TIMEOUT_MS,
-    "Cloudinary upload response timed out.",
-  );
-
-  if (!response.ok) {
-    const error = new Error(payload.error?.message || "Cloudinary upload failed.");
-    error.status = response.status >= 400 && response.status < 500 ? 400 : 502;
+      { timeout: CLOUDINARY_UPLOAD_TIMEOUT_MS },
+    );
+  } catch (cause) {
+    if (cause.response) {
+      const payload = cause.response.data || {};
+      const error = new Error(payload.error?.message || "Cloudinary upload failed.");
+      error.status = cause.response.status >= 400 && cause.response.status < 500 ? 400 : 502;
+      throw error;
+    }
+    const error = new Error(
+      cause.code === "ECONNABORTED"
+        ? "Cloudinary upload response timed out."
+        : "Cloudinary upload failed.",
+    );
+    error.status = 502;
     throw error;
   }
 
   return {
-    publicId: payload.public_id,
-    secureUrl: payload.secure_url,
-    url: payload.url,
-    width: payload.width,
-    height: payload.height,
-    format: payload.format,
-    bytes: payload.bytes,
+    publicId: response.data.public_id,
+    secureUrl: response.data.secure_url,
+    url: response.data.url,
+    width: response.data.width,
+    height: response.data.height,
+    format: response.data.format,
+    bytes: response.data.bytes,
   };
 }
 
 function isUploadableImageValue(value) {
   return DATA_IMAGE_PATTERN.test(value) || HTTP_IMAGE_PATTERN.test(value);
-}
-
-async function fetchWithTimeout(url, init, timeoutMs) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...init, signal: controller.signal });
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-function withTimeout(promise, timeoutMs, message) {
-  let timeout;
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
-    }),
-  ]).finally(() => clearTimeout(timeout));
 }
 
 function getCloudinaryConfig() {
