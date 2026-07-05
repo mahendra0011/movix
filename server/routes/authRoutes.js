@@ -3,8 +3,17 @@ import { Router } from "express";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireAuth, signToken } from "../middleware/auth.js";
+import {
+  createValidator,
+  loginSchema,
+  registerSchema,
+  otpSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "../middleware/validate.js";
 import { User } from "../models/User.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
+import { logAudit } from "../services/auditService.js";
 import { sendOtpEmail } from "../services/emailService.js";
 import { publishNotification } from "../services/notificationHub.js";
 
@@ -141,7 +150,7 @@ async function ensureDefaultAdminUser() {
   const passwordHash = await bcrypt.hash(env.adminPassword, 10);
   if (isMongoReady()) {
     return User.create({
-      name: "Mahendra Admin",
+      name: env.adminName,
       email: env.adminEmail,
       passwordHash,
       role: "admin",
@@ -151,7 +160,7 @@ async function ensureDefaultAdminUser() {
 
   const user = {
     id: `admin_${Date.now().toString(36)}`,
-    name: "Mahendra Admin",
+    name: env.adminName,
     email: env.adminEmail,
     passwordHash,
     role: "admin",
@@ -199,6 +208,7 @@ async function clearOtp(user) {
 
 router.post(
   "/register",
+  createValidator(registerSchema),
   asyncHandler(async (request, response) => {
     const { name, email, password, role = "user", ownerApplication } = request.body;
     const normalizedEmail = normalizeEmail(email);
@@ -308,6 +318,7 @@ router.post(
 
 router.post(
   "/login",
+  createValidator(loginSchema),
   asyncHandler(async (request, response) => {
     const email = normalizeEmail(request.body.email);
     const password = String(request.body.password ?? "");
@@ -342,6 +353,7 @@ router.post(
 
 router.post(
   "/forgot-password",
+  createValidator(forgotPasswordSchema),
   asyncHandler(async (request, response) => {
     const email = normalizeEmail(request.body.email);
     let user = await findUserByEmail(email);
@@ -359,6 +371,7 @@ router.post(
 
 router.post(
   "/verify-otp",
+  createValidator(otpSchema),
   asyncHandler(async (request, response) => {
     const email = normalizeEmail(request.body.email);
     const otp = String(request.body.otp ?? "");
@@ -383,6 +396,7 @@ router.post(
 
 router.post(
   "/reset-password",
+  createValidator(resetPasswordSchema),
   asyncHandler(async (request, response) => {
     const email = normalizeEmail(request.body.email);
     const otp = String(request.body.otp ?? "");
