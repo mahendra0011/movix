@@ -5,7 +5,6 @@ import { Review } from "../models/Review.js";
 import { Show } from "../models/Show.js";
 import { Theater } from "../models/Theater.js";
 import { User } from "../models/User.js";
-import { env } from "../config/env.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { getMemoryUsers, updateMemoryUserOwnerStatus } from "./authRoutes.js";
@@ -13,6 +12,8 @@ import { getMemoryBookings } from "../services/bookingStore.js";
 import { isMongoReady } from "../services/database.js";
 import { publishNotification } from "../services/notificationHub.js";
 import { theaters as catalogTheaters } from "../../src/features/movies/data/movieCatalog.js";
+import { getAuditLogs, logAudit } from "../services/auditService.js";
+import { AuditLog } from "../models/AuditLog.js";
 
 const router = Router();
 const SCREEN_CAPACITY = 140;
@@ -138,9 +139,6 @@ router.get(
         time: booking.time,
         createdAt: bookingDate(booking).toISOString(),
       }));
-    const paymentConnected =
-      env.paymentProvider === "razorpay" && env.razorpayKeyId && env.razorpayKeySecret;
-
     response.json({
       summary: {
         revenue,
@@ -163,7 +161,7 @@ router.get(
         database: isMongoReady() ? "MongoDB" : "Local store",
         socket: "enabled",
         seats: "Booked-seat sync",
-        payment: paymentConnected ? "Razorpay" : "Test checkout",
+        payment: "Demo payment",
       },
       charts: {
         revenueTrend,
@@ -203,6 +201,7 @@ router.get(
 
 router.patch(
   "/users/:id",
+  adminAudit("user.block"),
   asyncHandler(async (request, response) => {
     const blocked = Boolean(request.body.blocked);
 
@@ -230,6 +229,7 @@ router.patch(
 
 router.delete(
   "/users/:id",
+  adminAudit("user.delete"),
   asyncHandler(async (request, response) => {
     if (!isMongoReady()) {
       response.status(503).json({ error: "MongoDB is required to delete users." });
@@ -265,6 +265,7 @@ router.delete(
 
 router.patch(
   "/theater-applications/:id",
+  adminAudit("owner.approve"),
   asyncHandler(async (request, response) => {
     const status = normalizeOwnerStatus(request.body.status);
     if (!ownerStatuses.has(status)) {
@@ -310,6 +311,7 @@ router.patch(
 
 router.delete(
   "/theater-applications/:id",
+  adminAudit("owner.reject"),
   asyncHandler(async (request, response) => {
     if (isMongoReady()) {
       const user = await User.findOneAndDelete({
@@ -348,6 +350,7 @@ router.delete(
 
 router.delete(
   "/theaters/:id",
+  adminAudit("theater.delete"),
   asyncHandler(async (request, response) => {
     if (!isMongoReady()) {
       response.status(503).json({ error: "MongoDB is required to delete theaters." });
@@ -516,6 +519,59 @@ function slugify(value) {
 
 function unique(values) {
   return [...new Set(values.filter(Boolean).map(String))];
+}
+
+router.get(
+  "/audit-logs",
+  asyncHandler(async (request, response) => {
+    const { action, resource, resourceId, userId, limit, skip } = request.query;
+    const logs = await getAuditLogs({
+      action,
+      resource,
+      resourceId,
+      userId,
+      limit: Math.min(Number(limit) || 100, 500),
+      skip: Number(skip) || 0,
+    });
+    const total = isMongoReady() ? await AuditLog.countDocuments() : logs.length;
+    response.json({ logs, total });
+  }),
+);
+
+function adminAudit(action) {
+  return (request, response, next) => {
+    const originalJson = response.json.bind(response);
+    response.json = function (body) {
+      if (response.statusCode < 400) {
+        const resourceId =
+          request.params.id || body?.user?._id || body?.owner?._id || body?._id || "";
+        logAudit({
+          action,
+          resource: action.split(".")[0],
+          resourceId,
+          userId: request.user?._id || null,
+          userEmail: request.user?.email || "",
+          details: {
+            method: request.method,
+            path: request.originalUrl,
+            body: sanitizeBody(request.body),
+          },
+          ip: request.ip || request.socket?.remoteAddress || "",
+        });
+      }
+      return originalJson(body);
+    };
+    next();
+  };
+}
+
+function sanitizeBody(body) {
+  if (!body) return {};
+  const safe = { ...body };
+  delete safe.password;
+  delete safe.token;
+  delete safe.secret;
+  return safe;
 }
 
 export { router as adminRoutes };
