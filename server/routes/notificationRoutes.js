@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { logger } from "../services/logger.js";
 import { notifySubscriptionCreated } from "../services/notificationEvents.js";
 import { addSubscriber } from "../services/subscriberStore.js";
 
@@ -10,7 +11,7 @@ router.post(
   asyncHandler(async (request, response) => {
     const email = await addSubscriber(request.body.email, request.body.source ?? "homepage");
     notifySubscriptionCreated(email).catch((error) =>
-      console.warn("Subscription email failed:", error.message),
+      logger.warn("Subscription email failed: %s", error.message),
     );
 
     response.status(201).json({
