@@ -1,3 +1,4 @@
+import axios from "axios";
 import { env } from "../config/env.js";
 
 const brand = {
@@ -179,72 +180,72 @@ function getEmailProviderStatus() {
 }
 
 async function sendBrevoEmail({ to, subject, html }) {
-  let response;
   try {
-    response = await fetch(env.brevoApiUrl, {
-      method: "POST",
-      headers: {
-        "api-key": env.brevoApiKey,
-        "content-type": "application/json",
-        accept: "application/json",
-      },
-      body: JSON.stringify({
+    const response = await axios.post(
+      env.brevoApiUrl,
+      {
         sender: { email: env.brevoFromEmail, name: env.brevoFromName },
         to: [{ email: to }],
         subject,
         htmlContent: html,
-      }),
-    });
+      },
+      {
+        headers: {
+          "api-key": env.brevoApiKey,
+          accept: "application/json",
+        },
+      },
+    );
+
+    return { sent: true, provider: "brevo-api", response: response.data };
   } catch (cause) {
+    if (cause.response) {
+      const error = new Error("Email service failed. Check Brevo API key and sender email.");
+      error.status = 502;
+      error.cause = new Error(
+        `Brevo API email failed: ${cause.response.status} ${JSON.stringify(cause.response.data)}`,
+      );
+      throw error;
+    }
     const error = new Error("Email service failed. Check Brevo API key and sender email.");
     error.status = 502;
     error.cause = cause;
     throw error;
   }
-
-  if (!response.ok) {
-    const body = await response.text();
-    const error = new Error("Email service failed. Check Brevo API key and sender email.");
-    error.status = 502;
-    error.cause = new Error(`Brevo API email failed: ${response.status} ${body}`);
-    throw error;
-  }
-
-  return { sent: true, provider: "brevo-api", response: await readJsonResponse(response) };
 }
 
 async function sendResendEmail({ to, subject, html }) {
-  let response;
   try {
-    response = await fetch(env.resendApiUrl, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${env.resendApiKey}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
+    const response = await axios.post(
+      env.resendApiUrl,
+      {
         from: formatEmailAddress(env.resendFromEmail, env.resendFromName),
         to: [to],
         subject,
         html,
-      }),
-    });
+      },
+      {
+        headers: {
+          authorization: `Bearer ${env.resendApiKey}`,
+        },
+      },
+    );
+
+    return { sent: true, provider: "resend-api", response: response.data };
   } catch (cause) {
+    if (cause.response) {
+      const error = new Error("Email service failed. Check Resend API key and sender email.");
+      error.status = 502;
+      error.cause = new Error(
+        `Resend API email failed: ${cause.response.status} ${JSON.stringify(cause.response.data)}`,
+      );
+      throw error;
+    }
     const error = new Error("Email service failed. Check Resend API key and sender email.");
     error.status = 502;
     error.cause = cause;
     throw error;
   }
-
-  if (!response.ok) {
-    const body = await response.text();
-    const error = new Error("Email service failed. Check Resend API key and sender email.");
-    error.status = 502;
-    error.cause = new Error(`Resend API email failed: ${response.status} ${body}`);
-    throw error;
-  }
-
-  return { sent: true, provider: "resend-api", response: await readJsonResponse(response) };
 }
 
 function formatEmailAddress(email, name) {
@@ -252,17 +253,6 @@ function formatEmailAddress(email, name) {
     .replace(/[<>"]/g, "")
     .trim();
   return safeName ? `${safeName} <${email}>` : email;
-}
-
-async function readJsonResponse(response) {
-  const text = await response.text();
-  if (!text) return {};
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { raw: text };
-  }
 }
 
 async function sendBookingEmail(booking) {
