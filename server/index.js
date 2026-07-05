@@ -1,10 +1,23 @@
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import morgan from "morgan";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { env } from "./config/env.js";
+import { logger } from "./services/logger.js";
+import { jobQueue } from "./services/jobQueue.js";
+import { logAudit } from "./services/auditService.js";
+import {
+  sendBookingEmail,
+  sendNotificationEmail,
+  sendOtpEmail,
+  getEmailProviderStatus,
+} from "./services/emailService.js";
 import { adminRoutes } from "./routes/adminRoutes.js";
 import { authRoutes } from "./routes/authRoutes.js";
+import { googleAuthRoutes } from "./routes/googleAuth.js";
 import { createBookingRoutes } from "./routes/bookingRoutes.js";
 import { movieRoutes } from "./routes/movieRoutes.js";
 import { notificationRoutes } from "./routes/notificationRoutes.js";
@@ -14,11 +27,10 @@ import { showRoutes } from "./routes/showRoutes.js";
 import { theaterRoutes } from "./routes/theaterRoutes.js";
 import { uploadRoutes } from "./routes/uploadRoutes.js";
 import { connectDatabase, isMongoReady } from "./services/database.js";
-import { getEmailProviderStatus } from "./services/emailService.js";
 import { createSeatHoldStore } from "./services/seatHoldService.js";
 import { createRateLimiter } from "./middleware/rateLimit.js";
 import { requestContext } from "./middleware/requestContext.js";
-import { securityHeaders } from "./middleware/securityHeaders.js";
+import { xssSanitize } from "./middleware/sanitize.js";
 import { registerNotificationSockets } from "./sockets/notificationSocket.js";
 import { registerSeatSockets } from "./sockets/seatSocket.js";
 
@@ -57,10 +69,34 @@ const io = new Server(httpServer, {
   cors: corsOptions,
 });
 
+if (env.isProduction) {
+  app.use((request, response, next) => {
+    if (request.secure || request.headers["x-forwarded-proto"] === "https") return next();
+    response.redirect(301, `https://${request.hostname}${request.originalUrl}`);
+  });
+}
+
 app.use(requestContext);
-app.use(securityHeaders);
+app.use(
+  morgan(env.isProduction ? "combined" : "dev", {
+    stream: { write: (message) => logger.info(message.trim()) },
+  }),
+);
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  }),
+);
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "12mb" }));
+app.use(mongoSanitize());
+app.use(xssSanitize);
 
 await connectDatabase();
 
@@ -69,47 +105,60 @@ const { router: bookingRoutes, getBookedSeats } = createBookingRoutes({ io, seat
 registerSeatSockets(io, { getBookedSeats, seatHolds });
 registerNotificationSockets(io);
 
-app.get("/api/health", (_request, response) => {
-  const emailStatus = getEmailProviderStatus();
-
-  response.json({
-    ok: true,
-    service: "movix API",
-    database: isMongoReady() ? "MongoDB connected" : "Local memory store",
-    socket: "enabled",
-    seats: "Booked and held-seat sync",
-    notifications: "Live notifications enabled",
-    email: emailStatus.label,
-    payment:
-      env.paymentProvider === "razorpay" && env.razorpayKeyId && env.razorpayKeySecret
-        ? "Razorpay connected"
-        : "Local test checkout",
-    uploads: env.cloudinaryUrl || env.cloudinaryCloudName ? "Cloudinary configured" : "Disabled",
-  });
+jobQueue.register("email:booking", async ({ booking }) => {
+  await sendBookingEmail(booking);
+});
+jobQueue.register("email:notification", async ({ email, subject, content }) => {
+  await sendNotificationEmail(email, subject, content);
+});
+jobQueue.register("email:otp", async ({ email, otp, options }) => {
+  await sendOtpEmail(email, otp, options);
 });
 
-app.use("/api", apiRateLimiter);
-app.use("/api/auth", authRateLimiter);
-app.use("/api/payments", paymentRateLimiter);
-app.use("/api/uploads", uploadRateLimiter);
+function mountApi(prefix) {
+  app.get(`${prefix}/health`, (_request, response) => {
+    const emailStatus = getEmailProviderStatus();
+    response.json({
+      ok: true,
+      service: "movix API",
+      version: "v1",
+      database: isMongoReady() ? "MongoDB connected" : "Local memory store",
+      socket: "enabled",
+      seats: "Booked and held-seat sync",
+      notifications: "Live notifications enabled",
+      email: emailStatus.label,
+      payment: "Demo payment",
+      uploads: env.cloudinaryUrl || env.cloudinaryCloudName ? "Cloudinary configured" : "Disabled",
+    });
+  });
 
-app.use("/api/auth", authRoutes);
-app.use("/api/movies", movieRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/owner", ownerRoutes);
-app.use("/api/theaters", theaterRoutes);
-app.use("/api/shows", showRoutes);
-app.use("/api/payments", paymentRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/uploads", uploadRoutes);
-app.use("/api", bookingRoutes);
+  app.use(prefix, apiRateLimiter);
+  app.use(`${prefix}/auth`, authRateLimiter);
+  app.use(`${prefix}/payments`, paymentRateLimiter);
+  app.use(`${prefix}/uploads`, uploadRateLimiter);
 
-app.use("/api", (request, response) => {
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/auth`, googleAuthRoutes);
+  app.use(`${prefix}/movies`, movieRoutes);
+  app.use(`${prefix}/notifications`, notificationRoutes);
+  app.use(`${prefix}/owner`, ownerRoutes);
+  app.use(`${prefix}/theaters`, theaterRoutes);
+  app.use(`${prefix}/shows`, showRoutes);
+  app.use(`${prefix}/payments`, paymentRoutes);
+  app.use(`${prefix}/admin`, adminRoutes);
+  app.use(`${prefix}/uploads`, uploadRoutes);
+  app.use(prefix, bookingRoutes);
+}
+
+mountApi("/api");
+mountApi("/api/v1");
+
+app.use(["/api", "/api/v1"], (request, response) => {
   response.status(404).json({ error: "API route not found.", requestId: request.id });
 });
 
 app.use((error, request, response, _next) => {
-  console.error(error);
+  logger.error(error.message || "Unhandled error", { stack: error.stack, requestId: request.id });
 
   const status = Number(error.status ?? error.statusCode ?? 500);
   const safeStatus = status >= 400 && status < 600 ? status : 500;
@@ -123,11 +172,11 @@ app.use((error, request, response, _next) => {
 });
 
 httpServer.listen(env.apiPort, () => {
-  console.log(`movix API + Socket.IO running on http://localhost:${env.apiPort}`);
+  logger.info(`movix API + Socket.IO running on http://localhost:${env.apiPort}`);
 });
 
 function shutdown(signal) {
-  console.log(`${signal} received. Closing movix API server.`);
+  logger.warn(`${signal} received. Closing movix API server.`);
   httpServer.close(() => {
     process.exit(0);
   });
