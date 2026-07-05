@@ -1,4 +1,4 @@
-import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
+import { baseRequest, HAS_CONFIGURED_API_URL } from "@/features/api/baseApi";
 import { createOwnerApplication } from "@/shared/services/ownerApplications";
 
 const LOCAL_USERS_KEY = "movix-local-auth-users";
@@ -15,9 +15,9 @@ const STATIC_ADMIN = {
 
 function register(input) {
   if (shouldUseRemoteAuth()) {
-    return requestJson("/api/auth/register", {
+    return baseRequest("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify(input),
+      body: input,
     });
   }
 
@@ -26,9 +26,9 @@ function register(input) {
 
 function login(input) {
   if (shouldUseRemoteAuth()) {
-    return requestJson("/api/auth/login", {
+    return baseRequest("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify(input),
+      body: input,
     });
   }
 
@@ -37,9 +37,9 @@ function login(input) {
 
 function forgotPassword(email) {
   if (shouldUseRemoteAuth()) {
-    return requestJson("/api/auth/forgot-password", {
+    return baseRequest("/api/auth/forgot-password", {
       method: "POST",
-      body: JSON.stringify({ email }),
+      body: { email },
     });
   }
 
@@ -52,9 +52,9 @@ function forgotPassword(email) {
 
 function verifyOtp(input) {
   if (shouldUseRemoteAuth()) {
-    return requestJson("/api/auth/verify-otp", {
+    return baseRequest("/api/auth/verify-otp", {
       method: "POST",
-      body: JSON.stringify(input),
+      body: input,
     });
   }
 
@@ -63,9 +63,9 @@ function verifyOtp(input) {
 
 function resetPassword(input) {
   if (shouldUseRemoteAuth()) {
-    return requestJson("/api/auth/reset-password", {
+    return baseRequest("/api/auth/reset-password", {
       method: "POST",
-      body: JSON.stringify(input),
+      body: input,
     });
   }
 
