@@ -349,6 +349,172 @@
   }
 }
 
+@keyframes offer-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes offer-pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 8px color-mix(in oklch, var(--primary) 25%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 24px color-mix(in oklch, var(--primary) 50%, transparent);
+  }
+}
+
+@keyframes offer-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes offer-badge-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes offer-blob {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(8px, -10px) scale(1.05);
+  }
+  50% {
+    transform: translate(-4px, 6px) scale(0.95);
+  }
+  75% {
+    transform: translate(6px, -4px) scale(1.02);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes stat-count {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stat-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 30%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 12px color-mix(in oklch, var(--primary) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 0%, transparent);
+  }
+}
+
+.stat-pulse {
+  animation: stat-pulse-ring 2.2s ease-out infinite;
+}
+
+.stat-stagger > * {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: stat-count 480ms cubic-bezier(0.2, 0.85, 0.2, 1) forwards;
+}
+.stat-stagger > *:nth-child(1) {
+  animation-delay: 80ms;
+}
+.stat-stagger > *:nth-child(2) {
+  animation-delay: 160ms;
+}
+.stat-stagger > *:nth-child(3) {
+  animation-delay: 240ms;
+}
+.stat-stagger > *:nth-child(4) {
+  animation-delay: 320ms;
+}
+.stat-stagger > *:nth-child(5) {
+  animation-delay: 400ms;
+}
+.stat-stagger > *:nth-child(6) {
+  animation-delay: 480ms;
+}
+
+.offer-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--primary) 20%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: offer-shimmer 3s ease-in-out infinite;
+}
+
+.offer-glow {
+  animation: offer-pulse-glow 2.8s ease-in-out infinite;
+}
+
+.offer-float {
+  animation: offer-float 4s ease-in-out infinite;
+}
+
+.offer-blob {
+  animation: offer-blob 8s ease-in-out infinite;
+}
+
+.offer-stagger > * {
+  opacity: 0;
+  transform: translateY(20px) scale(0.96);
+  animation: surface-rise 540ms cubic-bezier(0.2, 0.85, 0.2, 1) forwards;
+}
+
+.offer-stagger > *:nth-child(1) {
+  animation-delay: 60ms;
+}
+.offer-stagger > *:nth-child(2) {
+  animation-delay: 120ms;
+}
+.offer-stagger > *:nth-child(3) {
+  animation-delay: 180ms;
+}
+.offer-stagger > *:nth-child(4) {
+  animation-delay: 240ms;
+}
+.offer-stagger > *:nth-child(5) {
+  animation-delay: 300ms;
+}
+.offer-stagger > *:nth-child(6) {
+  animation-delay: 360ms;
+}
+.offer-stagger > *:nth-child(7) {
+  animation-delay: 420ms;
+}
+.offer-stagger > *:nth-child(8) {
+  animation-delay: 480ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
