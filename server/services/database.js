@@ -3,6 +3,7 @@ import dns from "node:dns";
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { env } from "../config/env.js";
+import { logger } from "../services/logger.js";
 import { Booking } from "../models/Booking.js";
 import { Movie } from "../models/Movie.js";
 import { Review } from "../models/Review.js";
@@ -53,7 +54,7 @@ function cleanDocument(document) {
 
 async function seedMovies() {
   if (!catalogMovies.length) {
-    console.log("MongoDB released movie catalog is empty; owner/admin live movies stay untouched.");
+    logger.info("MongoDB released movie catalog is empty; owner/admin live movies stay untouched.");
     return;
   }
 
@@ -71,7 +72,7 @@ async function seedMovies() {
     }),
   );
   const removed = await Movie.deleteMany({ id: { $nin: catalogMovieIds } });
-  console.log(
+  logger.info(
     `MongoDB movie catalog synced with ${catalogMovies.length} movies${
       removed.deletedCount ? `; removed ${removed.deletedCount} non-catalog movies` : ""
     }.`,
@@ -91,19 +92,19 @@ async function seedTheaters() {
       };
     }),
   );
-  console.log(`MongoDB theater catalog ready with ${catalogTheaters.length} theaters.`);
+  logger.info(`MongoDB theater catalog ready with ${catalogTheaters.length} theaters.`);
 }
 
 async function seedShows({ force = false } = {}) {
   if (!catalogMovies.length) {
-    console.log("MongoDB released show seed is empty; owner live shows stay untouched.");
+    logger.info("MongoDB released show seed is empty; owner live shows stay untouched.");
     return;
   }
 
   const seedMetadata = mongoose.connection.db.collection("app_metadata");
   const existingSeed = await seedMetadata.findOne({ _id: "show-catalog-seed" });
   if (!force && existingSeed?.version === showSeedVersion) {
-    console.log(`MongoDB show catalog already synced with ${existingSeed.count} shows.`);
+    logger.info(`MongoDB show catalog already synced with ${existingSeed.count} shows.`);
     return;
   }
 
@@ -134,7 +135,7 @@ async function seedShows({ force = false } = {}) {
     },
     { upsert: true },
   );
-  console.log(
+  logger.info(
     `MongoDB show catalog synced with ${operations.length} shows${
       removedCount ? `; removed ${removedCount} stale/non-catalog shows` : ""
     }.`,
@@ -147,7 +148,7 @@ async function seedBookings() {
 
 async function seedReviews({ force = false } = {}) {
   if (!catalogMovies.length) {
-    console.log("MongoDB released review seed is empty; existing reviews stay untouched.");
+    logger.info("MongoDB released review seed is empty; existing reviews stay untouched.");
     return;
   }
 
@@ -163,7 +164,7 @@ async function seedReviews({ force = false } = {}) {
       },
     })),
   );
-  console.log(
+  logger.info(
     `MongoDB review catalog synced with ${reviews.length} reviews${
       removed.deletedCount ? `; removed ${removed.deletedCount} non-catalog reviews` : ""
     }.`,
@@ -183,10 +184,10 @@ async function seedCatalog(options = {}) {
 }
 
 function runDeferredShowSeed(options = {}) {
-  console.log("MongoDB show catalog sync started in background.");
+  logger.info("MongoDB show catalog sync started in background.");
   void seedShows(options).catch((error) => {
-    console.error("MongoDB show catalog background sync failed.");
-    console.error(error);
+    logger.error("MongoDB show catalog background sync failed.");
+    logger.error(error);
   });
 }
 
@@ -198,7 +199,7 @@ async function ensureDefaultAdminUser() {
     { email: env.adminEmail },
     {
       $set: {
-        name: "Mahendra Admin",
+        name: env.adminName,
         email: env.adminEmail,
         passwordHash,
         role: "admin",
@@ -228,7 +229,7 @@ async function ensureCollections() {
     if (model !== Show) await model.createIndexes();
   }
 
-  console.log(
+  logger.info(
     `MongoDB database "${mongoose.connection.name}" collections ready: ${collectionModels
       .map((model) => model.collection.name)
       .join(", ")}.`,
@@ -240,7 +241,7 @@ async function connectDatabase() {
     if (env.isProduction && !env.allowMemoryStore) {
       throw new Error("MONGODB_URI is required in production unless ALLOW_MEMORY_STORE=true.");
     }
-    console.log("MONGODB_URI not set. API is running with local in-memory data.");
+    logger.info("MONGODB_URI not set. API is running with local in-memory data.");
     return false;
   }
 
@@ -253,15 +254,15 @@ async function connectDatabase() {
     await ensureCollections();
     await ensureDefaultAdminUser();
     await seedCatalog({ deferShows: true });
-    console.log(`MongoDB connected to database "${mongoose.connection.name}".`);
+    logger.info(`MongoDB connected to database "${mongoose.connection.name}".`);
     return true;
   } catch (error) {
     mongoReady = false;
     if (env.isProduction && !env.allowMemoryStore) {
       throw error;
     }
-    console.warn("MongoDB connection failed. Falling back to local in-memory data.");
-    console.warn(error);
+    logger.warn("MongoDB connection failed. Falling back to local in-memory data.");
+    logger.warn(error);
     return false;
   }
 }
