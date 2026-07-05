@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, useLoaderData, useSearchParams } from "react-router-dom";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { usePageMeta } from "@/shared/hooks/usePageMeta";
 import {
   ArrowLeft,
   Bell,
@@ -26,7 +27,7 @@ import {
 } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { requestJson } from "@/shared/services/httpClient";
+import { baseRequest } from "@/features/api/baseApi";
 import { readPreferredCity, subscribePreferredCity } from "@/shared/services/cityPreference";
 import { createSearchIndex, joinSearchFields, searchEntries } from "@/shared/services/flexSearch";
 
@@ -44,22 +45,19 @@ const bundledComingSoonById = new Map(
     ),
 );
 
-const Route = createFileRoute("/coming-soon")({
-  loader: () => fetchComingSoonMovies(readPreferredCity()),
-  validateSearch: (search) => ({
-    q: typeof search.q === "string" ? search.q : "",
-    genre: typeof search.genre === "string" ? search.genre : allFilterValue,
-    language: typeof search.language === "string" ? search.language : allFilterValue,
-    format: typeof search.format === "string" ? search.format : allFilterValue,
-    month: typeof search.month === "string" ? search.month : allFilterValue,
-    sort: typeof search.sort === "string" ? search.sort : "Release date",
-  }),
-  component: ComingSoonPage,
-});
-
 function ComingSoonPage() {
-  const loadedMovies = Route.useLoaderData();
-  const initialSearch = Route.useSearch();
+  usePageMeta({ title: "Coming Soon" });
+  const loadedMovies = useLoaderData();
+  const [searchParams] = useSearchParams();
+  const rawSearch = Object.fromEntries(searchParams);
+  const initialSearch = {
+    q: rawSearch.q || "",
+    genre: rawSearch.genre || allFilterValue,
+    language: rawSearch.language || allFilterValue,
+    format: rawSearch.format || allFilterValue,
+    month: rawSearch.month || allFilterValue,
+    sort: rawSearch.sort || "Release date",
+  };
   const [selectedCity, setSelectedCity] = useState(readPreferredCity);
   const [comingSoonMovies, setComingSoonMovies] = useState(loadedMovies);
   const [loadedCity, setLoadedCity] = useState(readPreferredCity);
@@ -567,7 +565,7 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
 
   return (
     <article className="group overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl">
-      <Link to="/coming-soon/$id" params={{ id: detailId }} preload="intent" className="block">
+      <Link to={"/coming-soon/" + detailId} className="block">
         <div className="relative aspect-[2/3] overflow-hidden bg-muted">
           <img
             src={normalizeMovieImageUrl(movie.poster, movie.title, "poster")}
@@ -597,12 +595,7 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
       </Link>
 
       <div className="p-3.5">
-        <Link
-          to="/coming-soon/$id"
-          params={{ id: detailId }}
-          preload="intent"
-          className="block hover:text-primary"
-        >
+        <Link to={"/coming-soon/" + detailId} className="block hover:text-primary">
           <h3 className="line-clamp-2 min-h-11 text-[15px] font-extrabold leading-[22px]">
             {movie.title}
           </h3>
@@ -639,9 +632,7 @@ function ComingSoonMovieCard({ movie, notified, onToggleNotify }) {
           variant="ghost"
           className="mt-2 h-9 w-full rounded-full text-xs"
         >
-          <Link to="/coming-soon/$id" params={{ id: detailId }} preload="intent">
-            View details
-          </Link>
+          <Link to={"/coming-soon/" + detailId}>View details</Link>
         </Button>
       </div>
     </article>
@@ -680,7 +671,7 @@ function getMovieCastSearchFields(movie) {
 async function fetchComingSoonMovies(city = "") {
   const query = city ? `?city=${encodeURIComponent(city)}` : "";
   try {
-    const data = await requestJson(`/api/shows/coming-soon${query}`, { timeoutMs: 8000 });
+    const data = await baseRequest(`/api/shows/coming-soon${query}`, { timeoutMs: 8000 });
     if (data.movies?.length) return data.movies.map(normalizeComingSoonMovie);
   } catch {
     // Local static builds fall back to the bundled movie catalog.
@@ -871,4 +862,8 @@ function getReleaseTime(movie) {
   return new Date(`${normalizeDateInput(movie.releaseAt)}T00:00:00`).getTime();
 }
 
-export { Route };
+async function comingSoonLoader() {
+  return fetchComingSoonMovies(readPreferredCity());
+}
+
+export { ComingSoonPage, comingSoonLoader };
