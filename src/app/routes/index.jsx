@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, useLoaderData } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePageMeta } from "@/shared/hooks/usePageMeta";
 import {
   ArrowRight,
   BadgePercent,
@@ -41,19 +42,14 @@ import {
 } from "@/features/movies/services/movieMedia";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { HAS_CONFIGURED_API_URL, requestJson } from "@/shared/services/httpClient";
+import { baseRequest, HAS_CONFIGURED_API_URL } from "@/features/api/baseApi";
 import {
   readHomeSearchQuery,
   subscribeHomeSearchQuery,
   writeHomeSearchQuery,
 } from "@/shared/services/homeSearch";
-import { readPreferredCity, subscribePreferredCity } from "@/shared/services/cityPreference";
+import { useSelector } from "react-redux";
 import { createSearchIndex, joinSearchFields, searchEntries } from "@/shared/services/flexSearch";
-
-const Route = createFileRoute("/")({
-  loader: () => fetchMovies(),
-  component: Home,
-});
 
 const featureCards = [
   {
@@ -127,10 +123,11 @@ const bundledComingSoonById = new Map(
 );
 
 function Home() {
-  const loadedMovies = Route.useLoaderData();
+  usePageMeta({ title: "Now Showing", description: "Browse movies now playing in your city." });
+  const loadedMovies = useLoaderData() ?? [];
   const catalog = loadedMovies.length > 0 ? loadedMovies : fallbackMovies;
   const [query, setQuery] = useState(readHomeSearchQuery);
-  const [selectedCity, setSelectedCity] = useState(readPreferredCity);
+  const selectedCity = useSelector((state) => state.city.selectedCity);
   const [cinemaCatalog, setCinemaCatalog] = useState(theaters);
   const [activeGenre, setActiveGenre] = useState(allFilterValue);
   const [activeLanguage, setActiveLanguage] = useState(allFilterValue);
@@ -154,12 +151,11 @@ function Home() {
   );
 
   useEffect(() => subscribeHomeSearchQuery(setQuery), []);
-  useEffect(() => subscribePreferredCity(setSelectedCity), []);
 
   useEffect(() => {
     let active = true;
 
-    requestJson("/api/theaters", { timeoutMs: 8000 })
+    baseRequest("/api/theaters", { timeoutMs: 8000 })
       .then((data) => {
         if (active && data.theaters?.length) setCinemaCatalog(data.theaters);
       })
@@ -175,7 +171,7 @@ function Home() {
   useEffect(() => {
     let active = true;
 
-    requestJson("/api/shows/coming-soon", { timeoutMs: 8000 })
+    baseRequest("/api/shows/coming-soon", { timeoutMs: 8000 })
       .then((data) => {
         if (active && data.movies?.length) {
           setGlobalComingSoonMovies(data.movies.map(normalizeHomeComingSoonMovie));
@@ -194,7 +190,7 @@ function Home() {
     let active = true;
     const query = selectedCity ? `?city=${encodeURIComponent(selectedCity)}` : "";
 
-    requestJson(`/api/shows/coming-soon${query}`, { timeoutMs: 8000 })
+    baseRequest(`/api/shows/coming-soon${query}`, { timeoutMs: 8000 })
       .then((data) => {
         if (active && data.movies?.length) {
           setHomeComingSoonMovies(data.movies.map(normalizeHomeComingSoonMovie));
@@ -585,9 +581,9 @@ function Home() {
     }
 
     try {
-      const result = await requestJson("/api/notifications/subscribe", {
+      const result = await baseRequest("/api/notifications/subscribe", {
         method: "POST",
-        body: JSON.stringify({ email: newsletterEmail, source: "homepage" }),
+        body: { email: newsletterEmail, source: "homepage" },
       });
       setNewsletterMessage(result.message ?? "You are subscribed.");
       setNewsletterEmail("");
@@ -692,16 +688,17 @@ function Home() {
         <img
           src={heroBackdrop}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-55 dark:opacity-28"
+          className="absolute inset-0 h-full w-full object-cover opacity-55 dark:opacity-28 hero-kenburns"
           onError={(event) => {
             event.currentTarget.src = movieImageFallback(heroTitle, "backdrop");
           }}
         />
+        <div className="hero-sweep absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/65 to-background/10 dark:via-background/82 dark:to-background/35" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
         <div className="relative mx-auto grid min-h-[390px] max-w-[1560px] items-center gap-8 px-4 py-8 sm:px-5 md:min-h-[398px] md:grid-cols-[minmax(0,1fr)_330px] lg:px-6 xl:grid-cols-[minmax(0,1fr)_370px]">
-          <div className="max-w-2xl">
+          <div className="max-w-2xl hero-content-enter">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" />
               {heroUsesComingSoon
@@ -755,12 +752,12 @@ function Home() {
                     View Coming Soon
                   </Link>
                 ) : featured ? (
-                  <Link to="/movies/$id" params={{ id: featured.id }}>
+                  <Link to={"/movies/" + featured.id}>
                     <Ticket className="h-4 w-4" />
                     Book Tickets
                   </Link>
                 ) : (
-                  <Link to="/movies/" search={moviesPageSearch}>
+                  <Link to={"/movies?" + new URLSearchParams(moviesPageSearch || {}).toString()}>
                     <Ticket className="h-4 w-4" />
                     View Released Movies
                   </Link>
@@ -785,7 +782,7 @@ function Home() {
           </div>
 
           <div className="hidden justify-start md:flex">
-            <div className="relative w-56 rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8 xl:w-64">
+            <div className="relative w-56 rounded-lg border border-white/60 bg-white/25 p-2 shadow-2xl shadow-primary/10 backdrop-blur dark:border-white/15 dark:bg-white/8 xl:w-64 hero-poster-float">
               {featured ? (
                 <>
                   <img
@@ -828,7 +825,7 @@ function Home() {
         id="movie-filters"
         className="scroll-mt-28 mx-auto -mt-5 max-w-[1560px] px-4 sm:px-5 lg:px-6"
       >
-        <div className="grid gap-2 rounded-xl border border-primary/15 bg-gradient-to-r from-card/95 via-background/95 to-primary/8 p-2 shadow-2xl shadow-black/8 backdrop-blur dark:from-card/92 dark:via-background/90 dark:to-primary/10 md:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,0.72fr))_minmax(0,3.1fr)]">
+        <div className="grid gap-2 rounded-xl border border-primary/15 bg-gradient-to-r from-card/95 via-background/95 to-primary/8 p-2 shadow-2xl shadow-black/8 backdrop-blur dark:from-card/92 dark:via-background/90 dark:to-primary/10 md:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,0.72fr))_minmax(0,3.1fr)] surface-rise">
           <FilterMetric
             icon={Film}
             title="Genres"
@@ -944,8 +941,7 @@ function Home() {
               </Link>
             ) : (
               <Link
-                to="/movies/"
-                search={moviesPageSearch}
+                to={"/movies?" + new URLSearchParams(moviesPageSearch || {}).toString()}
                 className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
               >
                 See all <ArrowRight className="h-4 w-4" />
@@ -1051,7 +1047,7 @@ function Home() {
       </HomeSection>
 
       <section className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div className="grid gap-5 lg:grid-cols-3 stagger-row">
           {featureCards.map((card) => (
             <FeatureBanner key={card.title} card={card} />
           ))}
@@ -1066,7 +1062,7 @@ function Home() {
           subtitle="Highest rated films this week"
           actionLabel="See all"
         >
-          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4 stagger-grid">
             {topMovies.length ? (
               topMovies.map((movie) => <MiniMovieTile key={movie.id} movie={movie} badge="TOP" />)
             ) : (
@@ -1136,7 +1132,7 @@ function Home() {
           title="Loved by movie lovers"
           subtitle="Real reviews from real users"
         >
-          <div className="mt-4 grid items-stretch gap-3 md:grid-cols-3">
+          <div className="mt-4 grid items-stretch gap-3 md:grid-cols-3 stagger-grid">
             {testimonials.map((item) => (
               <article
                 key={item.name}
@@ -1178,7 +1174,7 @@ function Home() {
           title={`Top cinemas in ${selectedCity}`}
           subtitle="Premium local screens"
         >
-          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4 stagger-grid">
             {topCinemas.map((cinema, index) => (
               <CinemaCard
                 key={cinema.name}
@@ -1191,7 +1187,7 @@ function Home() {
       </section>
 
       <section className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
-        <div className="relative grid items-center gap-5 overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/18 via-card to-amber-200/30 p-6 shadow-sm dark:from-primary/12 dark:via-card dark:to-amber-500/10 md:grid-cols-[auto_1fr_auto]">
+        <div className="relative grid items-center gap-5 overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-r from-primary/18 via-card to-amber-200/30 p-6 shadow-sm dark:from-primary/12 dark:via-card dark:to-amber-500/10 md:grid-cols-[auto_1fr_auto] surface-rise">
           <div className="grid h-20 w-20 place-items-center rounded-full bg-primary/15 text-primary">
             <BellRing className="h-10 w-10" />
           </div>
@@ -1312,7 +1308,7 @@ function HomeSection({
   children,
 }) {
   return (
-    <section id={id} className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
+    <section id={id} className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6 surface-rise">
       <div className="mb-4 flex items-end justify-between gap-3">
         <div className="flex items-start gap-2">
           <Icon className="mt-1 h-5 w-5 text-primary" />
@@ -1332,8 +1328,10 @@ function HomeSection({
             </button>
           ) : actionTo ? (
             <Link
-              to={actionTo}
-              search={actionSearch}
+              to={
+                actionTo +
+                (actionSearch ? "?" + new URLSearchParams(actionSearch || {}).toString() : "")
+              }
               className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
             >
               {actionLabel} <ArrowRight className="h-4 w-4" />
@@ -1356,14 +1354,14 @@ function MovieCardLink({ movie, className, children }) {
   if (isComingSoonMovie(movie)) {
     const detailId = movie.movieId || movie.id;
     return (
-      <Link to="/coming-soon/$id" params={{ id: detailId }} preload="intent" className={className}>
+      <Link to={"/coming-soon/" + detailId} className={className}>
         {children}
       </Link>
     );
   }
 
   return (
-    <Link to="/movies/$id" params={{ id: movie.id }} className={className}>
+    <Link to={"/movies/" + movie.id} className={className}>
       {children}
     </Link>
   );
@@ -1371,7 +1369,7 @@ function MovieCardLink({ movie, className, children }) {
 
 function RecommendedMovieGrid({ movies }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 movie-grid-animate">
       {movies.map((movie) => (
         <CompactMovieCard key={movie.id} movie={movie} prominent />
       ))}
@@ -1538,7 +1536,7 @@ function PanelCard({
   return (
     <section
       id={id}
-      className="rounded-lg border border-border/60 bg-card/88 p-4 shadow-sm backdrop-blur"
+      className="rounded-lg border border-border/60 bg-card/88 p-4 shadow-sm backdrop-blur surface-rise"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2">
@@ -1579,7 +1577,7 @@ function PanelEmptyState({ message }) {
 function PremiereSpotlightSection({ movies }) {
   return (
     <section id="events" className="mx-auto mt-7 max-w-[1560px] px-4 sm:px-5 lg:px-6">
-      <div className="mb-5 flex items-end justify-between gap-3">
+      <div className="mb-5 flex items-end justify-between gap-3 surface-rise">
         <div className="flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-lg bg-primary/14 text-primary">
             <Flame className="h-6 w-6" />
@@ -1920,8 +1918,7 @@ function CinemaCard({ cinema, image }) {
   const featureBadges = splitList(cinema.features).slice(0, 2);
   return (
     <Link
-      to="/cinemas/$id"
-      params={{ id: cinema.id }}
+      to={"/cinemas/" + cinema.id}
       className="group block overflow-hidden rounded-lg border border-border/60 bg-background/55 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-muted">
@@ -1982,8 +1979,7 @@ function CinemaSearchResult({ cinema }) {
   const movieCount = splitList(cinema.movieIds).length || fallbackMovies.length;
   return (
     <Link
-      to="/cinemas/$id"
-      params={{ id: cinema.id }}
+      to={"/cinemas/" + cinema.id}
       className="group grid gap-3 rounded-lg border border-border/60 bg-background/65 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg sm:grid-cols-[56px_1fr_auto]"
     >
       {cinema.coverImage ? (
@@ -2077,4 +2073,4 @@ function trailerSearchUrl(title) {
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} official trailer`)}`;
 }
 
-export { Route };
+export { Home };
