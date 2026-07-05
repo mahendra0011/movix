@@ -3,6 +3,14 @@ import bcrypt from "bcryptjs";
 import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { loadOptionalAuth, requireAuth, requireRole } from "../middleware/auth.js";
+import { jobQueue } from "../services/jobQueue.js";
+import { logAudit } from "../services/auditService.js";
+import {
+  createValidator,
+  bookingSchema,
+  ticketOtpSchema,
+  verifyTicketOtpSchema,
+} from "../middleware/validate.js";
 import { Booking } from "../models/Booking.js";
 import {
   addMemoryBooking,
@@ -10,8 +18,8 @@ import {
   getMemoryBookingByRef,
   getMemoryBookings,
 } from "../services/bookingStore.js";
+import { logger } from "../services/logger.js";
 import { cleanDocument, isMongoReady } from "../services/database.js";
-import { sendBookingEmail, sendOtpEmail } from "../services/emailService.js";
 import { generateQrDataUrl, generateQrPng, generateTicketPdf } from "../services/ticketService.js";
 import { getSeatState, roomName } from "../services/seatService.js";
 import { notifyBookingCreated, notifyBookingStatusChange } from "../services/notificationEvents.js";
@@ -134,25 +142,23 @@ function createBookingRoutes({ io, seatHolds }) {
 
   router.post(
     "/ticket-otp",
+    createValidator(ticketOtpSchema),
     asyncHandler(async (request, response) => {
       const email = normalizeEmail(request.body.email);
-      if (!isValidEmail(email)) {
-        response.status(400).json({ error: "Enter a valid email to receive the ticket OTP." });
-        return;
-      }
 
       const otp = createOtp();
       bookingOtps.set(email, {
         otpHash: await bcrypt.hash(otp, 10),
         expiresAt: Date.now() + BOOKING_OTP_TTL_MS,
       });
-      await sendOtpEmail(email, otp, { purpose: "ticket" });
+      jobQueue.add("email:otp", { email, otp, options: { purpose: "ticket" } });
       response.status(201).json({ ok: true, message: "Ticket OTP sent to your email." });
     }),
   );
 
   router.post(
     "/ticket-otp/verify",
+    createValidator(verifyTicketOtpSchema),
     asyncHandler(async (request, response) => {
       cleanExpiredBookingTokens();
       const email = normalizeEmail(request.body.email);
@@ -258,8 +264,16 @@ function createBookingRoutes({ io, seatHolds }) {
     const state = await emitSeatState(showId);
     const qrDataUrl = await generateQrDataUrl(saved);
 
-    sendBookingEmail(saved).catch((error) => console.warn("Booking email failed:", error.message));
+    jobQueue.add("email:booking", { booking: saved });
     notifyBookingCreated(saved);
+    logAudit({
+      action: "booking.create",
+      resource: "booking",
+      resourceId: saved.ref,
+      userEmail: saved.email,
+      details: { movie: saved.movie, seats: saved.seats, total: saved.total, showId: saved.showId },
+      ip: request.ip || "",
+    });
 
     response.status(201).json({
       booking: saved,
@@ -270,8 +284,8 @@ function createBookingRoutes({ io, seatHolds }) {
     });
   });
 
-  router.post("/book", loadOptionalAuth, createBookingHandler);
-  router.post("/bookings", loadOptionalAuth, createBookingHandler);
+  router.post("/book", loadOptionalAuth, createValidator(bookingSchema), createBookingHandler);
+  router.post("/bookings", loadOptionalAuth, createValidator(bookingSchema), createBookingHandler);
 
   router.get(
     "/me/bookings",
@@ -338,6 +352,28 @@ function createBookingRoutes({ io, seatHolds }) {
 
       const event = buildBookingStatusEvent(previousBooking, saved, reason);
       notifyBookingStatusChange(saved, event);
+
+      if (nextStatus === "cancelled") {
+        logAudit({
+          action: "booking.cancel",
+          resource: "booking",
+          resourceId: saved.ref,
+          userId: request.user?._id || null,
+          userEmail: request.user?.email || saved.email,
+          details: { movie: saved.movie, reason },
+          ip: request.ip || "",
+        });
+      } else if (nextPaymentStatus === "refunded") {
+        logAudit({
+          action: "booking.refund",
+          resource: "booking",
+          resourceId: saved.ref,
+          userId: request.user?._id || null,
+          userEmail: request.user?.email || saved.email,
+          details: { movie: saved.movie, reason },
+          ip: request.ip || "",
+        });
+      }
 
       response.json({ booking: serializeBooking(saved), event });
     }),
