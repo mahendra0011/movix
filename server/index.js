@@ -25,6 +25,7 @@ import { ownerRoutes } from "./routes/ownerRoutes.js";
 import { paymentRoutes } from "./routes/paymentRoutes.js";
 import { showRoutes } from "./routes/showRoutes.js";
 import { theaterRoutes } from "./routes/theaterRoutes.js";
+import { tmdbRoutes } from "./routes/tmdbRoutes.js";
 import { uploadRoutes } from "./routes/uploadRoutes.js";
 import { connectDatabase, isMongoReady } from "./services/database.js";
 import { createSeatHoldStore } from "./services/seatHoldService.js";
@@ -147,6 +148,7 @@ function mountApi(prefix) {
   app.use(`${prefix}/payments`, paymentRoutes);
   app.use(`${prefix}/admin`, adminRoutes);
   app.use(`${prefix}/uploads`, uploadRoutes);
+  app.use(`${prefix}/tmdb`, tmdbRoutes);
   app.use(prefix, bookingRoutes);
 }
 

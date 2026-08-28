@@ -43,6 +43,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { TrendAreaChart, VerticalBars } from "@/shared/components/ui/lightweight-chart";
 import { baseRequest } from "@/features/api/baseApi";
+import { uploadFile } from "@/shared/services/httpClient";
 
 const screenSeeds = [
   {
@@ -955,23 +956,28 @@ function OwnerMoviesTab({
   const update = (field) => (event) =>
     onFormChange((current) => ({ ...current, [field]: event.target.value }));
   const moviePreview = buildMovieMasterPreview(showForm);
-  const [uploadNotice, setUploadNotice] = useState("");
+  const [uploadProgress, setUploadProgress] = useState({});
   const castRows = normalizeCastRows(showForm.cast);
+
+  const setFieldProgress = (field, value) =>
+    setUploadProgress((prev) => ({ ...prev, [field]: value }));
 
   const uploadImage = (field) => async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     try {
-      setUploadNotice(`${file.name} Cloudinary par upload ho raha hai...`);
+      setFieldProgress(field, 0);
       const imageUrl = await uploadImageFile(file, {
         folder: `movix/owner/movies/${field}`,
+        onProgress: ({ loaded, total }) =>
+          setFieldProgress(field, Math.round((loaded / total) * 100)),
       });
       onFormChange((current) => ({ ...current, [field]: imageUrl }));
-      setUploadNotice(`${file.name} Cloudinary par upload ho gaya.`);
     } catch (error) {
-      setUploadNotice(error.message || "Image upload failed.");
+      setUploadProgress((prev) => ({ ...prev, [field]: "error" }));
     } finally {
       event.target.value = "";
+      setTimeout(() => setFieldProgress(field, null), 2000);
     }
   };
 
@@ -988,10 +994,13 @@ function OwnerMoviesTab({
   const uploadCastPhoto = (index) => async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    const key = `cast-${index}`;
     try {
-      setUploadNotice(`${file.name} Cloudinary par upload ho raha hai...`);
+      setFieldProgress(key, 0);
       const imageUrl = await uploadImageFile(file, {
         folder: "movix/owner/cast",
+        onProgress: ({ loaded, total }) =>
+          setFieldProgress(key, Math.round((loaded / total) * 100)),
       });
       onFormChange((current) => ({
         ...current,
@@ -999,11 +1008,11 @@ function OwnerMoviesTab({
           memberIndex === index ? { ...member, avatar: imageUrl } : member,
         ),
       }));
-      setUploadNotice(`${file.name} Cloudinary par cast photo ke liye upload ho gaya.`);
     } catch (error) {
-      setUploadNotice(error.message || "Cast photo upload failed.");
+      setUploadProgress((prev) => ({ ...prev, [key]: "error" }));
     } finally {
       event.target.value = "";
+      setTimeout(() => setFieldProgress(key, null), 2000);
     }
   };
 
@@ -1118,6 +1127,7 @@ function OwnerMoviesTab({
               placeholder="Paste poster URL or upload image"
               onChange={update("poster")}
               onUpload={uploadImage("poster")}
+              progress={uploadProgress.poster}
             />
             <ImageUploadField
               label="Backdrop upload"
@@ -1125,6 +1135,7 @@ function OwnerMoviesTab({
               placeholder="Paste banner/backdrop URL or upload image"
               onChange={update("backdrop")}
               onUpload={uploadImage("backdrop")}
+              progress={uploadProgress.backdrop}
             />
           </FormSection>
 
@@ -1185,6 +1196,7 @@ function OwnerMoviesTab({
                     index={index}
                     onUpload={uploadCastPhoto(index)}
                     onAvatarChange={updateCast(index, "avatar")}
+                    uploadProgress={uploadProgress}
                   />
                   <FormField label="Name">
                     <Input
@@ -1216,9 +1228,9 @@ function OwnerMoviesTab({
             </div>
           </div>
 
-          {uploadNotice && (
-            <p className="rounded-md bg-primary/10 px-3 py-2 text-xs font-medium text-primary">
-              {uploadNotice}
+          {Object.values(uploadProgress).some((v) => v === "error") && (
+            <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+              Image upload failed.
             </p>
           )}
 
@@ -1380,20 +1392,22 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
     onProfileChange((current) => ({ ...current, [field]: event.target.value }));
   const amenities = splitAmenities(cinemaProfile.amenities);
   const previewImage = cinemaProfile.coverImage || "";
-  const [uploadNotice, setUploadNotice] = useState("");
+  const [cinemaUploadProgress, setCinemaUploadProgress] = useState(null);
 
   const uploadCinemaImage = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     try {
-      setUploadNotice(`${file.name} cinema image upload ho raha hai...`);
+      setCinemaUploadProgress(0);
       const imageUrl = await uploadImageFile(file, {
         folder: "movix/owner/cinemas",
+        onProgress: ({ loaded, total }) =>
+          setCinemaUploadProgress(Math.round((loaded / total) * 100)),
       });
       onProfileChange((current) => ({ ...current, coverImage: imageUrl }));
-      setUploadNotice(`${file.name} cinema image saved.`);
+      setTimeout(() => setCinemaUploadProgress(null), 2000);
     } catch (error) {
-      setUploadNotice(error.message || "Cinema image upload failed.");
+      setCinemaUploadProgress("error");
     } finally {
       event.target.value = "";
     }
@@ -1456,10 +1470,11 @@ function CinemaSetupTab({ cinemaProfile, onProfileChange, onSave }) {
               onChange={update("coverImage")}
               onUpload={uploadCinemaImage}
               previewClassName="aspect-video"
+              progress={cinemaUploadProgress}
             />
-            {uploadNotice && (
-              <p className="md:col-span-2 rounded-md border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-medium text-primary">
-                {uploadNotice}
+            {cinemaUploadProgress === "error" && (
+              <p className="md:col-span-2 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+                Cinema image upload failed.
               </p>
             )}
           </FormSection>
@@ -2105,6 +2120,18 @@ function FormField({ label, children }) {
   );
 }
 
+function UploadProgressBar({ progress }) {
+  if (progress === undefined || progress === null) return null;
+  return (
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-primary/10">
+      <div
+        className="h-full rounded-full bg-primary transition-all duration-300"
+        style={{ width: `${Math.min(progress, 100)}%` }}
+      />
+    </div>
+  );
+}
+
 function ImageUploadField({
   label,
   value,
@@ -2112,6 +2139,7 @@ function ImageUploadField({
   onChange,
   onUpload,
   previewClassName = "aspect-[2/3]",
+  progress,
 }) {
   return (
     <div>
@@ -2131,7 +2159,7 @@ function ImageUploadField({
             <Input value={value || ""} onChange={onChange} placeholder={placeholder} />
             <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent">
               <ImagePlus className="h-4 w-4" />
-              Upload image
+              {progress !== undefined && progress !== null ? `Uploading ${progress}%` : "Upload image"}
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
@@ -2139,6 +2167,7 @@ function ImageUploadField({
                 className="sr-only"
               />
             </label>
+            <UploadProgressBar progress={progress} />
             <p className="text-xs text-muted-foreground">PNG, JPG or WebP under 2.5 MB.</p>
           </div>
         </div>
@@ -2160,7 +2189,8 @@ function MoviePosterFrame({ src, title, className = "" }) {
   );
 }
 
-function CastPhotoControl({ member, index, onUpload, onAvatarChange }) {
+function CastPhotoControl({ member, index, onUpload, onAvatarChange, uploadProgress }) {
+  const progress = uploadProgress?.[`cast-${index}`];
   return (
     <div>
       <span className="text-xs font-medium uppercase text-muted-foreground">Photo</span>
@@ -2175,8 +2205,10 @@ function CastPhotoControl({ member, index, onUpload, onAvatarChange }) {
             }}
           />
         </div>
-        <label className="inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-2 text-xs font-medium shadow-sm hover:bg-accent">
-          Upload
+        <label className="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-input bg-background px-2 text-xs font-medium shadow-sm hover:bg-accent">
+          {progress !== undefined && progress !== null && progress !== "error"
+            ? `${progress}%`
+            : "Upload"}
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp"
@@ -2184,6 +2216,14 @@ function CastPhotoControl({ member, index, onUpload, onAvatarChange }) {
             className="sr-only"
           />
         </label>
+        {progress !== undefined && progress !== null && progress !== "error" && (
+          <div className="h-1 w-full overflow-hidden rounded-full bg-primary/10">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{ width: `${Math.min(progress, 100)}%` }}
+            />
+          </div>
+        )}
         <Input
           value={member.avatar || ""}
           onChange={onAvatarChange}
@@ -3116,35 +3156,20 @@ function normalizeCastRows(input = [], fallback = []) {
 }
 
 async function uploadImageFile(file, options = {}) {
-  const dataUrl = await readImageFile(file);
-  const result = await baseRequest("/api/uploads/image", {
-    method: "POST",
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Only image files are supported.");
+  }
+  if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+    throw new Error("Image size 2.5 MB se kam rakho.");
+  }
+
+  const result = await uploadFile("/api/uploads/image", file, {
+    fieldName: "file",
     timeoutMs: 30000,
-    body: {
-      file: dataUrl,
-      folder: options.folder,
-    },
+    onProgress: options.onProgress,
   });
 
   return result.image?.secureUrl || result.image?.url || "";
-}
-
-function readImageFile(file) {
-  return new Promise((resolve, reject) => {
-    if (!file.type.startsWith("image/")) {
-      reject(new Error("Only image files are supported."));
-      return;
-    }
-    if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
-      reject(new Error("Image size 2.5 MB se kam rakho."));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Image read nahi ho payi."));
-    reader.readAsDataURL(file);
-  });
 }
 
 function splitAmenities(value) {

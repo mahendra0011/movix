@@ -61,6 +61,7 @@ const raw = {
   RESEND_API_URL: readEnv("RESEND_API_URL") ?? "https://api.resend.com/emails",
   RESEND_FROM_EMAIL: readEnv("RESEND_FROM_EMAIL"),
   RESEND_FROM_NAME: readEnv("RESEND_FROM_NAME"),
+  TMDB_API_KEY: readEnv("TMDB_API_KEY"),
 };
 
 const isProduction = raw.NODE_ENV === "production";
@@ -96,6 +97,7 @@ try {
       resendFromEmail: z.string().optional(),
       resendFromName: z.string(),
       paymentProvider: z.literal("local"),
+      tmdbApiKey: z.string().optional(),
       googleClientId: z.string().optional(),
       googleClientSecret: z.string().optional(),
       googleCallbackUrl: z.string(),
@@ -151,6 +153,7 @@ try {
         (raw.EMAIL_PROVIDER === "resend" ? raw.EMAIL_FROM_EMAIL : undefined),
       resendFromName: raw.RESEND_FROM_NAME ?? raw.EMAIL_FROM_NAME ?? raw.BREVO_FROM_NAME ?? "movix",
       paymentProvider: "local",
+      tmdbApiKey: raw.TMDB_API_KEY || undefined,
       googleClientId: raw.GOOGLE_CLIENT_ID || undefined,
       googleClientSecret: raw.GOOGLE_CLIENT_SECRET || undefined,
       googleCallbackUrl: raw.GOOGLE_CALLBACK_URL,

@@ -6,6 +6,7 @@ const DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpe?g|webp);base64,/i;
 const HTTP_IMAGE_PATTERN = /^https?:\/\//i;
 const CLOUDINARY_HOST_PATTERN = /(^|\.)res\.cloudinary\.com$/i;
 const CLOUDINARY_UPLOAD_TIMEOUT_MS = 45000;
+const CLOUDINARY_MAX_RETRIES = 2;
 
 function isCloudinaryConfigured() {
   const config = getCloudinaryConfig();
@@ -65,21 +66,38 @@ async function uploadImageToCloudinary(file, options = {}) {
   body.append("signature", signCloudinaryParams(params, config.apiSecret));
 
   let response;
-  try {
-    response = await axios.post(
-      `https://api.cloudinary.com/v1_1/${config.cloudName}/image/upload`,
-      body,
-      { timeout: CLOUDINARY_UPLOAD_TIMEOUT_MS },
-    );
-  } catch (cause) {
-    if (cause.response) {
-      const payload = cause.response.data || {};
+  let lastError;
+
+  for (let attempt = 0; attempt <= CLOUDINARY_MAX_RETRIES; attempt++) {
+    try {
+      response = await axios.post(
+        `https://api.cloudinary.com/v1_1/${config.cloudName}/image/upload`,
+        body,
+        { timeout: CLOUDINARY_UPLOAD_TIMEOUT_MS },
+      );
+      break;
+    } catch (cause) {
+      lastError = cause;
+      if (cause.response && cause.response.status >= 400 && cause.response.status < 500) {
+        const payload = cause.response.data || {};
+        const error = new Error(payload.error?.message || "Cloudinary upload failed.");
+        error.status = cause.response.status;
+        throw error;
+      }
+      if (attempt >= CLOUDINARY_MAX_RETRIES) break;
+      await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+    }
+  }
+
+  if (!response) {
+    if (lastError.response) {
+      const payload = lastError.response.data || {};
       const error = new Error(payload.error?.message || "Cloudinary upload failed.");
-      error.status = cause.response.status >= 400 && cause.response.status < 500 ? 400 : 502;
+      error.status = lastError.response.status >= 400 && lastError.response.status < 500 ? 400 : 502;
       throw error;
     }
     const error = new Error(
-      cause.code === "ECONNABORTED"
+      lastError.code === "ECONNABORTED"
         ? "Cloudinary upload response timed out."
         : "Cloudinary upload failed.",
     );

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { env } from "../config/env.js";
 
+const EMAIL_MAX_RETRIES = 2;
 const brand = {
   name: getBrandName(),
   primary: "#e11d48",
@@ -180,72 +181,106 @@ function getEmailProviderStatus() {
 }
 
 async function sendBrevoEmail({ to, subject, html }) {
-  try {
-    const response = await axios.post(
-      env.brevoApiUrl,
-      {
-        sender: { email: env.brevoFromEmail, name: env.brevoFromName },
-        to: [{ email: to }],
-        subject,
-        htmlContent: html,
-      },
-      {
-        headers: {
-          "api-key": env.brevoApiKey,
-          accept: "application/json",
-        },
-      },
-    );
+  let lastError;
 
-    return { sent: true, provider: "brevo-api", response: response.data };
-  } catch (cause) {
-    if (cause.response) {
-      const error = new Error("Email service failed. Check Brevo API key and sender email.");
-      error.status = 502;
-      error.cause = new Error(
-        `Brevo API email failed: ${cause.response.status} ${JSON.stringify(cause.response.data)}`,
+  for (let attempt = 0; attempt <= EMAIL_MAX_RETRIES; attempt++) {
+    try {
+      const response = await axios.post(
+        env.brevoApiUrl,
+        {
+          sender: { email: env.brevoFromEmail, name: env.brevoFromName },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html,
+        },
+        {
+          headers: {
+            "api-key": env.brevoApiKey,
+            accept: "application/json",
+          },
+          timeout: 15000,
+        },
       );
-      throw error;
+
+      return { sent: true, provider: "brevo-api", response: response.data };
+    } catch (cause) {
+      lastError = cause;
+      if (cause.response && cause.response.status < 500) {
+        const error = new Error("Email service failed. Check Brevo API key and sender email.");
+        error.status = 502;
+        error.cause = new Error(
+          `Brevo API email failed: ${cause.response.status} ${JSON.stringify(cause.response.data)}`,
+        );
+        throw error;
+      }
+      if (attempt >= EMAIL_MAX_RETRIES) break;
+      await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 500));
     }
+  }
+
+  if (lastError.response) {
     const error = new Error("Email service failed. Check Brevo API key and sender email.");
     error.status = 502;
-    error.cause = cause;
+    error.cause = new Error(
+      `Brevo API email failed: ${lastError.response.status} ${JSON.stringify(lastError.response.data)}`,
+    );
     throw error;
   }
+  const error = new Error("Email service failed. Check Brevo API key and sender email.");
+  error.status = 502;
+  error.cause = lastError;
+  throw error;
 }
 
 async function sendResendEmail({ to, subject, html }) {
-  try {
-    const response = await axios.post(
-      env.resendApiUrl,
-      {
-        from: formatEmailAddress(env.resendFromEmail, env.resendFromName),
-        to: [to],
-        subject,
-        html,
-      },
-      {
-        headers: {
-          authorization: `Bearer ${env.resendApiKey}`,
-        },
-      },
-    );
+  let lastError;
 
-    return { sent: true, provider: "resend-api", response: response.data };
-  } catch (cause) {
-    if (cause.response) {
-      const error = new Error("Email service failed. Check Resend API key and sender email.");
-      error.status = 502;
-      error.cause = new Error(
-        `Resend API email failed: ${cause.response.status} ${JSON.stringify(cause.response.data)}`,
+  for (let attempt = 0; attempt <= EMAIL_MAX_RETRIES; attempt++) {
+    try {
+      const response = await axios.post(
+        env.resendApiUrl,
+        {
+          from: formatEmailAddress(env.resendFromEmail, env.resendFromName),
+          to: [to],
+          subject,
+          html,
+        },
+        {
+          headers: {
+            authorization: `Bearer ${env.resendApiKey}`,
+          },
+          timeout: 15000,
+        },
       );
-      throw error;
+
+      return { sent: true, provider: "resend-api", response: response.data };
+    } catch (cause) {
+      lastError = cause;
+      if (cause.response && cause.response.status < 500) {
+        const error = new Error("Email service failed. Check Resend API key and sender email.");
+        error.status = 502;
+        error.cause = new Error(
+          `Resend API email failed: ${cause.response.status} ${JSON.stringify(cause.response.data)}`,
+        );
+        throw error;
+      }
+      if (attempt >= EMAIL_MAX_RETRIES) break;
+      await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 500));
     }
+  }
+
+  if (lastError.response) {
     const error = new Error("Email service failed. Check Resend API key and sender email.");
     error.status = 502;
-    error.cause = cause;
+    error.cause = new Error(
+      `Resend API email failed: ${lastError.response.status} ${JSON.stringify(lastError.response.data)}`,
+    );
     throw error;
   }
+  const error = new Error("Email service failed. Check Resend API key and sender email.");
+  error.status = 502;
+  error.cause = lastError;
+  throw error;
 }
 
 function formatEmailAddress(email, name) {
