@@ -40,7 +40,11 @@ function UserDashboard() {
   } = useGetMyBookingsQuery(undefined, {
     skip: !auth.hydrated || accountRole !== "user",
   });
-  const bookings = bookingsData ?? [];
+  const bookings = Array.isArray(bookingsData)
+    ? bookingsData
+    : Array.isArray(bookingsData?.bookings)
+      ? bookingsData.bookings
+      : [];
   const isError = Boolean(error);
 
   usePageMeta({ title: "Dashboard" });

@@ -18,6 +18,12 @@ const bookingApi = baseApi.injectEndpoints({
 
     getMyBookings: build.query({
       query: () => "/api/me/bookings",
+      transformResponse: (response) =>
+        Array.isArray(response?.bookings)
+          ? response.bookings
+          : Array.isArray(response)
+            ? response
+            : [],
       providesTags: ["Bookings"],
     }),
 
