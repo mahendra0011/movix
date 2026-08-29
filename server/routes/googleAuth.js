@@ -57,6 +57,7 @@ router.get(
 
 function spaOrigin() {
   if (typeof env.clientOrigin === "string" && env.clientOrigin) return env.clientOrigin;
+  if (Array.isArray(env.clientOrigin) && env.clientOrigin[0]) return env.clientOrigin[0];
   return "";
 }
 
